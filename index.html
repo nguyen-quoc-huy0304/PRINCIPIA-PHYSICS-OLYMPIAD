@@ -1012,26 +1012,22 @@ function chooseGameTab(id){localStorage.setItem('principia_active_game_tab',id);
 function editGamePlatform(id){const a=gamePlatforms(),x=a.find(v=>v.id===id);if(!x)return;if(!confirm('✏️ Bạn muốn thay đổi tên, icon hoặc địa chỉ của nền tảng này chứ?'))return;const name=prompt('Đổi tên nền tảng:',x.name);if(name===null)return;const icon=prompt('Đổi icon:',x.icon);if(icon===null)return;const url=prompt('Đổi URL:',x.url);if(url===null)return;try{new URL(url);x.name=name.trim()||x.name;x.icon=icon||x.icon;x.url=url;saveGamePlatforms(a);render()}catch(e){notify('URL không hợp lệ')}}
 function deleteGamePlatform(id){if(!confirm('🗑️ Bạn chắc chắn muốn xóa nền tảng này khỏi PRINCIPIA?'))return;saveGamePlatforms(gamePlatforms().filter(x=>x.id!==id));render();companionReact('sad','Một tab vừa được gỡ khỏi khu vực giải trí.');}
 function companionReact(mood,msg){
- const fab=document.getElementById('principiaStickerFab');
  let cfg={auto:true,events:{hello:true,happy:true,sad:true,wrong:true,wow:true},messages:{}};
  try{cfg={...cfg,...JSON.parse(localStorage.getItem('principia_companion_events')||'{}')};cfg.events={...{hello:true,happy:true,sad:true,wrong:true,wow:true},...(cfg.events||{})};cfg.messages=cfg.messages||{}}catch(e){}
  let sticker='';
  try{const st=JSON.parse(localStorage.getItem('principia_sticker_settings')||'{}');if(st.selected)sticker=st.selected;if(st.enabled===false)return;}catch(e){}
  if(!cfg.auto||cfg.events[mood]===false)return;
- const faces={hello:'👋',happy:'🥰',sad:'🥺',wrong:'😵',wow:'🤩'};
- const art=sticker.startsWith('data:')?'<img src="'+sticker+'" alt="Nhân vật">':sticker;
- if(fab){fab.innerHTML=art;fab.style.display='grid';fab.classList.remove('companion-pop');void fab.offsetWidth;fab.classList.add('companion-pop');}
- let old=document.getElementById('principiaCompanionBubble');if(old)old.remove();
+ const art=sticker.startsWith('data:')?'<img src="'+sticker+'" alt="Chibi hoặc meme">':sticker;
  const text=(cfg.messages[mood]||'').trim()||msg||'';
- if(text){
-  const b=document.createElement('div');b.id='principiaCompanionBubble';
-  b.innerHTML='<div class="companion-bubble-art">'+art+'</div><div class="companion-bubble-text"></div>';
-  b.querySelector('.companion-bubble-text').textContent=text;
-  document.body.appendChild(b);
-  clearTimeout(window.__principiaCompanionTimer);
-  window.__principiaCompanionTimer=setTimeout(()=>{b.classList.add('companion-hide');setTimeout(()=>b.remove(),260)},(Number(cfg.duration)||4)*1000);
- }
- if(fab){clearTimeout(window.__principiaCompanionFabTimer);window.__principiaCompanionFabTimer=setTimeout(()=>fab.classList.remove('companion-pop'),1200);}
+ let b=document.getElementById('principiaCompanionBubble');if(b)b.remove();
+ if(!text&&!art)return;
+ b=document.createElement('div');b.id='principiaCompanionBubble';
+ b.innerHTML=(art?'<div class="companion-bubble-art">'+art+'</div>':'')+'<div class="companion-bubble-text"></div>';
+ b.querySelector('.companion-bubble-text').textContent=text;
+ b.style.cssText='position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:10001;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;width:min(300px,78vw);padding:22px;border:1px solid var(--line);border-radius:28px;background:var(--card);color:var(--txt);box-shadow:0 18px 60px #0006;text-align:center;font-size:15px;line-height:1.6;animation:principiaStickerPop .28s cubic-bezier(.2,.9,.25,1.2)';
+ document.body.appendChild(b);
+ clearTimeout(window.__principiaCompanionTimer);
+ window.__principiaCompanionTimer=setTimeout(()=>{b.classList.add('companion-hide');setTimeout(()=>b.remove(),260)},(Number(cfg.duration)||4)*1000);
 }
 function analyzeChessPosition(){const p=document.getElementById('chessPosition')?.value.trim();if(!p){notify('Hãy dán PGN hoặc FEN của ván cờ trước nhé');companionReact('sad','Mình cần thế cờ hoặc lịch sử nước đi để phân tích nè.');return;}const url='https://lichess.org/analysis/'+encodeURIComponent(p);window.open(url,'_blank','noopener');companionReact('wow','Mở bàn phân tích Lichess để engine đánh giá nước đi. ♟️')}
 function entertainmentPage(){const platforms=gamePlatforms(),active=localStorage.getItem('principia_active_game_tab')||platforms[0]?.id,chosen=platforms.find(x=>x.id===active)||platforms[0],st=entertainmentState(),bots=leagueBots(),rank=leagueRank(st.points);const all=[...bots,{name:profile.name||'Bạn',points:st.points,avatar:'🙂',you:true}].sort((a,b)=>b.points-a.points);const pos=all.findIndex(x=>x.you)+1;return `<div class="eyebrow">PLAY · THINK · COMPETE</div><h1>🎮 Giải trí & tư duy</h1><p class="muted">Mỗi trò chơi có tab riêng. Thêm tab hoặc nền tảng theo ý bạn.</p><div class="toolbar" style="margin:12px 0"><button class="primary" onclick="addGameTab()">＋ Tab</button><button class="secondary" onclick="addGamePlatform()">＋ Nền tảng</button></div><div class="game-tabs" style="display:flex;gap:8px;flex-wrap:wrap;margin:14px 0">${platforms.map(x=>`<button class="${x.id===chosen?.id?'primary':'secondary'}" onclick="chooseGameTab('${x.id}')">${esc(x.icon)} ${esc(x.name)}</button>`).join('')}</div>${chosen?`<div class="panel"><div class="sectionhead"><div><div class="eyebrow">${esc(chosen.name)}</div><h2>${esc(chosen.icon)} ${esc(chosen.name)}</h2></div><div class="toolbar"><button class="secondary" onclick="editGamePlatform('${chosen.id}')">✎ Đổi tên / icon / URL</button><button class="danger" onclick="deleteGamePlatform('${chosen.id}')">🗑 Xóa tab</button></div></div><div style="border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fff"><iframe title="${esc(chosen.name)}" src="${esc(chosen.url)}" style="display:block;width:100%;height:min(68vh,680px);border:0;background:#fff" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="fullscreen; autoplay; clipboard-read; clipboard-write"></iframe></div><p class="small muted">Nếu khung trống hoặc báo từ chối kết nối, website này đang chặn nhúng. Bạn vẫn có thể mở nền tảng gốc.</p><div class="toolbar"><a class="primary" style="text-decoration:none" href="${esc(chosen.url)}" target="_blank" rel="noopener noreferrer">Mở ${esc(chosen.name)} ↗</a></div></div>`:'<div class="empty">Chưa có nền tảng. Nhấn ＋ để thêm nhé.</div>'}<div class="panel"><div class="sectionhead"><h2>🤖 AI phân tích cờ vua</h2><span class="pill">Engine phân tích</span></div><p class="muted small">Dán PGN hoặc FEN để mở bàn phân tích Lichess với engine cờ vua. Đây là công cụ phân tích ngoài, không phải AI tự đọc nội dung iframe.</p><textarea id="chessPosition" rows="3" placeholder="Dán PGN hoặc FEN của ván cờ vào đây..."></textarea><button class="primary" onclick="analyzeChessPosition()">♟ Phân tích nước đi</button></div><div class="sectionhead"><div><div class="eyebrow">WEEKLY AI LEAGUE</div><h2>🏆 Bảng xếp hạng tuần</h2></div><span class="pill">🔄 Reset mỗi tuần</span></div><div class="panel"><div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap"><div style="font-size:42px">${pos===1?'👑':'🏅'}</div><div style="flex:1"><div class="muted small">HẠNG CỦA BẠN · #${pos}</div><h2 style="margin:3px 0">${rank.icon} ${rank.name}</h2><div class="muted small">${st.points} điểm · ${st.matches} trận mô phỏng · ${st.wins} chiến thắng</div></div><button class="primary" onclick="simulateAiMatch()">⚔️ Đấu AI giả lập</button></div><p class="small muted">Đối thủ AI và kết quả trận đấu hiện là mô phỏng trên thiết bị này, chưa phải hệ thống thi đấu trực tuyến.</p></div><div class="panel">${all.map((x,i)=>`<div class="file" style="display:flex;align-items:center;gap:12px"><div style="width:30px;font-weight:800">${i===0?'👑':i+1}</div><div style="font-size:23px">${x.you&&pos===1?'👑 ':''}${x.avatar}</div><div style="flex:1"><b>${esc(x.name)} ${x.you?'(Bạn)':''}</b><div class="small muted">${x.you?rank.name:'Đối thủ AI'}</div></div><b>${x.points} điểm</b></div>`).join('')}</div>`}
@@ -1840,7 +1836,10 @@ window.addEventListener('beforeunload',e=>{if(page==='play'&&activeQuiz&&(answer
 </style>
 
 <style>
-#principiaGiftFab{position:fixed;right:18px;bottom:158px;z-index:9998;width:58px;height:58px;border-radius:20px;border:1px solid #8d70e8;background:linear-gradient(145deg,#30224f,#171a2a);box-shadow:0 8px 28px #0006;font-size:29px;display:grid;place-items:center;cursor:pointer;animation:giftFloat 2.8s ease-in-out infinite}
+#principiaStickerFab,#principiaGiftFab{display:none!important;visibility:hidden!important;pointer-events:none!important}
+#principiaCompanionBubble .companion-bubble-art img{width:min(150px,42vw);height:min(150px,42vw);object-fit:contain}
+#principiaCompanionBubble .companion-bubble-art{font-size:112px;line-height:1.1}
+#principiaGiftFab{display:none!important}
 @keyframes giftFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
 .reward-pop{position:fixed;inset:0;z-index:10020;background:#050611c9;display:grid;place-items:center;padding:14px}
 .reward-card{width:min(560px,100%);max-height:88vh;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:24px;padding:22px;box-shadow:0 24px 90px #0009;text-align:center}
