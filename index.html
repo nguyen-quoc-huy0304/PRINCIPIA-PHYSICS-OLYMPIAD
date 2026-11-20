@@ -882,6 +882,10 @@ html[data-theme="light"] #codelearnWorkspace .cl-topbar button[onclick="exitCode
               </div>
               <p class="small muted" style="margin:0 0 8px;">Dán lời thoại/captions từ video vào đây. Trình duyệt HTML đơn tệp chưa thể tự lấy transcript YouTube nếu chưa có API/backend.</p>
               <textarea id="ytTranscript" class="inp" rows="7" placeholder="Transcript / lời nói trong video..." oninput="saveTranscript()" style="width:100%;resize:vertical;line-height:1.6;"></textarea>
+              <label class="small" style="display:block;margin-top:10px">Bản dịch lời thoại · ngôn ngữ đích</label>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin:6px 0"><select id="ytDubLang" class="inp" style="max-width:170px" onchange="saveVideoTranslation()"><option value="vi">Tiếng Việt</option><option value="en">English</option><option value="ja">日本語</option><option value="ko">한국어</option><option value="zh">中文</option><option value="fr">Français</option></select><button class="oli-btn" onclick="speakVideoText('original')">▶ Nghe lời gốc</button><button class="oli-btn primary" onclick="speakVideoText('translated')">▶ Đọc bản dịch</button><button class="oli-btn" onclick="speakVideoText('both')">▶ Nghe cả hai</button><button class="oli-btn" onclick="stopVideoSpeech()">■ Dừng</button></div>
+              <textarea id="ytTranslatedTranscript" class="inp" rows="6" placeholder="Dán/nhập bản dịch lời thoại tại đây. Bản dịch sẽ được lưu cùng bài học." oninput="saveVideoTranslation()" style="width:100%;resize:vertical;line-height:1.6;"></textarea>
+              <p class="small muted">Lưu ý: đọc bằng giọng có sẵn của trình duyệt; chưa phải AI lồng tiếng đồng bộ theo video. Tự dịch và căn thời gian cần dịch vụ AI + xử lý âm thanh/backend.</p>
               <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
                 <button class="oli-btn primary" onclick="summarizeTranscript()">AI tóm tắt transcript</button>
                 <button class="oli-btn" onclick="clearTranscript()">Xóa transcript</button>
@@ -1482,8 +1486,63 @@ app.innerHTML=`<div class="layout"><aside class="sidebar"><div class="brand"><im
 }
 function addChoice(){
  if(!requireAdmin())return;
- modal(`<h2>＋ Tạo nội dung</h2><p class="muted">Bạn muốn thêm gì vào thư viện?</p><div class="grid" style="grid-template-columns:1fr 1fr"><button class="secondary" style="padding:22px;text-align:left" onclick="closeModal();addNode('lesson')"><div style="font-size:28px">📘</div><b>＋ Bài học mới</b><p class="small muted">Tạo nội dung bài học</p></button><button class="secondary" style="padding:22px;text-align:left" onclick="closeModal();addNode('tab')"><div style="font-size:28px">📁</div><b>＋ Tab mới</b><p class="small muted">Tạo thư mục chủ đề</p></button></div><div class="modalactions"><button class="secondary" onclick="closeModal()">Đóng</button></div>`);
+ modal(`<h2>＋ Thêm vào PRINCIPIA</h2><p class="muted">Chọn nội dung muốn thêm vào thư viện cá nhân.</p><div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px">
+ <button class="secondary" style="padding:18px;text-align:left" onclick="closeModal();addNode('lesson')"><div style="font-size:26px">📘</div><b>＋ Bài học mới</b><p class="small muted">Tạo nội dung bài học</p></button>
+ <button class="secondary" style="padding:18px;text-align:left" onclick="closeModal();addNode('tab')"><div style="font-size:26px">📁</div><b>＋ Tab mới</b><p class="small muted">Tạo thư mục chủ đề</p></button>
+ <button class="secondary" style="padding:18px;text-align:left" onclick="closeModal();openLibraryPicker('file')"><div style="font-size:26px">📄</div><b>＋ Thêm tệp</b><p class="small muted">PDF, Word, PowerPoint, ảnh, văn bản…</p></button>
+ <button class="secondary" style="padding:18px;text-align:left" onclick="closeModal();openLibraryPicker('book')"><div style="font-size:26px">📚</div><b>＋ Thêm sách</b><p class="small muted">Thêm sách PDF/EPUB vào kệ sách</p></button>
+ </div><div class="modalactions"><button class="secondary" onclick="closeModal()">Đóng</button></div>`);
 }
+let principiaLibraryObjectUrl=null;
+function openLibraryPicker(kind){
+ if(!requireAdmin())return;
+ const book=kind==='book';
+ modal(`<h2>${book?'📚 Thêm sách':'📄 Thêm tệp'}</h2><p class="muted">${book?'Chọn sách PDF hoặc EPUB. PDF có thể đọc ngay trong trình duyệt.':'Chọn một hoặc nhiều tài liệu để lưu trong thư viện PRINCIPIA.'}</p><input id="principiaLibraryInput" class="inp" type="file" ${book?'accept=".pdf,.epub,application/pdf,application/epub+zip"':'multiple'}><div class="modalactions"><button class="secondary" onclick="closeModal()">Hủy</button><button class="primary" onclick="savePrincipiaLibraryItems('${kind}')">Lưu vào thư viện</button></div><div class="small muted" style="margin-top:8px">Tệp được lưu trong bộ nhớ trình duyệt trên thiết bị này; chưa tự đồng bộ sang thiết bị khác.</div>`);
+}
+async function savePrincipiaLibraryItems(kind){
+ const input=document.getElementById('principiaLibraryInput'),files=Array.from(input?.files||[]);
+ if(!files.length){notify('Hãy chọn tệp trước');return}
+ try{
+  const d=await db();
+  for(const f of files){
+   const rec={id:uid(),name:f.name,blob:f,size:f.size,type:f.type||'',created:Date.now(),principiaLibrary:true,libraryKind:kind};
+   await new Promise((resolve,reject)=>{const tx=d.transaction('files','readwrite');tx.objectStore('files').put(rec);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)});
+  }
+  closeModal();notify('Đã lưu '+files.length+' mục vào thư viện');openPrincipiaLibrary(kind);
+ }catch(e){notify('Không lưu được tệp. Hãy kiểm tra dung lượng bộ nhớ trình duyệt.')}
+}
+async function openPrincipiaLibrary(kind){
+ try{
+  const d=await db(),items=await new Promise(resolve=>{const q=d.transaction('files').objectStore('files').getAll();q.onsuccess=()=>resolve(q.result.filter(x=>x.principiaLibrary&&(!kind||x.libraryKind===kind)));q.onerror=()=>resolve([])});
+  modal(`<h2>📚 Thư viện tệp & sách</h2><div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0"><button class="secondary" onclick="closeModal();openLibraryPicker('file')">＋ Thêm tệp</button><button class="secondary" onclick="closeModal();openLibraryPicker('book')">＋ Thêm sách</button><button class="secondary" onclick="closeModal();openPrincipiaLibrary()">Tất cả</button></div><div style="display:grid;gap:8px;max-height:55vh;overflow:auto">${items.length?items.map(x=>`<div class="file" style="display:flex;gap:10px;align-items:center;justify-content:space-between"><span style="min-width:0;overflow-wrap:anywhere">${x.libraryKind==='book'?'📚':'📄'} <b>${esc(x.name)}</b><span class="small muted"> · ${(x.size/1048576).toFixed(1)} MB</span></span><span style="display:flex;gap:5px;flex-shrink:0"><button class="secondary" onclick="openLibraryItem('${x.id}')">Mở</button><button class="danger" onclick="deleteLibraryItem('${x.id}','${kind||''}')">Xóa</button></span></div>`).join(''):'<p class="muted">Chưa có tệp hoặc sách. Nhấn Thêm tệp / Thêm sách để bắt đầu.</p>'}</div><div class="modalactions"><button class="secondary" onclick="closeModal()">Đóng</button></div>`);
+ }catch(e){notify('Không mở được thư viện')}
+}
+async function deleteLibraryItem(id,kind){
+ if(!confirm('Xóa mục này khỏi thư viện?'))return;
+ const d=await db();await new Promise(resolve=>{const tx=d.transaction('files','readwrite');tx.objectStore('files').delete(id);tx.oncomplete=resolve});openPrincipiaLibrary(kind||undefined);
+}
+async function openLibraryItem(id){
+ const d=await db(),f=await new Promise(resolve=>{const q=d.transaction('files').objectStore('files').get(id);q.onsuccess=()=>resolve(q.result)});
+ if(!f)return;
+ const url=URL.createObjectURL(f.blob);if(principiaLibraryObjectUrl)URL.revokeObjectURL(principiaLibraryObjectUrl);principiaLibraryObjectUrl=url;
+ const state=JSON.parse(localStorage.getItem('principia_reader_'+id)||'{}'),isPdf=(f.type==='application/pdf'||/\.pdf$/i.test(f.name)),isText=(/^(text\/|application\/(json|xml))/.test(f.type)||/\.(txt|md|csv)$/i.test(f.name));
+ let raw='';if(isText){try{raw=await f.blob.text()}catch{}}
+ const safe=esc(raw),rot=Number(state.rotation)||0;
+ modal(`<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><h2 style="margin:0">${f.libraryKind==='book'?'📚':'📄'} ${esc(f.name)}</h2><button class="secondary" onclick="openPrincipiaLibrary('${f.libraryKind}')">← Thư viện</button></div>
+ <div style="display:flex;gap:7px;flex-wrap:wrap;margin:10px 0"><button class="secondary" onclick="setReaderMode('${id}','side')">Hai bản song song</button><button class="secondary" onclick="setReaderMode('${id}','original')">Chỉ bản gốc</button><button class="secondary" onclick="setReaderMode('${id}','translated')">Chỉ bản dịch</button><button class="secondary" onclick="rotateReader('${id}',90)">↻ Xoay</button><button class="secondary" onclick="setReaderPages('${id}',1)">1 trang</button><button class="secondary" onclick="setReaderPages('${id}',2)">2 trang</button></div>
+ <div id="principiaReaderGrid" style="display:grid;grid-template-columns:repeat(${state.pages===2?2:1},minmax(0,1fr));gap:10px;max-height:65vh;overflow:auto">
+ <section id="readerOriginal" style="min-width:0"><b>Bản gốc</b>${isPdf?'<iframe title="Tài liệu gốc" src="'+url+'#toolbar=1" style="width:100%;height:58vh;border:1px solid var(--line);border-radius:12px;transform:rotate('+rot+'deg);transform-origin:center"></iframe>':isText?'<pre style="white-space:pre-wrap;overflow:auto;max-height:55vh;padding:12px;background:var(--bg-2);border-radius:10px">'+safe+'</pre>':'<p class="muted">Định dạng này chưa xem trực tiếp được trong trình duyệt. Bạn có thể tải tệp xuống để mở bằng ứng dụng phù hợp.</p>'}</section>
+ <section id="readerTranslated" style="min-width:0"><b>Bản dịch</b><div style="display:flex;gap:6px;flex-wrap:wrap;margin:7px 0"><select id="readerTargetLang" class="inp" style="max-width:160px" onchange="saveReaderTranslation('${id}')"><option value="vi">Tiếng Việt</option><option value="en">English</option><option value="ja">日本語</option><option value="ko">한국어</option><option value="zh">中文</option><option value="fr">Français</option></select><button class="secondary" onclick="saveReaderTranslation('${id}')">Lưu bản dịch</button></div><textarea id="readerTranslationText" class="inp" rows="15" placeholder="Dán hoặc nhập nội dung bản dịch tại đây. Muốn dịch tự động cần kết nối dịch vụ AI/dịch thuật." oninput="saveReaderTranslation('${id}')" style="width:100%;min-height:45vh">${esc(state.translation||'')}</textarea><p class="small muted">Bản dịch và lựa chọn hiển thị được lưu trên thiết bị này. Hiện chưa có API dịch tự động kết nối.</p></section></div>
+ <div class="modalactions"><button class="secondary" onclick="downloadDoc('${id}')">Tải tệp gốc</button><button class="secondary" onclick="closeModal()">Đóng</button></div>`);
+ const lang=document.getElementById('readerTargetLang');if(lang)lang.value=state.lang||'vi';applyReaderMode(state.mode||'side');
+}
+function saveReaderState(id,patch){const key='principia_reader_'+id,s=JSON.parse(localStorage.getItem(key)||'{}');Object.assign(s,patch);localStorage.setItem(key,JSON.stringify(s))}
+function saveReaderTranslation(id){const t=document.getElementById('readerTranslationText'),l=document.getElementById('readerTargetLang');saveReaderState(id,{translation:t?.value||'',lang:l?.value||'vi'})}
+function applyReaderMode(mode){const a=document.getElementById('readerOriginal'),b=document.getElementById('readerTranslated'),g=document.getElementById('principiaReaderGrid');if(!a||!b||!g)return;a.style.display=mode==='translated'?'none':'';b.style.display=mode==='original'?'none':'';g.style.gridTemplateColumns=mode==='side'?'repeat(2,minmax(0,1fr))':'1fr';}
+function setReaderMode(id,mode){saveReaderState(id,{mode});applyReaderMode(mode)}
+function setReaderPages(id,pages){saveReaderState(id,{pages});const g=document.getElementById('principiaReaderGrid');if(g)g.style.gridTemplateColumns='repeat('+pages+',minmax(0,1fr))'}
+function rotateReader(id,delta){const s=JSON.parse(localStorage.getItem('principia_reader_'+id)||'{}');s.rotation=((Number(s.rotation)||0)+delta)%360;saveReaderState(id,s);const frame=document.querySelector('#readerOriginal iframe');if(frame)frame.style.transform='rotate('+s.rotation+'deg)'}
+
 function addNode(type){
  if(!requireAdmin())return;
  let nodes=currentNodes();
@@ -1661,7 +1720,7 @@ function openInnerLessonWorkspace(lessonId){
   document.getElementById('clTitle').textContent = `${subName}${tabName ? ' / ' + tabName : ''} — ${l.name}`;
   document.getElementById('clLessonHeading').textContent = l.name;
   document.getElementById('clNoteArea').value = (l.note !== undefined ? l.note : (l.content || ''));
-  const transcriptEl=document.getElementById('ytTranscript'); if(transcriptEl) transcriptEl.value=l.transcript||'';
+  const transcriptEl=document.getElementById('ytTranscript'); if(transcriptEl) transcriptEl.value=l.transcript||''; const translatedTranscriptEl=document.getElementById('ytTranslatedTranscript');if(translatedTranscriptEl)translatedTranscriptEl.value=l.translatedTranscript||'';const dubLangEl=document.getElementById('ytDubLang');if(dubLangEl)dubLangEl.value=l.dubLang||'vi';
   const summaryEl=document.getElementById('ytSummaryOutput'); if(summaryEl) summaryEl.textContent=l.summary||'Tóm tắt sẽ hiển thị ở đây sau khi bạn thêm transcript.';
   document.getElementById('clVideoUrlInput').value = l.video || '';
   document.getElementById('phetFrame').src = (ch[0]?.id === 'math')
@@ -1712,6 +1771,9 @@ function saveTranscript(){
 function clearTranscript(){
  if(!requirePermission('media'))return;const el=document.getElementById('ytTranscript');if(el)el.value='';saveTranscript();notify('Đã xóa transcript');}
 function copyTranscriptToNote(){const transcript=document.getElementById('ytTranscript')?.value||'';const note=document.getElementById('clNoteArea');if(!transcript.trim()){notify('Chưa có transcript để chép');return;}note.value+=(note.value?'\n\n':'')+transcript;saveClNote();notify('Đã chép transcript vào ghi chú');}
+function saveVideoTranslation(){if(!curLessonId)return;const l=find(curLessonId,data);if(!l)return;l.translatedTranscript=document.getElementById('ytTranslatedTranscript')?.value||'';l.dubLang=document.getElementById('ytDubLang')?.value||'vi';saveAll();}
+function stopVideoSpeech(){if('speechSynthesis'in window)window.speechSynthesis.cancel();}
+function speakVideoText(mode){if(!('speechSynthesis'in window)){notify('Trình duyệt chưa hỗ trợ đọc văn bản');return;}const original=document.getElementById('ytTranscript')?.value||'',translated=document.getElementById('ytTranslatedTranscript')?.value||'';const lang=document.getElementById('ytDubLang')?.value||'vi';const chunks=mode==='original'?[{text:original,lang:'en-US'}]:mode==='translated'?[{text:translated,lang:lang==='vi'?'vi-VN':lang}]:[{text:original,lang:'en-US'},{text:translated,lang:lang==='vi'?'vi-VN':lang}];if(chunks.every(x=>!x.text.trim())){notify('Chưa có lời thoại');return;}stopVideoSpeech();chunks.filter(x=>x.text.trim()).forEach(x=>{const u=new SpeechSynthesisUtterance(x.text);u.lang=x.lang;window.speechSynthesis.speak(u);});}
 function summarizeTranscript(){
  if(!requirePermission('media'))return;const text=(document.getElementById('ytTranscript')?.value||'').trim();if(!text){notify('Hãy dán transcript trước');return;}const chunks=text.split(/(?<=[.!?])\s+/).filter(Boolean);const summary=chunks.length<=5?chunks.join('\n'):chunks.slice(0,2).concat(chunks.slice(Math.max(2,Math.floor(chunks.length*.6)),Math.max(3,Math.floor(chunks.length*.6))+2)).join('\n');const out=document.getElementById('ytSummaryOutput');if(out)out.textContent='TÓM TẮT (bản trích ý tự động — chưa kết nối AI thật):\n'+summary+'\n\nÝ chính: '+chunks.slice(0,Math.min(3,chunks.length)).join(' ');if(curLessonId){const l=find(curLessonId,data);if(l){l.summary=out?.textContent||summary;saveAll();}}notify('Đã tạo tóm tắt sơ bộ');}
 function runAiCheploi(){
