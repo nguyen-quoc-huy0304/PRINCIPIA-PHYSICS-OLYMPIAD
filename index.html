@@ -841,6 +841,30 @@ html[data-theme="light"] #codelearnWorkspace #clTab-grade{background:#f5f1ff!imp
 html[data-theme="light"] #codelearnWorkspace #clTab-phet{background:#effaf6!important}
 html[data-theme="light"] #codelearnWorkspace .cl-topbar button[onclick="exitCodelearnWorkspace()"],html[data-theme="light"] #codelearnWorkspace button[onclick="copyTranscriptToNote()"],html[data-theme="light"] #codelearnWorkspace button[onclick="clearTranscript()"],html[data-theme="light"] #codelearnWorkspace button[onclick="toggleNotePopPanel()"],html[data-theme="light"] #codelearnWorkspace button[onclick="pushPopNoteToMain()"],html[data-theme="light"] #codelearnWorkspace button[onclick="toggleNotePopPanel(false)"]{color:#fff!important}
 </style>
+<style id="principia-video-control-contrast">
+/* High-contrast controls for transcript / translated voice actions in every theme. */
+#codelearnWorkspace #clTab-note .ai-cheploi-box button.oli-btn,
+#codelearnWorkspace #clTab-note button.oli-btn{
+ color:#f8f9ff!important;background:#30364a!important;border:1px solid #65708b!important;
+ border-radius:10px!important;font-weight:700!important;text-shadow:none!important;
+ padding:9px 12px!important;min-height:38px!important;opacity:1!important;
+}
+#codelearnWorkspace #clTab-note .ai-cheploi-box button.oli-btn.primary,
+#codelearnWorkspace #clTab-note button.oli-btn.primary{
+ color:#fff!important;background:#5947c7!important;border:1px solid #8978ff!important;
+}
+#codelearnWorkspace #clTab-note button.oli-btn:hover{filter:brightness(1.12)}
+html[data-theme="light"] #codelearnWorkspace #clTab-note .ai-cheploi-box button.oli-btn,
+html[data-theme="light"] #codelearnWorkspace #clTab-note button.oli-btn{
+ color:#25283a!important;background:#f0f1f7!important;border:1px solid #b9c1d2!important;
+}
+html[data-theme="light"] #codelearnWorkspace #clTab-note .ai-cheploi-box button.oli-btn.primary,
+html[data-theme="light"] #codelearnWorkspace #clTab-note button.oli-btn.primary{
+ color:#fff!important;background:#5947c7!important;border-color:#5947c7!important;
+}
+#codelearnWorkspace #clTab-note select#ytDubLang{color:var(--txt,#25283a)!important;background:var(--card,#fff)!important;border:1px solid var(--line,#cbd2e1)!important;min-height:38px!important}
+html[data-theme="light"] #codelearnWorkspace #clTab-note select#ytDubLang{color:#25283a!important;background:#fff!important;border-color:#b9c1d2!important}
+</style>
 </head>
 <body>
 <div id="app"></div>
