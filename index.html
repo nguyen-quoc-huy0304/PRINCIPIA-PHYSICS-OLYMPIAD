@@ -997,7 +997,7 @@ function companionReact(mood,msg){
   b.querySelector('.companion-bubble-text').textContent=text;
   document.body.appendChild(b);
   clearTimeout(window.__principiaCompanionTimer);
-  window.__principiaCompanionTimer=setTimeout(()=>{b.classList.add('companion-hide');setTimeout(()=>b.remove(),260)},Number(cfg.duration)||3800);
+  window.__principiaCompanionTimer=setTimeout(()=>{b.classList.add('companion-hide');setTimeout(()=>b.remove(),260)},(Number(cfg.duration)||4)*1000);
  }
  if(fab){clearTimeout(window.__principiaCompanionFabTimer);window.__principiaCompanionFabTimer=setTimeout(()=>fab.classList.remove('companion-pop'),1200);}
 }
@@ -1518,6 +1518,7 @@ function runAiGrade(){
   if(!text&&!files.length){notify('Hãy nhập bài làm hoặc đính kèm ảnh / file trước nhé');return;}
   xp += 30; saveAll();
   showXpToast('+30 EXP · Gửi bài');
+  companionReact('happy','Đã gửi bài làm để chấm điểm! Cố lên nhé ✨');
   document.getElementById('gradeOutputBox').innerHTML = `<div class="panel"><strong>${esc(ai)}:</strong> Đã nhận bài làm${files.length?` và ${files.length} file đính kèm`:''}. <span class="muted">Bản HTML hiện tại chỉ mô phỏng phản hồi chấm, chưa kết nối AI thực để đọc ảnh/file.</span></div>`;
 }
 
