@@ -2150,6 +2150,9 @@ function resetOuterCover(){
 <!-- Firebase SDK được nạp nền sau khi giao diện đã hiển thị; tránh chặn toàn bộ trang nếu CDN chậm. -->
 
 <script>
+// Guard: auth script must remain usable even if the app-page bridge is unavailable.
+window.getPrincipiaPage=window.getPrincipiaPage||function(){return 'account';};
+window.setPrincipiaPage=window.setPrincipiaPage||function(next){try{localStorage.setItem('principia_pending_page',String(next));}catch(e){}};
 /* PRINCIPIA AUTH CONFIG
    1) Tạo Firebase project và bật Authentication > Email/Password + Google.
    2) Dán firebaseConfig lấy từ Firebase Console vào object bên dưới.
