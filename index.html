@@ -607,7 +607,241 @@ html[data-theme="light"] #codelearnWorkspace #ytSummaryOutput{background:#fff!im
 #codelearnWorkspace .cl-iconbar{width:128px;min-width:128px}
 #codelearnWorkspace .cl-left-pane button{border-radius:12px}
 @media(max-width:760px){#codelearnWorkspace .cl-iconbar{width:100%;min-width:0}#codelearnWorkspace .cl-ico-btn{min-width:86px}}
-</style></head>
+</style><style>
+/* Logo/avatar: no thin white frame, no badge background */
+.brand-logo-img,.welcome-logo-img,.avatar-logo-img{
+  border:0!important;outline:0!important;box-shadow:none!important;
+  background:transparent!important;border-radius:0!important;
+}
+.account-avatar-trigger{border:0;background:transparent;padding:3px;display:flex;align-items:center;cursor:pointer}
+.account-avatar-trigger:hover{filter:brightness(1.12)}
+.account-avatar-trigger .avatar{width:42px;height:42px}
+.account-page{max-width:760px;margin:25px auto}
+.account-page-card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:clamp(22px,5vw,42px)}
+.account-brand-logo{width:112px;height:112px;object-fit:contain;display:block;margin:0 auto 16px;border:0;background:transparent}
+.account-google-action{min-height:48px;display:flex;justify-content:center;align-items:center;margin:12px 0}
+.account-profile-photo{width:88px;height:88px;object-fit:cover;border-radius:50%;display:block;margin:10px auto 16px}
+.account-profile-placeholder{width:88px;height:88px;border-radius:50%;display:grid;place-items:center;margin:10px auto 16px;background:var(--bg-2);border:1px solid var(--line);font-size:42px}
+.account-info-row{padding:13px 15px;border:1px solid var(--line);border-radius:12px;margin:9px 0;background:var(--bg)}
+</style>
+
+<style>
+body:not(.principia-admin) #clAdminVideoLinkControls{display:none!important}
+.google-login-fallback{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-width:260px;padding:13px 18px;border-radius:999px;border:1px solid #dadce0;background:#fff;color:#3c4043;font-weight:600;cursor:pointer}
+.google-login-fallback:hover{background:#f7f8f8}
+.chat-bubble-btn{font-size:0!important;display:grid;place-items:center}
+.chat-bubble-btn::before{content:' ';width:23px;height:23px;display:block;background:currentColor;mask:url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22black%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8A8.5 8.5 0 0 1 8.7 3.9a8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8z%22/%3E%3C/svg%3E') center/contain no-repeat}
+</style>
+
+<style>
+.auth-switch{display:flex;gap:8px;max-width:440px;margin:22px auto 18px;padding:5px;border:1px solid var(--line);border-radius:14px;background:var(--surface,rgba(127,127,127,.08))}
+.auth-switch button{flex:1;border:0;border-radius:10px;padding:11px;background:transparent;color:var(--text);font-weight:700;cursor:pointer}
+.auth-switch button.active{background:var(--card);box-shadow:0 2px 10px rgba(0,0,0,.10);color:var(--purple)}
+.auth-form{max-width:440px;margin:0 auto;text-align:left;display:grid;gap:9px}
+.auth-form label{font-size:13px;font-weight:700;margin-top:7px;color:var(--text)}
+.auth-form input{width:100%;box-sizing:border-box;padding:13px 14px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--text);font:inherit;outline:none}
+.auth-form input:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(124,92,230,.13)}
+.auth-form button{width:100%;margin-top:10px;padding:13px}
+</style>
+
+<style>
+.google-auth-area{display:flex;justify-content:center;margin:24px 0 14px}.google-auth-button-wrap{min-height:44px;display:flex;justify-content:center;align-items:center;width:100%}.google-login-fallback{display:inline-flex;align-items:center;justify-content:center;gap:12px;padding:12px 20px;border:1px solid var(--line,#444);border-radius:999px;background:#fff;color:#333;font-weight:650;min-width:260px;opacity:.72}.google-login-fallback span{font-weight:800;color:#4285f4;font-size:20px}.auth-switch{display:flex;gap:8px;justify-content:center;margin:20px auto;max-width:320px}.auth-switch button{flex:1}.google-account-status{min-height:24px;margin:12px 0;color:var(--muted,#999);font-size:13px}
+
+/* ===== PRINCIPIA LIQUID GLASS THEME — visual-only override ===== */
+:root{
+ --bg:#090b18;--side:rgba(20,22,43,.58);--card:rgba(255,255,255,.075);--card2:rgba(255,255,255,.105);
+ --line:rgba(210,205,255,.18);--txt:#f7f5ff;--muted:#b2b2ca;--purple:#c0b1ff;--purple2:#8069e8;
+ --green:#83e7c0;--yellow:#ffe29a;--red:#ff9eaf;
+ --glass-blur:22px;--glass-shadow:0 18px 55px rgba(0,0,0,.26),inset 0 1px 0 rgba(255,255,255,.12);
+}
+html{background:#090b18}
+body{
+ background:
+  radial-gradient(ellipse at 12% 8%,rgba(130,104,235,.25),transparent 38%),
+  radial-gradient(ellipse at 88% 20%,rgba(83,167,211,.15),transparent 34%),
+  radial-gradient(ellipse at 50% 100%,rgba(173,126,226,.12),transparent 42%),
+  linear-gradient(145deg,#090b18,#11142a 55%,#0b1020);
+ background-attachment:fixed;color:var(--txt)
+}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;opacity:.22;background-image:radial-gradient(rgba(255,255,255,.22) .65px,transparent .65px);background-size:22px 22px}
+.sidebar,.sidebottom,.top,.panel,.tile,.stat,.hero,.pill,.tab,.choice,.modal,.welcome-card,.account-page-card,
+.dropzone,.empty,.toast,.reward-card,.reward-item,.sticker-card,#stickerStudio>div,
+#principiaCompanionBubble,.file,.cl-shell,.cl-topbar,.cl-iconbar,.cl-left-pane,.cl-right-pane,
+#codelearnWorkspace .ai-cheploi-box,#codelearnWorkspace .note-pop-panel,#codelearnWorkspace .tl-card,
+#codelearnWorkspace .cl-right-pane>div:first-child,#codelearnWorkspace #clTab-list>div[onclick]{
+ background-color:rgba(255,255,255,.065)!important;
+ border:1px solid rgba(222,218,255,.17)!important;
+ box-shadow:var(--glass-shadow);
+ backdrop-filter:blur(var(--glass-blur)) saturate(155%);
+ -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(155%);
+}
+.sidebar{background:rgba(15,17,36,.64)!important;border-right:1px solid rgba(220,215,255,.16)!important}
+.main{position:relative}
+.hero{background:linear-gradient(125deg,rgba(158,130,255,.2),rgba(255,255,255,.055) 55%,rgba(94,185,220,.09))!important;border-radius:26px!important}
+.panel,.tile,.stat,.welcome-card,.account-page-card,.modal,.sticker-card,.reward-card{border-radius:22px!important}
+.tile{transition:transform .22s ease,border-color .22s ease,background .22s ease}
+.tile:hover{transform:translateY(-4px);background:rgba(255,255,255,.12)!important;border-color:rgba(194,178,255,.45)!important;box-shadow:0 20px 50px rgba(0,0,0,.28),0 0 24px rgba(151,125,255,.11)}
+.nav{border:1px solid transparent;transition:.2s}
+.nav:hover,.nav.active{background:rgba(183,160,255,.16)!important;border-color:rgba(207,192,255,.22)!important;color:#eee9ff!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}
+button.primary,.chat-bubble-btn{
+ background:linear-gradient(135deg,rgba(164,143,255,.9),rgba(111,91,218,.88))!important;
+ border:1px solid rgba(229,222,255,.36)!important;color:#fff!important;border-radius:15px!important;
+ box-shadow:0 9px 25px rgba(111,91,218,.27),inset 0 1px 0 rgba(255,255,255,.3);
+}
+button.secondary,.iconbtn,.tab,.cl-ico-btn{
+ background:rgba(255,255,255,.075)!important;border:1px solid rgba(222,218,255,.17)!important;
+ border-radius:14px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.1)
+}
+button.danger{background:rgba(255,105,137,.13)!important;border:1px solid rgba(255,145,164,.3)!important;border-radius:14px!important}
+button{transition:transform .18s ease,filter .18s ease,box-shadow .18s ease}
+button:hover{filter:brightness(1.12)}
+button:active{transform:scale(.975)}
+input,textarea,select,#codelearnWorkspace textarea,#codelearnWorkspace input[type=text],#codelearnWorkspace select{
+ background:rgba(8,11,27,.42)!important;border:1px solid rgba(210,205,255,.2)!important;
+ border-radius:14px!important;color:var(--txt)!important;box-shadow:inset 0 1px 5px rgba(0,0,0,.12);
+ backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)
+}
+input::placeholder,textarea::placeholder{color:rgba(205,202,225,.52)}
+input:focus,textarea:focus,select:focus{border-color:rgba(185,166,255,.7)!important;box-shadow:0 0 0 3px rgba(155,129,255,.13)!important}
+.progress,.xpbar{background:rgba(255,255,255,.1)!important;border:1px solid rgba(255,255,255,.08)}
+.progress div,.xpbar div{background:linear-gradient(90deg,#a995ff,#78d8ef)!important}
+.modalbg{background:rgba(5,7,18,.58)!important;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.modal{background:rgba(25,25,49,.82)!important}
+.toast{background:rgba(39,34,72,.82)!important}
+.welcome{background:radial-gradient(ellipse at 50% 30%,rgba(141,113,232,.3),transparent 45%),transparent!important}
+.welcome-card{background:rgba(255,255,255,.075)!important;backdrop-filter:blur(28px) saturate(165%)!important}
+#codelearnWorkspace .cl-topbar{background:rgba(27,29,58,.72)!important;color:#fff}
+#codelearnWorkspace .cl-body,#codelearnWorkspace .cl-split,#codelearnWorkspace .cl-right-pane,#codelearnWorkspace #clVideoStage{background:transparent!important}
+#codelearnWorkspace .cl-iconbar{background:rgba(13,16,36,.55)!important}
+#codelearnWorkspace .cl-left-pane{background:rgba(255,255,255,.025)!important}
+#codelearnWorkspace .cl-ico-btn.active{background:linear-gradient(135deg,rgba(163,143,255,.85),rgba(93,79,190,.8))!important}
+#codelearnWorkspace .cl-step{background:rgba(255,255,255,.09)!important}
+#codelearnWorkspace .cl-step.active{background:rgba(143,121,245,.8)!important}
+#codelearnWorkspace .cl-step.done{background:rgba(44,161,124,.65)!important}
+#codelearnWorkspace #clVideoStage iframe{border:1px solid rgba(220,215,255,.22)!important;box-shadow:0 20px 55px #0006}
+#principiaStickerFab,#principiaGiftFab{backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);border:1px solid rgba(255,255,255,.28)!important;box-shadow:0 12px 36px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.3)!important}
+#stickerStudio{background:rgba(4,6,18,.58)!important;backdrop-filter:blur(14px)}
+#principiaCompanionBubble{background:rgba(35,31,63,.82)!important}
+::selection{background:rgba(165,143,255,.38);color:#fff}
+@media(prefers-reduced-motion:no-preference){.panel,.stat,.hero,.welcome-card{animation:glassReveal .45s ease both}@keyframes glassReveal{from{opacity:.75;transform:translateY(7px)}to{opacity:1;transform:none}}}
+@media(max-width:760px){.sidebar{background:rgba(15,17,36,.82)!important;backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px)}.main{padding-top:18px}}
+@media(prefers-reduced-transparency:reduce){.sidebar,.panel,.tile,.modal,.welcome-card{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;background-color:#171a2d!important}}
+
+
+/* ===== LIQUID GLASS PATCH 2: actual popup layers + icon surfaces ===== */
+:root{--lg-pane:rgba(30,29,59,.74);--lg-surface:rgba(255,255,255,.105);--lg-stroke:rgba(231,225,255,.26);--lg-blur:30px}
+.modalbg,.modal-bg,.reward-pop,#stickerStudio,.sticker-overlay,.popup-overlay{
+ background:rgba(5,7,22,.48)!important;
+ backdrop-filter:blur(18px) saturate(155%)!important;
+ -webkit-backdrop-filter:blur(18px) saturate(155%)!important;
+}
+#modal .modal,.modal-card,.reward-card,.chat-box,#stickerStudio .modal,
+#stickerStudio .panel,.sticker-modal,.sticker-card,.reward-item{
+ background:linear-gradient(145deg,rgba(58,54,96,.76),rgba(24,29,55,.72))!important;
+ border:1px solid var(--lg-stroke)!important;
+ border-top-color:rgba(255,255,255,.4)!important;
+ border-radius:25px!important;
+ box-shadow:0 28px 90px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.24),inset 0 -1px 0 rgba(255,255,255,.05)!important;
+ backdrop-filter:blur(var(--lg-blur)) saturate(170%)!important;
+ -webkit-backdrop-filter:blur(var(--lg-blur)) saturate(170%)!important;
+}
+#modal .modal{width:min(600px,100%)!important}
+.modal-card{overflow:hidden!important}
+.modal-card iframe{border:1px solid rgba(255,255,255,.24)!important;border-radius:18px!important}
+.chat-box{background:linear-gradient(145deg,rgba(55,53,91,.88),rgba(18,25,49,.84))!important}
+.chat-box>div:first-child{background:rgba(255,255,255,.085)!important;border-bottom:1px solid var(--lg-stroke)!important}
+.chat-msgs{background:rgba(5,9,25,.14)!important}
+.m-user{background:linear-gradient(135deg,rgba(142,122,244,.9),rgba(86,105,210,.86))!important;border:1px solid rgba(255,255,255,.2)!important;border-radius:18px 18px 5px 18px!important}
+.m-ai{background:rgba(255,255,255,.09)!important;border:1px solid rgba(255,255,255,.18)!important;border-radius:18px 18px 18px 5px!important}
+#toast .toast,.toast{background:rgba(48,43,81,.82)!important;border:1px solid rgba(226,218,255,.28)!important;border-radius:18px!important;box-shadow:0 16px 50px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.2)!important;backdrop-filter:blur(24px) saturate(170%)!important;-webkit-backdrop-filter:blur(24px) saturate(170%)!important}
+#principiaStickerFab,#principiaGiftFab,.chat-bubble-btn{
+ background:linear-gradient(145deg,rgba(193,174,255,.42),rgba(89,83,150,.48))!important;
+ border:1px solid rgba(255,255,255,.42)!important;border-top-color:rgba(255,255,255,.68)!important;
+ border-radius:22px!important;
+ box-shadow:0 16px 42px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.38),inset 0 -8px 20px rgba(130,115,220,.12)!important;
+ backdrop-filter:blur(24px) saturate(190%)!important;-webkit-backdrop-filter:blur(24px) saturate(190%)!important;
+}
+.nav .ni,.tileicon,.logo,.avatar-default,.cl-ico-btn,.tile-actions button,.iconbtn,
+button.iconbtn,button[aria-label],.tab,.pill{
+ background:linear-gradient(145deg,rgba(255,255,255,.16),rgba(255,255,255,.055))!important;
+ border:1px solid rgba(235,230,255,.22)!important;
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 6px 20px rgba(0,0,0,.12)!important;
+ backdrop-filter:blur(16px) saturate(160%)!important;-webkit-backdrop-filter:blur(16px) saturate(160%)!important;
+}
+.nav .ni{width:34px!important;height:34px!important;flex:0 0 34px;border-radius:12px!important;display:grid;place-items:center}
+.tileicon{width:58px;height:58px;display:grid;place-items:center;border-radius:18px!important;font-size:27px!important}
+.logo{background:linear-gradient(145deg,rgba(202,184,255,.65),rgba(105,83,207,.55))!important;border:1px solid rgba(255,255,255,.42)!important;box-shadow:0 12px 28px rgba(115,89,220,.24),inset 0 1px 0 rgba(255,255,255,.45)!important}
+.cl-ico-btn{background:rgba(255,255,255,.075)!important;border:1px solid rgba(235,230,255,.16)!important;border-radius:15px!important}
+.cl-ico-btn.active,.nav.active .ni{background:linear-gradient(145deg,rgba(179,158,255,.48),rgba(102,88,197,.42))!important;border-color:rgba(236,228,255,.4)!important}
+.reward-item{background:rgba(255,255,255,.075)!important}
+#principiaCompanionBubble{background:linear-gradient(145deg,rgba(62,57,100,.9),rgba(24,30,57,.86))!important;border:1px solid rgba(255,255,255,.28)!important;box-shadow:0 18px 55px rgba(0,0,0,.36),inset 0 1px 0 rgba(255,255,255,.2)!important;backdrop-filter:blur(26px) saturate(175%)!important;-webkit-backdrop-filter:blur(26px) saturate(175%)!important}
+@media(max-width:760px){.modal-bg,.modalbg,.reward-pop{padding:12px!important}.modal-card{width:100%!important;height:88vh!important}.chat-box{right:10px!important;bottom:75px!important}}
+@supports not ((backdrop-filter:blur(2px))){#modal .modal,.modal-card,.reward-card,.chat-box{background:rgba(30,29,59,.97)!important}}
+
+</style>
+
+<style id="principia-light-theme-final-override">
+/* LIGHT means a genuinely bright interface. Scoped only to Light; other themes remain untouched. */
+html[data-theme="light"]{color-scheme:light!important;--bg:#f6f7fc!important;--bg-2:#eef0f7!important;--bg-3:#e5e8f1!important;--side:#fff!important;--card:#fff!important;--card2:#f1f2f8!important;--line:#dce0eb!important;--txt:#25283a!important;--muted:#626b80!important;--ink:#25283a!important;--ws-bg:#f6f7fc!important;--ws-panel:#fff!important;--ws-panel2:#f1f2f8!important;--ws-text:#25283a!important;--ws-muted:#626b80!important;--ws-border:#dce0eb!important}
+html[data-theme="light"],html[data-theme="light"] body{background:#f6f7fc!important;color:#25283a!important}
+html[data-theme="light"] body:before{opacity:.035!important}
+html[data-theme="light"] .sidebar,html[data-theme="light"] .sidebottom,html[data-theme="light"] .top,html[data-theme="light"] .main,html[data-theme="light"] #body{background:#f6f7fc!important;color:#25283a!important}
+html[data-theme="light"] .sidebar,html[data-theme="light"] .sidebottom{background:#fff!important;border-color:#e0e3ed!important}
+html[data-theme="light"] .panel,html[data-theme="light"] .tile,html[data-theme="light"] .stat,html[data-theme="light"] .hero,html[data-theme="light"] .pill,html[data-theme="light"] .tab,html[data-theme="light"] .choice,html[data-theme="light"] .file,html[data-theme="light"] .dropzone,html[data-theme="light"] .empty,html[data-theme="light"] .welcome-card,html[data-theme="light"] .account-page-card,html[data-theme="light"] .reward-card,html[data-theme="light"] .reward-item,html[data-theme="light"] .sticker-card,html[data-theme="light"] .modal,html[data-theme="light"] .modal-card,html[data-theme="light"] .modalbox,html[data-theme="light"] .toast,html[data-theme="light"] #principiaCompanionBubble{background:#fff!important;background-image:none!important;color:#25283a!important;border-color:#dce0eb!important;box-shadow:0 8px 26px rgba(35,43,72,.07)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+html[data-theme="light"] h1,html[data-theme="light"] h2,html[data-theme="light"] h3,html[data-theme="light"] h4,html[data-theme="light"] p,html[data-theme="light"] li,html[data-theme="light"] label,html[data-theme="light"] strong,html[data-theme="light"] .eyebrow,html[data-theme="light"] .nav{color:#25283a!important}
+html[data-theme="light"] .muted,html[data-theme="light"] .small,html[data-theme="light"] .caption{color:#626b80!important}
+html[data-theme="light"] input,html[data-theme="light"] textarea,html[data-theme="light"] select,html[data-theme="light"] #codelearnWorkspace input,html[data-theme="light"] #codelearnWorkspace textarea,html[data-theme="light"] #codelearnWorkspace select{background:#fff!important;color:#25283a!important;border:1px solid #cbd2e1!important;box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+html[data-theme="light"] input::placeholder,html[data-theme="light"] textarea::placeholder{color:#8991a3!important}
+html[data-theme="light"] button.secondary,html[data-theme="light"] .iconbtn,html[data-theme="light"] .tab,html[data-theme="light"] .choice,html[data-theme="light"] .cl-ico-btn{background:#f0f1f7!important;color:#34364b!important;border:1px solid #dce0eb!important;box-shadow:none!important}
+html[data-theme="light"] button.primary,html[data-theme="light"] .chat-bubble-btn{background:linear-gradient(135deg,#8878e8,#6555c8)!important;color:#fff!important;border-color:#7768d8!important}
+html[data-theme="light"] .nav:hover,html[data-theme="light"] .nav.active{background:#eeedff!important;color:#5142ad!important;border-color:#dedaff!important;box-shadow:none!important}
+html[data-theme="light"] .progress,html[data-theme="light"] .xpbar{background:#e7e9f1!important;border-color:#dce0eb!important}
+html[data-theme="light"] .modalbg,html[data-theme="light"] .modal-bg,html[data-theme="light"] .popup-overlay,html[data-theme="light"] .reward-pop,html[data-theme="light"] .sticker-overlay{background:rgba(35,39,58,.28)!important;backdrop-filter:blur(5px)!important}
+html[data-theme="light"] .welcome{background:#f6f7fc!important}
+html[data-theme="light"] #codelearnWorkspace{background:#f6f7fc!important;color:#25283a!important}
+html[data-theme="light"] #codelearnWorkspace .cl-shell,html[data-theme="light"] #codelearnWorkspace .cl-topbar,html[data-theme="light"] #codelearnWorkspace .cl-iconbar,html[data-theme="light"] #codelearnWorkspace .cl-left-pane,html[data-theme="light"] #codelearnWorkspace .cl-right-pane,html[data-theme="light"] #codelearnWorkspace .cl-body,html[data-theme="light"] #codelearnWorkspace .cl-split,html[data-theme="light"] #codelearnWorkspace #clVideoStage{background:#fff!important;background-image:none!important;color:#25283a!important;border-color:#dce0eb!important;box-shadow:none!important}
+html[data-theme="light"] #codelearnWorkspace .cl-topbar{border-bottom:1px solid #dce0eb!important}
+html[data-theme="light"] #codelearnWorkspace .cl-iconbar{background:#f0f1f7!important;border-right:1px solid #dce0eb!important}
+html[data-theme="light"] #codelearnWorkspace .cl-ico-btn{background:#fff!important;color:#41465b!important;border:1px solid #dce0eb!important}
+html[data-theme="light"] #codelearnWorkspace .cl-ico-btn.active{background:#e9e7ff!important;color:#5142ad!important;border-color:#bcb3f4!important}
+html[data-theme="light"] #codelearnWorkspace .cl-topbar button:not(.primary),html[data-theme="light"] #codelearnWorkspace .cl-left-pane button:not(.primary),html[data-theme="light"] #codelearnWorkspace .cl-right-pane button:not(.primary){background:#f0f1f7!important;color:#34364b!important;border:1px solid #dce0eb!important}
+html[data-theme="light"] #codelearnWorkspace .cl-step{background:#eceef5!important;color:#34364b!important}
+html[data-theme="light"] #codelearnWorkspace .cl-step.active{background:#7668dc!important;color:#fff!important}
+html[data-theme="light"] #codelearnWorkspace .ai-cheploi-box,html[data-theme="light"] #codelearnWorkspace .note-pop-panel,html[data-theme="light"] #codelearnWorkspace .tl-card,html[data-theme="light"] #codelearnWorkspace #ytSummaryOutput{background:#f7f8fc!important;color:#25283a!important;border-color:#dce0eb!important}
+html[data-theme="light"] #codelearnWorkspace .cl-left-pane h1,html[data-theme="light"] #codelearnWorkspace .cl-left-pane h2,html[data-theme="light"] #codelearnWorkspace .cl-left-pane h3,html[data-theme="light"] #codelearnWorkspace .cl-left-pane h4,html[data-theme="light"] #codelearnWorkspace .cl-left-pane strong,html[data-theme="light"] #codelearnWorkspace .cl-left-pane label,html[data-theme="light"] #codelearnWorkspace .cl-left-pane p,html[data-theme="light"] #codelearnWorkspace .cl-left-pane span,html[data-theme="light"] #codelearnWorkspace .cl-right-pane{color:#25283a!important}
+html[data-theme="light"] #codelearnWorkspace .cl-left-pane .muted,html[data-theme="light"] #codelearnWorkspace .cl-left-pane .small{color:#626b80!important}
+html[data-theme="light"] #codelearnWorkspace .cl-divider{background:#dce0eb!important}
+html[data-theme="light"] ::selection{background:#dcd7ff!important;color:#25283a!important}
+</style>
+
+<style id="principia-lesson-tabs-and-action-colors">
+/* Different, visible workspaces for lesson tabs */
+#codelearnWorkspace #clTab-files{border-left:4px solid #3997d8;padding:14px;background:linear-gradient(135deg,rgba(57,151,216,.09),transparent 45%)}
+#codelearnWorkspace #clTab-grade{border-left:4px solid #8a70df;padding:14px;background:linear-gradient(135deg,rgba(138,112,223,.11),transparent 45%)}
+#codelearnWorkspace #clTab-phet{border-left:4px solid #29a985;padding:14px;background:linear-gradient(135deg,rgba(41,169,133,.10),transparent 45%)}
+#codelearnWorkspace .cl-ico-btn[data-t="files"]{border-color:#3997d8!important}
+#codelearnWorkspace .cl-ico-btn[data-t="grade"]{border-color:#8a70df!important}
+#codelearnWorkspace .cl-ico-btn[data-t="phet"]{border-color:#29a985!important}
+#codelearnWorkspace .cl-ico-btn[data-t="files"].active{background:#267dbb!important;color:#fff!important}
+#codelearnWorkspace .cl-ico-btn[data-t="grade"].active{background:#7157c7!important;color:#fff!important}
+#codelearnWorkspace .cl-ico-btn[data-t="phet"].active{background:#168c6c!important;color:#fff!important}
+#codelearnWorkspace .cl-topbar button[onclick="exitCodelearnWorkspace()"]{background:#b94d60!important;border:1px solid #d46c7c!important;color:#fff!important}
+#codelearnWorkspace button[onclick="copyTranscriptToNote()"]{background:#147e9d!important;border:1px solid #32a4c4!important;color:#fff!important}
+#codelearnWorkspace button[onclick="clearTranscript()"]{background:#a54c58!important;border:1px solid #c86b77!important;color:#fff!important}
+#codelearnWorkspace button[onclick="toggleNotePopPanel()"]{background:#7656c9!important;border:1px solid #9c82e9!important;color:#fff!important}
+#codelearnWorkspace button[onclick="pushPopNoteToMain()"]{background:#247f70!important;border:1px solid #40a995!important;color:#fff!important}
+#codelearnWorkspace button[onclick="toggleNotePopPanel(false)"]{background:#596579!important;border:1px solid #7d8aa0!important;color:#fff!important}
+#codelearnWorkspace .principia-rank-row{display:flex;align-items:center;gap:12px}
+.principia-rank-number{width:28px;text-align:center;font-size:17px}
+.principia-rank-avatar{width:42px;height:42px;border-radius:13px;background:#eceaff;color:#5142ad;display:grid;place-items:center;font-size:10px;font-weight:800}
+.principia-rank-meta{flex:1;min-width:0}
+.principia-rank-xp{white-space:nowrap}
+html[data-theme="light"] #codelearnWorkspace #clTab-files{background:#f0f8ff!important}
+html[data-theme="light"] #codelearnWorkspace #clTab-grade{background:#f5f1ff!important}
+html[data-theme="light"] #codelearnWorkspace #clTab-phet{background:#effaf6!important}
+html[data-theme="light"] #codelearnWorkspace .cl-topbar button[onclick="exitCodelearnWorkspace()"],html[data-theme="light"] #codelearnWorkspace button[onclick="copyTranscriptToNote()"],html[data-theme="light"] #codelearnWorkspace button[onclick="clearTranscript()"],html[data-theme="light"] #codelearnWorkspace button[onclick="toggleNotePopPanel()"],html[data-theme="light"] #codelearnWorkspace button[onclick="pushPopNoteToMain()"],html[data-theme="light"] #codelearnWorkspace button[onclick="toggleNotePopPanel(false)"]{color:#fff!important}
+</style>
+</head>
 <body>
 <div id="app"></div>
 <section class="cl-shell" id="codelearnWorkspace">
@@ -2273,240 +2507,7 @@ button,.secondary,.primary,.danger,.tab,.pill,.nav .ni,.tileicon,.iconbtn,.cl-ic
 #stickerBuiltins .sticker-choice img{width:64px;height:64px;object-fit:contain}
 #principiaCompanionBubble img{width:64px;height:64px;object-fit:contain;border-radius:16px}
 </style>
-<style>
-/* Logo/avatar: no thin white frame, no badge background */
-.brand-logo-img,.welcome-logo-img,.avatar-logo-img{
-  border:0!important;outline:0!important;box-shadow:none!important;
-  background:transparent!important;border-radius:0!important;
-}
-.account-avatar-trigger{border:0;background:transparent;padding:3px;display:flex;align-items:center;cursor:pointer}
-.account-avatar-trigger:hover{filter:brightness(1.12)}
-.account-avatar-trigger .avatar{width:42px;height:42px}
-.account-page{max-width:760px;margin:25px auto}
-.account-page-card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:clamp(22px,5vw,42px)}
-.account-brand-logo{width:112px;height:112px;object-fit:contain;display:block;margin:0 auto 16px;border:0;background:transparent}
-.account-google-action{min-height:48px;display:flex;justify-content:center;align-items:center;margin:12px 0}
-.account-profile-photo{width:88px;height:88px;object-fit:cover;border-radius:50%;display:block;margin:10px auto 16px}
-.account-profile-placeholder{width:88px;height:88px;border-radius:50%;display:grid;place-items:center;margin:10px auto 16px;background:var(--bg-2);border:1px solid var(--line);font-size:42px}
-.account-info-row{padding:13px 15px;border:1px solid var(--line);border-radius:12px;margin:9px 0;background:var(--bg)}
-</style>
 
-<style>
-body:not(.principia-admin) #clAdminVideoLinkControls{display:none!important}
-.google-login-fallback{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-width:260px;padding:13px 18px;border-radius:999px;border:1px solid #dadce0;background:#fff;color:#3c4043;font-weight:600;cursor:pointer}
-.google-login-fallback:hover{background:#f7f8f8}
-.chat-bubble-btn{font-size:0!important;display:grid;place-items:center}
-.chat-bubble-btn::before{content:' ';width:23px;height:23px;display:block;background:currentColor;mask:url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22black%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8A8.5 8.5 0 0 1 8.7 3.9a8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8z%22/%3E%3C/svg%3E') center/contain no-repeat}
-</style>
-
-<style>
-.auth-switch{display:flex;gap:8px;max-width:440px;margin:22px auto 18px;padding:5px;border:1px solid var(--line);border-radius:14px;background:var(--surface,rgba(127,127,127,.08))}
-.auth-switch button{flex:1;border:0;border-radius:10px;padding:11px;background:transparent;color:var(--text);font-weight:700;cursor:pointer}
-.auth-switch button.active{background:var(--card);box-shadow:0 2px 10px rgba(0,0,0,.10);color:var(--purple)}
-.auth-form{max-width:440px;margin:0 auto;text-align:left;display:grid;gap:9px}
-.auth-form label{font-size:13px;font-weight:700;margin-top:7px;color:var(--text)}
-.auth-form input{width:100%;box-sizing:border-box;padding:13px 14px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--text);font:inherit;outline:none}
-.auth-form input:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(124,92,230,.13)}
-.auth-form button{width:100%;margin-top:10px;padding:13px}
-</style>
-
-<style>
-.google-auth-area{display:flex;justify-content:center;margin:24px 0 14px}.google-auth-button-wrap{min-height:44px;display:flex;justify-content:center;align-items:center;width:100%}.google-login-fallback{display:inline-flex;align-items:center;justify-content:center;gap:12px;padding:12px 20px;border:1px solid var(--line,#444);border-radius:999px;background:#fff;color:#333;font-weight:650;min-width:260px;opacity:.72}.google-login-fallback span{font-weight:800;color:#4285f4;font-size:20px}.auth-switch{display:flex;gap:8px;justify-content:center;margin:20px auto;max-width:320px}.auth-switch button{flex:1}.google-account-status{min-height:24px;margin:12px 0;color:var(--muted,#999);font-size:13px}
-
-/* ===== PRINCIPIA LIQUID GLASS THEME — visual-only override ===== */
-:root{
- --bg:#090b18;--side:rgba(20,22,43,.58);--card:rgba(255,255,255,.075);--card2:rgba(255,255,255,.105);
- --line:rgba(210,205,255,.18);--txt:#f7f5ff;--muted:#b2b2ca;--purple:#c0b1ff;--purple2:#8069e8;
- --green:#83e7c0;--yellow:#ffe29a;--red:#ff9eaf;
- --glass-blur:22px;--glass-shadow:0 18px 55px rgba(0,0,0,.26),inset 0 1px 0 rgba(255,255,255,.12);
-}
-html{background:#090b18}
-body{
- background:
-  radial-gradient(ellipse at 12% 8%,rgba(130,104,235,.25),transparent 38%),
-  radial-gradient(ellipse at 88% 20%,rgba(83,167,211,.15),transparent 34%),
-  radial-gradient(ellipse at 50% 100%,rgba(173,126,226,.12),transparent 42%),
-  linear-gradient(145deg,#090b18,#11142a 55%,#0b1020);
- background-attachment:fixed;color:var(--txt)
-}
-body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;opacity:.22;background-image:radial-gradient(rgba(255,255,255,.22) .65px,transparent .65px);background-size:22px 22px}
-.sidebar,.sidebottom,.top,.panel,.tile,.stat,.hero,.pill,.tab,.choice,.modal,.welcome-card,.account-page-card,
-.dropzone,.empty,.toast,.reward-card,.reward-item,.sticker-card,#stickerStudio>div,
-#principiaCompanionBubble,.file,.cl-shell,.cl-topbar,.cl-iconbar,.cl-left-pane,.cl-right-pane,
-#codelearnWorkspace .ai-cheploi-box,#codelearnWorkspace .note-pop-panel,#codelearnWorkspace .tl-card,
-#codelearnWorkspace .cl-right-pane>div:first-child,#codelearnWorkspace #clTab-list>div[onclick]{
- background-color:rgba(255,255,255,.065)!important;
- border:1px solid rgba(222,218,255,.17)!important;
- box-shadow:var(--glass-shadow);
- backdrop-filter:blur(var(--glass-blur)) saturate(155%);
- -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(155%);
-}
-.sidebar{background:rgba(15,17,36,.64)!important;border-right:1px solid rgba(220,215,255,.16)!important}
-.main{position:relative}
-.hero{background:linear-gradient(125deg,rgba(158,130,255,.2),rgba(255,255,255,.055) 55%,rgba(94,185,220,.09))!important;border-radius:26px!important}
-.panel,.tile,.stat,.welcome-card,.account-page-card,.modal,.sticker-card,.reward-card{border-radius:22px!important}
-.tile{transition:transform .22s ease,border-color .22s ease,background .22s ease}
-.tile:hover{transform:translateY(-4px);background:rgba(255,255,255,.12)!important;border-color:rgba(194,178,255,.45)!important;box-shadow:0 20px 50px rgba(0,0,0,.28),0 0 24px rgba(151,125,255,.11)}
-.nav{border:1px solid transparent;transition:.2s}
-.nav:hover,.nav.active{background:rgba(183,160,255,.16)!important;border-color:rgba(207,192,255,.22)!important;color:#eee9ff!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}
-button.primary,.chat-bubble-btn{
- background:linear-gradient(135deg,rgba(164,143,255,.9),rgba(111,91,218,.88))!important;
- border:1px solid rgba(229,222,255,.36)!important;color:#fff!important;border-radius:15px!important;
- box-shadow:0 9px 25px rgba(111,91,218,.27),inset 0 1px 0 rgba(255,255,255,.3);
-}
-button.secondary,.iconbtn,.tab,.cl-ico-btn{
- background:rgba(255,255,255,.075)!important;border:1px solid rgba(222,218,255,.17)!important;
- border-radius:14px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.1)
-}
-button.danger{background:rgba(255,105,137,.13)!important;border:1px solid rgba(255,145,164,.3)!important;border-radius:14px!important}
-button{transition:transform .18s ease,filter .18s ease,box-shadow .18s ease}
-button:hover{filter:brightness(1.12)}
-button:active{transform:scale(.975)}
-input,textarea,select,#codelearnWorkspace textarea,#codelearnWorkspace input[type=text],#codelearnWorkspace select{
- background:rgba(8,11,27,.42)!important;border:1px solid rgba(210,205,255,.2)!important;
- border-radius:14px!important;color:var(--txt)!important;box-shadow:inset 0 1px 5px rgba(0,0,0,.12);
- backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)
-}
-input::placeholder,textarea::placeholder{color:rgba(205,202,225,.52)}
-input:focus,textarea:focus,select:focus{border-color:rgba(185,166,255,.7)!important;box-shadow:0 0 0 3px rgba(155,129,255,.13)!important}
-.progress,.xpbar{background:rgba(255,255,255,.1)!important;border:1px solid rgba(255,255,255,.08)}
-.progress div,.xpbar div{background:linear-gradient(90deg,#a995ff,#78d8ef)!important}
-.modalbg{background:rgba(5,7,18,.58)!important;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
-.modal{background:rgba(25,25,49,.82)!important}
-.toast{background:rgba(39,34,72,.82)!important}
-.welcome{background:radial-gradient(ellipse at 50% 30%,rgba(141,113,232,.3),transparent 45%),transparent!important}
-.welcome-card{background:rgba(255,255,255,.075)!important;backdrop-filter:blur(28px) saturate(165%)!important}
-#codelearnWorkspace .cl-topbar{background:rgba(27,29,58,.72)!important;color:#fff}
-#codelearnWorkspace .cl-body,#codelearnWorkspace .cl-split,#codelearnWorkspace .cl-right-pane,#codelearnWorkspace #clVideoStage{background:transparent!important}
-#codelearnWorkspace .cl-iconbar{background:rgba(13,16,36,.55)!important}
-#codelearnWorkspace .cl-left-pane{background:rgba(255,255,255,.025)!important}
-#codelearnWorkspace .cl-ico-btn.active{background:linear-gradient(135deg,rgba(163,143,255,.85),rgba(93,79,190,.8))!important}
-#codelearnWorkspace .cl-step{background:rgba(255,255,255,.09)!important}
-#codelearnWorkspace .cl-step.active{background:rgba(143,121,245,.8)!important}
-#codelearnWorkspace .cl-step.done{background:rgba(44,161,124,.65)!important}
-#codelearnWorkspace #clVideoStage iframe{border:1px solid rgba(220,215,255,.22)!important;box-shadow:0 20px 55px #0006}
-#principiaStickerFab,#principiaGiftFab{backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);border:1px solid rgba(255,255,255,.28)!important;box-shadow:0 12px 36px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.3)!important}
-#stickerStudio{background:rgba(4,6,18,.58)!important;backdrop-filter:blur(14px)}
-#principiaCompanionBubble{background:rgba(35,31,63,.82)!important}
-::selection{background:rgba(165,143,255,.38);color:#fff}
-@media(prefers-reduced-motion:no-preference){.panel,.stat,.hero,.welcome-card{animation:glassReveal .45s ease both}@keyframes glassReveal{from{opacity:.75;transform:translateY(7px)}to{opacity:1;transform:none}}}
-@media(max-width:760px){.sidebar{background:rgba(15,17,36,.82)!important;backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px)}.main{padding-top:18px}}
-@media(prefers-reduced-transparency:reduce){.sidebar,.panel,.tile,.modal,.welcome-card{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;background-color:#171a2d!important}}
-
-
-/* ===== LIQUID GLASS PATCH 2: actual popup layers + icon surfaces ===== */
-:root{--lg-pane:rgba(30,29,59,.74);--lg-surface:rgba(255,255,255,.105);--lg-stroke:rgba(231,225,255,.26);--lg-blur:30px}
-.modalbg,.modal-bg,.reward-pop,#stickerStudio,.sticker-overlay,.popup-overlay{
- background:rgba(5,7,22,.48)!important;
- backdrop-filter:blur(18px) saturate(155%)!important;
- -webkit-backdrop-filter:blur(18px) saturate(155%)!important;
-}
-#modal .modal,.modal-card,.reward-card,.chat-box,#stickerStudio .modal,
-#stickerStudio .panel,.sticker-modal,.sticker-card,.reward-item{
- background:linear-gradient(145deg,rgba(58,54,96,.76),rgba(24,29,55,.72))!important;
- border:1px solid var(--lg-stroke)!important;
- border-top-color:rgba(255,255,255,.4)!important;
- border-radius:25px!important;
- box-shadow:0 28px 90px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.24),inset 0 -1px 0 rgba(255,255,255,.05)!important;
- backdrop-filter:blur(var(--lg-blur)) saturate(170%)!important;
- -webkit-backdrop-filter:blur(var(--lg-blur)) saturate(170%)!important;
-}
-#modal .modal{width:min(600px,100%)!important}
-.modal-card{overflow:hidden!important}
-.modal-card iframe{border:1px solid rgba(255,255,255,.24)!important;border-radius:18px!important}
-.chat-box{background:linear-gradient(145deg,rgba(55,53,91,.88),rgba(18,25,49,.84))!important}
-.chat-box>div:first-child{background:rgba(255,255,255,.085)!important;border-bottom:1px solid var(--lg-stroke)!important}
-.chat-msgs{background:rgba(5,9,25,.14)!important}
-.m-user{background:linear-gradient(135deg,rgba(142,122,244,.9),rgba(86,105,210,.86))!important;border:1px solid rgba(255,255,255,.2)!important;border-radius:18px 18px 5px 18px!important}
-.m-ai{background:rgba(255,255,255,.09)!important;border:1px solid rgba(255,255,255,.18)!important;border-radius:18px 18px 18px 5px!important}
-#toast .toast,.toast{background:rgba(48,43,81,.82)!important;border:1px solid rgba(226,218,255,.28)!important;border-radius:18px!important;box-shadow:0 16px 50px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.2)!important;backdrop-filter:blur(24px) saturate(170%)!important;-webkit-backdrop-filter:blur(24px) saturate(170%)!important}
-#principiaStickerFab,#principiaGiftFab,.chat-bubble-btn{
- background:linear-gradient(145deg,rgba(193,174,255,.42),rgba(89,83,150,.48))!important;
- border:1px solid rgba(255,255,255,.42)!important;border-top-color:rgba(255,255,255,.68)!important;
- border-radius:22px!important;
- box-shadow:0 16px 42px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.38),inset 0 -8px 20px rgba(130,115,220,.12)!important;
- backdrop-filter:blur(24px) saturate(190%)!important;-webkit-backdrop-filter:blur(24px) saturate(190%)!important;
-}
-.nav .ni,.tileicon,.logo,.avatar-default,.cl-ico-btn,.tile-actions button,.iconbtn,
-button.iconbtn,button[aria-label],.tab,.pill{
- background:linear-gradient(145deg,rgba(255,255,255,.16),rgba(255,255,255,.055))!important;
- border:1px solid rgba(235,230,255,.22)!important;
- box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 6px 20px rgba(0,0,0,.12)!important;
- backdrop-filter:blur(16px) saturate(160%)!important;-webkit-backdrop-filter:blur(16px) saturate(160%)!important;
-}
-.nav .ni{width:34px!important;height:34px!important;flex:0 0 34px;border-radius:12px!important;display:grid;place-items:center}
-.tileicon{width:58px;height:58px;display:grid;place-items:center;border-radius:18px!important;font-size:27px!important}
-.logo{background:linear-gradient(145deg,rgba(202,184,255,.65),rgba(105,83,207,.55))!important;border:1px solid rgba(255,255,255,.42)!important;box-shadow:0 12px 28px rgba(115,89,220,.24),inset 0 1px 0 rgba(255,255,255,.45)!important}
-.cl-ico-btn{background:rgba(255,255,255,.075)!important;border:1px solid rgba(235,230,255,.16)!important;border-radius:15px!important}
-.cl-ico-btn.active,.nav.active .ni{background:linear-gradient(145deg,rgba(179,158,255,.48),rgba(102,88,197,.42))!important;border-color:rgba(236,228,255,.4)!important}
-.reward-item{background:rgba(255,255,255,.075)!important}
-#principiaCompanionBubble{background:linear-gradient(145deg,rgba(62,57,100,.9),rgba(24,30,57,.86))!important;border:1px solid rgba(255,255,255,.28)!important;box-shadow:0 18px 55px rgba(0,0,0,.36),inset 0 1px 0 rgba(255,255,255,.2)!important;backdrop-filter:blur(26px) saturate(175%)!important;-webkit-backdrop-filter:blur(26px) saturate(175%)!important}
-@media(max-width:760px){.modal-bg,.modalbg,.reward-pop{padding:12px!important}.modal-card{width:100%!important;height:88vh!important}.chat-box{right:10px!important;bottom:75px!important}}
-@supports not ((backdrop-filter:blur(2px))){#modal .modal,.modal-card,.reward-card,.chat-box{background:rgba(30,29,59,.97)!important}}
-
-</style>
-
-<style id="principia-light-theme-final-override">
-/* LIGHT means a genuinely bright interface. Scoped only to Light; other themes remain untouched. */
-html[data-theme="light"]{color-scheme:light!important;--bg:#f6f7fc!important;--bg-2:#eef0f7!important;--bg-3:#e5e8f1!important;--side:#fff!important;--card:#fff!important;--card2:#f1f2f8!important;--line:#dce0eb!important;--txt:#25283a!important;--muted:#626b80!important;--ink:#25283a!important;--ws-bg:#f6f7fc!important;--ws-panel:#fff!important;--ws-panel2:#f1f2f8!important;--ws-text:#25283a!important;--ws-muted:#626b80!important;--ws-border:#dce0eb!important}
-html[data-theme="light"],html[data-theme="light"] body{background:#f6f7fc!important;color:#25283a!important}
-html[data-theme="light"] body:before{opacity:.035!important}
-html[data-theme="light"] .sidebar,html[data-theme="light"] .sidebottom,html[data-theme="light"] .top,html[data-theme="light"] .main,html[data-theme="light"] #body{background:#f6f7fc!important;color:#25283a!important}
-html[data-theme="light"] .sidebar,html[data-theme="light"] .sidebottom{background:#fff!important;border-color:#e0e3ed!important}
-html[data-theme="light"] .panel,html[data-theme="light"] .tile,html[data-theme="light"] .stat,html[data-theme="light"] .hero,html[data-theme="light"] .pill,html[data-theme="light"] .tab,html[data-theme="light"] .choice,html[data-theme="light"] .file,html[data-theme="light"] .dropzone,html[data-theme="light"] .empty,html[data-theme="light"] .welcome-card,html[data-theme="light"] .account-page-card,html[data-theme="light"] .reward-card,html[data-theme="light"] .reward-item,html[data-theme="light"] .sticker-card,html[data-theme="light"] .modal,html[data-theme="light"] .modal-card,html[data-theme="light"] .modalbox,html[data-theme="light"] .toast,html[data-theme="light"] #principiaCompanionBubble{background:#fff!important;background-image:none!important;color:#25283a!important;border-color:#dce0eb!important;box-shadow:0 8px 26px rgba(35,43,72,.07)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
-html[data-theme="light"] h1,html[data-theme="light"] h2,html[data-theme="light"] h3,html[data-theme="light"] h4,html[data-theme="light"] p,html[data-theme="light"] li,html[data-theme="light"] label,html[data-theme="light"] strong,html[data-theme="light"] .eyebrow,html[data-theme="light"] .nav{color:#25283a!important}
-html[data-theme="light"] .muted,html[data-theme="light"] .small,html[data-theme="light"] .caption{color:#626b80!important}
-html[data-theme="light"] input,html[data-theme="light"] textarea,html[data-theme="light"] select,html[data-theme="light"] #codelearnWorkspace input,html[data-theme="light"] #codelearnWorkspace textarea,html[data-theme="light"] #codelearnWorkspace select{background:#fff!important;color:#25283a!important;border:1px solid #cbd2e1!important;box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
-html[data-theme="light"] input::placeholder,html[data-theme="light"] textarea::placeholder{color:#8991a3!important}
-html[data-theme="light"] button.secondary,html[data-theme="light"] .iconbtn,html[data-theme="light"] .tab,html[data-theme="light"] .choice,html[data-theme="light"] .cl-ico-btn{background:#f0f1f7!important;color:#34364b!important;border:1px solid #dce0eb!important;box-shadow:none!important}
-html[data-theme="light"] button.primary,html[data-theme="light"] .chat-bubble-btn{background:linear-gradient(135deg,#8878e8,#6555c8)!important;color:#fff!important;border-color:#7768d8!important}
-html[data-theme="light"] .nav:hover,html[data-theme="light"] .nav.active{background:#eeedff!important;color:#5142ad!important;border-color:#dedaff!important;box-shadow:none!important}
-html[data-theme="light"] .progress,html[data-theme="light"] .xpbar{background:#e7e9f1!important;border-color:#dce0eb!important}
-html[data-theme="light"] .modalbg,html[data-theme="light"] .modal-bg,html[data-theme="light"] .popup-overlay,html[data-theme="light"] .reward-pop,html[data-theme="light"] .sticker-overlay{background:rgba(35,39,58,.28)!important;backdrop-filter:blur(5px)!important}
-html[data-theme="light"] .welcome{background:#f6f7fc!important}
-html[data-theme="light"] #codelearnWorkspace{background:#f6f7fc!important;color:#25283a!important}
-html[data-theme="light"] #codelearnWorkspace .cl-shell,html[data-theme="light"] #codelearnWorkspace .cl-topbar,html[data-theme="light"] #codelearnWorkspace .cl-iconbar,html[data-theme="light"] #codelearnWorkspace .cl-left-pane,html[data-theme="light"] #codelearnWorkspace .cl-right-pane,html[data-theme="light"] #codelearnWorkspace .cl-body,html[data-theme="light"] #codelearnWorkspace .cl-split,html[data-theme="light"] #codelearnWorkspace #clVideoStage{background:#fff!important;background-image:none!important;color:#25283a!important;border-color:#dce0eb!important;box-shadow:none!important}
-html[data-theme="light"] #codelearnWorkspace .cl-topbar{border-bottom:1px solid #dce0eb!important}
-html[data-theme="light"] #codelearnWorkspace .cl-iconbar{background:#f0f1f7!important;border-right:1px solid #dce0eb!important}
-html[data-theme="light"] #codelearnWorkspace .cl-ico-btn{background:#fff!important;color:#41465b!important;border:1px solid #dce0eb!important}
-html[data-theme="light"] #codelearnWorkspace .cl-ico-btn.active{background:#e9e7ff!important;color:#5142ad!important;border-color:#bcb3f4!important}
-html[data-theme="light"] #codelearnWorkspace .cl-topbar button:not(.primary),html[data-theme="light"] #codelearnWorkspace .cl-left-pane button:not(.primary),html[data-theme="light"] #codelearnWorkspace .cl-right-pane button:not(.primary){background:#f0f1f7!important;color:#34364b!important;border:1px solid #dce0eb!important}
-html[data-theme="light"] #codelearnWorkspace .cl-step{background:#eceef5!important;color:#34364b!important}
-html[data-theme="light"] #codelearnWorkspace .cl-step.active{background:#7668dc!important;color:#fff!important}
-html[data-theme="light"] #codelearnWorkspace .ai-cheploi-box,html[data-theme="light"] #codelearnWorkspace .note-pop-panel,html[data-theme="light"] #codelearnWorkspace .tl-card,html[data-theme="light"] #codelearnWorkspace #ytSummaryOutput{background:#f7f8fc!important;color:#25283a!important;border-color:#dce0eb!important}
-html[data-theme="light"] #codelearnWorkspace .cl-left-pane h1,html[data-theme="light"] #codelearnWorkspace .cl-left-pane h2,html[data-theme="light"] #codelearnWorkspace .cl-left-pane h3,html[data-theme="light"] #codelearnWorkspace .cl-left-pane h4,html[data-theme="light"] #codelearnWorkspace .cl-left-pane strong,html[data-theme="light"] #codelearnWorkspace .cl-left-pane label,html[data-theme="light"] #codelearnWorkspace .cl-left-pane p,html[data-theme="light"] #codelearnWorkspace .cl-left-pane span,html[data-theme="light"] #codelearnWorkspace .cl-right-pane{color:#25283a!important}
-html[data-theme="light"] #codelearnWorkspace .cl-left-pane .muted,html[data-theme="light"] #codelearnWorkspace .cl-left-pane .small{color:#626b80!important}
-html[data-theme="light"] #codelearnWorkspace .cl-divider{background:#dce0eb!important}
-html[data-theme="light"] ::selection{background:#dcd7ff!important;color:#25283a!important}
-</style>
-
-<style id="principia-lesson-tabs-and-action-colors">
-/* Different, visible workspaces for lesson tabs */
-#codelearnWorkspace #clTab-files{border-left:4px solid #3997d8;padding:14px;background:linear-gradient(135deg,rgba(57,151,216,.09),transparent 45%)}
-#codelearnWorkspace #clTab-grade{border-left:4px solid #8a70df;padding:14px;background:linear-gradient(135deg,rgba(138,112,223,.11),transparent 45%)}
-#codelearnWorkspace #clTab-phet{border-left:4px solid #29a985;padding:14px;background:linear-gradient(135deg,rgba(41,169,133,.10),transparent 45%)}
-#codelearnWorkspace .cl-ico-btn[data-t="files"]{border-color:#3997d8!important}
-#codelearnWorkspace .cl-ico-btn[data-t="grade"]{border-color:#8a70df!important}
-#codelearnWorkspace .cl-ico-btn[data-t="phet"]{border-color:#29a985!important}
-#codelearnWorkspace .cl-ico-btn[data-t="files"].active{background:#267dbb!important;color:#fff!important}
-#codelearnWorkspace .cl-ico-btn[data-t="grade"].active{background:#7157c7!important;color:#fff!important}
-#codelearnWorkspace .cl-ico-btn[data-t="phet"].active{background:#168c6c!important;color:#fff!important}
-#codelearnWorkspace .cl-topbar button[onclick="exitCodelearnWorkspace()"]{background:#b94d60!important;border:1px solid #d46c7c!important;color:#fff!important}
-#codelearnWorkspace button[onclick="copyTranscriptToNote()"]{background:#147e9d!important;border:1px solid #32a4c4!important;color:#fff!important}
-#codelearnWorkspace button[onclick="clearTranscript()"]{background:#a54c58!important;border:1px solid #c86b77!important;color:#fff!important}
-#codelearnWorkspace button[onclick="toggleNotePopPanel()"]{background:#7656c9!important;border:1px solid #9c82e9!important;color:#fff!important}
-#codelearnWorkspace button[onclick="pushPopNoteToMain()"]{background:#247f70!important;border:1px solid #40a995!important;color:#fff!important}
-#codelearnWorkspace button[onclick="toggleNotePopPanel(false)"]{background:#596579!important;border:1px solid #7d8aa0!important;color:#fff!important}
-#codelearnWorkspace .principia-rank-row{display:flex;align-items:center;gap:12px}
-.principia-rank-number{width:28px;text-align:center;font-size:17px}
-.principia-rank-avatar{width:42px;height:42px;border-radius:13px;background:#eceaff;color:#5142ad;display:grid;place-items:center;font-size:10px;font-weight:800}
-.principia-rank-meta{flex:1;min-width:0}
-.principia-rank-xp{white-space:nowrap}
-html[data-theme="light"] #codelearnWorkspace #clTab-files{background:#f0f8ff!important}
-html[data-theme="light"] #codelearnWorkspace #clTab-grade{background:#f5f1ff!important}
-html[data-theme="light"] #codelearnWorkspace #clTab-phet{background:#effaf6!important}
-html[data-theme="light"] #codelearnWorkspace .cl-topbar button[onclick="exitCodelearnWorkspace()"],html[data-theme="light"] #codelearnWorkspace button[onclick="copyTranscriptToNote()"],html[data-theme="light"] #codelearnWorkspace button[onclick="clearTranscript()"],html[data-theme="light"] #codelearnWorkspace button[onclick="toggleNotePopPanel()"],html[data-theme="light"] #codelearnWorkspace button[onclick="pushPopNoteToMain()"],html[data-theme="light"] #codelearnWorkspace button[onclick="toggleNotePopPanel(false)"]{color:#fff!important}
-</style>
 <script>
 /* PRINCIPIA_DECORATIVE_GLYPH_CLEANUP_V1: keep lesson artwork and companion images; remove decorative glyph icons everywhere else. */
 (function(){
