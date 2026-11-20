@@ -599,23 +599,31 @@ html[data-theme="light"] #codelearnWorkspace .cl-left-pane p,html[data-theme="li
 html[data-theme="light"] #codelearnWorkspace input,html[data-theme="light"] #codelearnWorkspace textarea,html[data-theme="light"] #codelearnWorkspace select{background:#fff!important;color:#20263a!important;border-color:#cbd3e2!important}
 html[data-theme="light"] #codelearnWorkspace #ytSummaryOutput{background:#fff!important;color:#20263a!important}
 @media(max-width:760px){.layout{border-radius:0!important}.sidebar{border-radius:0 18px 18px 0!important}}
+</style><style id="principia-lesson-text-first-buttons">
+#codelearnWorkspace button{font-family:inherit}
+#codelearnWorkspace .cl-ico-btn{display:flex;align-items:center;justify-content:center;text-align:center;min-height:42px;padding:10px 8px;font-size:13px;letter-spacing:0;white-space:normal}
+#codelearnWorkspace .cl-topbar button,#codelearnWorkspace .cl-left-pane button,#codelearnWorkspace .cl-right-pane button{min-height:34px}
+#codelearnWorkspace .cl-topbar button{padding:7px 11px}
+#codelearnWorkspace .cl-iconbar{width:128px;min-width:128px}
+#codelearnWorkspace .cl-left-pane button{border-radius:12px}
+@media(max-width:760px){#codelearnWorkspace .cl-iconbar{width:100%;min-width:0}#codelearnWorkspace .cl-ico-btn{min-width:86px}}
 </style></head>
 <body>
 <div id="app"></div>
 <section class="cl-shell" id="codelearnWorkspace">
     <div class="cl-topbar">
       <div style="display:flex; align-items:center; gap:10px;">
-        <button onclick="exitCodelearnWorkspace()" style="font-size:15px; padding:2px 6px;">‹</button>
+        <button onclick="exitCodelearnWorkspace()" style="font-size:13px;padding:7px 11px;">Quay lại</button>
         <strong id="clTitle" style="font-size:13.5px;">Bài học</strong>
       </div>
 
       <div class="cl-steps" id="clStepNumbers"></div>
 
       <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-        <button class="oli-btn" style="background:rgba(255,255,255,0.12); color:#fff; border-color:transparent;" onclick="swapClPanes()">⇄ Đổi chỗ</button>
+        <button class="oli-btn" style="background:rgba(255,255,255,0.12); color:#fff; border-color:transparent;" onclick="swapClPanes()">Đổi vị trí hai khung</button>
         <button class="oli-btn" style="background:rgba(255,255,255,0.12); color:#fff; border-color:transparent;" onclick="toggleClPane('left')">Tắt/Mở trái</button>
         <button class="oli-btn" style="background:rgba(255,255,255,0.12); color:#fff; border-color:transparent;" onclick="toggleClPane('right')">Tắt/Mở phải</button>
-        <button class="oli-btn" style="background:#2563eb; color:#fff; border-color:transparent;" onclick="markLessonDone()">▶ Hoàn thành (+50 EXP)</button>
+        <button class="oli-btn" style="background:#2563eb; color:#fff; border-color:transparent;" onclick="markLessonDone()">Hoàn thành bài (+50 EXP)</button>
       </div>
     </div>
 
@@ -635,13 +643,13 @@ html[data-theme="light"] #codelearnWorkspace #ytSummaryOutput{background:#fff!im
             <!-- Transcript: text spoken in the video; summary is separate below -->
             <div class="ai-cheploi-box" style="margin-bottom:12px;">
               <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
-                <strong style="font-size:13.5px;">🎧 Lời video (Transcript)</strong>
+                <strong style="font-size:13.5px;">Lời video (Transcript)</strong>
                 <button class="oli-btn" style="padding:4px 9px;font-size:12px;" onclick="copyTranscriptToNote()">↓ Chép vào ghi chú</button>
               </div>
               <p class="small muted" style="margin:0 0 8px;">Dán lời thoại/captions từ video vào đây. Trình duyệt HTML đơn tệp chưa thể tự lấy transcript YouTube nếu chưa có API/backend.</p>
               <textarea id="ytTranscript" class="inp" rows="7" placeholder="Transcript / lời nói trong video..." oninput="saveTranscript()" style="width:100%;resize:vertical;line-height:1.6;"></textarea>
               <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
-                <button class="oli-btn primary" onclick="summarizeTranscript()">✨ AI tóm tắt transcript</button>
+                <button class="oli-btn primary" onclick="summarizeTranscript()">AI tóm tắt transcript</button>
                 <button class="oli-btn" onclick="clearTranscript()">Xóa transcript</button>
               </div>
             </div>
@@ -654,7 +662,7 @@ html[data-theme="light"] #codelearnWorkspace #ytSummaryOutput{background:#fff!im
 
             <!-- Nút Note ở dưới hiện ô như AI -->
             <div style="margin-top:10px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-              <button class="oli-btn primary" id="toggleNotePopBtn" onclick="toggleNotePopPanel()">📝 Note</button>
+              <button class="oli-btn primary" id="toggleNotePopBtn" onclick="toggleNotePopPanel()">Mở ghi chú nhanh</button>
             </div>
 
             <div class="note-pop-panel" id="notePopPanel">
@@ -662,7 +670,7 @@ html[data-theme="light"] #codelearnWorkspace #ytSummaryOutput{background:#fff!im
                 <strong style="font-size:13px;">📝 Ô Note nhanh</strong>
                 <div style="display:flex; gap:6px;">
                   <button class="oli-btn" style="padding:3px 8px; font-size:11.5px;" onclick="pushPopNoteToMain()">Đưa lên khung chính</button>
-                  <button onclick="toggleNotePopPanel(false)">✕</button>
+                  <button onclick="toggleNotePopPanel(false)">Đóng ghi chú</button>
                 </div>
               </div>
               <textarea id="quickPopNoteArea" rows="4" class="inp" placeholder="Ghi chú nhanh tại ô Note..." oninput="saveQuickPopNote()"></textarea>
@@ -679,7 +687,7 @@ html[data-theme="light"] #codelearnWorkspace #ytSummaryOutput{background:#fff!im
           <div id="clTab-list" style="display:none;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
               <h4>List bài học</h4>
-              <button class="oli-btn" onclick="addLessonInTab()">+ Thêm bài</button>
+              <button class="oli-btn" onclick="addLessonInTab()">Thêm bài học</button>
             </div>
             <div id="clLessonListBox"></div>
           </div>
