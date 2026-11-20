@@ -895,7 +895,7 @@ let page='account',stack=[],activeLesson=null,search='';
 let activeQuiz=null,answers=[],dragId=null;
 
 function load(k,def){try{return JSON.parse(localStorage.getItem(k))??clone(def)}catch{return clone(def)}}
-function saveAll(){localStorage.setItem('halo_data',JSON.stringify(data));localStorage.setItem('halo_quiz',JSON.stringify(quizData));localStorage.setItem('halo_fun',JSON.stringify(funData));localStorage.setItem('halo_profile',JSON.stringify(profile));localStorage.setItem('halo_completed',JSON.stringify(completed));localStorage.setItem('halo_xp',xp);localStorage.setItem('halo_streak',streak)}
+function saveAll(){localStorage.setItem('halo_data',JSON.stringify(data));localStorage.setItem('halo_quiz',JSON.stringify(quizData));localStorage.setItem('halo_fun',JSON.stringify(funData));localStorage.setItem('halo_profile',JSON.stringify(profile));localStorage.setItem('halo_completed',JSON.stringify(completed));localStorage.setItem('halo_xp',xp);localStorage.setItem('halo_streak',streak);if(window.syncPrincipiaLeaderboard)window.syncPrincipiaLeaderboard()}
 function esc(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function tree(){return page==='quiz'?quizData:page==='fun'?funData:data}
 function find(id,nodes){for(const n of nodes){if(n.id===id)return n;if(n.children){let x=find(id,n.children);if(x)return x}}return null}
@@ -1112,8 +1112,12 @@ function entertainmentPage(){const platforms=gamePlatforms(),active=localStorage
 function simulateAiMatch(){let st=entertainmentState();const bots=leagueBots();const opponent=bots[Math.floor(Math.random()*bots.length)];const win=Math.random()<.62;const gain=win?30:12;st.points+=gain;st.matches++;if(win)st.wins++;localStorage.setItem('principia_fun_league',JSON.stringify(st));const before=leagueRank(st.points-gain),after=leagueRank(st.points);render();notify((win?'🏆 Bạn thắng '+opponent.name:'🤝 Trận đấu với '+opponent.name+' kết thúc')+' · +'+gain+' điểm'+(before.name!==after.name?' · Thăng hạng '+after.name+'!':''));if(before.name!==after.name)setTimeout(()=>notify('🎉 Tuyệt vời! Bạn đã lên '+after.name+' '+after.icon+'!'),500)}
 function progressPage(){
  let total=lessons().length,pct=total?Math.round(completed.length/total*100):0;
- const acc=getPrincipiaAccount(),studentName=profile.name||acc?.displayName||acc?.email||'Bạn';
- return `<div class="eyebrow">YOUR JOURNEY</div><h1>Tiến độ học tập</h1><div class="panel"><h2>${pct}% hoàn thành</h2><div class="progress"><div style="width:${pct}%"></div></div><p class="muted small">${completed.length}/${total} bài học</p><h3>⭐ ${xp} XP · 🔥 ${streak} ngày streak</h3></div><div class="sectionhead"><div><div class="eyebrow">LEARNING LEADERBOARD</div><h2>🏆 Bảng xếp hạng học tập</h2></div><span class="pill">Theo XP</span></div><div class="panel"><div class="file" style="display:flex;align-items:center;gap:12px"><b style="width:28px">—</b><div style="font-size:24px">🎓</div><div style="flex:1"><b>${esc(studentName)} (Bạn)</b><div class="small muted">${completed.length} bài học hoàn thành · ${streak} ngày streak</div></div><b>${xp} XP</b></div><p class="small muted">Đây là thành tích trên thiết bị hiện tại. Bảng xếp hạng giữa nhiều học sinh/tài khoản cần đồng bộ XP lên Firebase Firestore; phiên bản hiện tại chưa có dữ liệu học tập dùng chung nên mình không tự tạo tên hoặc điểm giả.</p></div><div class="sectionhead"><h2>Bài học</h2></div>${lessons().map(l=>`<div class="file"><span>${esc(l.icon)} ${esc(l.name)}</span><span>${completed.includes(l.id)?'✓ Đã học':'Chưa học'}</span></div>`).join('')}`;
+ const acc=getPrincipiaAccount(),studentName=acc?.name||profile.name||'Bạn';
+ if(window.watchPrincipiaLeaderboard)window.watchPrincipiaLeaderboard();
+ const rows=window.principiaLeaderboardRows||[];
+ const leaderboard=rows.length?rows.map((r,i)=>`<div class="file principia-rank-row"><b class="principia-rank-number">${i+1}</b><div class="principia-rank-avatar">${(r.uid||'')===acc?.uid?'Bạn':'Học sinh'}</div><div class="principia-rank-meta"><b>${esc(r.name||'Học sinh')}</b><div class="small muted">${Number(r.completedCount)||0} bài học · ${Number(r.streak)||0} ngày streak</div></div><b class="principia-rank-xp">${Number(r.xp)||0} XP</b></div>`).join(''):`<div class="empty">Đang tải bảng xếp hạng học tập. Khi các tài khoản đồng bộ dữ liệu, danh sách sẽ hiện tại đây.</div>`;
+ const status=window.principiaLeaderboardError?'<p class="small" style="color:#c45b5b">Chưa thể tải bảng xếp hạng. Kiểm tra quyền Firestore.</p>':'<p class="small muted">Xếp hạng theo XP học tập từ các tài khoản đã đăng nhập.</p>';
+ return `<div class="eyebrow">YOUR JOURNEY</div><h1>Tiến độ học tập</h1><div class="panel"><h2>${pct}% hoàn thành</h2><div class="progress"><div style="width:${pct}%"></div></div><p class="muted small">${completed.length}/${total} bài học</p><h3>${xp} XP · ${streak} ngày streak</h3></div><div class="sectionhead"><div><div class="eyebrow">LEARNING LEADERBOARD</div><h2>Bảng xếp hạng học tập</h2></div><span class="pill">Theo XP</span></div><div class="panel" id="principiaLearningLeaderboard">${leaderboard}${status}</div><div class="sectionhead"><h2>Bài học</h2></div>${lessons().map(l=>`<div class="file"><span>${esc(l.name)}</span><span>${completed.includes(l.id)?'Đã học':'Chưa học'}</span></div>`).join('')}`;
 }
 function morePage(){
  const currentTheme=localStorage.getItem('principia_theme')||'dark';
@@ -1437,7 +1441,7 @@ function exitCodelearnWorkspace(){
 function switchClLeftTab(t){
   const valid=['note','list','files','grade','phet'];if(!valid.includes(t))return;
   document.querySelectorAll('.cl-ico-btn').forEach(b=>b.classList.toggle('active',b.dataset.t===t));
-  valid.forEach(id=>{const panel=document.getElementById('clTab-'+id);if(panel)panel.hidden=id!==t;});
+  valid.forEach(id=>{const panel=document.getElementById('clTab-'+id);if(panel){panel.hidden=id!==t;panel.style.display=id===t?'block':'none';}});
   const pane=document.getElementById('clLeftPane');if(pane)pane.classList.remove('cl-pane-hidden');
 }
 
@@ -1818,6 +1822,8 @@ render();
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
 <script>
 /* PRINCIPIA AUTH CONFIG
    1) Tạo Firebase project và bật Authentication > Email/Password + Google.
@@ -1868,6 +1874,8 @@ async function syncPrincipiaUser(user){
  if(!user)return;const previous=getPrincipiaAccount();const account={uid:user.uid,name:user.displayName||user.email?.split('@')[0]||'Người dùng',email:user.email||'',customPicture:previous?.uid===user.uid?previous.customPicture||'':'',signedInAt:new Date().toISOString(),provider:user.providerData?.[0]?.providerId||'password'};
  localStorage.setItem('principia_google_account',JSON.stringify(account));companionReact('happy','Đăng nhập thành công! Rất vui vì bạn đã quay lại 💖');const appProfile=JSON.parse(localStorage.getItem('halo_profile')||'{}');appProfile.name=account.name;appProfile.avatar='';localStorage.setItem('halo_profile',JSON.stringify(appProfile));
  if(page==='account')page=localStorage.getItem('principia_welcome_seen_v3_'+user.uid)==='1'?'home':'welcome';render();
+ if(window.watchPrincipiaLeaderboard)window.watchPrincipiaLeaderboard();
+ if(window.syncPrincipiaLeaderboard)window.syncPrincipiaLeaderboard();
 }
 async function signInWithGoogle(){
  try{const auth=ensureFirebase();const provider=new firebase.auth.GoogleAuthProvider();provider.setCustomParameters({prompt:'select_account'});const cred=await auth.signInWithPopup(provider);await syncPrincipiaUser(cred.user);}
@@ -1889,6 +1897,43 @@ function initPrincipiaAuth(){
 document.addEventListener('DOMContentLoaded',()=>{initPrincipiaAuth();if(page==='account')renderGoogleAccount();});
 window.addEventListener('beforeunload',e=>{if(page==='play'&&activeQuiz&&(answers||[]).length>0){e.preventDefault();e.returnValue='Bài làm chưa hoàn thành.';}});
 
+
+/* PRINCIPIA shared academic leaderboard */
+window.principiaLeaderboardRows=[];
+window.principiaLeaderboardError='';
+let principiaLeaderboardUnsubscribe=null,principiaLeaderboardSyncTimer=null;
+function principiaLeaderboardDb(){
+ if(!firebaseConfigured()||!window.firebase?.firestore)throw new Error('Firestore SDK chưa sẵn sàng');
+ if(!firebase.apps.length)firebase.initializeApp(window.PRINCIPIA_FIREBASE_CONFIG);
+ return firebase.firestore();
+}
+window.syncPrincipiaLeaderboard=function(){
+ const acc=getPrincipiaAccount();if(!acc?.uid)return;
+ clearTimeout(principiaLeaderboardSyncTimer);
+ principiaLeaderboardSyncTimer=setTimeout(async()=>{
+  try{
+   const db=principiaLeaderboardDb();
+   await db.collection('principiaLeaderboard').doc(acc.uid).set({
+    uid:acc.uid,name:String(acc.name||profile.name||'Học sinh').slice(0,60),
+    xp:Math.max(0,Number(xp)||0),streak:Math.max(0,Number(streak)||0),
+    completedCount:Array.isArray(completed)?completed.length:0,
+    updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+   },{merge:true});
+  }catch(e){window.principiaLeaderboardError=e?.code||e?.message||'Firestore write failed';}
+ },500);
+};
+window.watchPrincipiaLeaderboard=function(){
+ const acc=getPrincipiaAccount();if(!acc?.uid)return;
+ if(principiaLeaderboardUnsubscribe)return;
+ try{
+  const db=principiaLeaderboardDb();
+  principiaLeaderboardUnsubscribe=db.collection('principiaLeaderboard').orderBy('xp','desc').limit(50).onSnapshot(snap=>{
+   window.principiaLeaderboardRows=snap.docs.map(d=>d.data()).filter(x=>x&&x.uid);
+   window.principiaLeaderboardError='';
+   if(page==='progress'){const y=document.getElementById('principiaLearningLeaderboard');if(y){const rows=window.principiaLeaderboardRows;const html=rows.map((r,i)=>'<div class="file principia-rank-row"><b class="principia-rank-number">'+(i+1)+'</b><div class="principia-rank-avatar">'+(r.uid===acc.uid?'Bạn':'Học sinh')+'</div><div class="principia-rank-meta"><b>'+esc(r.name||'Học sinh')+'</b><div class="small muted">'+(Number(r.completedCount)||0)+' bài học · '+(Number(r.streak)||0)+' ngày streak</div></div><b class="principia-rank-xp">'+(Number(r.xp)||0)+' XP</b></div>').join('');y.innerHTML=(html||'<div class="empty">Chưa có tài khoản nào đồng bộ.</div>')+'<p class="small muted">Xếp hạng theo XP học tập.</p>';}}
+  },err=>{window.principiaLeaderboardError=err?.code||err?.message||'Firestore read failed';});
+ }catch(e){window.principiaLeaderboardError=e?.message||'Firestore unavailable';}
+};
 </script>
 
 
@@ -2360,4 +2405,32 @@ html[data-theme="light"] #codelearnWorkspace .cl-left-pane h1,html[data-theme="l
 html[data-theme="light"] #codelearnWorkspace .cl-left-pane .muted,html[data-theme="light"] #codelearnWorkspace .cl-left-pane .small{color:#626b80!important}
 html[data-theme="light"] #codelearnWorkspace .cl-divider{background:#dce0eb!important}
 html[data-theme="light"] ::selection{background:#dcd7ff!important;color:#25283a!important}
+</style>
+
+<style id="principia-lesson-tabs-and-action-colors">
+/* Different, visible workspaces for lesson tabs */
+#codelearnWorkspace #clTab-files{border-left:4px solid #3997d8;padding:14px;background:linear-gradient(135deg,rgba(57,151,216,.09),transparent 45%)}
+#codelearnWorkspace #clTab-grade{border-left:4px solid #8a70df;padding:14px;background:linear-gradient(135deg,rgba(138,112,223,.11),transparent 45%)}
+#codelearnWorkspace #clTab-phet{border-left:4px solid #29a985;padding:14px;background:linear-gradient(135deg,rgba(41,169,133,.10),transparent 45%)}
+#codelearnWorkspace .cl-ico-btn[data-t="files"]{border-color:#3997d8!important}
+#codelearnWorkspace .cl-ico-btn[data-t="grade"]{border-color:#8a70df!important}
+#codelearnWorkspace .cl-ico-btn[data-t="phet"]{border-color:#29a985!important}
+#codelearnWorkspace .cl-ico-btn[data-t="files"].active{background:#267dbb!important;color:#fff!important}
+#codelearnWorkspace .cl-ico-btn[data-t="grade"].active{background:#7157c7!important;color:#fff!important}
+#codelearnWorkspace .cl-ico-btn[data-t="phet"].active{background:#168c6c!important;color:#fff!important}
+#codelearnWorkspace .cl-topbar button[onclick="exitCodelearnWorkspace()"]{background:#b94d60!important;border:1px solid #d46c7c!important;color:#fff!important}
+#codelearnWorkspace button[onclick="copyTranscriptToNote()"]{background:#147e9d!important;border:1px solid #32a4c4!important;color:#fff!important}
+#codelearnWorkspace button[onclick="clearTranscript()"]{background:#a54c58!important;border:1px solid #c86b77!important;color:#fff!important}
+#codelearnWorkspace button[onclick="toggleNotePopPanel()"]{background:#7656c9!important;border:1px solid #9c82e9!important;color:#fff!important}
+#codelearnWorkspace button[onclick="pushPopNoteToMain()"]{background:#247f70!important;border:1px solid #40a995!important;color:#fff!important}
+#codelearnWorkspace button[onclick="toggleNotePopPanel(false)"]{background:#596579!important;border:1px solid #7d8aa0!important;color:#fff!important}
+#codelearnWorkspace .principia-rank-row{display:flex;align-items:center;gap:12px}
+.principia-rank-number{width:28px;text-align:center;font-size:17px}
+.principia-rank-avatar{width:42px;height:42px;border-radius:13px;background:#eceaff;color:#5142ad;display:grid;place-items:center;font-size:10px;font-weight:800}
+.principia-rank-meta{flex:1;min-width:0}
+.principia-rank-xp{white-space:nowrap}
+html[data-theme="light"] #codelearnWorkspace #clTab-files{background:#f0f8ff!important}
+html[data-theme="light"] #codelearnWorkspace #clTab-grade{background:#f5f1ff!important}
+html[data-theme="light"] #codelearnWorkspace #clTab-phet{background:#effaf6!important}
+html[data-theme="light"] #codelearnWorkspace .cl-topbar button[onclick="exitCodelearnWorkspace()"],html[data-theme="light"] #codelearnWorkspace button[onclick="copyTranscriptToNote()"],html[data-theme="light"] #codelearnWorkspace button[onclick="clearTranscript()"],html[data-theme="light"] #codelearnWorkspace button[onclick="toggleNotePopPanel()"],html[data-theme="light"] #codelearnWorkspace button[onclick="pushPopNoteToMain()"],html[data-theme="light"] #codelearnWorkspace button[onclick="toggleNotePopPanel(false)"]{color:#fff!important}
 </style>
