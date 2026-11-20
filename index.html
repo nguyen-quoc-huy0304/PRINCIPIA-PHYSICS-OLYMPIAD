@@ -549,7 +549,31 @@ html[data-theme="light"] .cl-left-pane{background:#fff!important;color:#25233a!i
 html[data-theme="light"] .cl-right-pane{background:#17243d!important;color:#f8fbff!important}
 </style>
 <style id="principia-no-decorative-icons">.nav .ni,.tileicon,.cardicon,.tile-icon,.iconbox,.icon-box{display:none!important}.nav{gap:0!important}</style>
-</head>
+<style id="principia-lesson-contrast-and-controls">
+#codelearnWorkspace{--ws-panel:#111c30;--ws-panel2:#17243b;--ws-text:#f4f7ff;--ws-muted:#c0cbe0;--ws-border:#34445f}
+#codelearnWorkspace .cl-topbar{background:#111c30!important;color:#f4f7ff!important;min-height:58px;height:auto;padding:10px 14px}
+#codelearnWorkspace .cl-iconbar{width:116px;min-width:116px;background:var(--ws-panel)!important;border-right:1px solid var(--ws-border);padding:12px 8px;gap:8px}
+#codelearnWorkspace .cl-ico-btn{width:100%;height:auto;min-height:38px;padding:9px 7px;border:1px solid var(--ws-border);border-radius:9px;background:var(--ws-panel2);color:var(--ws-muted);font-size:12px;font-weight:700;line-height:1.25;white-space:normal}
+#codelearnWorkspace .cl-ico-btn.active{background:#5b4acb!important;border-color:#9385ff!important;color:#fff!important}
+#codelearnWorkspace .cl-left-pane{background:var(--ws-panel)!important;color:var(--ws-text)!important}
+#codelearnWorkspace .cl-left-pane h1,#codelearnWorkspace .cl-left-pane h2,#codelearnWorkspace .cl-left-pane h3,#codelearnWorkspace .cl-left-pane strong,#codelearnWorkspace .cl-left-pane label{color:var(--ws-text)}
+#codelearnWorkspace .cl-left-pane p,#codelearnWorkspace .cl-left-pane .small,#codelearnWorkspace .cl-left-pane .muted{color:var(--ws-muted)!important}
+#codelearnWorkspace .ai-cheploi-box,#codelearnWorkspace .note-pop-panel,#codelearnWorkspace .tl-card{background:var(--ws-panel2)!important;color:var(--ws-text)!important;border:1px solid var(--ws-border)!important}
+#codelearnWorkspace input,#codelearnWorkspace textarea,#codelearnWorkspace select{background:#0b1426!important;color:#f4f7ff!important;border:1px solid #435574!important}
+#codelearnWorkspace input::placeholder,#codelearnWorkspace textarea::placeholder{color:#aab8d0!important;opacity:1}
+#codelearnWorkspace #ytSummaryOutput{background:#0b1426!important;color:#f4f7ff!important;border-color:#435574!important}
+#codelearnWorkspace .cl-right-pane{background:#080e1a!important;color:#f4f7ff!important}
+#codelearnWorkspace .cl-divider{background:#263750!important;min-width:6px;cursor:col-resize}
+#codelearnWorkspace .cl-step{color:#fff}
+html[data-theme="light"] #codelearnWorkspace .cl-left-pane{background:#f4f3fb!important;color:#25233a!important}
+html[data-theme="light"] #codelearnWorkspace .cl-left-pane h1,html[data-theme="light"] #codelearnWorkspace .cl-left-pane h2,html[data-theme="light"] #codelearnWorkspace .cl-left-pane h3,html[data-theme="light"] #codelearnWorkspace .cl-left-pane strong,html[data-theme="light"] #codelearnWorkspace .cl-left-pane label{color:#25233a!important}
+html[data-theme="light"] #codelearnWorkspace .cl-left-pane p,html[data-theme="light"] #codelearnWorkspace .cl-left-pane .small,html[data-theme="light"] #codelearnWorkspace .cl-left-pane .muted{color:#514d68!important}
+html[data-theme="light"] #codelearnWorkspace .ai-cheploi-box,html[data-theme="light"] #codelearnWorkspace .note-pop-panel,html[data-theme="light"] #codelearnWorkspace .tl-card{background:#fff!important;color:#25233a!important;border-color:#d8d5e7!important}
+html[data-theme="light"] #codelearnWorkspace input,html[data-theme="light"] #codelearnWorkspace textarea,html[data-theme="light"] #codelearnWorkspace select{background:#fff!important;color:#25233a!important;border-color:#c9c5dc!important}
+html[data-theme="light"] #codelearnWorkspace input::placeholder,html[data-theme="light"] #codelearnWorkspace textarea::placeholder{color:#77728d!important}
+html[data-theme="light"] #codelearnWorkspace #ytSummaryOutput{background:#fff!important;color:#25233a!important;border-color:#d8d5e7!important}
+@media(max-width:760px){#codelearnWorkspace .cl-iconbar{width:100%;min-width:0;flex-direction:row;overflow-x:auto;border-right:0;border-bottom:1px solid var(--ws-border);padding:8px}#codelearnWorkspace .cl-body{flex-direction:column}#codelearnWorkspace .cl-ico-btn{width:auto;min-width:75px}#codelearnWorkspace .cl-split{min-height:65vh}#codelearnWorkspace .cl-left-pane{width:50%;min-width:0;padding:12px}#codelearnWorkspace .cl-right-pane{min-width:0}}
+</style></head>
 <body>
 <div id="app"></div>
 <section class="cl-shell" id="codelearnWorkspace">
@@ -570,15 +594,13 @@ html[data-theme="light"] .cl-right-pane{background:#17243d!important;color:#f8fb
     </div>
 
     <div class="cl-body">
-      <div class="cl-iconbar">
-        <button class="cl-ico-btn active" data-t="note" onclick="switchClLeftTab('note')" title="Chép lời">📝</button>
-        <button class="cl-ico-btn" data-t="list" onclick="switchClLeftTab('list')" title="List bài học">📋</button>
-        <button class="cl-ico-btn" data-t="files" onclick="switchClLeftTab('files')" title="Các file tôi thêm vào">📁</button>
-        <button class="cl-ico-btn" data-t="grade" onclick="switchClLeftTab('grade')" title="Gửi bài & AI chấm">✅</button>
-        <button class="cl-ico-btn" data-t="chat" onclick="toggleChatBox()" title="Nhắn tin với trợ lý">💬</button>
-        <button class="cl-ico-btn" data-t="phet" onclick="switchClLeftTab('phet')" title="PhET mô phỏng theo môn">⚛️</button>
+      <div class="cl-iconbar" aria-label="Điều hướng bài học">
+        <button class="cl-ico-btn active" data-t="note" onclick="switchClLeftTab('note')">Ghi chép</button>
+        <button class="cl-ico-btn" data-t="list" onclick="switchClLeftTab('list')">Danh sách</button>
+        <button class="cl-ico-btn" data-t="files" onclick="switchClLeftTab('files')">Tài liệu</button>
+        <button class="cl-ico-btn" data-t="grade" onclick="switchClLeftTab('grade')">Nộp bài</button>
+        <button class="cl-ico-btn" data-t="phet" onclick="switchClLeftTab('phet')">Mô phỏng</button>
       </div>
-
       <div class="cl-split" id="clSplit">
         <div class="cl-left-pane" id="clLeftPane">
           <div id="clTab-note">
@@ -693,7 +715,7 @@ html[data-theme="light"] .cl-right-pane{background:#17243d!important;color:#f8fb
 
   <div class="xp-toast" id="xpToast"></div>
 
-  <button class="chat-bubble-btn" onclick="toggleChatBox()" title="Nhắn tin với trợ lý">💬</button>
+  <button class="chat-bubble-btn" onclick="toggleChatBox()" title="Nhắn tin với trợ lý">Trợ lý</button>
   <div class="chat-box" id="chatBox">
     <div style="padding:10px 12px; background:var(--card2); border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center;">
       <select id="chatAiSelect" style="width:auto; padding:6px 8px; font-weight:600; font-size:12.5px;">
@@ -916,10 +938,10 @@ function lesson(){
  let l=find(activeLesson,data);if(!l)return '<div class="empty">Không tìm thấy bài học</div>';
  let c=chain(activeLesson,data);
  return `<div class="breadcrumb"><button onclick="setPage('library')">Thư viện</button>${c.map(n=>` / ${esc(n.name)}`).join('')}</div>
- <div class="sectionhead"><div><div class="eyebrow">LESSON</div><h1>${esc(l.icon)} ${esc(l.name)}</h1></div><div class="toolbar"><button class="secondary" onclick="editNode('${l.id}')">✎ Sửa</button><button class="primary" onclick="completeLesson('${l.id}')">✓ Hoàn thành</button></div></div>
+ <div class="sectionhead"><div><div class="eyebrow">LESSON</div><h1>${esc(l.name)}</h1></div><div class="toolbar"><button class="secondary" onclick="editNode('${l.id}')">✎ Sửa</button><button class="primary" onclick="completeLesson('${l.id}')">✓ Hoàn thành</button></div></div>
  <div class="panel lesson-content-panel"><div class="content">${esc(l.content||'Chưa có nội dung. Nhấn Sửa để thêm nội dung bài học.')}</div></div>
- <div class="panel"><div class="sectionhead"><h2>📎 Tài liệu</h2><button class="secondary" onclick="$('#attach').click()">＋ Thêm file</button></div><input type="file" id="attach" multiple class="hidden" onchange="attachFiles('${l.id}',this.files)"><div id="files">Đang tải...</div></div>
- <div class="panel"><div class="sectionhead"><h2>🧠 Kiểm tra kiến thức</h2><div class="toolbar"><button class="secondary" onclick="editLessonQuiz('${l.id}')">＋ Câu hỏi</button><button class="secondary" onclick="openConvertToQuiz('${l.id}')">⇄ Chuyển đề thành Quiz</button></div></div><p class="muted small">${(l.quiz||[]).length} câu hỏi</p><div class="toolbar"><button class="primary" onclick="lessonQuiz('${l.id}')">Làm bài kiểm tra</button><button class="secondary" onclick="aiLink('${l.id}')">✨ Kiểm tra AI</button></div></div>`;
+ <div class="panel"><div class="sectionhead"><h2>Tài liệu</h2><button class="secondary" onclick="$('#attach').click()">＋ Thêm file</button></div><input type="file" id="attach" multiple class="hidden" onchange="attachFiles('${l.id}',this.files)"><div id="files">Đang tải...</div></div>
+ <div class="panel"><div class="sectionhead"><h2>Kiểm tra kiến thức</h2><div class="toolbar"><button class="secondary" onclick="editLessonQuiz('${l.id}')">＋ Câu hỏi</button><button class="secondary" onclick="openConvertToQuiz('${l.id}')">⇄ Chuyển đề thành Quiz</button></div></div><p class="muted small">${(l.quiz||[]).length} câu hỏi</p><div class="toolbar"><button class="primary" onclick="lessonQuiz('${l.id}')">Làm bài kiểm tra</button><button class="secondary" onclick="aiLink('${l.id}')">✨ Kiểm tra AI</button></div></div>`;
 }
 function openConvertToQuiz(id){
  if(!requireAdmin())return;
@@ -1376,11 +1398,10 @@ function exitCodelearnWorkspace(){
 }
 
 function switchClLeftTab(t){
-  document.querySelectorAll('.cl-ico-btn').forEach(b => b.classList.toggle('active', b.dataset.t === t));
-  ['note', 'list', 'files', 'grade', 'phet'].forEach(id => {
-    document.getElementById('clTab-' + id).style.display = (id === t) ? 'block' : 'none';
-  });
-  document.getElementById('clLeftPane').classList.remove('cl-pane-hidden');
+  const valid=['note','list','files','grade','phet'];if(!valid.includes(t))return;
+  document.querySelectorAll('.cl-ico-btn').forEach(b=>b.classList.toggle('active',b.dataset.t===t));
+  valid.forEach(id=>{const panel=document.getElementById('clTab-'+id);if(panel)panel.hidden=id!==t;});
+  const pane=document.getElementById('clLeftPane');if(pane)pane.classList.remove('cl-pane-hidden');
 }
 
 function saveTranscript(){
@@ -1482,15 +1503,10 @@ function toEmbedUrl(raw){
 }
 
 function playVideoInRightPane(){
- if(!requireAdmin())return;
-  const raw = document.getElementById('clVideoUrlInput').value;
-  const url = toEmbedUrl(raw);
-  if(!url) return;
-  if(curLessonId){
-    const l = find(curLessonId, data);
-    if(l){ l.video = raw; saveAll(); }
-  }
-  document.getElementById('clVideoStage').innerHTML = `<iframe src="${url}" style="width:100%; height:100%; min-height:420px; border:none;" allowfullscreen></iframe>`;
+  const input=document.getElementById('clVideoUrlInput'),stage=document.getElementById('clVideoStage');if(!input||!stage)return;
+  const raw=input.value.trim(),url=toEmbedUrl(raw);if(!url)return;
+  if(curLessonId&&isPrincipiaAdmin()){const l=find(curLessonId,data);if(l&&l.video!==raw){l.video=raw;saveAll();}}
+  stage.innerHTML=`<iframe title="Video bài học" src="${esc(url)}" style="width:100%;height:100%;min-height:420px;border:0" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture;web-share" allowfullscreen></iframe>`;
 }
 
 function swapClPanes(){ document.getElementById('clSplit').classList.toggle('swapped'); }
