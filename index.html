@@ -548,7 +548,7 @@ html[data-theme="cosmic"] .cl-iconbar{background:#101e3b!important}
 html[data-theme="light"] .cl-left-pane{background:#fff!important;color:#25233a!important}
 html[data-theme="light"] .cl-right-pane{background:#17243d!important;color:#f8fbff!important}
 </style>
-<style id="principia-no-decorative-icons">.nav .ni,.tileicon,.cardicon,.tile-icon,.iconbox,.icon-box{display:none!important}.nav{gap:0!important}</style>
+<style id="principia-no-decorative-icons">.nav .ni{display:inline-flex!important}.tileicon,.cardicon,.tile-icon,.iconbox,.icon-box{display:flex!important}.nav{gap:8px!important}</style>
 <style id="principia-lesson-contrast-and-controls">
 #codelearnWorkspace{--ws-panel:#111c30;--ws-panel2:#17243b;--ws-text:#f4f7ff;--ws-muted:#c0cbe0;--ws-border:#34445f}
 #codelearnWorkspace .cl-topbar{background:#111c30!important;color:#f4f7ff!important;min-height:58px;height:auto;padding:10px 14px}
@@ -573,6 +573,32 @@ html[data-theme="light"] #codelearnWorkspace input,html[data-theme="light"] #cod
 html[data-theme="light"] #codelearnWorkspace input::placeholder,html[data-theme="light"] #codelearnWorkspace textarea::placeholder{color:#77728d!important}
 html[data-theme="light"] #codelearnWorkspace #ytSummaryOutput{background:#fff!important;color:#25233a!important;border-color:#d8d5e7!important}
 @media(max-width:760px){#codelearnWorkspace .cl-iconbar{width:100%;min-width:0;flex-direction:row;overflow-x:auto;border-right:0;border-bottom:1px solid var(--ws-border);padding:8px}#codelearnWorkspace .cl-body{flex-direction:column}#codelearnWorkspace .cl-ico-btn{width:auto;min-width:75px}#codelearnWorkspace .cl-split{min-height:65vh}#codelearnWorkspace .cl-left-pane{width:50%;min-width:0;padding:12px}#codelearnWorkspace .cl-right-pane{min-width:0}}
+</style><style id="principia-restored-visual-system">
+:root{--radius:20px}
+.layout,.panel,.tile,.stat,.file,.modal,.modalbox,.welcome-card,.account-page-card,.hero,.quiz-card,.cl-card{border-radius:20px!important}
+button,.primary,.secondary,.danger,.pill,.nav,.cl-ico-btn{border-radius:13px!important}
+.nav{display:flex!important;align-items:center!important;gap:11px!important}
+.nav .ni{display:inline-flex!important;align-items:center;justify-content:center;min-width:25px;font-size:19px}
+.nav-custom-icon{width:27px;height:27px;object-fit:cover;border-radius:9px;flex:0 0 27px}
+.tileicon,.cardicon,.tile-icon,.iconbox,.icon-box{display:flex!important;align-items:center;justify-content:center}
+html[data-theme="light"]{color-scheme:light;--bg:#f5f6fc!important;--side:#fff!important;--card:#fff!important;--card2:#edf0f8!important;--line:#d9deeb!important;--txt:#20263a!important;--muted:#59647a!important}
+html[data-theme="light"] body{background:#f5f6fc!important;color:#20263a!important}
+html[data-theme="light"] .sidebar,html[data-theme="light"] .top,html[data-theme="light"] .main,html[data-theme="light"] #body{background:#f5f6fc!important;color:#20263a!important}
+html[data-theme="light"] .sidebar{background:#fff!important;border-right:1px solid #dfe3ee!important}
+html[data-theme="light"] .panel,html[data-theme="light"] .tile,html[data-theme="light"] .stat,html[data-theme="light"] .file,html[data-theme="light"] .hero,html[data-theme="light"] .account-page-card{background:#fff!important;color:#20263a!important;border-color:#dfe3ee!important}
+html[data-theme="light"] h1,html[data-theme="light"] h2,html[data-theme="light"] h3,html[data-theme="light"] p,html[data-theme="light"] label,html[data-theme="light"] strong,html[data-theme="light"] .eyebrow,html[data-theme="light"] .nav{color:#20263a}
+html[data-theme="light"] .muted,html[data-theme="light"] .small{color:#59647a!important}
+html[data-theme="light"] input,html[data-theme="light"] textarea,html[data-theme="light"] select{background:#fff!important;color:#20263a!important;border:1px solid #cbd3e2!important}
+html[data-theme="light"] input::placeholder,html[data-theme="light"] textarea::placeholder{color:#7a8498!important}
+html[data-theme="light"] .nav.active{background:#e8eaff!important;color:#4437a8!important}
+html[data-theme="light"] #codelearnWorkspace{--ws-panel:#fff;--ws-panel2:#f0f2f8;--ws-text:#20263a;--ws-muted:#59647a;--ws-border:#d5dbea}
+html[data-theme="light"] #codelearnWorkspace .cl-topbar,html[data-theme="light"] #codelearnWorkspace .cl-left-pane{background:#fff!important;color:#20263a!important}
+html[data-theme="light"] #codelearnWorkspace .cl-right-pane{background:#f5f6fc!important;color:#20263a!important}
+html[data-theme="light"] #codelearnWorkspace .cl-left-pane h1,html[data-theme="light"] #codelearnWorkspace .cl-left-pane h2,html[data-theme="light"] #codelearnWorkspace .cl-left-pane h3,html[data-theme="light"] #codelearnWorkspace .cl-left-pane strong,html[data-theme="light"] #codelearnWorkspace .cl-left-pane label{color:#20263a!important}
+html[data-theme="light"] #codelearnWorkspace .cl-left-pane p,html[data-theme="light"] #codelearnWorkspace .cl-left-pane .small,html[data-theme="light"] #codelearnWorkspace .cl-left-pane .muted{color:#59647a!important}
+html[data-theme="light"] #codelearnWorkspace input,html[data-theme="light"] #codelearnWorkspace textarea,html[data-theme="light"] #codelearnWorkspace select{background:#fff!important;color:#20263a!important;border-color:#cbd3e2!important}
+html[data-theme="light"] #codelearnWorkspace #ytSummaryOutput{background:#fff!important;color:#20263a!important}
+@media(max-width:760px){.layout{border-radius:0!important}.sidebar{border-radius:0 18px 18px 0!important}}
 </style></head>
 <body>
 <div id="app"></div>
@@ -1037,10 +1063,13 @@ function principiaNavGroups(){try{const g={...{workspace:'PRO',more:'MORE'},...J
 function principiaNav(){try{return JSON.parse(localStorage.getItem('principia_nav_config'))||PRINCIPIA_DEFAULT_NAV}catch(e){return PRINCIPIA_DEFAULT_NAV}}
 function savePrincipiaNav(v){localStorage.setItem('principia_nav_config',JSON.stringify(v))}
 function navGroupImage(kind){try{return localStorage.getItem('principia_nav_group_image_'+kind)||''}catch(e){return ''}}
+function navItemImage(id){try{return localStorage.getItem('principia_nav_item_image_'+id)||''}catch(e){return ''}}
+function setNavItemImage(id,input){const f=input.files&&input.files[0];if(!f)return;if(!f.type.startsWith('image/')){notify('Vui lòng chọn tệp ảnh');return}if(f.size>3*1024*1024){notify('Ảnh icon tối đa 3 MB');return}const reader=new FileReader();reader.onload=()=>{const im=new Image();im.onload=()=>{const cv=document.createElement('canvas');cv.width=128;cv.height=128;const s=Math.min(128/im.width,128/im.height),w=im.width*s,h=im.height*s;cv.getContext('2d').drawImage(im,(128-w)/2,(128-h)/2,w,h);try{localStorage.setItem('principia_nav_item_image_'+id,cv.toDataURL('image/png'));openLayoutSettings();notify('Đã cập nhật ảnh icon')}catch(e){notify('Không lưu được ảnh này')}};im.onerror=()=>notify('Không đọc được ảnh');im.src=reader.result};reader.readAsDataURL(f)}
+function removeNavItemImage(id){localStorage.removeItem('principia_nav_item_image_'+id);openLayoutSettings()}
 function navGroupLabelHTML(kind){const g=principiaNavGroups();return '<div class="navlabel">'+esc(kind==='workspace'?'PRO':g.more)+'</div>'}
 function setNavGroupImage(kind,input){const f=input.files&&input.files[0];if(!f)return;if(!f.type.startsWith('image/')){notify('Vui lòng chọn tệp ảnh');return}const reader=new FileReader();reader.onload=()=>{const im=new Image();im.onload=()=>{const c=document.createElement('canvas'),scale=Math.min(1,320/Math.max(im.width,im.height));c.width=Math.max(1,Math.round(im.width*scale));c.height=Math.max(1,Math.round(im.height*scale));c.getContext('2d').drawImage(im,0,0,c.width,c.height);try{localStorage.setItem('principia_nav_group_image_'+kind,c.toDataURL('image/jpeg',.78));openLayoutSettings();notify('Đã cập nhật ảnh nhóm')}catch(e){notify('Ảnh quá lớn, hãy chọn ảnh nhỏ hơn')}};im.onerror=()=>notify('Không đọc được ảnh này');im.src=reader.result};reader.readAsDataURL(f)}
 function removeNavGroupImage(kind){localStorage.removeItem('principia_nav_group_image_'+kind);openLayoutSettings()}
-function openLayoutSettings(){const nav=principiaNav(),groups=principiaNavGroups(),wimg=navGroupImage('workspace'),mimg=navGroupImage('more');modal('<h2>🎨 Tùy chỉnh thanh điều hướng</h2><p class="muted small">Đổi tên, ảnh đại diện nhóm, icon, tên và thứ tự các mục. Ảnh được lưu trên thiết bị này.</p><div class="file"><label>Tên nhóm đầu</label><input id="navGroupWorkspace" value="'+esc(groups.workspace)+'"><label>Ảnh nhóm đầu</label><div class="toolbar">'+(wimg?'<img src="'+wimg+'" style="width:48px;height:48px;object-fit:cover;border-radius:12px">':'')+'<label class="secondary" style="cursor:pointer">Chọn ảnh<input type="file" accept="image/*" hidden onchange="setNavGroupImage(\'workspace\',this)"></label><button class="secondary" onclick="removeNavGroupImage(\'workspace\')">Bỏ ảnh</button></div><label>Tên nhóm dưới</label><input id="navGroupMore" value="'+esc(groups.more)+'"><label>Ảnh nhóm dưới</label><div class="toolbar">'+(mimg?'<img src="'+mimg+'" style="width:48px;height:48px;object-fit:cover;border-radius:12px">':'')+'<label class="secondary" style="cursor:pointer">Chọn ảnh<input type="file" accept="image/*" hidden onchange="setNavGroupImage(\'more\',this)"></label><button class="secondary" onclick="removeNavGroupImage(\'more\')">Bỏ ảnh</button></div></div>'+nav.map((x,i)=>'<div class="file" style="display:grid;grid-template-columns:58px minmax(0,1fr) auto auto;gap:7px;align-items:center"><label for="navicon'+i+'" style="margin:0">Icon</label><input id="navicon'+i+'" value="'+esc(x[1])+'" maxlength="8" aria-label="Icon '+esc(x[2])+'" style="width:58px"><input id="navname'+i+'" value="'+esc(x[2])+'" aria-label="Tên mục" placeholder="Tên mục" style="flex:1;min-width:0"><button class="secondary" onclick="moveNavItem('+i+',-1)" '+(i===0?'disabled':'')+'>↑</button><button class="secondary" onclick="moveNavItem('+i+',1)" '+(i===nav.length-1?'disabled':'')+'>↓</button></div>').join('')+'<div class="toolbar"><button class="primary" onclick="saveLayoutSettings('+nav.length+')">💾 Lưu thay đổi</button><button class="secondary" onclick="resetLayoutSettings()">Khôi phục</button><button class="secondary" onclick="closeModal()">Đóng</button></div>')}
+function openLayoutSettings(){const nav=principiaNav(),groups=principiaNavGroups(),wimg=navGroupImage('workspace'),mimg=navGroupImage('more');modal('<h2>🎨 Tùy chỉnh thanh điều hướng</h2><p class="muted small">Đổi tên, ảnh đại diện nhóm, icon, tên và thứ tự các mục. Ảnh được lưu trên thiết bị này.</p><div class="file"><label>Tên nhóm đầu</label><input id="navGroupWorkspace" value="'+esc(groups.workspace)+'"><label>Ảnh nhóm đầu</label><div class="toolbar">'+(wimg?'<img src="'+wimg+'" style="width:48px;height:48px;object-fit:cover;border-radius:12px">':'')+'<label class="secondary" style="cursor:pointer">Chọn ảnh<input type="file" accept="image/*" hidden onchange="setNavGroupImage(\'workspace\',this)"></label><button class="secondary" onclick="removeNavGroupImage(\'workspace\')">Bỏ ảnh</button></div><label>Tên nhóm dưới</label><input id="navGroupMore" value="'+esc(groups.more)+'"><label>Ảnh nhóm dưới</label><div class="toolbar">'+(mimg?'<img src="'+mimg+'" style="width:48px;height:48px;object-fit:cover;border-radius:12px">':'')+'<label class="secondary" style="cursor:pointer">Chọn ảnh<input type="file" accept="image/*" hidden onchange="setNavGroupImage(\'more\',this)"></label><button class="secondary" onclick="removeNavGroupImage(\'more\')">Bỏ ảnh</button></div></div>'+nav.map((x,i)=>{const img=navItemImage(x[0]);return '<div class="file" style="display:grid;grid-template-columns:54px minmax(0,1fr) auto auto;gap:7px;align-items:center"><div>'+(img?'<img src="'+img+'" style="width:42px;height:42px;object-fit:cover;border-radius:12px">':'<span style="font-size:22px">'+esc(x[1])+'</span>')+'</div><div><label for="navname'+i+'">Tên mục</label><input id="navname'+i+'" value="'+esc(x[2])+'" aria-label="Tên mục" placeholder="Tên mục" style="width:100%"><label class="secondary" style="display:inline-flex;cursor:pointer;margin-top:6px">Lấy ảnh làm icon<input type="file" accept="image/*" hidden onchange="setNavItemImage(\''+x[0]+'\',this)"></label>'+(img?'<button class="secondary" onclick="removeNavItemImage(\''+x[0]+'\')">Dùng icon mặc định</button>':'')+'</div><button class="secondary" onclick="moveNavItem('+i+',-1)" '+(i===0?'disabled':'')+'>↑</button><button class="secondary" onclick="moveNavItem('+i+',1)" '+(i===nav.length-1?'disabled':'')+'>↓</button></div>'}).join('')+'<div class="toolbar"><button class="primary" onclick="saveLayoutSettings('+nav.length+')">💾 Lưu thay đổi</button><button class="secondary" onclick="resetLayoutSettings()">Khôi phục</button><button class="secondary" onclick="closeModal()">Đóng</button></div>')}
 function moveNavItem(i,d){let a=principiaNav();let j=i+d;if(j<0||j>=a.length)return;[a[i],a[j]]=[a[j],a[i]];savePrincipiaNav(a);openLayoutSettings()}
 function saveLayoutSettings(n){if(!confirm('🎨 Bạn chắc chắn muốn áp dụng thay đổi tên nhóm, icon và thứ tự các mục này chứ?'))return;localStorage.setItem('principia_nav_groups',JSON.stringify({workspace:document.getElementById('navGroupWorkspace')?.value.trim()||'WORKSPACE',more:document.getElementById('navGroupMore')?.value.trim()||'MORE'}));let a=principiaNav();a=a.map((x,i)=>[x[0],document.getElementById('navicon'+i)?.value||x[1],document.getElementById('navname'+i)?.value.trim()||x[2]]);savePrincipiaNav(a);closeModal();render();notify('Đã lưu giao diện')}
 function resetLayoutSettings(){savePrincipiaNav(PRINCIPIA_DEFAULT_NAV);localStorage.removeItem('principia_nav_groups');localStorage.removeItem('principia_nav_group_image_workspace');localStorage.removeItem('principia_nav_group_image_more');closeModal();render();notify('Đã khôi phục thanh điều hướng')}
@@ -1141,17 +1170,17 @@ function render(){
  if(!getPrincipiaAccount() && page!=='account'){page='account';stack=[];}
  // Giữ màn hình chào cho tới khi người dùng chủ động bấm Bắt đầu hành trình.
 
- if(page==='welcome' && localStorage.getItem('principia_welcome_seen_v2_'+(getPrincipiaAccount()?.uid||'guest'))==='1'){page='home';}
+ if(page==='welcome' && localStorage.getItem('principia_welcome_seen_v3_'+(getPrincipiaAccount()?.uid||'guest'))==='1'){page='home';}
  if(page==='welcome'){
   const coverStyle = outerCoverImg ? `style="background-image:url('${outerCoverImg}')"` : '';
   const coverCls = outerCoverImg ? 'welcome has-user-cover' : 'welcome';
-  app.innerHTML=`<div class="${coverCls}" ${coverStyle}><div class="welcome-card"><img class="welcome-logo-img" src="${PRINCIPIA_LOGO_URI}" alt="Principia Physics Olympiad Logo"><div class="eyebrow">PRINCIPIA • PHYSICS OLYMPIAD</div><h1>PRO<span style="color:var(--purple)">.</span></h1><p>Khám phá kiến thức, xây dựng thói quen học tập và chinh phục từng thử thách.</p><button class="primary" onclick="localStorage.setItem('principia_welcome_seen_v2_'+(getPrincipiaAccount()?.uid||'guest'),'1');setPage('home');if(window.grantPrincipiaReward)grantPrincipiaReward('welcome:'+((getPrincipiaAccount()?.uid||getPrincipiaAccount()?.email)||'guest'),'Quà chào mừng')">Bắt đầu hành trình →</button><p class="small">LEARN · EXPLORE · GROW</p></div></div>`;
+  app.innerHTML=`<div class="${coverCls}" ${coverStyle}><div class="welcome-card"><img class="welcome-logo-img" src="${PRINCIPIA_LOGO_URI}" alt="Principia Physics Olympiad Logo"><div class="eyebrow">PRINCIPIA • PHYSICS OLYMPIAD</div><h1>PRO<span style="color:var(--purple)">.</span></h1><p>Khám phá kiến thức, xây dựng thói quen học tập và chinh phục từng thử thách.</p><button class="primary" onclick="localStorage.setItem('principia_welcome_seen_v3_'+(getPrincipiaAccount()?.uid||'guest'),'1');setPage('home');if(window.grantPrincipiaReward)grantPrincipiaReward('welcome:'+((getPrincipiaAccount()?.uid||getPrincipiaAccount()?.email)||'guest'),'Quà chào mừng')">Bắt đầu hành trình →</button><p class="small">LEARN · EXPLORE · GROW</p></div></div>`;
   return;
 }
  let nav=principiaNav();
  let body=page==='account'?accountPage():page==='home'?home():page==='library'?library():page==='lesson'?lesson():page==='quiz'?quizHome():page==='fun'?funHome():page==='entertainment'?entertainmentPage():page==='play'?playPage():page==='lessonplay'?lessonPlayPage():page==='progress'?progressPage():morePage();
  const outerCoverHtml = `<div class="outer-cover-banner"><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;"><img class="outer-cover-thumb" src="${outerCoverImg}" alt="Ảnh ngoài trang"><div><div class="eyebrow">ẢNH NGOÀI TRANG</div><div class="small muted">Hiển thị ảnh bạn đưa ngay ngoài không gian học tập</div></div></div><div style="display:flex;gap:8px;flex-wrap:wrap;"><button class="secondary" onclick="$('#outerCoverInput').click()">Đổi ảnh ngoài</button><button class="secondary" onclick="resetOuterCover()">Ảnh mặc định</button><input type="file" id="outerCoverInput" accept="image/*" class="hidden" onchange="updateOuterCover(this.files[0])"></div></div>`;
-app.innerHTML=`<div class="layout"><aside class="sidebar"><div class="brand"><img class="brand-logo-img" src="${PRINCIPIA_LOGO_URI}" alt="Principia Logo">PRINCIPIA • PHYSICS OLYMPIAD</div>${navGroupLabelHTML('workspace')}${nav.map(([id,ic,n])=>`<button class="nav ${page===id||page==='lesson'&&id==='library'||page==='play'&&id===(activeQuiz?.kind==='fun'?'fun':'quiz')?'active':''}" onclick="setPage('${id}')">${n}</button>`).join('')}<div class="sidebottom">${navGroupLabelHTML('more')}<button class="nav ${page==='more'?'active':''}" onclick="setPage('more')">More / Settings</button></div></aside><main class="main">${topbar()}<div id="body">${body}</div></main></div>`;
+app.innerHTML=`<div class="layout"><aside class="sidebar"><div class="brand"><img class="brand-logo-img" src="${PRINCIPIA_LOGO_URI}" alt="Principia Logo">PRINCIPIA • PHYSICS OLYMPIAD</div>${navGroupLabelHTML('workspace')}${nav.map(([id,ic,n])=>{const image=navItemImage(id);return `<button class="nav ${page===id||page==='lesson'&&id==='library'||page==='play'&&id===(activeQuiz?.kind==='fun'?'fun':'quiz')?'active':''}" onclick="setPage('${id}')">${image?`<img class="nav-custom-icon" src="${image}" alt="">`:`<span class="ni">${esc(ic)}</span>`}<span>${n}</span></button>`}).join('')}<div class="sidebottom">${navGroupLabelHTML('more')}<button class="nav ${page==='more'?'active':''}" onclick="setPage('more')">More / Settings</button></div></aside><main class="main">${topbar()}<div id="body">${body}</div></main></div>`;
  document.body.dataset.principiaRole=principiaRole();
  document.body.classList.toggle('principia-admin',isPrincipiaAdmin());
  // Chỉ ADMIN mới được tạo nội dung, dùng nút + hoặc nhập/dán link video.
@@ -1830,7 +1859,7 @@ function authErrorMessage(err){const map={'auth/email-already-in-use':'Email nà
 async function syncPrincipiaUser(user){
  if(!user)return;const previous=getPrincipiaAccount();const account={uid:user.uid,name:user.displayName||user.email?.split('@')[0]||'Người dùng',email:user.email||'',customPicture:previous?.uid===user.uid?previous.customPicture||'':'',signedInAt:new Date().toISOString(),provider:user.providerData?.[0]?.providerId||'password'};
  localStorage.setItem('principia_google_account',JSON.stringify(account));companionReact('happy','Đăng nhập thành công! Rất vui vì bạn đã quay lại 💖');const appProfile=JSON.parse(localStorage.getItem('halo_profile')||'{}');appProfile.name=account.name;appProfile.avatar='';localStorage.setItem('halo_profile',JSON.stringify(appProfile));
- if(page==='account')page=localStorage.getItem('principia_welcome_seen_v2_'+user.uid)==='1'?'home':'welcome';render();
+ if(page==='account')page=localStorage.getItem('principia_welcome_seen_v3_'+user.uid)==='1'?'home':'welcome';render();
 }
 async function signInWithGoogle(){
  try{const auth=ensureFirebase();const provider=new firebase.auth.GoogleAuthProvider();provider.setCustomParameters({prompt:'select_account'});const cred=await auth.signInWithPopup(provider);await syncPrincipiaUser(cred.user);}
@@ -2115,24 +2144,7 @@ button,.secondary,.primary,.danger,.tab,.pill,.nav .ni,.tileicon,.iconbtn,.cl-ic
 #stickerBuiltins .sticker-choice img{width:64px;height:64px;object-fit:contain}
 #principiaCompanionBubble img{width:64px;height:64px;object-fit:contain;border-radius:16px}
 </style>
-<script id="principia-remove-emoji-icons">
-(function(){
- const pictographs=/\p{Extended_Pictographic}(?:\uFE0F|\uFE0E)?(?:\u200D\p{Extended_Pictographic}(?:\uFE0F|\uFE0E)?)*|\uFE0F/gu;
- function clean(root){
-  if(!root)return;
-  const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
-  const nodes=[];let n;
-  while((n=walker.nextNode())){const p=n.parentElement;if(!p||p.closest('script,style,textarea,pre,code,.companion-bubble-art'))continue;if(p.closest('img,svg'))continue;nodes.push(n);}
-  nodes.forEach(x=>{const v=x.nodeValue.replace(pictographs,'');if(v!==x.nodeValue)x.nodeValue=v;});
- }
- clean(document.body);
- const observer=new MutationObserver(records=>records.forEach(r=>{
-  if(r.type==='characterData'){clean(r.target.parentElement);}
-  else r.addedNodes.forEach(n=>{if(n.nodeType===Node.TEXT_NODE)clean(n.parentElement);else if(n.nodeType===Node.ELEMENT_NODE)clean(n);});
- }));
- observer.observe(document.body,{subtree:true,childList:true,characterData:true});
-})();
-</script></body>
+</body>
 </html>
 
 <style>
