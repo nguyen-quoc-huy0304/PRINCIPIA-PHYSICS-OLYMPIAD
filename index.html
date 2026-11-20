@@ -2361,6 +2361,7 @@ render();
 <script>
 /* PRINCIPIA Achievement Gift Box — local collection, deterministic one-time task rewards */
 (function(){
+ const stickerArt=(hair,accent,face)=>'data:image/svg+xml;charset=utf-8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"><defs><linearGradient id="g" x2="1" y2="1"><stop stop-color="'+accent+'"/><stop offset="1" stop-color="#fff0f7"/></linearGradient></defs><circle cx="64" cy="64" r="60" fill="url(#g)"/><path d="M23 59Q18 13 64 15Q111 15 105 64L99 93H29Z" fill="'+hair+'"/><ellipse cx="64" cy="66" rx="36" ry="40" fill="#ffe0ce"/><path d="M28 55Q30 12 65 20Q95 19 101 53Q78 43 65 39Q48 51 28 55" fill="'+hair+'"/><ellipse cx="50" cy="66" rx="5" ry="7" fill="#30243d"/><ellipse cx="78" cy="66" rx="5" ry="7" fill="#30243d"/><path d="M53 86Q64 94 76 85" fill="none" stroke="#c45b78" stroke-width="4" stroke-linecap="round"/><circle cx="40" cy="79" r="6" fill="#ff9aaa" opacity=".7"/><circle cx="88" cy="79" r="6" fill="#ff9aaa" opacity=".7"/><path d="M48 105Q64 92 80 105L91 125H37Z" fill="'+accent+'"/><text x="64" y="119" text-anchor="middle" font-size="13" fill="#fff">'+face+'</text></svg>');
  const catalog=[
   {id:'badge_star',kind:'Huy hiệu học tập',name:'Ngôi sao chăm chỉ',artData:stickerArt('#593c85','#f5c85e','★'),desc:'Huy hiệu chibi dành cho nhiệm vụ học tập'},
   {id:'frame_lilac',kind:'Vật phẩm hồ sơ',name:'Khung Tím Mộng Mơ',artData:stickerArt('#7654a6','#d9c4ff','✦'),desc:'Khung hồ sơ phiên bản tím'},
