@@ -2115,7 +2115,24 @@ button,.secondary,.primary,.danger,.tab,.pill,.nav .ni,.tileicon,.iconbtn,.cl-ic
 #stickerBuiltins .sticker-choice img{width:64px;height:64px;object-fit:contain}
 #principiaCompanionBubble img{width:64px;height:64px;object-fit:contain;border-radius:16px}
 </style>
-</body>
+<script id="principia-remove-emoji-icons">
+(function(){
+ const pictographs=/\p{Extended_Pictographic}(?:\uFE0F|\uFE0E)?(?:\u200D\p{Extended_Pictographic}(?:\uFE0F|\uFE0E)?)*|\uFE0F/gu;
+ function clean(root){
+  if(!root)return;
+  const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
+  const nodes=[];let n;
+  while((n=walker.nextNode())){const p=n.parentElement;if(!p||p.closest('script,style,textarea,pre,code,.companion-bubble-art'))continue;if(p.closest('img,svg'))continue;nodes.push(n);}
+  nodes.forEach(x=>{const v=x.nodeValue.replace(pictographs,'');if(v!==x.nodeValue)x.nodeValue=v;});
+ }
+ clean(document.body);
+ const observer=new MutationObserver(records=>records.forEach(r=>{
+  if(r.type==='characterData'){clean(r.target.parentElement);}
+  else r.addedNodes.forEach(n=>{if(n.nodeType===Node.TEXT_NODE)clean(n.parentElement);else if(n.nodeType===Node.ELEMENT_NODE)clean(n);});
+ }));
+ observer.observe(document.body,{subtree:true,childList:true,characterData:true});
+})();
+</script></body>
 </html>
 
 <style>
