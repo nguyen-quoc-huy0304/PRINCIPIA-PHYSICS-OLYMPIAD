@@ -2146,6 +2146,8 @@ function resetOuterCover(){
 }
 
 // Public bridge for the separately-loaded Firebase auth script.
+window.PRINCIPIA_OWNER_EMAIL_PUBLIC=PRINCIPIA_OWNER_EMAIL;
+window.PRINCIPIA_OWNER_UID_PUBLIC=PRINCIPIA_OWNER_UID;
 window.renderPrincipiaApp=()=>render();
 window.resetPrincipiaStack=()=>{stack=[];};
 window.principiaNotify=message=>notify(message);
@@ -2225,12 +2227,12 @@ async function ensureFirebase(){
  return firebase.auth();
 }
 function getPrincipiaAccount(){try{return JSON.parse(localStorage.getItem('principia_google_account')||'null')}catch(e){return null}}
-function isPrincipiaOwner(){const a=getPrincipiaAccount();return !!a && a.uid===PRINCIPIA_OWNER_UID && (a.email||'').toLowerCase()===PRINCIPIA_OWNER_EMAIL;}
+function isPrincipiaOwner(){const a=getPrincipiaAccount();return !!a && a.uid===window.PRINCIPIA_OWNER_UID_PUBLIC && (a.email||'').toLowerCase()===window.PRINCIPIA_OWNER_EMAIL_PUBLIC;}
 function principiaRole(){return isPrincipiaOwner()?'admin':'viewer';}
 function isPrincipiaAdmin(){return isPrincipiaOwner();}
 function canManageContent(){return isPrincipiaOwner();}
 function canManageMedia(){return isPrincipiaOwner();}
-function requireAdmin(){if(!isPrincipiaOwner()){window.principiaNotify('Chỉ tài khoản admin '+PRINCIPIA_OWNER_EMAIL+' mới được chỉnh sửa.');return false;}return true;}
+function requireAdmin(){if(!isPrincipiaOwner()){window.principiaNotify('Chỉ tài khoản admin '+window.PRINCIPIA_OWNER_EMAIL_PUBLIC+' mới được chỉnh sửa.');return false;}return true;}
 function requirePermission(){return requireAdmin();}
 function getRoleMap(){return {};}
 function setGrantedRole(){window.principiaNotify('PRINCIPIA hiện chỉ có 1 tài khoản Admin; các tài khoản còn lại chỉ xem.');}
