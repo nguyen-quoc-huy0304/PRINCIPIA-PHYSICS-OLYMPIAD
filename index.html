@@ -1849,9 +1849,7 @@ function resetOuterCover(){
 
 </script>
 
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<!-- Firebase SDK được nạp nền sau khi giao diện đã hiển thị; tránh chặn toàn bộ trang nếu CDN chậm. -->
 
 <script>
 /* PRINCIPIA AUTH CONFIG
@@ -1870,8 +1868,38 @@ window.PRINCIPIA_FIREBASE_CONFIG = {
 };
 let GOOGLE_AUTH_READY=false;
 function firebaseConfigured(){return !!(window.PRINCIPIA_FIREBASE_CONFIG && window.PRINCIPIA_FIREBASE_CONFIG.apiKey && !window.PRINCIPIA_FIREBASE_CONFIG.apiKey.startsWith('YOUR_') && window.PRINCIPIA_FIREBASE_CONFIG.projectId && !window.PRINCIPIA_FIREBASE_CONFIG.projectId.startsWith('YOUR_'));}
-function ensureFirebase(){
+let principiaFirebaseSdkPromise=null;
+function loadPrincipiaFirebaseSdk(){
+ if(window.firebase?.auth&&window.firebase?.firestore)return Promise.resolve();
+ if(principiaFirebaseSdkPromise)return principiaFirebaseSdkPromise;
+ const urls=[
+  'https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js',
+  'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js',
+  'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js'
+ ];
+ principiaFirebaseSdkPromise=(async()=>{
+  for(const src of urls){
+   await new Promise((resolve,reject)=>{
+    const existing=[...document.scripts].find(x=>x.src===src);
+    if(existing?.dataset.loaded==='1'){resolve();return;}
+    const script=existing||document.createElement('script');
+    let settled=false;
+    const finish=(err)=>{
+     if(settled)return;settled=true;clearTimeout(timer);
+     if(err)reject(new Error('Không tải được Firebase SDK: '+src));else{script.dataset.loaded='1';resolve();}
+    };
+    script.onload=()=>finish();script.onerror=()=>finish(true);
+    const timer=setTimeout(()=>finish(true),10000);
+    if(!existing){script.src=src;script.async=false;document.head.appendChild(script);}
+   });
+  }
+ })().catch(err=>{principiaFirebaseSdkPromise=null;throw err;});
+ return principiaFirebaseSdkPromise;
+}
+async function ensureFirebase(){
  if(!firebaseConfigured()) throw new Error('Chưa điền Firebase config vào index.html.');
+ await loadPrincipiaFirebaseSdk();
+ if(!window.firebase?.apps)throw new Error('Firebase SDK chưa sẵn sàng.');
  if(!firebase.apps.length) firebase.initializeApp(window.PRINCIPIA_FIREBASE_CONFIG);
  return firebase.auth();
 }
@@ -1892,7 +1920,7 @@ function closeGoogleAccount(){setPage(accountReturnPage||'home');}
 function setAccountMode(mode){accountMode=mode==='signup'?'signup':'login';render();renderGoogleAccount();}
 async function submitEmailAuth(event){
  event.preventDefault();const status=document.getElementById('emailAuthStatus');const email=document.getElementById('authEmail')?.value.trim();const password=document.getElementById('authPassword')?.value||'';const name=document.getElementById('authName')?.value.trim();
- try{const auth=ensureFirebase();if(status)status.textContent='Đang xác thực…';let cred;
+ try{const auth=await ensureFirebase();if(status)status.textContent='Đang xác thực…';let cred;
   if(accountMode==='signup'){cred=await auth.createUserWithEmailAndPassword(email,password);if(name)await cred.user.updateProfile({displayName:name});}
   else cred=await auth.signInWithEmailAndPassword(email,password);
   await syncPrincipiaUser(cred.user);
@@ -1907,7 +1935,7 @@ async function syncPrincipiaUser(user){
  if(window.syncPrincipiaLeaderboard)window.syncPrincipiaLeaderboard();
 }
 async function signInWithGoogle(){
- try{const auth=ensureFirebase();const provider=new firebase.auth.GoogleAuthProvider();provider.setCustomParameters({prompt:'select_account'});const cred=await auth.signInWithPopup(provider);await syncPrincipiaUser(cred.user);}
+ try{const auth=await ensureFirebase();const provider=new firebase.auth.GoogleAuthProvider();provider.setCustomParameters({prompt:'select_account'});const cred=await auth.signInWithPopup(provider);await syncPrincipiaUser(cred.user);}
  catch(err){googleStatus(authErrorMessage(err));companionReact('wrong',authErrorMessage(err)+' Thử lại nhé!');}
 }
 function renderGoogleAccount(){const mount=document.getElementById('googleSignInButton');if(!mount)return;mount.innerHTML='';if(getPrincipiaAccount())return;mount.innerHTML=`<button type="button" class="google-login-fallback" onclick="signInWithGoogle()"><span aria-hidden="true">G</span> ${accountMode==='signup'?'Đăng ký':'Đăng nhập'} bằng Google</button>`;if(!firebaseConfigured())googleStatus('Cần cấu hình Firebase để bật cả Google và email/mật khẩu.');else googleStatus('Đăng nhập Google qua Firebase.');}
@@ -1918,10 +1946,20 @@ function changeAccountAvatar(file){if(!file)return;if(!file.type.startsWith('ima
 function resetAccountAvatar(){const acc=getPrincipiaAccount();if(!acc)return;delete acc.customPicture;localStorage.setItem('principia_google_account',JSON.stringify(acc));render();}
 function openYoutubeWithGoogle(){const acc=getPrincipiaAccount();window.open(acc?.email?'https://www.youtube.com/?authuser='+encodeURIComponent(acc.email):'https://www.youtube.com/','_blank','noopener');}
 async function signOutGoogleLocal(){try{if(firebase.apps.length)await firebase.auth().signOut();}catch(e){}localStorage.removeItem('principia_google_account');const appProfile=JSON.parse(localStorage.getItem('halo_profile')||'{}');appProfile.name='Learner';appProfile.avatar='';localStorage.setItem('halo_profile',JSON.stringify(appProfile));page='account';accountMode='login';render();renderGoogleAccount();}
-function initPrincipiaAuth(){
+async function initPrincipiaAuth(){
  if(!firebaseConfigured()){if(page!=='account'&&!getPrincipiaAccount()){page='account';render();}return;}
- try{const auth=ensureFirebase();auth.onAuthStateChanged(async user=>{if(user){await syncPrincipiaUser(user);}else{localStorage.removeItem('principia_google_account');if(page!=='account'){page='account';stack=[];render();}renderGoogleAccount();}});}
- catch(e){console.error(e);}
+ try{
+  const auth=await ensureFirebase();
+  auth.onAuthStateChanged(async user=>{
+   if(user){await syncPrincipiaUser(user);}
+   else{localStorage.removeItem('principia_google_account');if(page!=='account'){page='account';stack=[];render();}renderGoogleAccount();}
+  });
+ }catch(e){
+  console.error('PRINCIPIA auth init:',e);
+  const status=document.getElementById('googleAccountStatus');
+  if(status)status.textContent='Không kết nối được máy chủ đăng nhập. Giao diện vẫn hoạt động; hãy tải lại hoặc kiểm tra kết nối.';
+  window.principiaAuthInitError=e?.message||String(e);
+ }
 }
 document.addEventListener('DOMContentLoaded',()=>{initPrincipiaAuth();if(page==='account')renderGoogleAccount();});
 window.addEventListener('beforeunload',e=>{if(page==='play'&&activeQuiz&&(answers||[]).length>0){e.preventDefault();e.returnValue='Bài làm chưa hoàn thành.';}});
