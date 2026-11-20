@@ -1126,7 +1126,7 @@ function morePage(){
  const currentTheme=localStorage.getItem('principia_theme')||'dark';
  return `<div class="eyebrow">MORE</div><h1>Cài đặt & hồ sơ</h1><div class="panel"><h2>Hồ sơ của bạn</h2><div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap">${avatarHTML()}<div><h3>${esc(profile.name)}</h3><p class="muted small">${xp} XP · ${streak} ngày streak</p></div></div><button class="secondary" onclick="profileEditor()">Chỉnh sửa hồ sơ</button></div>
  <div class="panel"><h2>Nhân vật & Sticker</h2><p class="muted small">Chỉ chọn nhân vật anime chibi và meme đồng hành khi học tập.</p><button class="secondary" onclick="openStickerStudio()">🎀 Cài đặt nhân vật & sticker</button><button class="secondary" onclick="openRewardCollection()">🎁 Hộp quà & bộ sưu tập</button></div>
- <div class="panel"><h2>🎨 Giao diện & bố cục</h2><p class="muted small">Toàn bộ tùy chỉnh giao diện nằm tại đây.</p><label for="principiaThemeSelect">Chủ đề màu</label><select id="principiaThemeSelect" onchange="applyPrincipiaTheme(this.value)"><option value="dark" ${currentTheme==='dark'?'selected':''}>Dark • Tím PRINCIPIA</option><option value="light" ${currentTheme==='light'?'selected':''}>Light • Sáng</option><option value="cosmic" ${currentTheme==='cosmic'?'selected':''}>Cosmic • Vũ trụ xanh tím</option></select><button class="secondary" onclick="openLayoutSettings()">Tên nhóm, ảnh nhóm, icon và thứ tự tab</button></div>
+ <div class="panel"><h2>🎨 Giao diện & bố cục</h2><p class="muted small">Toàn bộ tùy chỉnh giao diện nằm tại đây.</p><label for="principiaThemeSelect">Chủ đề màu</label><select id="principiaThemeSelect" onchange="applyPrincipiaTheme(this.value)"><option value="dark" ${currentTheme==='dark'?'selected':''}>Dark • Tím PRINCIPIA</option><option value="light" ${currentTheme==='light'?'selected':''}>Light • Sáng</option><option value="cosmic" ${currentTheme==='cosmic'?'selected':''}>Cosmic • Vũ trụ xanh tím</option></select><button class="secondary" onclick="openLayoutSettings()">Đổi tên nhóm và tải ảnh làm biểu tượng cho Home, Học tập, Quiz, Đố vui, Giải trí, Tiến độ</button></div>
  <div class="panel"><h2>Dữ liệu</h2><div class="toolbar"><button class="primary" onclick="backup()">↓ Xuất bản sao lưu</button><button class="secondary" onclick="$('#import').click()">↑ Nhập bản sao lưu</button><input id="import" type="file" accept=".json" class="hidden" onchange="restore(this.files[0])"></div></div>
  <div class="panel"><h2>Trợ giúp</h2><p class="muted small">PRO · PRINCIPIA PHYSICS OLYMPIAD · Phiên bản HTML đơn tệp.</p><button class="danger" onclick="resetAll()">Khôi phục dữ liệu mẫu</button></div>`;
 }
@@ -2437,3 +2437,14 @@ html[data-theme="light"] #codelearnWorkspace #clTab-grade{background:#f5f1ff!imp
 html[data-theme="light"] #codelearnWorkspace #clTab-phet{background:#effaf6!important}
 html[data-theme="light"] #codelearnWorkspace .cl-topbar button[onclick="exitCodelearnWorkspace()"],html[data-theme="light"] #codelearnWorkspace button[onclick="copyTranscriptToNote()"],html[data-theme="light"] #codelearnWorkspace button[onclick="clearTranscript()"],html[data-theme="light"] #codelearnWorkspace button[onclick="toggleNotePopPanel()"],html[data-theme="light"] #codelearnWorkspace button[onclick="pushPopNoteToMain()"],html[data-theme="light"] #codelearnWorkspace button[onclick="toggleNotePopPanel(false)"]{color:#fff!important}
 </style>
+<script>
+/* PRINCIPIA_DECORATIVE_GLYPH_CLEANUP_V1: keep lesson artwork and companion images; remove decorative glyph icons everywhere else. */
+(function(){
+ 'use strict';
+ const glyphs=/[\\u{1F000}-\\u{1FAFF}\\u{2600}-\\u{27BF}\\u{2300}-\\u{23FF}\\u{2B00}-\\u{2BFF}\\u{2190}-\\u{21FF}\\u{FE0F}\\u{20E3}]/gu;
+ function skipText(n){const p=n.parentElement;if(!p)return true;return !!p.closest('script,style,textarea,input,svg,pre,code,.lesson-tile-icon,.lesson-content-panel,.content,.companion-bubble-art');}
+ function cleanNode(n){if(n.nodeType===Node.TEXT_NODE){if(!skipText(n))n.nodeValue=n.nodeValue.replace(glyphs,'');return;}if(n.nodeType!==Node.ELEMENT_NODE&&n!==document.body)return;const w=document.createTreeWalker(n,NodeFilter.SHOW_TEXT);const list=[];while(w.nextNode())list.push(w.currentNode);list.forEach(t=>{if(!skipText(t))t.nodeValue=t.nodeValue.replace(glyphs,'')});}
+ function start(){cleanNode(document.body);const observer=new MutationObserver(records=>{for(const rec of records){if(rec.type==='characterData')cleanNode(rec.target);else rec.addedNodes.forEach(cleanNode)}});observer.observe(document.body,{subtree:true,childList:true,characterData:true});}
+ if(document.body)start();else document.addEventListener('DOMContentLoaded',start,{once:true});
+})();
+</script>
