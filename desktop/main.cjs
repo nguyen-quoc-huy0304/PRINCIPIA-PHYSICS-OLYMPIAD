@@ -39,9 +39,9 @@ async function isFrameBlocked(value) {
     const xFrameOptions = (response.headers.get('x-frame-options') || '').toLowerCase();
     if (xFrameOptions.includes('deny') || xFrameOptions.includes('sameorigin')) return true;
     const csp = response.headers.get('content-security-policy') || '';
-    const directive = csp.split(';').map(part => part.trim()).find(part => /^frame-ancestors\\s/i.test(part));
+    const directive = csp.split(';').map(part => part.trim()).find(part => /^frame-ancestors\s/i.test(part));
     if (!directive) return false;
-    const sources = directive.replace(/^frame-ancestors\\s+/i, '').split(/\\s+/);
+    const sources = directive.replace(/^frame-ancestors\s+/i, '').split(/\s+/);
     if (sources.includes('*') || sources.includes('https:') || sources.includes('http:')) return false;
     const appOrigin = new URL(APP_URL).origin;
     const appHost = new URL(APP_URL).hostname;
@@ -49,9 +49,9 @@ async function isFrameBlocked(value) {
       if (source === "'none'") return false;
       if (source === "'self'") return false;
       try {
-        const parsed = new URL(source.replace(/^\\*\\./, 'wildcard.' ));
+        const parsed = new URL(source.replace(/^\*\./, 'wildcard.' ));
         if (parsed.origin === appOrigin) return true;
-        if (source.includes('*.') && appHost.endsWith(parsed.hostname.replace(/^wildcard\\./, ''))) return true;
+        if (source.includes('*.') && appHost.endsWith(parsed.hostname.replace(/^wildcard\./, ''))) return true;
       } catch {}
       return false;
     });
