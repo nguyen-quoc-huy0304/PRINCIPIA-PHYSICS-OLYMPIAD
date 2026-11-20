@@ -1154,6 +1154,7 @@ let streak=Number(localStorage.getItem('halo_streak')||0);
 let lastDay=localStorage.getItem('halo_lastday')||'';
 let completed=load('halo_completed',[]);
 let page='account',stack=[],activeLesson=null,search='';
+window.getPrincipiaPage=()=>page;window.setPrincipiaPage=p=>{page=p;};
 let activeQuiz=null,answers=[],dragId=null;
 
 function load(k,def){try{return JSON.parse(localStorage.getItem(k))??clone(def)}catch{return clone(def)}}
@@ -2212,7 +2213,7 @@ function getRoleMap(){return {};}
 function setGrantedRole(){notify('PRINCIPIA hiện chỉ có 1 tài khoản Admin; các tài khoản còn lại chỉ xem.');}
 function revokeGrantedRole(){return;}
 function googleStatus(msg){const el=document.getElementById('googleAccountStatus');if(el)el.textContent=msg;}
-function openGoogleAccount(){accountReturnPage=page==='account'?accountReturnPage:page;page='account';stack=[];render();renderGoogleAccount();}
+function openGoogleAccount(){accountReturnPage=window.getPrincipiaPage()==='account'?accountReturnPage:window.getPrincipiaPage();window.setPrincipiaPage('account');stack=[];render();renderGoogleAccount();}
 function closeGoogleAccount(){setPage(accountReturnPage||'home');}
 function setAccountMode(mode){accountMode=mode==='signup'?'signup':'login';render();renderGoogleAccount();}
 async function submitEmailAuth(event){
@@ -2227,7 +2228,7 @@ function authErrorMessage(err){const map={'auth/email-already-in-use':'Email nà
 async function syncPrincipiaUser(user){
  if(!user)return;const previous=getPrincipiaAccount();const account={uid:user.uid,name:user.displayName||user.email?.split('@')[0]||'Người dùng',email:user.email||'',customPicture:previous?.uid===user.uid?previous.customPicture||'':'',signedInAt:new Date().toISOString(),provider:user.providerData?.[0]?.providerId||'password'};
  localStorage.setItem('principia_google_account',JSON.stringify(account));companionReact('happy','Đăng nhập thành công! Rất vui vì bạn đã quay lại 💖');const appProfile=JSON.parse(localStorage.getItem('halo_profile')||'{}');appProfile.name=account.name;appProfile.avatar='';localStorage.setItem('halo_profile',JSON.stringify(appProfile));
- if(page==='account')page=localStorage.getItem('principia_welcome_seen_v3_'+user.uid)==='1'?'home':'welcome';render();
+ if(window.getPrincipiaPage()==='account')window.setPrincipiaPage(localStorage.getItem('principia_welcome_seen_v3_'+user.uid)==='1'?'home':'welcome');render();
  if(window.watchPrincipiaLeaderboard)window.watchPrincipiaLeaderboard();
  if(window.syncPrincipiaLeaderboard)window.syncPrincipiaLeaderboard();
 }
@@ -2242,14 +2243,14 @@ function escapeAccountText(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'
 function changeAccountAvatar(file){if(!file)return;if(!file.type.startsWith('image/')){notify('Vui lòng chọn tệp ảnh');return;}if(file.size>4*1024*1024){notify('Ảnh tối đa 4 MB');return;}const reader=new FileReader();reader.onload=()=>{const acc=getPrincipiaAccount();if(!acc)return;acc.customPicture=reader.result;localStorage.setItem('principia_google_account',JSON.stringify(acc));render();notify('Đã cập nhật ảnh đại diện');};reader.readAsDataURL(file);}
 function resetAccountAvatar(){const acc=getPrincipiaAccount();if(!acc)return;delete acc.customPicture;localStorage.setItem('principia_google_account',JSON.stringify(acc));render();}
 function openYoutubeWithGoogle(){const acc=getPrincipiaAccount();window.open(acc?.email?'https://www.youtube.com/?authuser='+encodeURIComponent(acc.email):'https://www.youtube.com/','_blank','noopener');}
-async function signOutGoogleLocal(){try{if(firebase.apps.length)await firebase.auth().signOut();}catch(e){}localStorage.removeItem('principia_google_account');const appProfile=JSON.parse(localStorage.getItem('halo_profile')||'{}');appProfile.name='Learner';appProfile.avatar='';localStorage.setItem('halo_profile',JSON.stringify(appProfile));page='account';accountMode='login';render();renderGoogleAccount();}
+async function signOutGoogleLocal(){try{if(firebase.apps.length)await firebase.auth().signOut();}catch(e){}localStorage.removeItem('principia_google_account');const appProfile=JSON.parse(localStorage.getItem('halo_profile')||'{}');appProfile.name='Learner';appProfile.avatar='';localStorage.setItem('halo_profile',JSON.stringify(appProfile));window.setPrincipiaPage('account');accountMode='login';render();renderGoogleAccount();}
 async function initPrincipiaAuth(){
- if(!firebaseConfigured()){if(page!=='account'&&!getPrincipiaAccount()){page='account';render();}return;}
+ if(!firebaseConfigured()){if(window.getPrincipiaPage()!=='account'&&!getPrincipiaAccount()){window.setPrincipiaPage('account');render();}return;}
  try{
   const auth=await ensureFirebase();
   auth.onAuthStateChanged(async user=>{
    if(user){await syncPrincipiaUser(user);}
-   else{localStorage.removeItem('principia_google_account');if(page!=='account'){page='account';stack=[];render();}renderGoogleAccount();}
+   else{localStorage.removeItem('principia_google_account');if(window.getPrincipiaPage()!=='account'){window.setPrincipiaPage('account');stack=[];render();}renderGoogleAccount();}
   });
  }catch(e){
   console.error('PRINCIPIA auth init:',e);
@@ -2258,8 +2259,8 @@ async function initPrincipiaAuth(){
   window.principiaAuthInitError=e?.message||String(e);
  }
 }
-document.addEventListener('DOMContentLoaded',()=>{initPrincipiaAuth();if(page==='account')renderGoogleAccount();});
-window.addEventListener('beforeunload',e=>{if(page==='play'&&activeQuiz&&(answers||[]).length>0){e.preventDefault();e.returnValue='Bài làm chưa hoàn thành.';}});
+document.addEventListener('DOMContentLoaded',()=>{initPrincipiaAuth();if(window.getPrincipiaPage()==='account')renderGoogleAccount();});
+window.addEventListener('beforeunload',e=>{if(window.getPrincipiaPage()==='play'&&activeQuiz&&(answers||[]).length>0){e.preventDefault();e.returnValue='Bài làm chưa hoàn thành.';}});
 
 
 /* PRINCIPIA shared academic leaderboard */
