@@ -1,0 +1,23 @@
+{
+  "name": "principia-physics-olympiad-desktop",
+  "version": "1.0.0",
+  "private": true,
+  "description": "PRINCIPIA Physics Olympiad desktop app with a hybrid embedded browser",
+  "main": "desktop/main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "dist:win": "electron-builder --win nsis"
+  },
+  "devDependencies": {
+    "electron": "^35.2.1",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "vn.principia.physicsolympiad",
+    "productName": "PRINCIPIA Physics Olympiad",
+    "directories": { "output": "dist" },
+    "files": ["desktop/**/*", "package.json"],
+    "win": { "target": ["nsis"], "artifactName": "PRINCIPIA-Setup-${version}.${ext}" },
+    "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true, "createDesktopShortcut": true, "createStartMenuShortcut": true }
+  }
+}
