@@ -2151,6 +2151,14 @@ window.resetPrincipiaStack=()=>{stack=[];};
 window.principiaNotify=message=>notify(message);
 window.principiaCompanionReact=(...args)=>companionReact(...args);
 window.isPrincipiaQuizInProgress=()=>page==='play'&&!!activeQuiz&&(answers||[]).length>0;
+window.applyPrincipiaThemePublic=theme=>applyPrincipiaTheme(theme);
+window.getPrincipiaStats=()=>({name:profile?.name||'Học sinh',xp:Number(xp)||0,streak:Number(streak)||0,completedCount:Array.isArray(completed)?completed.length:0});
+window.renderPrincipiaLeaderboardRows=(rows,uid)=>{
+ if(page!=='progress')return;
+ const y=document.getElementById('principiaLearningLeaderboard');if(!y)return;
+ const html=(Array.isArray(rows)?rows:[]).map((r,i)=>'<div class="file principia-rank-row"><b class="principia-rank-number">'+(i+1)+'</b><div class="principia-rank-avatar">'+(r.uid===uid?'Bạn':'Học sinh')+'</div><div class="principia-rank-meta"><b>'+esc(r.name||'Học sinh')+'</b><div class="small muted">'+(Number(r.completedCount)||0)+' bài học · '+(Number(r.streak)||0)+' ngày streak</div></div><b class="principia-rank-xp">'+(Number(r.xp)||0)+' XP</b></div>').join('');
+ y.innerHTML=(html||'<div class="empty">Chưa có tài khoản nào đồng bộ.</div>')+'<p class="small muted">Xếp hạng theo XP học tập.</p>';
+};
 
 </script>
 
@@ -2288,10 +2296,11 @@ window.syncPrincipiaLeaderboard=function(){
  principiaLeaderboardSyncTimer=setTimeout(async()=>{
   try{
    const db=principiaLeaderboardDb();
+   const stats=window.getPrincipiaStats();
    await db.collection('principiaLeaderboard').doc(acc.uid).set({
-    uid:acc.uid,name:String(acc.name||profile.name||'Học sinh').slice(0,60),
-    xp:Math.max(0,Number(xp)||0),streak:Math.max(0,Number(streak)||0),
-    completedCount:Array.isArray(completed)?completed.length:0,
+    uid:acc.uid,name:String(acc.name||stats.name||'Học sinh').slice(0,60),
+    xp:stats.xp,streak:stats.streak,
+    completedCount:stats.completedCount,
     updatedAt:firebase.firestore.FieldValue.serverTimestamp()
    },{merge:true});
   }catch(e){window.principiaLeaderboardError=e?.code||e?.message||'Firestore write failed';}
@@ -2305,13 +2314,13 @@ window.watchPrincipiaLeaderboard=function(){
   principiaLeaderboardUnsubscribe=db.collection('principiaLeaderboard').orderBy('xp','desc').limit(50).onSnapshot(snap=>{
    window.principiaLeaderboardRows=snap.docs.map(d=>d.data()).filter(x=>x&&x.uid);
    window.principiaLeaderboardError='';
-   if(page==='progress'){const y=document.getElementById('principiaLearningLeaderboard');if(y){const rows=window.principiaLeaderboardRows;const html=rows.map((r,i)=>'<div class="file principia-rank-row"><b class="principia-rank-number">'+(i+1)+'</b><div class="principia-rank-avatar">'+(r.uid===acc.uid?'Bạn':'Học sinh')+'</div><div class="principia-rank-meta"><b>'+esc(r.name||'Học sinh')+'</b><div class="small muted">'+(Number(r.completedCount)||0)+' bài học · '+(Number(r.streak)||0)+' ngày streak</div></div><b class="principia-rank-xp">'+(Number(r.xp)||0)+' XP</b></div>').join('');y.innerHTML=(html||'<div class="empty">Chưa có tài khoản nào đồng bộ.</div>')+'<p class="small muted">Xếp hạng theo XP học tập.</p>';}}
+   window.renderPrincipiaLeaderboardRows(window.principiaLeaderboardRows,acc.uid);
   },err=>{window.principiaLeaderboardError=err?.code||err?.message||'Firestore read failed';});
  }catch(e){window.principiaLeaderboardError=e?.message||'Firestore unavailable';}
 };
 
 // Khởi động sau khi Firebase và các hàm xác thực đã được khai báo.
-applyPrincipiaTheme(localStorage.getItem('principia_theme')||'dark');
+window.applyPrincipiaThemePublic(localStorage.getItem('principia_theme')||'dark');
 window.renderPrincipiaApp();
 
 </script>
