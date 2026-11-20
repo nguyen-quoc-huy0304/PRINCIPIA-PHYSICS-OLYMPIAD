@@ -533,6 +533,20 @@ p{line-height:1.7}
  #codelearnWorkspace #clVideoStage iframe{min-height:230px}
 }
 
+
+/* PRINCIPIA COSMIC + readable lesson workspace */
+html[data-theme="cosmic"] .lesson-content-panel,html[data-theme="cosmic"] .lesson-layout .panel{background:linear-gradient(145deg,#18294b,#111d39)!important;border-color:#405987!important;color:#f4f7ff!important}
+html[data-theme="cosmic"] .lesson-content-panel .content,html[data-theme="cosmic"] .lesson-layout .content{color:#f4f7ff!important}
+html[data-theme="cosmic"] .lesson-content-panel p,html[data-theme="cosmic"] .lesson-content-panel li,html[data-theme="cosmic"] .lesson-layout p,html[data-theme="cosmic"] .lesson-layout li{color:#e0eaff!important}
+html[data-theme="cosmic"] .lesson-content-panel h1,html[data-theme="cosmic"] .lesson-content-panel h2,html[data-theme="cosmic"] .lesson-content-panel h3{color:#a9d9ff!important}
+html[data-theme="light"] .lesson-content-panel,html[data-theme="light"] .lesson-layout .panel{background:#fff!important;color:#25233a!important;border-color:#dedbea!important}
+html[data-theme="light"] .lesson-content-panel .content,html[data-theme="light"] .lesson-layout .content,html[data-theme="light"] .lesson-content-panel p,html[data-theme="light"] .lesson-content-panel li{color:#302d46!important}
+html[data-theme="light"] .lesson-content-panel h1,html[data-theme="light"] .lesson-content-panel h2,html[data-theme="light"] .lesson-content-panel h3{color:#5541a0!important}
+html[data-theme="cosmic"] .cl-left-pane{background:#132443!important;color:#f4f7ff!important}
+html[data-theme="cosmic"] .cl-right-pane{background:#08142b!important;color:#f4f7ff!important}
+html[data-theme="cosmic"] .cl-iconbar{background:#101e3b!important}
+html[data-theme="light"] .cl-left-pane{background:#fff!important;color:#25233a!important}
+html[data-theme="light"] .cl-right-pane{background:#17243d!important;color:#f8fbff!important}
 </style>
 </head>
 <body>
@@ -996,7 +1010,7 @@ function entertainmentState(){const wk=entertainmentWeekKey();let st;try{st=JSON
 function leagueBots(){const names=['NewtonBot','Einstein AI','Gauss.exe','CurieBot','Feynman AI','TeslaMind','NoetherBot'];const st=entertainmentState();let seed=0;for(const c of st.week)seed=(seed*31+c.charCodeAt(0))>>>0;return names.map((name,i)=>{seed=(seed*1664525+1013904223)>>>0;return {name,points:150+seed%650,avatar:['🤖','🧠','🦾','👾','⚙️','🛰️','🔬'][i]}}).sort((a,b)=>b.points-a.points)}
 function leagueRank(points){return points>=900?{name:'Đại kiện tướng',icon:'👑'}:points>=600?{name:'Cao thủ',icon:'💎'}:points>=350?{name:'Chiến binh',icon:'🥇'}:points>=150?{name:'Kỳ thủ',icon:'🥈'}:{name:'Tân binh',icon:'🌱'}}
 const PRINCIPIA_DEFAULT_NAV=[['home','⌂','Home'],['library','▦','Học tập'],['quiz','🎯','Quiz'],['fun','🧩','Đố vui'],['entertainment','🎮','Giải trí'],['progress','◷','Tiến độ']];
-function principiaNavGroups(){try{return {...{workspace:'WORKSPACE',more:'MORE'},...JSON.parse(localStorage.getItem('principia_nav_groups')||'{}')}}catch(e){return {workspace:'WORKSPACE',more:'MORE'}}}
+function principiaNavGroups(){try{return {...{workspace:'PRO',more:'MORE'},...JSON.parse(localStorage.getItem('principia_nav_groups')||'{}')}}catch(e){return {workspace:'PRO',more:'MORE'}}}
 function principiaNav(){try{return JSON.parse(localStorage.getItem('principia_nav_config'))||PRINCIPIA_DEFAULT_NAV}catch(e){return PRINCIPIA_DEFAULT_NAV}}
 function savePrincipiaNav(v){localStorage.setItem('principia_nav_config',JSON.stringify(v))}
 function navGroupImage(kind){try{return localStorage.getItem('principia_nav_group_image_'+kind)||''}catch(e){return ''}}
@@ -1042,9 +1056,10 @@ function progressPage(){
  return `<div class="eyebrow">YOUR JOURNEY</div><h1>Tiến độ học tập</h1><div class="panel"><h2>${pct}% hoàn thành</h2><div class="progress"><div style="width:${pct}%"></div></div><p class="muted small">${completed.length}/${total} bài học</p><h3>⭐ ${xp} XP · 🔥 ${streak} ngày streak</h3></div><div class="sectionhead"><div><div class="eyebrow">LEARNING LEADERBOARD</div><h2>🏆 Bảng xếp hạng học tập</h2></div><span class="pill">Theo XP</span></div><div class="panel"><div class="file" style="display:flex;align-items:center;gap:12px"><b style="width:28px">—</b><div style="font-size:24px">🎓</div><div style="flex:1"><b>${esc(studentName)} (Bạn)</b><div class="small muted">${completed.length} bài học hoàn thành · ${streak} ngày streak</div></div><b>${xp} XP</b></div><p class="small muted">Đây là thành tích trên thiết bị hiện tại. Bảng xếp hạng giữa nhiều học sinh/tài khoản cần đồng bộ XP lên Firebase Firestore; phiên bản hiện tại chưa có dữ liệu học tập dùng chung nên mình không tự tạo tên hoặc điểm giả.</p></div><div class="sectionhead"><h2>Bài học</h2></div>${lessons().map(l=>`<div class="file"><span>${esc(l.icon)} ${esc(l.name)}</span><span>${completed.includes(l.id)?'✓ Đã học':'Chưa học'}</span></div>`).join('')}`;
 }
 function morePage(){
+ const currentTheme=localStorage.getItem('principia_theme')||'dark';
  return `<div class="eyebrow">MORE</div><h1>Cài đặt & hồ sơ</h1><div class="panel"><h2>Hồ sơ của bạn</h2><div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap">${avatarHTML()}<div><h3>${esc(profile.name)}</h3><p class="muted small">${xp} XP · ${streak} ngày streak</p></div></div><button class="secondary" onclick="profileEditor()">Chỉnh sửa hồ sơ</button></div>
  <div class="panel"><h2>Nhân vật & Sticker</h2><p class="muted small">Chỉ chọn nhân vật anime chibi và meme đồng hành khi học tập.</p><button class="secondary" onclick="openStickerStudio()">🎀 Cài đặt nhân vật & sticker</button><button class="secondary" onclick="openRewardCollection()">🎁 Hộp quà & bộ sưu tập</button></div>
- <div class="panel"><h2>Giao diện & bố cục</h2><p class="muted small">Đổi tên, icon và sắp xếp thứ tự các mục trên thanh điều hướng.</p><button class="secondary" onclick="openLayoutSettings()">🎨 Tùy chỉnh tên, icon, vị trí tab</button> <button class="secondary" onclick="toggleTheme()">Đổi giao diện sáng / tối</button></div>
+ <div class="panel"><h2>🎨 Giao diện & bố cục</h2><p class="muted small">Toàn bộ tùy chỉnh giao diện nằm tại đây.</p><label for="principiaThemeSelect">Chủ đề màu</label><select id="principiaThemeSelect" onchange="applyPrincipiaTheme(this.value)"><option value="dark" ${currentTheme==='dark'?'selected':''}>Dark • Tím PRINCIPIA</option><option value="light" ${currentTheme==='light'?'selected':''}>Light • Sáng</option><option value="cosmic" ${currentTheme==='cosmic'?'selected':''}>Cosmic • Vũ trụ xanh tím</option></select><button class="secondary" onclick="openLayoutSettings()">Tên nhóm, ảnh nhóm, icon và thứ tự tab</button></div>
  <div class="panel"><h2>Dữ liệu</h2><div class="toolbar"><button class="primary" onclick="backup()">↓ Xuất bản sao lưu</button><button class="secondary" onclick="$('#import').click()">↑ Nhập bản sao lưu</button><input id="import" type="file" accept=".json" class="hidden" onchange="restore(this.files[0])"></div></div>
  <div class="panel"><h2>Trợ giúp</h2><p class="muted small">PRO · PRINCIPIA PHYSICS OLYMPIAD · Phiên bản HTML đơn tệp.</p><button class="danger" onclick="resetAll()">Khôi phục dữ liệu mẫu</button></div>`;
 }
@@ -1103,16 +1118,17 @@ function render(){
  if(!getPrincipiaAccount() && page!=='account'){page='account';stack=[];}
  // Giữ màn hình chào cho tới khi người dùng chủ động bấm Bắt đầu hành trình.
 
+ if(page==='welcome' && localStorage.getItem('principia_welcome_seen')==='1'){page='home';}
  if(page==='welcome'){
   const coverStyle = outerCoverImg ? `style="background-image:url('${outerCoverImg}')"` : '';
   const coverCls = outerCoverImg ? 'welcome has-user-cover' : 'welcome';
-  app.innerHTML=`<div class="${coverCls}" ${coverStyle}><div class="welcome-card"><img class="welcome-logo-img" src="${PRINCIPIA_LOGO_URI}" alt="Principia Physics Olympiad Logo"><div class="eyebrow">PRINCIPIA • PHYSICS OLYMPIAD</div><h1>PRO<span style="color:var(--purple)">.</span></h1><p>Khám phá kiến thức, xây dựng thói quen học tập và chinh phục từng thử thách.</p><button class="primary" onclick="setPage('home')">Bắt đầu hành trình →</button><p class="small">LEARN · EXPLORE · GROW</p></div></div>`;
+  app.innerHTML=`<div class="${coverCls}" ${coverStyle}><div class="welcome-card"><img class="welcome-logo-img" src="${PRINCIPIA_LOGO_URI}" alt="Principia Physics Olympiad Logo"><div class="eyebrow">PRINCIPIA • PHYSICS OLYMPIAD</div><h1>PRO<span style="color:var(--purple)">.</span></h1><p>Khám phá kiến thức, xây dựng thói quen học tập và chinh phục từng thử thách.</p><button class="primary" onclick="localStorage.setItem('principia_welcome_seen','1');setPage('home')">Bắt đầu hành trình →</button><p class="small">LEARN · EXPLORE · GROW</p></div></div>`;
   return;
 }
  let nav=principiaNav();
  let body=page==='account'?accountPage():page==='home'?home():page==='library'?library():page==='lesson'?lesson():page==='quiz'?quizHome():page==='fun'?funHome():page==='entertainment'?entertainmentPage():page==='play'?playPage():page==='lessonplay'?lessonPlayPage():page==='progress'?progressPage():morePage();
  const outerCoverHtml = `<div class="outer-cover-banner"><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;"><img class="outer-cover-thumb" src="${outerCoverImg}" alt="Ảnh ngoài trang"><div><div class="eyebrow">ẢNH NGOÀI TRANG</div><div class="small muted">Hiển thị ảnh bạn đưa ngay ngoài không gian học tập</div></div></div><div style="display:flex;gap:8px;flex-wrap:wrap;"><button class="secondary" onclick="$('#outerCoverInput').click()">Đổi ảnh ngoài</button><button class="secondary" onclick="resetOuterCover()">Ảnh mặc định</button><input type="file" id="outerCoverInput" accept="image/*" class="hidden" onchange="updateOuterCover(this.files[0])"></div></div>`;
-app.innerHTML=`<div class="layout"><aside class="sidebar"><div class="brand"><img class="brand-logo-img" src="${PRINCIPIA_LOGO_URI}" alt="Principia Logo">PRINCIPIA • PHYSICS OLYMPIAD</div>${navGroupLabelHTML('workspace')}${nav.map(([id,ic,n])=>`<button class="nav ${page===id||page==='lesson'&&id==='library'||page==='play'&&id===(activeQuiz?.kind==='fun'?'fun':'quiz')?'active':''}" onclick="setPage('${id}')"><span class="ni">${ic}</span>${n}</button>`).join('')}<div class="sidebottom">${navGroupLabelHTML('more')}<button class="nav ${page==='more'?'active':''}" onclick="setPage('more')"><span class="ni">•••</span>More / Settings</button><button class="nav" onclick="openLayoutSettings()"><span class="ni">🎨</span>Tùy chỉnh giao diện</button></div></aside><main class="main">${topbar()}<div id="body">${body}</div></main></div>`;
+app.innerHTML=`<div class="layout"><aside class="sidebar"><div class="brand"><img class="brand-logo-img" src="${PRINCIPIA_LOGO_URI}" alt="Principia Logo">PRINCIPIA • PHYSICS OLYMPIAD</div>${navGroupLabelHTML('workspace')}${nav.map(([id,ic,n])=>`<button class="nav ${page===id||page==='lesson'&&id==='library'||page==='play'&&id===(activeQuiz?.kind==='fun'?'fun':'quiz')?'active':''}" onclick="setPage('${id}')"><span class="ni">${ic}</span>${n}</button>`).join('')}<div class="sidebottom">${navGroupLabelHTML('more')}<button class="nav ${page==='more'?'active':''}" onclick="setPage('more')"><span class="ni">•••</span>More / Settings</button></div></aside><main class="main">${topbar()}<div id="body">${body}</div></main></div>`;
  document.body.dataset.principiaRole=principiaRole();
  document.body.classList.toggle('principia-admin',isPrincipiaAdmin());
  // Chỉ ADMIN mới được tạo nội dung, dùng nút + hoặc nhập/dán link video.
@@ -1228,6 +1244,7 @@ function saveProfile(){
  if(f){let r=new FileReader();r.onload=()=>{profile.avatar=r.result;saveAll();closeModal();render()};r.readAsDataURL(f)}
  else{saveAll();closeModal();render()}
 }
+function applyPrincipiaTheme(theme){const root=document.documentElement;root.dataset.theme=theme;localStorage.setItem('principia_theme',theme);root.style.cssText='';if(theme==='light'){root.style.setProperty('--bg','#f3f2fa');root.style.setProperty('--side','#fff');root.style.setProperty('--card','#fff');root.style.setProperty('--card2','#eeedf7');root.style.setProperty('--line','#dedbea');root.style.setProperty('--txt','#242238');root.style.setProperty('--muted','#66647a')}else if(theme==='cosmic'){root.style.setProperty('--bg','#080d20');root.style.setProperty('--side','#101a35');root.style.setProperty('--card','#152443');root.style.setProperty('--card2','#20345b');root.style.setProperty('--line','#344b78');root.style.setProperty('--txt','#f1f6ff');root.style.setProperty('--muted','#b5c6e6');root.style.setProperty('--purple','#82cfff');root.style.setProperty('--purple2','#456fc9')}else{root.style.setProperty('--bg','#0c0d16');root.style.setProperty('--side','#111321');root.style.setProperty('--card','#171a2a');root.style.setProperty('--card2','#20233a');root.style.setProperty('--line','#292c43');root.style.setProperty('--txt','#f4f2ff');root.style.setProperty('--muted','#aeb2c8');root.style.setProperty('--purple','#a18aff');root.style.setProperty('--purple2','#765be7')}const sel=document.getElementById('principiaThemeSelect');if(sel)sel.value=theme}
 function toggleTheme(){
  if(document.documentElement.dataset.theme==='light'){
   document.documentElement.dataset.theme='';document.documentElement.style.cssText='';
@@ -1741,6 +1758,7 @@ function resetOuterCover(){
   notify('Đã khôi phục ảnh ngoài trang');
 }
 
+applyPrincipiaTheme(localStorage.getItem('principia_theme')||'dark');
 render();
 </script>
 
@@ -1795,7 +1813,7 @@ function authErrorMessage(err){const map={'auth/email-already-in-use':'Email nà
 async function syncPrincipiaUser(user){
  if(!user)return;const previous=getPrincipiaAccount();const account={uid:user.uid,name:user.displayName||user.email?.split('@')[0]||'Người dùng',email:user.email||'',customPicture:previous?.uid===user.uid?previous.customPicture||'':'',signedInAt:new Date().toISOString(),provider:user.providerData?.[0]?.providerId||'password'};
  localStorage.setItem('principia_google_account',JSON.stringify(account));companionReact('happy','Đăng nhập thành công! Rất vui vì bạn đã quay lại 💖');const appProfile=JSON.parse(localStorage.getItem('halo_profile')||'{}');appProfile.name=account.name;appProfile.avatar='';localStorage.setItem('halo_profile',JSON.stringify(appProfile));
- if(page==='account')page='welcome';render();
+ if(page==='account')page=localStorage.getItem('principia_welcome_seen')==='1'?'home':'welcome';render();
 }
 async function signInWithGoogle(){
  try{const auth=ensureFirebase();const provider=new firebase.auth.GoogleAuthProvider();provider.setCustomParameters({prompt:'select_account'});const cred=await auth.signInWithPopup(provider);await syncPrincipiaUser(cred.user);}
