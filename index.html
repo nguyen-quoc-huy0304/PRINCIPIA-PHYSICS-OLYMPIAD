@@ -1575,18 +1575,8 @@ function saveProfile(){
 }
 function applyPrincipiaTheme(theme){const root=document.documentElement;root.dataset.theme=theme;localStorage.setItem('principia_theme',theme);root.style.cssText='';if(theme==='light'){root.style.setProperty('--bg','#f3f2fa');root.style.setProperty('--side','#fff');root.style.setProperty('--card','#fff');root.style.setProperty('--card2','#eeedf7');root.style.setProperty('--line','#dedbea');root.style.setProperty('--txt','#242238');root.style.setProperty('--muted','#66647a')}else if(theme==='cosmic'){root.style.setProperty('--bg','#080d20');root.style.setProperty('--side','#101a35');root.style.setProperty('--card','#152443');root.style.setProperty('--card2','#20345b');root.style.setProperty('--line','#344b78');root.style.setProperty('--txt','#f1f6ff');root.style.setProperty('--muted','#b5c6e6');root.style.setProperty('--purple','#82cfff');root.style.setProperty('--purple2','#456fc9')}else{root.style.setProperty('--bg','#0c0d16');root.style.setProperty('--side','#111321');root.style.setProperty('--card','#171a2a');root.style.setProperty('--card2','#20233a');root.style.setProperty('--line','#292c43');root.style.setProperty('--txt','#f4f2ff');root.style.setProperty('--muted','#aeb2c8');root.style.setProperty('--purple','#a18aff');root.style.setProperty('--purple2','#765be7')}const sel=document.getElementById('principiaThemeSelect');if(sel)sel.value=theme}
 function toggleTheme(){
- if(document.documentElement.dataset.theme==='light'){
-  document.documentElement.dataset.theme='';document.documentElement.style.cssText='';
- }else{
-  document.documentElement.dataset.theme='light';
-  document.documentElement.style.setProperty('--bg','#f3f2fa');
-  document.documentElement.style.setProperty('--side','#fff');
-  document.documentElement.style.setProperty('--card','#fff');
-  document.documentElement.style.setProperty('--card2','#eeedf7');
-  document.documentElement.style.setProperty('--line','#dedbea');
-  document.documentElement.style.setProperty('--txt','#242238');
-  document.documentElement.style.setProperty('--muted','#77758c');
- }
+ const current=localStorage.getItem('principia_theme')||document.documentElement.dataset.theme||'dark';
+ applyPrincipiaTheme(current==='light'?'dark':'light');
 }
 function aiLink(id){
  let l=find(id,data),prompt=`Hãy đóng vai giáo viên. Dựa vào bài học sau, hãy tạo bài kiểm tra gồm trắc nghiệm, tự luận và đáp án giải thích.\n\n${l.name}\n${l.content}`;
