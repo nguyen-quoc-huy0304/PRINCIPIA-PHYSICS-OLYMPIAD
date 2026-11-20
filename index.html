@@ -841,7 +841,7 @@ function setPage(p){if(page==='play'&&activeQuiz&&(answers||[]).length>0){if(!co
 function currentNodes(){let nodes=tree();for(const id of stack){let n=find(id,nodes);nodes=n?.children||[]}return nodes}
 function crumb(){let html=`<button onclick="stack=[];render()">Trang chủ</button>`;let nodes=tree();for(let i=0;i<stack.length;i++){let n=find(stack[i],nodes);if(n)html+=` / <button onclick="stack=stack.slice(0,${i+1});render()">${esc(n.name)}</button>`}return html}
 function enter(id){stack.push(id);render()}
-function openLesson(id){activeLesson=id;page='lesson';stack=[];render()}
+function openLesson(id){activeLesson=id;dailyReward();page='lesson';stack=[];render()}
 function openQuiz(id){activeQuiz={id,kind:'quiz'};answers=[];page='play';render()}
 function openFun(id){activeQuiz={id,kind:'fun'};answers=[];page='play';render()}
 function avatarHTML(){
@@ -1216,6 +1216,7 @@ function dailyReward(){
   let yesterday=new Date(Date.now()-86400000).toLocaleDateString('en-CA');
   streak=lastDay===yesterday?streak+1:1;lastDay=today;localStorage.setItem('halo_lastday',today);localStorage.setItem('halo_streak',streak);
  }
+ saveAll();
 }
 function profileEditor(){
  if(!requirePermission('content'))return;
@@ -1378,7 +1379,7 @@ function runAiCheploi(){
   lastAiCheploiText = reply;
   document.getElementById('aiCheploiOutput').innerText = reply;
   inp.value = '';
-  xp += 10; saveAll();
+  xp += 10;dailyReward(); saveAll();
   showXpToast('+10 XP · AI Chép lời');
 }
 
@@ -1431,7 +1432,7 @@ function markLessonDone(){
     saveAll();
     showXpToast('+50 XP · Bài học hoàn thành');
   } else {
-    xp += 15;
+    xp += 15;dailyReward();
     saveAll();
     showXpToast('+15 XP · Ôn luyện thêm');
   }
@@ -1549,7 +1550,7 @@ function runAiGrade(){
   const text = document.getElementById('gradeTextInput').value.trim();
   const files = Array.from(document.getElementById('gradeFiles')?.files||[]);
   if(!text&&!files.length){notify('Hãy nhập bài làm hoặc đính kèm ảnh / file trước nhé');return;}
-  xp += 30; saveAll();
+  xp += 30;dailyReward(); saveAll();
   showXpToast('+30 EXP · Gửi bài');
   companionReact('happy','Đã gửi bài làm để chấm điểm! Cố lên nhé ✨');
   document.getElementById('gradeOutputBox').innerHTML = `<div class="panel"><strong>${esc(ai)}:</strong> Đã nhận bài làm${files.length?` và ${files.length} file đính kèm`:''}. <span class="muted">Bản HTML hiện tại chỉ mô phỏng phản hồi chấm, chưa kết nối AI thực để đọc ảnh/file.</span></div>`;
@@ -1647,7 +1648,7 @@ function generateQuizFromLessonTheory(){
     }
   }
 
-  xp += 20;
+  xp += 20;dailyReward();
   saveAll();
   showXpToast('+20 XP · AI đã đọc lý thuyết & tạo Quiz');
   renderInlineLessonAiQuiz();
@@ -1658,7 +1659,7 @@ function pickInlineLessonQuizAns(qIdx, optIdx){
   inlineLessonQuizState.picked[qIdx] = optIdx;
   const item = inlineLessonQuizState.items[qIdx];
   if(item && optIdx === item.correct){
-    xp += 15;
+    xp += 15;dailyReward();
     saveAll();
     showXpToast('+15 XP · Trả lời đúng Quiz lý thuyết');
   } else {
@@ -1966,7 +1967,7 @@ window.addEventListener('beforeunload',e=>{if(page==='play'&&activeQuiz&&(answer
  window.uploadRewardArt=function(){const inp=document.getElementById('rewardUpload');if(!inp?.files?.length)return;[...inp.files].forEach(f=>{if(!f.type.startsWith('image/'))return;if(f.size>1.5*1024*1024){notify('Mỗi ảnh tối đa 1,5 MB');return}const r=new FileReader();r.onload=()=>{inventory.push({id:'upload_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),kind:'Ảnh tự thêm',name:f.name.slice(0,32),data:r.result});save();notify('Đã thêm '+f.name+' vào bộ sưu tập')};r.readAsDataURL(f)});setTimeout(()=>{closeRewardCollection();openRewardCollection()},500)};
  window.makeChibiPrompt=function(){const theme=document.getElementById('chibiTheme')?.value.trim()||'nhân vật phiêu lưu fantasy';const prompt=`Một nhân vật chibi nguyên bản lấy cảm hứng từ chủ đề ${theme}, tỷ lệ đầu lớn thân nhỏ, biểu cảm đáng yêu, trang phục nhiều chi tiết, màu sắc hài hòa, nền trong suốt, sticker chất lượng cao. Không sao chép chính xác nhân vật có bản quyền.`;const out=document.getElementById('chibiPrompt');if(out)out.value=prompt};
  function openGift(reward,task){pending={reward,task};const box=`<div class="reward-pop" id="rewardReveal"><div class="reward-card"><div class="eyebrow">NHIỆM VỤ HOÀN THÀNH</div><div class="reward-box-art">🎁</div><h2>Quà của bạn đã sẵn sàng!</h2><p class="muted">Một món quà đang chờ được mở. Sẵn sàng chưa?</p><button class="primary" onclick="revealPrincipiaGift()">✨ Mở quà ngay</button><p class="small muted">XP và vật phẩm sẽ được lưu trên thiết bị này.</p></div></div>`;document.getElementById('rewardReveal')?.remove();document.body.insertAdjacentHTML('beforeend',box)}
- window.revealPrincipiaGift=function(){if(!pending)return;const {reward,task}=pending;if(!claimed.includes(task)){claimed.push(task);inventory.push(reward);save();if(typeof xp==='number'){xp+=reward.xp||5;localStorage.setItem('halo_xp',String(xp));}if(typeof saveAll==='function')saveAll();}const el=document.getElementById('rewardReveal');if(el)el.innerHTML=`<div class="reward-card"><div class="reward-box-art">🎉</div><div class="eyebrow">BẠN NHẬN ĐƯỢC</div><h2>${esc(reward.art||'🎁')} ${esc(reward.name)}</h2><p>${esc(reward.desc||'Phần thưởng mới đã được thêm vào bộ sưu tập.')}</p><h3>＋${reward.xp||5} XP</h3><button class="primary" onclick="document.getElementById('rewardReveal')?.remove();openRewardCollection()">Xem bộ sưu tập</button></div>`;pending=null;if(typeof companionReact==='function')companionReact('happy','Yay! Bạn vừa mở được một món quà mới! 🎁')};
+ window.revealPrincipiaGift=function(){if(!pending)return;const {reward,task}=pending;if(!claimed.includes(task)){claimed.push(task);inventory.push(reward);save();if(typeof xp==='number'){xp+=reward.xp||5;dailyReward();localStorage.setItem('halo_xp',String(xp));}if(typeof saveAll==='function')saveAll();}const el=document.getElementById('rewardReveal');if(el)el.innerHTML=`<div class="reward-card"><div class="reward-box-art">🎉</div><div class="eyebrow">BẠN NHẬN ĐƯỢC</div><h2>${esc(reward.art||'🎁')} ${esc(reward.name)}</h2><p>${esc(reward.desc||'Phần thưởng mới đã được thêm vào bộ sưu tập.')}</p><h3>＋${reward.xp||5} XP</h3><button class="primary" onclick="document.getElementById('rewardReveal')?.remove();openRewardCollection()">Xem bộ sưu tập</button></div>`;pending=null;if(typeof companionReact==='function')companionReact('happy','Yay! Bạn vừa mở được một món quà mới! 🎁')};
  window.grantPrincipiaReward=function(task,label){if(!task||claimed.includes(task))return;const reward=catalog[Math.floor(Math.random()*catalog.length)];reward.xp=5+Math.floor(Math.random()*11);openGift(reward,task)};
  // Wrap existing completion functions without changing their original XP / save behavior.
  const oldComplete=window.completeLesson;if(typeof oldComplete==='function')window.completeLesson=function(id){const before=claimed.includes('lesson:'+id);oldComplete(id);if(!before)grantPrincipiaReward('lesson:'+id,'Bài học')};
