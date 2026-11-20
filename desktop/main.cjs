@@ -72,7 +72,7 @@ function closeBrowserView() {
   if (mainWindow && !mainWindow.isDestroyed()) {
     try { mainWindow.contentView.removeChildView(browserView); } catch {}
   }
-  browserView.webContents.close();
+  browserView.webContents.destroy();
   browserView = null;
   currentBrowserUrl = '';
 }
