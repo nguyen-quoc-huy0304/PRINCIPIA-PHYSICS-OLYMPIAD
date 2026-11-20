@@ -1010,7 +1010,7 @@ function progressPage(){
 }
 function morePage(){
  return `<div class="eyebrow">MORE</div><h1>Cài đặt & hồ sơ</h1><div class="panel"><h2>Hồ sơ của bạn</h2><div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap">${avatarHTML()}<div><h3>${esc(profile.name)}</h3><p class="muted small">${xp} XP · ${streak} ngày streak</p></div></div><button class="secondary" onclick="profileEditor()">Chỉnh sửa hồ sơ</button></div>
- <div class="panel"><h2>Nhân vật & Sticker</h2><p class="muted small">Chọn chibi, chó mèo hoặc meme đồng hành khi học tập.</p><button class="secondary" onclick="openStickerStudio()">🎀 Mở bộ sưu tập sticker</button></div>
+ <div class="panel"><h2>Nhân vật & Sticker</h2><p class="muted small">Chọn chibi, chó mèo hoặc meme đồng hành khi học tập.</p><button class="secondary" onclick="openStickerStudio()">🎀 Cài đặt nhân vật & sticker</button><button class="secondary" onclick="openRewardCollection()">🎁 Hộp quà & bộ sưu tập</button></div>
  <div class="panel"><h2>Giao diện & bố cục</h2><p class="muted small">Đổi tên, icon và sắp xếp thứ tự các mục trên thanh điều hướng.</p><button class="secondary" onclick="openLayoutSettings()">🎨 Tùy chỉnh tên, icon, vị trí tab</button> <button class="secondary" onclick="toggleTheme()">Đổi giao diện sáng / tối</button></div>
  <div class="panel"><h2>Dữ liệu</h2><div class="toolbar"><button class="primary" onclick="backup()">↓ Xuất bản sao lưu</button><button class="secondary" onclick="$('#import').click()">↑ Nhập bản sao lưu</button><input id="import" type="file" accept=".json" class="hidden" onchange="restore(this.files[0])"></div></div>
  <div class="panel"><h2>Trợ giúp</h2><p class="muted small">PRO · PRINCIPIA PHYSICS OLYMPIAD · Phiên bản HTML đơn tệp.</p><button class="danger" onclick="resetAll()">Khôi phục dữ liệu mẫu</button></div>`;
@@ -1963,10 +1963,10 @@ const custom=()=>{try{return JSON.parse(localStorage.getItem('principia_custom_s
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(cfg))}catch(e){if(window.notify)notify('Bộ nhớ trình duyệt đầy, hãy giảm số ảnh sticker.')}};
 function charFor(k){const c=cfg.events[k]?.character||'default';if(c==='default'){try{return JSON.parse(localStorage.getItem('principia_sticker_settings')||'{}').selected||'🐱'}catch(e){return '🐱'}}if(c.startsWith('custom:'))return custom()[+c.split(':')[1]]?.data||'🐱';return c;}
-function setFab(ch){let f=document.getElementById('principiaStickerFab');if(!f){f=document.createElement('button');f.id='principiaStickerFab';document.body.appendChild(f)}f.type='button';f.onclick=()=>window.openStickerStudio();f.setAttribute('aria-label','Mở cài đặt nhân vật');f.style.cssText='position:fixed;z-index:9998;bottom:88px;'+(cfg.position==='left'?'left':'right')+':18px;width:'+cfg.size+'px;height:'+cfg.size+'px;border-radius:20px;border:1px solid #8d70e8;background:linear-gradient(145deg,#30224f,#171a2a);box-shadow:0 8px 28px #0006;font-size:'+Math.round(cfg.size*.52)+'px;display:'+(cfg.enabled?'grid':'none')+';place-items:center;cursor:pointer';f.innerHTML=ch&&ch.startsWith('data:')?'<img src="'+ch+'" alt="Nhân vật" style="width:82%;height:82%;object-fit:contain">':esc(ch||'🐱');}
+function setFab(ch){/* Không tạo nút nổi; nhân vật chỉ xuất hiện tạm thời khi có sự kiện. */}
 function beep(){if(!cfg.sound||!cfg.volume)return;try{const A=window.AudioContext||window.webkitAudioContext;if(!A)return;const c=new A(),o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.value=740;g.gain.value=cfg.volume/100*.05;o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+.16);o.onended=()=>c.close()}catch(e){}}
 let last=0,timer;
-function show(k,msg){if(!cfg.enabled)return;const now=Date.now();if(now-last<Math.max(0,+cfg.cooldown||0))return;last=now;setFab(charFor(k));beep();const f=document.getElementById('principiaStickerFab');if(f){f.style.animation='giftFloat 1.8s ease-in-out infinite'}let b=document.getElementById('principiaCompanionBubble');if(!b){b=document.createElement('div');b.id='principiaCompanionBubble';document.body.appendChild(b)}b.textContent=msg||cfg.events[k]?.message||events.find(x=>x[0]===k)?.[2]||'Cùng cố gắng nhé!';b.style.cssText='position:fixed;'+(cfg.position==='left'?'left':'right')+':'+(cfg.size+30)+'px;bottom:98px;z-index:10001;max-width:min(290px,68vw);padding:12px 15px;border:1px solid var(--line);border-radius:16px;background:var(--card);color:var(--txt);box-shadow:0 8px 30px #0005;font-size:13px;line-height:1.6';clearTimeout(timer);timer=setTimeout(()=>{b.remove();setFab(charFor('welcome'))},Math.max(1200,+cfg.duration||3600));}
+function show(k,msg){if(!cfg.enabled)return;const now=Date.now();if(now-last<Math.max(0,+cfg.cooldown||0))return;last=now;const ch=charFor(k);beep();let b=document.getElementById('principiaCompanionBubble');if(!b){b=document.createElement('div');b.id='principiaCompanionBubble';document.body.appendChild(b)}const art=ch&&ch.startsWith('data:')?'<img src="'+ch+'" alt="Nhân vật">':'<span class="companion-bubble-art">'+esc(ch||'🐱')+'</span>';const message=msg||cfg.events[k]?.message||events.find(x=>x[0]===k)?.[2]||'Cùng cố gắng nhé!';b.innerHTML=art+'<span>'+esc(message)+'</span>';b.style.cssText='position:fixed;'+(cfg.position==='left'?'left':'right')+':18px;bottom:24px;z-index:10001;display:flex;align-items:center;gap:10px;max-width:min(320px,80vw);padding:12px 15px;border:1px solid var(--line);border-radius:22px;background:var(--card);color:var(--txt);box-shadow:0 8px 30px #0005;font-size:13px;line-height:1.6';clearTimeout(timer);timer=setTimeout(()=>{b.remove()},Math.max(1200,+cfg.duration||3600));}
 function infer(mood,msg){const t=String(msg||'').toLowerCase();if(/đăng nhập thành công|quay lại princ/.test(t))return'loginSuccess';if(mood==='wrong'&&/thông tin|email|mật khẩu|xác thực/.test(t))return'loginError';if(/món quà|hộp quà|mở quà/.test(t))return'reward';if(/đừng bỏ cuộc|chưa hoàn thành|rời khỏi bài/.test(t))return'exitUnfinished';if(/bài học|hoàn thành/.test(t))return'lessonDone';if(/quiz|thử thách/.test(t))return'quizDone';if(mood==='wrong')return'wrongAnswer';if(mood==='hello')return'welcome';if(mood==='happy')return'lessonDone';if(mood==='wow')return'reward';return'welcome';}
 window.companionReact=(m,mess)=>show(infer(m,mess),mess);
 window.principiaCompanionEvent=(k,mess)=>show(k,mess);
@@ -1985,6 +1985,23 @@ document.addEventListener('DOMContentLoaded',()=>{if(window.getPrincipiaAccount?
 })();
 </script>
 
+
+<style id="principia-settings-only-rounding">
+/* Sticker và hộp quà chỉ được mở từ Cài đặt, không có nút nổi ngoài màn hình */
+#principiaStickerFab,#principiaGiftFab{display:none!important;visibility:hidden!important;pointer-events:none!important}
+/* Bo góc đồng bộ toàn giao diện */
+:root{--principia-glass-radius:22px}
+.panel,.tile,.stat,.hero,.welcome-card,.card,.modal,.modal-card,.sticker-card,.reward-card,
+.reward-item,.sticker-choice,.chat-box,.chat-msgs,.toast,.modalbg .modal,.modal-bg .modal-card,
+input:not([type=range]):not([type=checkbox]):not([type=radio]),select,textarea,
+button,.secondary,.primary,.danger,.tab,.pill,.nav .ni,.tileicon,.iconbtn,.cl-ico-btn,
+#principiaCompanionBubble,.m-user,.m-ai{
+ border-radius:22px!important
+}
+#principiaCompanionBubble{backdrop-filter:blur(24px) saturate(170%)!important;-webkit-backdrop-filter:blur(24px) saturate(170%)!important}
+#principiaCompanionBubble img{width:48px;height:48px;object-fit:contain;border-radius:14px}
+@media(max-width:600px){.modal,.modal-card,.sticker-card,.reward-card{border-radius:20px!important}}
+</style>
 </body>
 </html>
 
