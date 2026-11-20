@@ -858,32 +858,31 @@ function card(n){
  <div class="tile-actions" onclick="event.stopPropagation()"><button type="button" onclick="editNode('${n.id}')">✎</button><button type="button" onclick="deleteNode('${n.id}')">⋯</button></div>
  <div class="tileicon">${esc(n.icon||'📁')}</div><h3>${esc(n.name)}</h3><p>${n.type==='tab'?'Mở tab để xem các nội dung bên trong':n.type==='lesson'?'Mở bài học':'Bắt đầu hoạt động'}</p><div class="tilefoot"><span>${amount}</span><span>↗</span></div></div>`;
 }
-function topbar(){return `<div class="top"><div><div class="eyebrow">PRINCIPIA • PHYSICS OLYMPIAD</div><div class="muted small">Your personal learning world</div></div><div class="topright"><button class="pill" type="button" onclick="openGameStats()" title="Xem thành tích và nhiệm vụ">🔥 ${streak} ngày</button><button class="pill" type="button" onclick="openGameStats()" title="Xem cấp độ và kinh nghiệm">⭐ ${xp} XP</button><button class="pill" type="button" onclick="openStudyClock()" title="Đồng hồ học tập">⏱ Đồng hồ</button>${avatarHTML()}</div></div>`}
-let principiaClock={mode:'countdown',seconds:1500,left:1500,running:false,interval:null};
+function topbar(){return `<div class="top"><div><div class="eyebrow">PRINCIPIA • PHYSICS OLYMPIAD</div><div class="muted small">Your personal learning world</div><div class="principia-clockbar"><span class="principia-time-pill" title="Giờ hiện tại"><span>🕒</span><b id="principiaLiveTime">--:--</b></span><button class="principia-time-pill" type="button" onclick="toggleTopbarStudyClock()" title="Bấm để bắt đầu hoặc tạm dừng đồng hồ học"><span>⏱</span><b id="principiaStopwatch">${fmtClock(principiaClock.seconds)}</b><span id="principiaStopwatchState">${principiaClock.running?'Ⅱ':'▶'}</span></button></div></div><div class="topright"><button class="pill" type="button" onclick="openGameStats()" title="Xem thành tích và nhiệm vụ">🔥 ${streak} ngày</button><button class="pill" type="button" onclick="openGameStats()" title="Xem cấp độ và kinh nghiệm">⭐ ${xp} XP</button>${avatarHTML()}</div></div>`}
+let principiaClock={mode:'stopwatch',seconds:0,left:1500,running:false,interval:null};
+function updatePrincipiaClockBar(){const t=document.getElementById('principiaLiveTime');if(t)t.textContent=new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit',hour12:false});const sw=document.getElementById('principiaStopwatch');if(sw)sw.textContent=fmtClock(principiaClock.seconds);const st=document.getElementById('principiaStopwatchState');if(st)st.textContent=principiaClock.running?'Ⅱ':'▶';}
+function startPrincipiaLiveClock(){if(window.__principiaWallClock)return;updatePrincipiaClockBar();window.__principiaWallClock=setInterval(updatePrincipiaClockBar,1000);}
+function toggleTopbarStudyClock(){if(principiaClock.mode!=='stopwatch'){if(principiaClock.interval)clearInterval(principiaClock.interval);principiaClock.mode='stopwatch';principiaClock.seconds=0;principiaClock.running=false;}toggleStudyClock();updatePrincipiaClockBar();}
 function fmtClock(n){n=Math.max(0,Math.floor(n));return String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0')}
 function openGameStats(){
  const level=Math.floor(xp/100)+1,into=xp%100,need=100-into;
  const todayDone=lastDay===new Date().toLocaleDateString('en-CA');
  modal(`<div class="eyebrow">PLAYER PROFILE · PRINCIPIA</div><h2>🏆 Thành tích & kinh nghiệm</h2><div class="stats"><div class="stat"><span class="small muted">Cấp độ</span><strong>Lv. ${level}</strong><span class="small muted">Còn ${need} XP lên cấp</span></div><div class="stat"><span class="small muted">Kinh nghiệm</span><strong>⭐ ${xp} XP</strong><div class="xpbar"><div style="width:${into}%"></div></div></div><div class="stat"><span class="small muted">Chuỗi ngày</span><strong>🔥 ${streak} ngày</strong><span class="small muted">${todayDone?'Đã ghi nhận hoạt động hôm nay':'Học hôm nay để duy trì streak'}</span></div></div><div class="panel"><h3>🎯 Nhiệm vụ học tập</h3><p>📚 Hoàn thành bài học: <b>${completed.length}</b></p><p>⭐ Mốc tiếp theo: <b>${need} XP</b> để lên cấp ${level+1}</p><p>🔥 Streak được cập nhật khi bạn hoàn thành hoạt động học tập đầu tiên trong ngày.</p></div><div class="modalactions"><button class="primary" onclick="closeModal();setPage('progress')">Xem tiến độ</button><button class="secondary" onclick="closeModal()">Đóng</button></div>`);
 }
-function openStudyClock(){
- if(principiaClock.running)clearInterval(principiaClock.interval);
- principiaClock.running=false;principiaClock.mode='countdown';principiaClock.seconds=1500;principiaClock.left=1500;
- renderStudyClock();
-}
+function openStudyClock(){renderStudyClock();}
 function renderStudyClock(){
  modal(`<div class="eyebrow">FOCUS MODE · STUDY SESSION</div><h2>⏱ Đồng hồ học tập</h2><div class="toolbar"><button class="secondary" onclick="setClockMode('countdown')">Đếm ngược</button><button class="secondary" onclick="setClockMode('stopwatch')">Bấm giờ</button></div><div style="text-align:center;padding:22px 8px"><div id="studyClockDisplay" style="font-size:clamp(48px,12vw,72px);font-weight:850;letter-spacing:2px;font-variant-numeric:tabular-nums">${fmtClock(principiaClock.mode==='countdown'?principiaClock.left:principiaClock.seconds)}</div><p id="studyClockHint" class="muted small">${principiaClock.mode==='countdown'?'Phiên tập trung 25 phút':'Bấm giờ học tập'}</p></div><div class="toolbar" style="justify-content:center"><button class="primary" id="studyClockStart" onclick="toggleStudyClock()">▶ Bắt đầu</button><button class="secondary" onclick="resetStudyClock()">↺ Đặt lại</button></div><div class="toolbar"><button class="secondary" onclick="setClockPreset(15)">15 phút</button><button class="secondary" onclick="setClockPreset(25)">25 phút</button><button class="secondary" onclick="setClockPreset(45)">45 phút</button><button class="secondary" onclick="setClockPreset(60)">60 phút</button></div><p class="muted small">Hoàn thành một phiên đếm ngược sẽ nhận 10 XP. Đồng hồ bấm giờ dùng để theo dõi thời gian tự do.</p>`);
 }
 function setClockMode(mode){if(principiaClock.interval)clearInterval(principiaClock.interval);principiaClock.running=false;principiaClock.mode=mode;principiaClock.seconds=0;principiaClock.left=mode==='countdown'?1500:0;renderStudyClock()}
 function setClockPreset(min){if(principiaClock.interval)clearInterval(principiaClock.interval);principiaClock.running=false;principiaClock.mode='countdown';principiaClock.left=min*60;principiaClock.seconds=min*60;renderStudyClock()}
 function toggleStudyClock(){
- if(principiaClock.running){clearInterval(principiaClock.interval);principiaClock.running=false;const b=document.getElementById('studyClockStart');if(b)b.textContent='▶ Tiếp tục';return}
+ if(principiaClock.running){clearInterval(principiaClock.interval);principiaClock.running=false;const b=document.getElementById('studyClockStart');if(b)b.textContent='▶ Tiếp tục';updatePrincipiaClockBar();return}
  if(principiaClock.mode==='countdown'&&principiaClock.left<=0)principiaClock.left=1500;
- principiaClock.running=true;const b=document.getElementById('studyClockStart');if(b)b.textContent='Ⅱ Tạm dừng';
+ principiaClock.running=true;const b=document.getElementById('studyClockStart');if(b)b.textContent='Ⅱ Tạm dừng';updatePrincipiaClockBar();
  principiaClock.interval=setInterval(()=>{
   if(principiaClock.mode==='countdown'){principiaClock.left=Math.max(0,principiaClock.left-1)}else principiaClock.seconds++;
-  const d=document.getElementById('studyClockDisplay');if(d)d.textContent=fmtClock(principiaClock.mode==='countdown'?principiaClock.left:principiaClock.seconds);
-  if(principiaClock.mode==='countdown'&&principiaClock.left===0){clearInterval(principiaClock.interval);principiaClock.running=false;xp+=10;dailyReward();saveAll();showXpToast('+10 XP · Hoàn thành phiên tập trung');const h=document.getElementById('studyClockHint');if(h)h.textContent='🎉 Hoàn thành phiên học! Bạn nhận được 10 XP.';const b=document.getElementById('studyClockStart');if(b)b.textContent='▶ Bắt đầu phiên mới';}
+  const d=document.getElementById('studyClockDisplay');if(d)d.textContent=fmtClock(principiaClock.mode==='countdown'?principiaClock.left:principiaClock.seconds);updatePrincipiaClockBar();
+  if(principiaClock.mode==='countdown'&&principiaClock.left===0){clearInterval(principiaClock.interval);principiaClock.running=false;xp+=10;dailyReward();saveAll();showXpToast('+10 XP · Hoàn thành phiên tập trung');const h=document.getElementById('studyClockHint');if(h)h.textContent='🎉 Hoàn thành phiên học! Bạn nhận được 10 XP.';const b=document.getElementById('studyClockStart');if(b)b.textContent='▶ Bắt đầu phiên mới';updatePrincipiaClockBar();}
  },1000);
 }
 function resetStudyClock(){if(principiaClock.interval)clearInterval(principiaClock.interval);principiaClock.running=false;principiaClock.left=principiaClock.mode==='countdown'?principiaClock.seconds:0;const d=document.getElementById('studyClockDisplay');if(d)d.textContent=fmtClock(principiaClock.mode==='countdown'?principiaClock.left:0);const b=document.getElementById('studyClockStart');if(b)b.textContent='▶ Bắt đầu';const h=document.getElementById('studyClockHint');if(h)h.textContent=principiaClock.mode==='countdown'?'Sẵn sàng tập trung':'Bấm giờ học tập'}
@@ -2036,6 +2035,15 @@ document.addEventListener('DOMContentLoaded',()=>{if(window.getPrincipiaAccount?
 .pc-sticker-card small{font-size:11px;text-align:center;line-height:1.3;color:var(--muted)}
 #pcSettingsBg .modal{width:min(820px,100%)!important}
 </style>
+<style id="principia-visible-live-clocks">
+.principia-clockbar{display:flex;align-items:center;gap:8px;margin-top:9px;flex-wrap:wrap}
+.principia-time-pill{display:inline-flex;align-items:center;gap:7px;min-height:34px;padding:6px 12px;border:1px solid var(--line);border-radius:14px;background:var(--card);color:var(--txt);font-size:13px;font-variant-numeric:tabular-nums;box-shadow:0 4px 14px #0000000a}
+button.principia-time-pill{cursor:pointer}
+button.principia-time-pill:hover{border-color:var(--purple);background:var(--bg)}
+.principia-time-pill b{font-size:14px;letter-spacing:.5px}
+@media(max-width:600px){.top{align-items:flex-start;gap:10px}.principia-clockbar{gap:6px}.principia-time-pill{padding:6px 9px;font-size:12px}}
+</style>
+<script>document.addEventListener('DOMContentLoaded',()=>{if(typeof startPrincipiaLiveClock==='function')startPrincipiaLiveClock()});</script>
 <style id="principia-settings-only-rounding">
 /* Sticker và hộp quà chỉ được mở từ Cài đặt, không có nút nổi ngoài màn hình */
 #principiaStickerFab,#principiaGiftFab{display:none!important;visibility:hidden!important;pointer-events:none!important}
