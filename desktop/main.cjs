@@ -1,4 +1,4 @@
-const { app, BrowserWindow, WebContentsView, ipcMain, shell } = require('electron');
+const { app, BrowserWindow, WebContentsView, ipcMain, shell, net } = require('electron');
 const path = require('node:path');
 
 const APP_URL = 'https://principia-physics-olympiad-pro.pages.dev/';
@@ -27,6 +27,35 @@ function isKnownFrameBlocked(value) {
   try {
     const host = new URL(value).hostname.toLowerCase();
     return BLOCKED_HOSTS.some(domain => host === domain || host.endsWith('.' + domain));
+  } catch {
+    return false;
+  }
+}
+
+async function isFrameBlocked(value) {
+  if (isKnownFrameBlocked(value)) return true;
+  try {
+    const response = await net.fetch(value, { method: 'HEAD', redirect: 'follow' });
+    const xFrameOptions = (response.headers.get('x-frame-options') || '').toLowerCase();
+    if (xFrameOptions.includes('deny') || xFrameOptions.includes('sameorigin')) return true;
+    const csp = response.headers.get('content-security-policy') || '';
+    const directive = csp.split(';').map(part => part.trim()).find(part => /^frame-ancestors\\s/i.test(part));
+    if (!directive) return false;
+    const sources = directive.replace(/^frame-ancestors\\s+/i, '').split(/\\s+/);
+    if (sources.includes('*') || sources.includes('https:') || sources.includes('http:')) return false;
+    const appOrigin = new URL(APP_URL).origin;
+    const appHost = new URL(APP_URL).hostname;
+    const allowed = sources.some(source => {
+      if (source === "'none'") return false;
+      if (source === "'self'") return false;
+      try {
+        const parsed = new URL(source.replace(/^\\*\\./, 'wildcard.' ));
+        if (parsed.origin === appOrigin) return true;
+        if (source.includes('*.') && appHost.endsWith(parsed.hostname.replace(/^wildcard\\./, ''))) return true;
+      } catch {}
+      return false;
+    });
+    return !allowed;
   } catch {
     return false;
   }
@@ -109,7 +138,7 @@ function createWindow() {
 app.whenReady().then(() => {
   browserSession = require('electron').session.fromPartition('persist:principia-ai-browser');
   browserSession.setPermissionRequestHandler((_webContents, _permission, callback) => callback(false));
-  ipcMain.handle('principia-browser:is-blocked', (_event, url) => isKnownFrameBlocked(url));
+  ipcMain.handle('principia-browser:is-blocked', (_event, url) => isFrameBlocked(url));
   ipcMain.handle('principia-browser:open', async (_event, url, bounds) => {
     if (!isAllowedWebUrl(url) || !isKnownFrameBlocked(url)) {
       throw new Error('Địa chỉ không thuộc nhóm website cần mở bằng trình duyệt tích hợp.');
