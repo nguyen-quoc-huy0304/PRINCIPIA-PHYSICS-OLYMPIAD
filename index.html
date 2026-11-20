@@ -2108,4 +2108,55 @@ input:focus,textarea:focus,select:focus{border-color:rgba(185,166,255,.7)!import
 @media(max-width:760px){.sidebar{background:rgba(15,17,36,.82)!important;backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px)}.main{padding-top:18px}}
 @media(prefers-reduced-transparency:reduce){.sidebar,.panel,.tile,.modal,.welcome-card{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;background-color:#171a2d!important}}
 
+
+/* ===== LIQUID GLASS PATCH 2: actual popup layers + icon surfaces ===== */
+:root{--lg-pane:rgba(30,29,59,.74);--lg-surface:rgba(255,255,255,.105);--lg-stroke:rgba(231,225,255,.26);--lg-blur:30px}
+.modalbg,.modal-bg,.reward-pop,#stickerStudio,.sticker-overlay,.popup-overlay{
+ background:rgba(5,7,22,.48)!important;
+ backdrop-filter:blur(18px) saturate(155%)!important;
+ -webkit-backdrop-filter:blur(18px) saturate(155%)!important;
+}
+#modal .modal,.modal-card,.reward-card,.chat-box,#stickerStudio .modal,
+#stickerStudio .panel,.sticker-modal,.sticker-card,.reward-item{
+ background:linear-gradient(145deg,rgba(58,54,96,.76),rgba(24,29,55,.72))!important;
+ border:1px solid var(--lg-stroke)!important;
+ border-top-color:rgba(255,255,255,.4)!important;
+ border-radius:25px!important;
+ box-shadow:0 28px 90px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.24),inset 0 -1px 0 rgba(255,255,255,.05)!important;
+ backdrop-filter:blur(var(--lg-blur)) saturate(170%)!important;
+ -webkit-backdrop-filter:blur(var(--lg-blur)) saturate(170%)!important;
+}
+#modal .modal{width:min(600px,100%)!important}
+.modal-card{overflow:hidden!important}
+.modal-card iframe{border:1px solid rgba(255,255,255,.24)!important;border-radius:18px!important}
+.chat-box{background:linear-gradient(145deg,rgba(55,53,91,.88),rgba(18,25,49,.84))!important}
+.chat-box>div:first-child{background:rgba(255,255,255,.085)!important;border-bottom:1px solid var(--lg-stroke)!important}
+.chat-msgs{background:rgba(5,9,25,.14)!important}
+.m-user{background:linear-gradient(135deg,rgba(142,122,244,.9),rgba(86,105,210,.86))!important;border:1px solid rgba(255,255,255,.2)!important;border-radius:18px 18px 5px 18px!important}
+.m-ai{background:rgba(255,255,255,.09)!important;border:1px solid rgba(255,255,255,.18)!important;border-radius:18px 18px 18px 5px!important}
+#toast .toast,.toast{background:rgba(48,43,81,.82)!important;border:1px solid rgba(226,218,255,.28)!important;border-radius:18px!important;box-shadow:0 16px 50px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.2)!important;backdrop-filter:blur(24px) saturate(170%)!important;-webkit-backdrop-filter:blur(24px) saturate(170%)!important}
+#principiaStickerFab,#principiaGiftFab,.chat-bubble-btn{
+ background:linear-gradient(145deg,rgba(193,174,255,.42),rgba(89,83,150,.48))!important;
+ border:1px solid rgba(255,255,255,.42)!important;border-top-color:rgba(255,255,255,.68)!important;
+ border-radius:22px!important;
+ box-shadow:0 16px 42px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.38),inset 0 -8px 20px rgba(130,115,220,.12)!important;
+ backdrop-filter:blur(24px) saturate(190%)!important;-webkit-backdrop-filter:blur(24px) saturate(190%)!important;
+}
+.nav .ni,.tileicon,.logo,.avatar-default,.cl-ico-btn,.tile-actions button,.iconbtn,
+button.iconbtn,button[aria-label],.tab,.pill{
+ background:linear-gradient(145deg,rgba(255,255,255,.16),rgba(255,255,255,.055))!important;
+ border:1px solid rgba(235,230,255,.22)!important;
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 6px 20px rgba(0,0,0,.12)!important;
+ backdrop-filter:blur(16px) saturate(160%)!important;-webkit-backdrop-filter:blur(16px) saturate(160%)!important;
+}
+.nav .ni{width:34px!important;height:34px!important;flex:0 0 34px;border-radius:12px!important;display:grid;place-items:center}
+.tileicon{width:58px;height:58px;display:grid;place-items:center;border-radius:18px!important;font-size:27px!important}
+.logo{background:linear-gradient(145deg,rgba(202,184,255,.65),rgba(105,83,207,.55))!important;border:1px solid rgba(255,255,255,.42)!important;box-shadow:0 12px 28px rgba(115,89,220,.24),inset 0 1px 0 rgba(255,255,255,.45)!important}
+.cl-ico-btn{background:rgba(255,255,255,.075)!important;border:1px solid rgba(235,230,255,.16)!important;border-radius:15px!important}
+.cl-ico-btn.active,.nav.active .ni{background:linear-gradient(145deg,rgba(179,158,255,.48),rgba(102,88,197,.42))!important;border-color:rgba(236,228,255,.4)!important}
+.reward-item{background:rgba(255,255,255,.075)!important}
+#principiaCompanionBubble{background:linear-gradient(145deg,rgba(62,57,100,.9),rgba(24,30,57,.86))!important;border:1px solid rgba(255,255,255,.28)!important;box-shadow:0 18px 55px rgba(0,0,0,.36),inset 0 1px 0 rgba(255,255,255,.2)!important;backdrop-filter:blur(26px) saturate(175%)!important;-webkit-backdrop-filter:blur(26px) saturate(175%)!important}
+@media(max-width:760px){.modal-bg,.modalbg,.reward-pop{padding:12px!important}.modal-card{width:100%!important;height:88vh!important}.chat-box{right:10px!important;bottom:75px!important}}
+@supports not ((backdrop-filter:blur(2px))){#modal .modal,.modal-card,.reward-card,.chat-box{background:rgba(30,29,59,.97)!important}}
+
 </style>
