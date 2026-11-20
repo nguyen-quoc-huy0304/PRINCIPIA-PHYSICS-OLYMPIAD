@@ -1010,7 +1010,7 @@ function entertainmentState(){const wk=entertainmentWeekKey();let st;try{st=JSON
 function leagueBots(){const names=['NewtonBot','Einstein AI','Gauss.exe','CurieBot','Feynman AI','TeslaMind','NoetherBot'];const st=entertainmentState();let seed=0;for(const c of st.week)seed=(seed*31+c.charCodeAt(0))>>>0;return names.map((name,i)=>{seed=(seed*1664525+1013904223)>>>0;return {name,points:150+seed%650,avatar:['🤖','🧠','🦾','👾','⚙️','🛰️','🔬'][i]}}).sort((a,b)=>b.points-a.points)}
 function leagueRank(points){return points>=900?{name:'Đại kiện tướng',icon:'👑'}:points>=600?{name:'Cao thủ',icon:'💎'}:points>=350?{name:'Chiến binh',icon:'🥇'}:points>=150?{name:'Kỳ thủ',icon:'🥈'}:{name:'Tân binh',icon:'🌱'}}
 const PRINCIPIA_DEFAULT_NAV=[['home','⌂','Home'],['library','▦','Học tập'],['quiz','🎯','Quiz'],['fun','🧩','Đố vui'],['entertainment','🎮','Giải trí'],['progress','◷','Tiến độ']];
-function principiaNavGroups(){try{return {...{workspace:'PRO',more:'MORE'},...JSON.parse(localStorage.getItem('principia_nav_groups')||'{}')}}catch(e){return {workspace:'PRO',more:'MORE'}}}
+function principiaNavGroups(){try{const g={...{workspace:'PRO',more:'MORE'},...JSON.parse(localStorage.getItem('principia_nav_groups')||'{}')};if(g.workspace==='WORKSPACE')g.workspace='PRO';return g}catch(e){return {workspace:'PRO',more:'MORE'}}}
 function principiaNav(){try{return JSON.parse(localStorage.getItem('principia_nav_config'))||PRINCIPIA_DEFAULT_NAV}catch(e){return PRINCIPIA_DEFAULT_NAV}}
 function savePrincipiaNav(v){localStorage.setItem('principia_nav_config',JSON.stringify(v))}
 function navGroupImage(kind){try{return localStorage.getItem('principia_nav_group_image_'+kind)||''}catch(e){return ''}}
