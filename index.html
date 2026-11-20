@@ -2027,4 +2027,85 @@ body:not(.principia-admin) #clAdminVideoLinkControls{display:none!important}
 
 <style>
 .google-auth-area{display:flex;justify-content:center;margin:24px 0 14px}.google-auth-button-wrap{min-height:44px;display:flex;justify-content:center;align-items:center;width:100%}.google-login-fallback{display:inline-flex;align-items:center;justify-content:center;gap:12px;padding:12px 20px;border:1px solid var(--line,#444);border-radius:999px;background:#fff;color:#333;font-weight:650;min-width:260px;opacity:.72}.google-login-fallback span{font-weight:800;color:#4285f4;font-size:20px}.auth-switch{display:flex;gap:8px;justify-content:center;margin:20px auto;max-width:320px}.auth-switch button{flex:1}.google-account-status{min-height:24px;margin:12px 0;color:var(--muted,#999);font-size:13px}
+
+/* ===== PRINCIPIA LIQUID GLASS THEME — visual-only override ===== */
+:root{
+ --bg:#090b18;--side:rgba(20,22,43,.58);--card:rgba(255,255,255,.075);--card2:rgba(255,255,255,.105);
+ --line:rgba(210,205,255,.18);--txt:#f7f5ff;--muted:#b2b2ca;--purple:#c0b1ff;--purple2:#8069e8;
+ --green:#83e7c0;--yellow:#ffe29a;--red:#ff9eaf;
+ --glass-blur:22px;--glass-shadow:0 18px 55px rgba(0,0,0,.26),inset 0 1px 0 rgba(255,255,255,.12);
+}
+html{background:#090b18}
+body{
+ background:
+  radial-gradient(ellipse at 12% 8%,rgba(130,104,235,.25),transparent 38%),
+  radial-gradient(ellipse at 88% 20%,rgba(83,167,211,.15),transparent 34%),
+  radial-gradient(ellipse at 50% 100%,rgba(173,126,226,.12),transparent 42%),
+  linear-gradient(145deg,#090b18,#11142a 55%,#0b1020);
+ background-attachment:fixed;color:var(--txt)
+}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;opacity:.22;background-image:radial-gradient(rgba(255,255,255,.22) .65px,transparent .65px);background-size:22px 22px}
+.sidebar,.sidebottom,.top,.panel,.tile,.stat,.hero,.pill,.tab,.choice,.modal,.welcome-card,.account-page-card,
+.dropzone,.empty,.toast,.reward-card,.reward-item,.sticker-card,#stickerStudio>div,
+#principiaCompanionBubble,.file,.cl-shell,.cl-topbar,.cl-iconbar,.cl-left-pane,.cl-right-pane,
+#codelearnWorkspace .ai-cheploi-box,#codelearnWorkspace .note-pop-panel,#codelearnWorkspace .tl-card,
+#codelearnWorkspace .cl-right-pane>div:first-child,#codelearnWorkspace #clTab-list>div[onclick]{
+ background-color:rgba(255,255,255,.065)!important;
+ border:1px solid rgba(222,218,255,.17)!important;
+ box-shadow:var(--glass-shadow);
+ backdrop-filter:blur(var(--glass-blur)) saturate(155%);
+ -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(155%);
+}
+.sidebar{background:rgba(15,17,36,.64)!important;border-right:1px solid rgba(220,215,255,.16)!important}
+.main{position:relative}
+.hero{background:linear-gradient(125deg,rgba(158,130,255,.2),rgba(255,255,255,.055) 55%,rgba(94,185,220,.09))!important;border-radius:26px!important}
+.panel,.tile,.stat,.welcome-card,.account-page-card,.modal,.sticker-card,.reward-card{border-radius:22px!important}
+.tile{transition:transform .22s ease,border-color .22s ease,background .22s ease}
+.tile:hover{transform:translateY(-4px);background:rgba(255,255,255,.12)!important;border-color:rgba(194,178,255,.45)!important;box-shadow:0 20px 50px rgba(0,0,0,.28),0 0 24px rgba(151,125,255,.11)}
+.nav{border:1px solid transparent;transition:.2s}
+.nav:hover,.nav.active{background:rgba(183,160,255,.16)!important;border-color:rgba(207,192,255,.22)!important;color:#eee9ff!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}
+button.primary,.chat-bubble-btn{
+ background:linear-gradient(135deg,rgba(164,143,255,.9),rgba(111,91,218,.88))!important;
+ border:1px solid rgba(229,222,255,.36)!important;color:#fff!important;border-radius:15px!important;
+ box-shadow:0 9px 25px rgba(111,91,218,.27),inset 0 1px 0 rgba(255,255,255,.3);
+}
+button.secondary,.iconbtn,.tab,.cl-ico-btn{
+ background:rgba(255,255,255,.075)!important;border:1px solid rgba(222,218,255,.17)!important;
+ border-radius:14px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.1)
+}
+button.danger{background:rgba(255,105,137,.13)!important;border:1px solid rgba(255,145,164,.3)!important;border-radius:14px!important}
+button{transition:transform .18s ease,filter .18s ease,box-shadow .18s ease}
+button:hover{filter:brightness(1.12)}
+button:active{transform:scale(.975)}
+input,textarea,select,#codelearnWorkspace textarea,#codelearnWorkspace input[type=text],#codelearnWorkspace select{
+ background:rgba(8,11,27,.42)!important;border:1px solid rgba(210,205,255,.2)!important;
+ border-radius:14px!important;color:var(--txt)!important;box-shadow:inset 0 1px 5px rgba(0,0,0,.12);
+ backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)
+}
+input::placeholder,textarea::placeholder{color:rgba(205,202,225,.52)}
+input:focus,textarea:focus,select:focus{border-color:rgba(185,166,255,.7)!important;box-shadow:0 0 0 3px rgba(155,129,255,.13)!important}
+.progress,.xpbar{background:rgba(255,255,255,.1)!important;border:1px solid rgba(255,255,255,.08)}
+.progress div,.xpbar div{background:linear-gradient(90deg,#a995ff,#78d8ef)!important}
+.modalbg{background:rgba(5,7,18,.58)!important;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.modal{background:rgba(25,25,49,.82)!important}
+.toast{background:rgba(39,34,72,.82)!important}
+.welcome{background:radial-gradient(ellipse at 50% 30%,rgba(141,113,232,.3),transparent 45%),transparent!important}
+.welcome-card{background:rgba(255,255,255,.075)!important;backdrop-filter:blur(28px) saturate(165%)!important}
+#codelearnWorkspace .cl-topbar{background:rgba(27,29,58,.72)!important;color:#fff}
+#codelearnWorkspace .cl-body,#codelearnWorkspace .cl-split,#codelearnWorkspace .cl-right-pane,#codelearnWorkspace #clVideoStage{background:transparent!important}
+#codelearnWorkspace .cl-iconbar{background:rgba(13,16,36,.55)!important}
+#codelearnWorkspace .cl-left-pane{background:rgba(255,255,255,.025)!important}
+#codelearnWorkspace .cl-ico-btn.active{background:linear-gradient(135deg,rgba(163,143,255,.85),rgba(93,79,190,.8))!important}
+#codelearnWorkspace .cl-step{background:rgba(255,255,255,.09)!important}
+#codelearnWorkspace .cl-step.active{background:rgba(143,121,245,.8)!important}
+#codelearnWorkspace .cl-step.done{background:rgba(44,161,124,.65)!important}
+#codelearnWorkspace #clVideoStage iframe{border:1px solid rgba(220,215,255,.22)!important;box-shadow:0 20px 55px #0006}
+#principiaStickerFab,#principiaGiftFab{backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);border:1px solid rgba(255,255,255,.28)!important;box-shadow:0 12px 36px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.3)!important}
+#stickerStudio{background:rgba(4,6,18,.58)!important;backdrop-filter:blur(14px)}
+#principiaCompanionBubble{background:rgba(35,31,63,.82)!important}
+::selection{background:rgba(165,143,255,.38);color:#fff}
+@media(prefers-reduced-motion:no-preference){.panel,.stat,.hero,.welcome-card{animation:glassReveal .45s ease both}@keyframes glassReveal{from{opacity:.75;transform:translateY(7px)}to{opacity:1;transform:none}}}
+@media(max-width:760px){.sidebar{background:rgba(15,17,36,.82)!important;backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px)}.main{padding-top:18px}}
+@media(prefers-reduced-transparency:reduce){.sidebar,.panel,.tile,.modal,.welcome-card{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;background-color:#171a2d!important}}
+
 </style>
