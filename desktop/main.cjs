@@ -117,7 +117,6 @@ app.whenReady().then(() => {
     createBrowserView();
     const nextBounds = safeBounds(bounds);
     browserView.setBounds(nextBounds);
-    browserView.setAutoResize({ width: false, height: false });
     if (currentBrowserUrl !== url) {
       currentBrowserUrl = url;
       await browserView.webContents.loadURL(url);
