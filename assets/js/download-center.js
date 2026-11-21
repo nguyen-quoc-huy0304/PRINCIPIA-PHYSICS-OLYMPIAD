@@ -1,16 +1,16 @@
 (function(){
   const RELEASES='https://github.com/nguyen-quoc-huy0304/PRINCIPIA-PHYSICS-OLYMPIAD.ghithub.io/releases/latest';
-  const DOWNLOADS='https://github.com/nguyen-quoc-huy0304/PRINCIPIA-PHYSICS-OLYMPIAD.ghithub.io/releases/latest/download/';
+  const DOWNLOADS='https://github.com/nguyen-quoc-huy0304/PRINCIPIA-PHYSICS-OLYMPIAD.ghithub.io/releases/download/desktop-v1.0.2/';
   const PLATFORMS=[
     {id:'android',name:'Android',logo:'🤖',detail:'Điện thoại & máy tính bảng Android',status:'Sắp ra mắt',available:false},
     {id:'ios',name:'iOS',logo:'',detail:'iPhone & iPad · qua App Store',status:'Sắp ra mắt',available:false},
     {id:'windows',name:'Windows',logo:'⊞',detail:'Windows 10 / 11 · bộ cài .exe',status:'Tải trực tiếp',available:true,file:'PRINCIPIA-Setup.exe'},
-    {id:'mac',name:'macOS',logo:'',detail:'MacBook & iMac · .dmg',status:'Tải trực tiếp',available:true,file:'PRINCIPIA-mac-arm64.dmg'},
-    {id:'linux',name:'Linux',logo:'🐧',detail:'AppImage / .deb',status:'Tải trực tiếp',available:true,file:'PRINCIPIA-linux-x64.AppImage'}
+    {id:'mac',name:'macOS',logo:'',detail:'MacBook & iMac · .dmg',status:'Sắp ra mắt',available:false},
+    {id:'linux',name:'Linux',logo:'🐧',detail:'AppImage / .deb',status:'Sắp ra mắt',available:false}
   ];
   function mount(){
     // Download center is only for the public website, never the installed desktop app.
-    if(window.principiaDesktop?.isDesktop === true) return;
+    if(window.principiaDesktop) return;
     if(/\\b(PRINCIPIA_APP|standalone)\\b/i.test(navigator.userAgent)) return;
     if(document.getElementById('principiaDownloadFab'))return;
     const fab=document.createElement('button');fab.id='principiaDownloadFab';fab.type='button';fab.innerHTML='<span aria-hidden="true">⇩</span>';fab.setAttribute('aria-label','Tải ứng dụng PRINCIPIA');fab.title='Tải ứng dụng';document.body.appendChild(fab);
