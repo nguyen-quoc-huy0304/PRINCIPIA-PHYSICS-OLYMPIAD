@@ -142,3 +142,13 @@
 .media-reference-panel>label textarea{font-weight:400}
 .media-reference-panel .chat-actions{margin-top:-4px}
 @media(max-width:560px){.media-ocr-video{max-height:38vh}.media-reference-panel>label textarea{min-height:100px}}
+
+
+/* Native course authoring */
+.admin-lesson-actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 18px}
+.lesson-editor{display:grid;gap:13px;margin:16px 0;padding:18px;border:1px solid rgba(163,145,255,.28);border-radius:16px;background:rgba(121,103,210,.075)}
+.lesson-editor h3{margin:0;color:#e6e0ff}
+.lesson-editor label{display:grid;gap:7px;color:#bfc3d9;font-size:12px;font-weight:650}
+.lesson-editor input,.lesson-editor textarea,.lesson-editor select{width:100%;min-width:0;padding:11px 12px;border:1px solid rgba(255,255,255,.14);border-radius:10px;background:#0b1020;color:#f4f5ff;font:inherit;font-weight:400}
+.lesson-editor textarea{resize:vertical;line-height:1.6}
+@media(max-width:560px){.admin-lesson-actions{display:grid;grid-template-columns:1fr 1fr}.lesson-editor{padding:13px}}
