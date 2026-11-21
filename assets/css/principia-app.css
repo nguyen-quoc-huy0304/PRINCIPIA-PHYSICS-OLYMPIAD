@@ -1130,3 +1130,20 @@ body.principia-focus-mode .principia-music-pill{border-color:#9b87ff;box-shadow:
 .pd-action{font-size:11px;font-weight:800;color:var(--purple);text-decoration:none;margin-top:4px;cursor:pointer}.pd-action:hover{text-decoration:underline}.pd-action.disabled{color:var(--muted);cursor:not-allowed}
 .pd-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;border-top:1px solid rgba(255,255,255,.18);margin-top:18px;padding-top:14px;font-size:11px;color:var(--muted)}.pd-foot a{color:var(--purple);text-decoration:none}
 @media(max-width:520px){#principiaDownloadFab{right:13px;bottom:84px;width:42px;height:42px;border-radius:15px}#principiaDownloadOverlay{padding:12px}.pd-grid{grid-template-columns:1fr}.pd-modal{padding:17px;border-radius:23px}.pd-platform{padding:11px}}
+
+
+/* Mobile brand identity: show the official PRINCIPIA emblem + PRO name */
+@media(max-width:760px){
+ #app .sidebar .brand{
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  flex:0 0 auto!important;gap:7px!important;padding:0 11px 0 4px!important;
+  margin:0 3px 0 0!important;border-right:1px solid var(--line)!important;
+  min-width:max-content!important;font-size:12px!important;font-weight:900!important;
+  letter-spacing:.5px!important;color:var(--txt)!important;
+ }
+ #app .sidebar .brand-logo-img{
+  display:block!important;width:34px!important;height:34px!important;
+  min-width:34px!important;object-fit:contain!important;border-radius:0!important;
+ }
+ #app .sidebar .brand:after{content:"PRO";display:inline-block;font-size:12px;font-weight:950;letter-spacing:1.2px;color:var(--txt)}
+}
