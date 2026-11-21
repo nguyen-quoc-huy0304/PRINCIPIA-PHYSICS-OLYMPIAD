@@ -107,8 +107,8 @@ export type PrincipiaProgress = {
   completed: string[];
   attempts: Array<{ title: string; score: number; total: number; at: string }>;
   xp: number;
-  streak?: number;
-  lastStudyDate?: string;
+  streak: number;
+  lastStudyDate: string;
 };
 
 export async function syncProgressToCloud(uid: string, progress: PrincipiaProgress): Promise<void> {
