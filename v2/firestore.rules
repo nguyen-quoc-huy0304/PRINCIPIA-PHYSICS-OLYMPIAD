@@ -1,0 +1,61 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isPrincipiaAdmin() {
+      return signedIn()
+        && request.auth.token.email == 'huyquocnguyen03042011@gmail.com'
+        && request.auth.token.email_verified == true;
+    }
+
+    // Each learner can sync only their own legacy data backup.
+    match /principiaUsers/{uid} {
+      allow read: if isPrincipiaAdmin() || (signedIn() && request.auth.uid == uid);
+      allow create, update: if isPrincipiaAdmin() || (signedIn() && request.auth.uid == uid);
+
+      match /legacyData/{documentId} {
+        allow read, create, update, delete: if isPrincipiaAdmin()
+          || (signedIn() && request.auth.uid == uid);
+      }
+    }
+
+    // Learners may read academic material. Only the administrator may change it.
+    match /principiaContent/{document=**} {
+      allow read: if signedIn();
+      allow write: if isPrincipiaAdmin();
+    }
+
+    match /principiaQuestionBanks/{document=**} {
+      allow read: if signedIn();
+      allow write: if isPrincipiaAdmin();
+    }
+
+    match /principiaMedia/{document=**} {
+      allow read: if signedIn();
+      allow write: if isPrincipiaAdmin();
+    }
+
+    // Users can update only their own progress record.
+    match /principiaProgress/{uid} {
+      allow read, create, update: if isPrincipiaAdmin()
+        || (signedIn() && request.auth.uid == uid);
+      allow delete: if isPrincipiaAdmin();
+    }
+
+    // Public-to-signed-in leaderboard: each user can publish only their own row.
+    match /principiaLeaderboard/{uid} {
+      allow read: if signedIn();
+      allow create, update: if isPrincipiaAdmin()
+        || (signedIn() && request.auth.uid == uid
+            && request.resource.data.uid == request.auth.uid);
+      allow delete: if isPrincipiaAdmin();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
