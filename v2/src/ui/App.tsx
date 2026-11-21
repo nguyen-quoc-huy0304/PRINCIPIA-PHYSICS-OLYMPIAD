@@ -143,6 +143,7 @@ export function App() {
   const [mediaVideoUrl, setMediaVideoUrl] = useState('');
   const [mediaOcrStatus, setMediaOcrStatus] = useState('');
   const [mediaOcrBusy, setMediaOcrBusy] = useState(false);
+  const [mediaSourceLang, setMediaSourceLang] = useState('en');
   const mediaVideoRef = useRef<HTMLVideoElement>(null);
   useEffect(() => () => { if (mediaVideoUrl) URL.revokeObjectURL(mediaVideoUrl); }, [mediaVideoUrl]);
   const currentLessonStorageKey = activeLesson ? `principia_lesson_workspace:${account?.user.uid || 'guest'}:${[...lessonPath, activeLesson].map(item => item.id || item.name).join('::')}` : '';
@@ -324,6 +325,36 @@ export function App() {
       setWorkspaceNotice('Không lưu được. Bộ nhớ trình duyệt có thể đã đầy.');
     }
   };
+  const translateMediaTranscript = async () => {
+    const sourceText = (activeLesson?.transcript || '').trim();
+    if (!sourceText) { setMediaOcrStatus('Hãy nhập transcript trước khi dịch.'); return; }
+    const targetMap: Record<string,string> = { 'vi-VN':'vi', 'en-US':'en', 'ja-JP':'ja', 'ko-KR':'ko', 'fr-FR':'fr' };
+    const target = targetMap[activeLesson?.dubLang || 'vi-VN'] || 'vi';
+    if (mediaSourceLang === target) { setMediaOcrStatus('Ngôn ngữ nguồn và đích đang giống nhau.'); return; }
+    setMediaOcrBusy(true); setMediaOcrStatus('Đang dịch transcript qua MyMemory…');
+    try {
+      const chunks = sourceText.match(/[\\s\\S]{1,430}(?:\\s|$)/g) || [sourceText];
+      const translated: string[] = [];
+      for (let index = 0; index < chunks.length; index++) {
+        const query = chunks[index].trim();
+        if (!query) continue;
+        const pair = (mediaSourceLang === 'auto' ? 'en' : mediaSourceLang) + '|' + target;
+        const url = 'https://api.mymemory.translated.net/get?q=' + encodeURIComponent(query) + '&langpair=' + encodeURIComponent(pair);
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Dịch vụ dịch đang bận (' + response.status + ').');
+        const json = await response.json();
+        if (json.responseStatus !== 200) throw new Error(json.responseDetails || 'Không dịch được đoạn văn.');
+        translated.push(String(json.responseData?.translatedText || ''));
+        setMediaOcrStatus('Đã dịch ' + (index + 1) + '/' + chunks.length + ' đoạn…');
+      }
+      const result = translated.join(' ');
+      setActiveLesson(current => current ? { ...current, translatedTranscript: result } : current);
+      saveLessonMedia({ translatedTranscript: result });
+      setMediaOcrStatus('Đã dịch xong transcript.');
+    } catch (error: any) { setMediaOcrStatus(error?.message || 'Dịch transcript thất bại.'); }
+    finally { setMediaOcrBusy(false); }
+  };
+
   const saveLessonMedia = (patch: Partial<Pick<LegacyNode, 'transcript' | 'translatedTranscript' | 'videoOcr' | 'summary' | 'dubLang'>>) => {
     if (!activeLesson) return;
     if (!account?.isAdmin) {
@@ -954,7 +985,10 @@ export function App() {
                 <button class="secondary-button" type="button" onClick={() => saveLessonMedia({ videoOcr: activeLesson.videoOcr || '' })}>Lưu kết quả OCR</button>
                 <label>Tóm tắt bài học<textarea rows={4} value={activeLesson.summary || ''} onInput={event => setActiveLesson(current => current ? { ...current, summary: event.currentTarget.value } : current)} placeholder="Tóm tắt nội dung…" /></label>
                 <div class="chat-actions"><button class="secondary-button" type="button" onClick={summarizeMediaTranscript}>Tạo tóm tắt nhanh từ transcript</button><button class="secondary-button" type="button" onClick={() => saveLessonMedia({ summary: activeLesson.summary || '' })}>Lưu tóm tắt</button></div>
-                <label>Ngôn ngữ đọc<select value={activeLesson.dubLang || 'vi-VN'} onChange={event => saveLessonMedia({ dubLang: event.currentTarget.value })}><option value="vi-VN">Tiếng Việt</option><option value="en-US">English</option><option value="ja-JP">日本語</option><option value="ko-KR">한국어</option><option value="fr-FR">Français</option></select></label>
+                <label>Ngôn ngữ nguồn<select value={mediaSourceLang} onChange={event => setMediaSourceLang(event.currentTarget.value)}><option value="en">English</option><option value="vi">Tiếng Việt</option><option value="ja">日本語</option><option value="ko">한국어</option><option value="fr">Français</option><option value="auto">Tự đoán (mặc định English)</option></select></label>
+                <label>Ngôn ngữ đọc / dịch đích<select value={activeLesson.dubLang || 'vi-VN'} onChange={event => saveLessonMedia({ dubLang: event.currentTarget.value })}><option value="vi-VN">Tiếng Việt</option><option value="en-US">English</option><option value="ja-JP">日本語</option><option value="ko-KR">한국어</option><option value="fr-FR">Français</option></select></label>
+                <p class="empty-state">Khi bấm dịch, transcript sẽ được gửi tới dịch vụ MyMemory bên ngoài để xử lý. Có thể bị giới hạn lượt miễn phí.</p>
+                <button class="secondary-button" type="button" disabled={mediaOcrBusy} onClick={() => void translateMediaTranscript()}>{mediaOcrBusy ? 'Đang xử lý…' : '✦ Dịch transcript tự động'}</button>
               </div>}
               {lessonTool === 'simulation' && <div class="lesson-tool-panel">
                 <h3>PhET Interactive Simulations</h3>
