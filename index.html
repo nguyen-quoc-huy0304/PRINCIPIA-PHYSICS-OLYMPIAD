@@ -93,11 +93,13 @@ p{line-height:1.7}
 .dropzone{border:1px dashed #62558c;border-radius:13px;padding:18px;text-align:center;color:var(--muted)}
 @media(max-width:760px){
  .layout{grid-template-columns:1fr}
- .sidebar{height:auto;position:sticky;top:0;z-index:8;flex-direction:row;overflow-x:auto;padding:8px;border-right:0;border-bottom:1px solid var(--line)}
+ /* Mobile navigation: no sticky top bar; keep emoji icons visible */
+ .sidebar{height:auto;position:relative;top:auto;z-index:8;flex-direction:row;overflow-x:auto;padding:8px;border-right:0;border-bottom:1px solid var(--line)}
  .brand{padding:0;margin-right:4px;font-size:0}
  .brand .logo{width:33px;height:33px}
  .navlabel,.sidebottom{display:none}
- .nav{width:auto;white-space:nowrap;padding:9px;font-size:11px}
+ .nav{width:auto;white-space:nowrap;padding:9px;font-size:11px;flex:0 0 auto}
+ .nav-default-icon{display:inline-grid!important;place-items:center!important;min-width:24px!important;min-height:24px!important;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif!important;font-size:20px!important;line-height:1!important;visibility:visible!important;opacity:1!important}
  .main{padding:18px 13px}
  .top{align-items:flex-start;flex-direction:column}
  .topright{width:100%;justify-content:space-between}
