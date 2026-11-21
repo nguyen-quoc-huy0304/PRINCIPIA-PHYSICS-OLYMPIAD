@@ -130,3 +130,7 @@
 .chat-composer textarea{width:100%;resize:vertical;min-height:100px;padding:14px;border:1px solid rgba(255,255,255,.13);border-radius:13px;background:#0b1020;color:#f4f5ff;font:inherit;line-height:1.6}
 .chat-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 @media(max-width:560px){.chat-heading{align-items:flex-start;flex-direction:column}.chat-heading select{width:100%}.chat-user-message{width:100%}.chat-actions button{flex:1 1 42%}}
+
+.media-reference-panel section{display:grid;gap:8px;padding:13px;border:1px solid rgba(255,255,255,.09);border-radius:12px;background:rgba(255,255,255,.025)}
+.media-reference-panel section b{font-size:13px;color:#d9d1ff}
+.media-reference-panel pre{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;color:#c0c4d8;font:13px/1.7 inherit}
