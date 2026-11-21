@@ -11,6 +11,7 @@ import { restoreLegacyDataFromCloud, syncLegacyDataToCloud, restoreProgressFromC
 type Section = 'home' | 'learn' | 'quiz' | 'chat' | 'progress' | 'legacy';
 type Mode = 'login' | 'signup';
 type Question = { q: string; a: string[]; correct: number; type?: 'true_false' | 'single_select' | 'multi_select' | 'short_answer' | 'long_answer'; correctValues?: string[]; expected?: string; rubric?: string; points?: number; explanation?: string };
+type QuizEditorState = { id?: string; name: string; questionsText: string };
 type LegacyNode = {
   id: string; name: string; icon?: string; type?: string; content?: string; note?: string; video?: string;
   children?: LegacyNode[]; questions?: Question[]; quiz?: Question[];
@@ -33,6 +34,9 @@ function parseArray<T>(raw?: string): T[] {
 }
 function countNodes(nodes: LegacyNode[], type: string): number {
   return nodes.reduce((sum, node) => sum + (node.type === type ? 1 : 0) + countNodes(node.children || [], type), 0);
+}
+function hasNode(nodes: LegacyNode[], id?: string): boolean {
+  return !!id && nodes.some(node => node.id === id || hasNode(node.children || [], id));
 }
 function countQuestions(nodes: LegacyNode[]): number {
   return nodes.reduce((sum, node) => sum + (node.questions?.length || node.quiz?.length || 0) + countQuestions(node.children || []), 0);
@@ -79,6 +83,7 @@ export function App() {
   const [lessonEditor, setLessonEditor] = useState<{ id?: string; name: string; icon: string; type: 'lesson' | 'folder'; content: string; note: string; video: string } | null>(null);
   const [quizPath, setQuizPath] = useState<LegacyNode[]>([]);
   const [activeQuiz, setActiveQuiz] = useState<LegacyNode | null>(null);
+  const [quizEditor, setQuizEditor] = useState<QuizEditorState | null>(null);
   const [answers, setAnswers] = useState<Record<number, number | number[] | string>>({});
   const [quizSubmitted, setQuizSubmitted] = useState(false);
   const [lessonTool, setLessonTool] = useState<'note' | 'files' | 'submit' | 'simulation' | 'media'>('note');
@@ -524,6 +529,58 @@ export function App() {
     } catch (error: any) { setStatus(error?.message || 'Không thể xóa bài học.'); }
   }
 
+  function startQuizEditor(node?: LegacyNode) {
+    if (!account?.isAdmin) return;
+    if (node && !hasNode(quizzes, node.id)) { setStatus('Thử thách này không nằm trong ngân hàng đề do quản trị viên quản lý.'); return; }
+    setQuizEditor({
+      id: node?.id, name: node?.name || '',
+      questionsText: JSON.stringify(node?.questions || node?.quiz || [{ q: '', type: 'single_select', a: ['', '', '', ''], correct: 0, explanation: '' }], null, 2)
+    });
+  }
+
+  function saveQuizEditor() {
+    if (!account?.isAdmin || !quizEditor || !quizEditor.name.trim()) return;
+    try {
+      const parsed = JSON.parse(quizEditor.questionsText);
+      if (!Array.isArray(parsed) || parsed.some(item => !item || typeof item.q !== 'string')) throw new Error('Danh sách câu hỏi phải là mảng JSON hợp lệ, mỗi câu có trường q.');
+      const bank = parseArray<LegacyNode>(localStorage.getItem('halo_quiz') || '[]');
+      const node: LegacyNode = {
+        id: quizEditor.id || ('quiz-' + Date.now() + '-' + Math.random().toString(36).slice(2,7)),
+        name: quizEditor.name.trim(), type: 'quiz', questions: parsed
+      };
+      if (quizEditor.id) {
+        const update = (nodes: LegacyNode[]): boolean => {
+          for (const item of nodes) {
+            if (item.id === quizEditor.id) { item.name = node.name; item.questions = parsed; item.type = 'quiz'; return true; }
+            if (item.children && update(item.children)) return true;
+          }
+          return false;
+        };
+        if (!update(bank)) throw new Error('Không tìm thấy đề thi cần chỉnh sửa.');
+      } else {
+        const parent = quizPath.length ? quizPath[quizPath.length - 1] : null;
+        if (parent) {
+          const findParent = (nodes: LegacyNode[]): LegacyNode | null => {
+            for (const item of nodes) {
+              if (item.id === parent.id) return item;
+              const found = item.children ? findParent(item.children) : null;
+              if (found) return found;
+            }
+            return null;
+          };
+          const target = findParent(bank);
+          if (!target) throw new Error('Chỉ có thể tạo đề trong thư mục ngân hàng đề của admin.');
+          target.children = [...(target.children || []), node];
+        } else bank.push(node);
+      }
+      localStorage.setItem('halo_quiz', JSON.stringify(bank));
+      setBackupVersion(value => value + 1);
+      if (quizEditor.id) setActiveQuiz(node);
+      setQuizEditor(null);
+      setStatus('Đã lưu ngân hàng đề trên thiết bị. Hãy đồng bộ cloud để xuất bản cho học viên.');
+    } catch (error: any) { setStatus(error?.message || 'Không thể lưu ngân hàng đề.'); }
+  }
+
   function openQuizNode(node: LegacyNode) {
     const items = node.questions || node.quiz || [];
     if (items.length) { setActiveQuiz(node); setAnswers({}); setQuizSubmitted(false); }
@@ -720,6 +777,14 @@ export function App() {
           {activeQuiz ? <section class="content-panel">
             <button class="back-link" onClick={() => { setActiveQuiz(null); setQuizSubmitted(false); }}>← Quay lại danh sách</button>
             <h2>{activeQuiz.name}</h2>
+            {account.isAdmin && hasNode(quizzes, activeQuiz.id) && <button class="secondary-button" type="button" onClick={() => startQuizEditor(activeQuiz)}>Chỉnh sửa ngân hàng đề (JSON)</button>}
+            {quizEditor && <section class="lesson-editor">
+              <h3>{quizEditor.id ? 'Chỉnh sửa đề thi' : 'Tạo đề thi mới'}</h3>
+              <label>Tên đề thi<input value={quizEditor.name} onInput={event => setQuizEditor(current => current ? { ...current, name: event.currentTarget.value } : current)} /></label>
+              <label>Danh sách câu hỏi (JSON)<textarea rows={16} spellcheck={false} value={quizEditor.questionsText} onInput={event => setQuizEditor(current => current ? { ...current, questionsText: event.currentTarget.value } : current)} /></label>
+              <p class="empty-state">Hỗ trợ single_select, true_false, multi_select, short_answer và long_answer. Mẫu câu hỏi: <code>{'{"q":"...","type":"single_select","a":["A","B"],"correct":0}'}</code></p>
+              <div class="chat-actions"><button class="primary-button" type="button" onClick={saveQuizEditor}>Lưu đề thi</button><button class="quiet-button" type="button" onClick={() => setQuizEditor(null)}>Hủy</button></div>
+            </section>}
             {questions.map((question, index) => <article class="question-card">
               <b>{index + 1}. {question.q}</b>
               {(question.type === 'short_answer' || question.type === 'long_answer') ? <label class="written-answer">
@@ -738,6 +803,7 @@ export function App() {
             <div class="section-toolbar">
               <button class="back-link" disabled={!quizPath.length} onClick={() => setQuizPath(path => path.slice(0, -1))}>← Quay lại</button>
               <span>{quizPath.map(node => node.name).join(' / ') || 'Ngân hàng đề & thử thách'}</span>
+              {account.isAdmin && (!quizPath.length || hasNode(quizzes, quizPath[quizPath.length - 1]?.id)) && <button class="secondary-button" type="button" onClick={() => startQuizEditor()}>＋ Tạo đề thi</button>}
             </div>
             <div class="node-grid">
               {quizNodes.map(node => <button class="node-card" onClick={() => openQuizNode(node)}>
