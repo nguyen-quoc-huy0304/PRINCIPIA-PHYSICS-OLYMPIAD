@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#eee">
+  <title>PRO — Nhân vật 01</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 24px;
+      background: #eee;
+      font-family: Arial, sans-serif;
+    }
+    main {
+      width: min(900px, 100%);
+      min-height: 70vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      border-radius: 24px;
+      background: #fff;
+      box-shadow: 0 12px 40px rgba(0,0,0,.08);
+    }
+    img {
+      display: block;
+      max-width: 100%;
+      max-height: 80vh;
+      height: auto;
+      object-fit: contain;
+    }
+    .missing {
+      color: #666;
+      text-align: center;
+      line-height: 1.6;
+    }
+    .missing code { color: #222; }
+  </style>
+</head>
+<body>
+  <main>
+    <img src="image.png" alt="PRO Character"
+      onerror="this.hidden=true;document.getElementById('missing').hidden=false">
+    <p id="missing" class="missing" hidden>
+      Đã tạo trang xem trước nhân vật số 01.<br>
+      Chưa có tệp <code>image.png</code> trong kho mã nguồn nên ảnh chưa thể hiển thị.
+    </p>
+  </main>
+</body>
+</html>
