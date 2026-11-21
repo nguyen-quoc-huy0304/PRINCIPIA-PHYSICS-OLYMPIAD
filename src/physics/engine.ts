@@ -33,17 +33,15 @@ function state(u: number, a: number, t: number): MotionState {
 }
 const constants = Object.freeze({standardGravity:G});
 
-declare global {
-  interface Window {
-    PrincipiaPhysics?: {
-      version: string; backend: string;
-      constants: Readonly<{standardGravity:number}>;
-      velocity: typeof velocity; displacement: typeof displacement;
-      kineticEnergy: typeof kineticEnergy; projectile: typeof projectile; state: typeof state;
-    };
-  }
-}
-window.PrincipiaPhysics = Object.freeze({
+const principiaWindow = window as Window & {
+  PrincipiaPhysics?: {
+    version: string; backend: string;
+    constants: Readonly<{standardGravity:number}>;
+    velocity: typeof velocity; displacement: typeof displacement;
+    kineticEnergy: typeof kineticEnergy; projectile: typeof projectile; state: typeof state;
+  };
+};
+principiaWindow.PrincipiaPhysics = Object.freeze({
   version: "1.0.0", backend: "typescript",
   constants, velocity, displacement, kineticEnergy, projectile, state
 });
