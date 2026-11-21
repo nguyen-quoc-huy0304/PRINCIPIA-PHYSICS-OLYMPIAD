@@ -6,7 +6,11 @@ on:
     paths:
       - 'desktop/**'
       - 'package.json'
-      - 'assets/js/app-part-09.js'
+      - 'assets/js/**'
+      - 'assets/css/**'
+      - 'assets/images/**'
+      - 'src/physics/**'
+      - 'index.html'
       - '.github/workflows/build-windows-app.yml'
 
 permissions:
@@ -63,8 +67,8 @@ jobs:
           merge-multiple: true
       - uses: softprops/action-gh-release@v2
         with:
-          tag_name: desktop-v1.0.3
-          name: PRINCIPIA PRO v1.0.3
+          tag_name: desktop-v1.0.4
+          name: PRINCIPIA PRO v1.0.4
           generate_release_notes: true
           files: |
             dist/*
