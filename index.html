@@ -878,16 +878,24 @@ html[data-theme="light"] #modal .icon-choice-name{color:#25283a!important}
 @media(max-width:420px){#modal .icon-choice-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
 </style>
 
-<style id="principia-mobile-nav-final-fix">
-/* Final mobile nav override: mobile is flex-column, content first, nav after */
+
+<style id="principia-mobile-nav-and-icons-repair">
+/* Icon visibility and persistent mobile navigation */
+#app .nav-default-icon{display:inline-flex!important;visibility:visible!important;opacity:1!important;align-items:center!important;justify-content:center!important;flex:0 0 28px!important;width:28px!important;height:28px!important;min-width:28px!important;min-height:28px!important;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif!important;font-size:23px!important;line-height:1!important;color:inherit!important}
+#app .nav-custom-icon{display:block!important;visibility:visible!important;opacity:1!important;flex:0 0 28px!important;width:28px!important;height:28px!important;min-width:28px!important;min-height:28px!important;object-fit:contain!important}
+#app .account-avatar-trigger{display:inline-flex!important;visibility:visible!important;opacity:1!important;align-items:center!important;justify-content:center!important;min-width:48px!important;min-height:48px!important;position:relative!important}
+#app .account-avatar-trigger .avatar-default{display:grid!important;visibility:visible!important;opacity:1!important;place-items:center!important;width:42px!important;height:42px!important;font-size:22px!important;line-height:1!important}
+#app .account-avatar-trigger img.avatar{display:block!important;visibility:visible!important;opacity:1!important;width:42px!important;height:42px!important;object-fit:cover!important;border-radius:50%!important}
 @media(max-width:760px){
  #app .layout{display:flex!important;flex-direction:column!important;min-height:100vh!important}
- #app .layout>.main{order:1!important;width:100%!important;min-width:0!important}
- #app .layout>.sidebar{order:2!important;position:static!important;top:auto!important;height:auto!important;width:100%!important;min-width:0!important;display:flex!important;flex-direction:row!important;align-items:center!important;gap:6px!important;overflow-x:auto!important;overflow-y:hidden!important;padding:8px 10px!important;border:0!important;border-top:1px solid var(--line)!important;border-radius:0!important;flex-wrap:nowrap!important}
+ #app .layout>.main{order:1!important;width:100%!important;min-width:0!important;padding-bottom:100px!important}
+ #app .layout>.sidebar{position:fixed!important;left:0!important;right:0!important;bottom:0!important;top:auto!important;z-index:99999!important;order:2!important;width:100%!important;height:auto!important;min-height:64px!important;max-height:82px!important;display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:space-around!important;gap:4px!important;overflow-x:auto!important;overflow-y:hidden!important;padding:7px 6px calc(7px + env(safe-area-inset-bottom))!important;margin:0!important;background:var(--card)!important;border:0!important;border-top:1px solid var(--line)!important;border-radius:0!important;box-shadow:0 -4px 18px #0003!important;flex-wrap:nowrap!important}
  #app .sidebar .brand,#app .sidebar .navlabel,#app .sidebar .sidebottom{display:none!important}
- #app .sidebar .nav{display:flex!important;flex:0 0 auto!important;align-items:center!important;justify-content:center!important;gap:6px!important;min-height:44px!important;width:auto!important;padding:7px 10px!important;white-space:nowrap!important;order:initial!important}
- #app .sidebar .nav-default-icon{display:inline-flex!important;visibility:visible!important;opacity:1!important;align-items:center!important;justify-content:center!important;flex:0 0 26px!important;width:26px!important;height:26px!important;min-width:26px!important;min-height:26px!important;font-size:22px!important;line-height:1!important;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif!important}
- #app .sidebar .nav>span:last-child{display:inline!important;visibility:visible!important;opacity:1!important}
+ #app .sidebar .nav{display:flex!important;position:relative!important;flex:1 0 58px!important;min-width:58px!important;max-width:105px!important;width:auto!important;min-height:48px!important;align-items:center!important;justify-content:center!important;flex-direction:column!important;gap:3px!important;padding:4px 5px!important;white-space:nowrap!important;overflow:visible!important}
+ #app .sidebar .nav>span:last-child{display:inline!important;visibility:visible!important;opacity:1!important;font-size:10px!important;line-height:1.1!important}
+ #app .sidebar .nav-default-icon{display:inline-flex!important;visibility:visible!important;opacity:1!important}
+ #app .sidebar .nav-custom-icon{display:block!important;visibility:visible!important;opacity:1!important}
+ body{padding-bottom:env(safe-area-inset-bottom)!important}
 }
 </style>
 </head>
@@ -1241,7 +1249,7 @@ function card(n){
  <div class="tile-actions" onclick="event.stopPropagation()">${n.type==='tab'||n.type==='lesson'?'<button type="button" title="Tùy chỉnh icon" onclick="editNode(\''+n.id+'\')">🎨 Icon</button>':''}<button type="button" onclick="editNode('${n.id}')">✎</button><button type="button" onclick="deleteNode('${n.id}')">⋯</button></div>
  ${n.type==='lesson'||n.type==='tab'?`<div class="tileicon lesson-tile-icon">${nodeIconHTML(n,'')}</div>`:''}<h3>${esc(n.name)}</h3><p>${n.type==='tab'?'Mở tab để xem các nội dung bên trong':n.type==='lesson'?'Mở bài học':'Bắt đầu hoạt động'}</p><div class="tilefoot"><span>${amount}</span><span>↗</span></div></div>`;
 }
-function topbar(){return `<div class="top"><div><div class="eyebrow">PRINCIPIA • PHYSICS OLYMPIAD</div><div class="muted small">Your personal learning world</div><div class="principia-clockbar"><span class="principia-time-pill" title="Giờ hiện tại"><b id="principiaLiveTime">--:--</b></span><button class="principia-time-pill" type="button" onclick="toggleTopbarStudyClock()" title="Bấm để bắt đầu hoặc tạm dừng đồng hồ học"><b id="principiaStopwatch">${fmtClock(principiaClock.seconds)}</b><span id="principiaStopwatchState">${principiaClock.running?'Tạm dừng':'Bắt đầu'}</span></button></div></div><div class="topright"><button class="pill" type="button" onclick="openGameStats()" title="Xem thành tích và nhiệm vụ">${streak} ngày học</button><button class="pill" type="button" onclick="openRewardCollection()" title="Mở kho vật phẩm đã nhận">${xp} XP</button>${avatarHTML()}</div></div>`}
+function topbar(){return `<div class="top"><div><div class="eyebrow">PRINCIPIA • PHYSICS OLYMPIAD</div><div class="muted small">Your personal learning world</div><div class="principia-clockbar"><span class="principia-time-pill" title="Giờ hiện tại"><b id="principiaLiveTime">--:--</b></span><button class="principia-time-pill" type="button" onclick="toggleTopbarStudyClock()" title="Bấm để bắt đầu hoặc tạm dừng đồng hồ học"><b id="principiaStopwatch">${fmtClock(principiaClock.seconds)}</b><span id="principiaStopwatchState">${principiaClock.running?'Tạm dừng':'Bắt đầu'}</span></button></div></div><div class="topright"><button class="pill" type="button" onclick="openGameStats()" title="Xem thành tích và nhiệm vụ">🔥 ${streak} ngày học</button><button class="pill" type="button" onclick="openRewardCollection()" title="Mở kho vật phẩm đã nhận">⚡ ${xp} XP</button>${avatarHTML()}</div></div>`}
 let principiaClock={mode:'stopwatch',seconds:0,left:1500,running:false,interval:null};
 function updatePrincipiaClockBar(){const t=document.getElementById('principiaLiveTime');if(t)t.textContent=new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit',hour12:false});const sw=document.getElementById('principiaStopwatch');if(sw)sw.textContent=fmtClock(principiaClock.seconds);const st=document.getElementById('principiaStopwatchState');if(st)st.textContent=principiaClock.running?'Ⅱ':'▶';}
 function startPrincipiaLiveClock(){if(window.__principiaWallClock)return;updatePrincipiaClockBar();window.__principiaWallClock=setInterval(updatePrincipiaClockBar,1000);}
@@ -2706,15 +2714,3 @@ button,.secondary,.primary,.danger,.tab,.pill,.nav .ni,.tileicon,.iconbtn,.cl-ic
 </body>
 </html>
 
-<style id="principia-mobile-fixed-nav-icon-final">
-@media(max-width:760px){
- #app .layout{display:flex!important;flex-direction:column!important;min-height:100vh!important}
- #app .layout>.main{order:1!important;width:100%!important;min-width:0!important;padding-bottom:90px!important}
- #app .layout>.sidebar{position:fixed!important;left:0!important;right:0!important;bottom:0!important;top:auto!important;z-index:9999!important;order:2!important;width:100%!important;height:auto!important;min-height:62px!important;max-height:76px!important;display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:space-around!important;gap:4px!important;overflow-x:auto!important;overflow-y:hidden!important;padding:8px 6px calc(8px + env(safe-area-inset-bottom))!important;background:var(--card)!important;border:0!important;border-top:1px solid var(--line)!important;border-radius:0!important;box-shadow:0 -4px 18px #0002!important}
- #app .sidebar .brand,#app .sidebar .navlabel,#app .sidebar .sidebottom{display:none!important}
- #app .sidebar .nav{display:flex!important;flex:1 0 auto!important;min-width:62px!important;max-width:100px!important;width:auto!important;min-height:44px!important;align-items:center!important;justify-content:center!important;flex-direction:column!important;gap:3px!important;padding:5px 7px!important;white-space:nowrap!important}
- #app .sidebar .nav-default-icon{display:inline-flex!important;visibility:visible!important;opacity:1!important;align-items:center!important;justify-content:center!important;flex:0 0 25px!important;width:25px!important;height:25px!important;min-width:25px!important;min-height:25px!important;font-size:22px!important;line-height:1!important;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif!important}
- #app .sidebar .nav-custom-icon{display:block!important;visibility:visible!important;opacity:1!important;width:25px!important;height:25px!important;object-fit:contain!important}
- #app .sidebar .nav>span:last-child{display:inline!important;visibility:visible!important;opacity:1!important;font-size:10px!important;line-height:1.1!important}
-}
-</style>
