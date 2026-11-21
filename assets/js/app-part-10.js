@@ -27,7 +27,7 @@
  const oldLesson=window.lesson;
  if(typeof oldLesson==='function')window.lesson=function(){
   const html=oldLesson.apply(this,arguments);let l=null;
-  try{const title=document.querySelector('#app h1')?.textContent;const walk=ns=>{for(const n of ns||[]){if(n.type==='lesson'&&n.name===title)return n;const x=walk(n.children);if(x)return x}return null};l=walk(JSON.parse(localStorage.getItem('halo_data')||'[]'))}catch(e){}
+  try{const id=String(html).match(/editNode\\('([^']+)'\\)/)?.[1];const walk=ns=>{for(const n of ns||[]){if(n.id===id)return n;const x=walk(n.children);if(x)return x}return null};l=walk(JSON.parse(localStorage.getItem('halo_data')||'[]'))}catch(e){}
   let url=safeUrl(l?.webUrl||l?.previewUrl||l?.url||l?.website||l?.link);
   if(!url){const m=String(l?.content||'').match(/https?:\/\/[^\s<>"')\]]+/i);if(m)url=safeUrl(m[0].replace(/[.,;!?]+$/,''))}
   if(!url)return html;
