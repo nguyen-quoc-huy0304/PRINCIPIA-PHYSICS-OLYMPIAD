@@ -16,7 +16,7 @@ V2 is being developed on the isolated `rebuild-v2` branch. The production `main`
 - Native lesson/course browsing and administrator lesson/folder editor.
 - Admin question-bank editor with JSON authoring for single choice, true/false, multiple choice, short answer and long answer question types.
 - Lesson video playback, personal notes, local lesson attachments, PhET simulation embed.
-- Transcript editing, OCR of uploaded local video frames using Tesseract.js, editable OCR text, quick transcript summary, browser speech playback, and an AI-assisted translation prompt.
+- Transcript editing, OCR of uploaded local video frames using Tesseract.js, editable OCR text, quick transcript summary, browser speech playback, MyMemory transcript translation, and an AI-assisted translation prompt.
 - Account-scoped AI prompt history, built-in AI providers, and custom external AI links. AI responses are still handled by the selected provider's website; V2 does not pretend to run a model locally or call a provider API.
 - Music & Focus workspace with Spotify/YouTube/SoundCloud embeds, custom music sites, focus mode and Pomodoro timer.
 - Mini browser with URL validation, navigation history, sandboxed frames and external-open fallback.
@@ -53,6 +53,17 @@ npm run build
 ```
 
 For the desktop shell, install Rust stable and the platform prerequisites, then run `npm run tauri dev` or `npm run tauri build`.
+
+For mobile development, install the Android SDK/NDK and Java 17 for Android, or Xcode and the iOS toolchain on macOS for iOS:
+
+```sh
+npm run tauri:android:init
+npm run tauri:android:build
+npm run tauri:ios:init
+npm run tauri:ios:build
+```
+
+Mobile builds still need platform signing and store configuration before they are distributable.
 
 ## Release safety
 Do not merge V2 into `main`, delete the legacy code, or distribute installers until the feature checklist is complete, the Firebase rules are reviewed/deployed, and Windows, Linux, macOS, Android and iOS builds have been tested on real devices.
