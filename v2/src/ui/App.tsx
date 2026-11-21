@@ -957,7 +957,7 @@ export function App() {
             <button class="secondary-button" type="button" disabled={!browserUrl} onClick={() => setBrowserReload(value => value + 1)}>↻</button>
           </form>
           {browserNotice && <p class="workspace-notice" role="status">{browserNotice}</p>}
-          {browserUrl ? <iframe key={browserUrl + ':' + browserReload} class="mini-browser-frame" title="Trình duyệt mini PRINCIPIA" src={browserUrl} referrerPolicy="strict-origin-when-cross-origin" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox" /> : <div class="music-external-note"><b>Chưa mở website</b><p>Nhập địa chỉ vào thanh công cụ phía trên. Một số trang sẽ từ chối hiển thị trong khung nhúng; khi đó hãy chọn Mở tab ngoài.</p></div>}
+          {browserUrl ? <iframe key={browserUrl + ':' + browserReload} class="mini-browser-frame" title="Trình duyệt mini PRINCIPIA" src={browserUrl} referrerPolicy="strict-origin-when-cross-origin" sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox" /> : <div class="music-external-note"><b>Chưa mở website</b><p>Nhập địa chỉ vào thanh công cụ phía trên. Một số trang sẽ từ chối hiển thị trong khung nhúng; khi đó hãy chọn Mở tab ngoài.</p></div>}
         </section>}
         {section === 'music' && <section class="content-panel music-workspace">
           <div class="music-heading"><div><h2>♫ Music & Focus</h2><p>Không gian âm nhạc và bộ hẹn giờ tập trung.</p></div><button class={musicFocus ? 'primary-button' : 'secondary-button'} type="button" onClick={() => setMusicFocus(value => !value)}>{musicFocus ? 'Tắt Focus mode' : 'Bật Focus mode'}</button></div>
