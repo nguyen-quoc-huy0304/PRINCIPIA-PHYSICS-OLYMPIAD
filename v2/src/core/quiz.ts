@@ -45,6 +45,41 @@ export function isQuestionCorrect(question: QuizQuestion, answer: number | numbe
   return typeof answer === 'number' && correct.length === 1 && answer === correct[0];
 }
 
+export type QuizGrade = {
+  /** Correct answers among automatically gradable questions. */
+  score: number;
+  /** Excludes long-answer questions awaiting teacher review. */
+  total: number;
+  correct: number;
+  incorrect: number;
+  pendingReview: number;
+};
+
+export function gradeQuiz(
+  questions: QuizQuestion[],
+  answers: Record<number, number | number[] | string>
+): QuizGrade {
+  let score = 0;
+  let total = 0;
+  let pendingReview = 0;
+  for (let index = 0; index < questions.length; index += 1) {
+    const question = questions[index];
+    if (question.type === 'long_answer') {
+      pendingReview += 1;
+      continue;
+    }
+    total += 1;
+    if (isQuestionCorrect(question, answers[index])) score += 1;
+  }
+  return {
+    score,
+    total,
+    correct: score,
+    incorrect: total - score,
+    pendingReview
+  };
+}
+
 export function validateQuizQuestions(value: unknown): QuizQuestion[] {
   if (!Array.isArray(value) || value.length === 0) throw new Error('Đề thi cần có ít nhất một câu hỏi.');
   return value.map((item, index) => {
