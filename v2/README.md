@@ -14,7 +14,7 @@ V2 is being developed on the isolated `rebuild-v2` branch. The production `main`
 - Original circular PRINCIPIA logo is reused; it is not redrawn.
 - Responsive web shell with bottom navigation on mobile.
 - Native lesson/course browsing and administrator lesson/folder editor.
-- Admin question-bank editor with JSON authoring for single choice, true/false, multiple choice, short answer and long answer question types.
+- Admin question-bank editor with JSON authoring and validated answer keys for single choice, true/false, multiple choice and short answer; long answers are explicitly marked for teacher review rather than being auto-scored.
 - Lesson video playback, personal notes, local lesson attachments, PhET simulation embed.
 - Transcript editing, OCR of uploaded local video frames using Tesseract.js, editable OCR text, quick transcript summary, browser speech playback, MyMemory transcript translation, and an AI-assisted translation prompt.
 - Account-scoped AI prompt history, built-in AI providers, and custom external AI links. AI responses are still handled by the selected provider's website; V2 does not pretend to run a model locally or call a provider API.
@@ -25,7 +25,7 @@ V2 is being developed on the isolated `rebuild-v2` branch. The production `main`
 - Account profile editor and local light/dark theme preference.
 - Multi-platform download center that clearly marks V2 packages as unreleased until signed builds exist.
 - Account-scoped offline document library with PDF/image/video/audio preview and download.
-- Learning completion, quiz history, EXP, daily streak and achievement badges; personal progress can sync to the signed-in user's Firestore document.
+- Learning completion, quiz history, EXP, daily streak and achievement badges; account-scoped progress is merged with Firestore without mixing guest and signed-in sessions.
 - Private per-account backup/restore, admin publishing of shared lesson and quiz data, and automatic retrieval of published content for signed-in learners.
 - Rust physics core and TypeScript fallback; CI checks the web build and Rust code.
 
