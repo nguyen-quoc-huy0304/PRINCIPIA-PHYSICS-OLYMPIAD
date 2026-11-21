@@ -11,18 +11,18 @@ service cloud.firestore {
         && request.auth.token.email_verified == true;
     }
 
-    // Each learner can sync only their own legacy data backup.
+    // All PRINCIPIA content and cloud writes are administrator-only.
+    // Learner accounts can sign in and read published academic material.
     match /principiaUsers/{uid} {
       allow read: if isPrincipiaAdmin() || (signedIn() && request.auth.uid == uid);
-      allow create, update: if isPrincipiaAdmin() || (signedIn() && request.auth.uid == uid);
+      allow write: if isPrincipiaAdmin();
 
       match /legacyData/{documentId} {
-        allow read, create, update, delete: if isPrincipiaAdmin()
-          || (signedIn() && request.auth.uid == uid);
+        allow read: if isPrincipiaAdmin() || (signedIn() && request.auth.uid == uid);
+        allow write: if isPrincipiaAdmin();
       }
     }
 
-    // Learners may read academic material. Only the administrator may change it.
     match /principiaContent/{document=**} {
       allow read: if signedIn();
       allow write: if isPrincipiaAdmin();
@@ -38,20 +38,14 @@ service cloud.firestore {
       allow write: if isPrincipiaAdmin();
     }
 
-    // Users can update only their own progress record.
     match /principiaProgress/{uid} {
-      allow read, create, update: if isPrincipiaAdmin()
-        || (signedIn() && request.auth.uid == uid);
-      allow delete: if isPrincipiaAdmin();
+      allow read: if isPrincipiaAdmin() || (signedIn() && request.auth.uid == uid);
+      allow write: if isPrincipiaAdmin();
     }
 
-    // Public-to-signed-in leaderboard: each user can publish only their own row.
     match /principiaLeaderboard/{uid} {
       allow read: if signedIn();
-      allow create, update: if isPrincipiaAdmin()
-        || (signedIn() && request.auth.uid == uid
-            && request.resource.data.uid == request.auth.uid);
-      allow delete: if isPrincipiaAdmin();
+      allow write: if isPrincipiaAdmin();
     }
 
     match /{document=**} {
