@@ -65,6 +65,68 @@ export async function syncLegacyDataToCloud(uid: string): Promise<number> {
   return Object.keys(backup.entries).length;
 }
 
+export async function publishLegacyContentToCloud(uid: string): Promise<number> {
+  if (!uid) throw new Error('Bạn cần đăng nhập bằng tài khoản quản trị.');
+  const keys = ['halo_data', 'halo_quiz', 'halo_fun'];
+  const entries = Object.fromEntries(keys.flatMap(key => {
+    const value = localStorage.getItem(key);
+    return value === null ? [] : [[key, value]];
+  })) as Record<string, string>;
+  const [app, firestore] = await Promise.all([getFirebaseApp(), import('firebase/firestore')]);
+  const db = firestore.getFirestore(app);
+  const collectionRef = firestore.collection(db, 'principiaContent', 'legacyData', 'items');
+  const existing = await firestore.getDocs(collectionRef);
+  const expected = new Set<string>();
+  const writes: Array<{ id: string; data: Record<string, unknown> }> = [];
+  for (const [key, value] of Object.entries(entries)) {
+    const chunks = splitValue(value);
+    chunks.forEach((chunk, part) => {
+      const id = safeDocumentId(key, part);
+      expected.add(id);
+      writes.push({ id, data: { key, part, total: chunks.length, value: chunk, updatedAt: firestore.serverTimestamp() } });
+    });
+  }
+  const stale = existing.docs.map(item => item.id).filter(id => !expected.has(id));
+  const operations = [
+    ...writes.map(item => ({ kind: 'set' as const, ...item })),
+    ...stale.map(id => ({ kind: 'delete' as const, id }))
+  ];
+  for (let offset = 0; offset < operations.length; offset += 450) {
+    const batch = firestore.writeBatch(db);
+    for (const operation of operations.slice(offset, offset + 450)) {
+      const reference = firestore.doc(collectionRef, operation.id);
+      if (operation.kind === 'set') batch.set(reference, operation.data);
+      else batch.delete(reference);
+    }
+    await batch.commit();
+  }
+  return Object.keys(entries).length;
+}
+
+export async function restorePublishedContentFromCloud(): Promise<number> {
+  const [app, firestore] = await Promise.all([getFirebaseApp(), import('firebase/firestore')]);
+  const db = firestore.getFirestore(app);
+  const snapshot = await firestore.getDocs(firestore.collection(db, 'principiaContent', 'legacyData', 'items'));
+  if (snapshot.empty) return 0;
+  const groups = new Map<string, Array<{ part: number; total: number; value: string }>>();
+  snapshot.docs.forEach(document => {
+    const data = document.data();
+    if (!['halo_data', 'halo_quiz', 'halo_fun'].includes(data.key) || typeof data.value !== 'string') return;
+    const group = groups.get(data.key) || [];
+    group.push({ part: Number(data.part) || 0, total: Number(data.total) || 1, value: data.value });
+    groups.set(data.key, group);
+  });
+  const entries: Record<string, string> = {};
+  for (const [key, parts] of groups) {
+    parts.sort((left, right) => left.part - right.part);
+    if (parts.length !== parts[0].total) throw new Error(`Dữ liệu học tập “${key}” trên cloud chưa đầy đủ.`);
+    entries[key] = parts.map(part => part.value).join('');
+  }
+  return restoreLegacyBackup(JSON.stringify({
+    format: 'principia-legacy-backup', version: 1, createdAt: new Date().toISOString(), entries
+  }));
+}
+
 export async function restoreLegacyDataFromCloud(uid: string): Promise<number> {
   if (!uid) throw new Error('Bạn cần đăng nhập trước khi khôi phục.');
   const [app, firestore] = await Promise.all([
