@@ -226,8 +226,8 @@ export function App() {
   };
 
   const [localProgress, setLocalProgress] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('principia_v2_progress') || '{\"completed\":[],\"attempts\":[],\"xp\":0}') as { completed: string[]; attempts: Array<{ title: string; score: number; total: number; at: string }>; xp: number }; }
-    catch { return { completed: [] as string[], attempts: [] as Array<{ title: string; score: number; total: number; at: string }>, xp: 0 }; }
+    try { return JSON.parse(localStorage.getItem('principia_v2_progress') || '{\"completed\":[],\"attempts\":[],\"xp\":0,\"streak\":0,\"lastStudyDate\":\"\"}') as { completed: string[]; attempts: Array<{ title: string; score: number; total: number; at: string }>; xp: number; streak: number; lastStudyDate: string }; }
+    catch { return { completed: [] as string[], attempts: [] as Array<{ title: string; score: number; total: number; at: string }>, xp: 0, streak: 0, lastStudyDate: '' }; }
   });
   const progressStorageKey = account ? `principia_v2_progress:${account.user.uid}` : 'principia_v2_progress:guest';
   useEffect(() => {
@@ -239,27 +239,35 @@ export function App() {
       const safe = {
         completed: Array.isArray(parsed.completed) ? parsed.completed.filter((value: unknown) => typeof value === 'string') : [],
         attempts: Array.isArray(parsed.attempts) ? parsed.attempts.filter((value: any) => value && typeof value.title === 'string' && typeof value.score === 'number' && typeof value.total === 'number' && typeof value.at === 'string').slice(0, 100) : [],
-        xp: Number.isFinite(parsed.xp) ? Math.max(0, parsed.xp) : 0
+        xp: Number.isFinite(parsed.xp) ? Math.max(0, parsed.xp) : 0,
+        streak: Number.isFinite(parsed.streak) ? Math.max(0, parsed.streak) : 0,
+        lastStudyDate: typeof parsed.lastStudyDate === 'string' ? parsed.lastStudyDate : ''
       };
       setLocalProgress(safe);
       if (!scoped && legacyLocal) localStorage.setItem(`principia_v2_progress:${account.user.uid}`, JSON.stringify(safe));
-    } catch { setLocalProgress({ completed: [], attempts: [], xp: 0 }); }
+    } catch { setLocalProgress({ completed: [], attempts: [], xp: 0, streak: 0, lastStudyDate: '' }); }
   }, [account?.user.uid]);
   const saveProgress = (next: typeof localProgress) => {
     setLocalProgress(next);
     try { localStorage.setItem(progressStorageKey, JSON.stringify(next)); } catch { setStatus('Không thể lưu tiến độ: bộ nhớ trình duyệt đã đầy hoặc bị chặn.'); }
   };
   const lessonKey = (node: LegacyNode) => [...lessonPath, node].map(item => item.id || item.name).join('::');
+  const withStudyActivity = (current: typeof localProgress, xpGain: number) => {
+    const today = new Date().toLocaleDateString('sv-SE');
+    if (current.lastStudyDate === today) return { ...current, xp: current.xp + xpGain };
+    const yesterday = new Date(Date.now() - 86400000).toLocaleDateString('sv-SE');
+    return { ...current, xp: current.xp + xpGain, streak: current.lastStudyDate === yesterday ? current.streak + 1 : 1, lastStudyDate: today };
+  };
   const markLessonComplete = (node: LegacyNode) => {
     const key = lessonKey(node);
     if (localProgress.completed.includes(key)) return;
-    saveProgress({ ...localProgress, completed: [...localProgress.completed, key], xp: localProgress.xp + 10 });
+    saveProgress({ ...withStudyActivity(localProgress, 10), completed: [...localProgress.completed, key] });
     setStatus('Đã hoàn thành bài học · +10 EXP.');
   };
   const submitQuiz = () => {
     const score = questions.filter((q, i) => answers[i] === q.correct).length;
     const attempt = { title: activeQuiz?.name || 'Bài luyện tập', score, total: questions.length, at: new Date().toISOString() };
-    saveProgress({ ...localProgress, attempts: [attempt, ...localProgress.attempts].slice(0, 100), xp: localProgress.xp + score * 5 });
+    saveProgress({ ...withStudyActivity(localProgress, score * 5), attempts: [attempt, ...localProgress.attempts].slice(0, 100) });
     setQuizSubmitted(true);
   };
 
@@ -720,10 +728,10 @@ export function App() {
         </section>}
         {section === 'progress' && <section class="content-panel progress-panel">
           <div><strong>{(Number.isFinite(xp) ? xp : 0) + localProgress.xp}</strong><span>EXP tích lũy</span></div>
-          <div><strong>{Number.isFinite(streak) ? streak : 0}</strong><span>Chuỗi ngày học (bản cũ)</span></div>
+          <div><strong>{Math.max(Number.isFinite(streak) ? streak : 0, localProgress.streak)}</strong><span>Chuỗi ngày học</span></div>
           <div><strong>{completed.length + localProgress.completed.length}</strong><span>Bài/mục hoàn thành</span></div>
           <div class="progress-history"><h3>Lịch sử làm bài</h3>{localProgress.attempts.length ? localProgress.attempts.map((attempt, index) => <article key={`${attempt.at}-${index}`}><b>{attempt.title}</b><span>{attempt.score}/{attempt.total} câu đúng · {new Date(attempt.at).toLocaleString('vi-VN')}</span></article>) : <p class="empty-state">Chưa có lần làm đề nào được lưu trong V2.</p>}</div>
-          <p class="empty-state">Tiến độ V2 được lưu theo tài khoản trên thiết bị; quản trị viên có thể sao lưu và khôi phục tiến độ qua cloud.</p>
+          <p class="empty-state">Tiến độ V2 được lưu theo tài khoản trên thiết bị. Chuỗi ngày học tăng khi hoàn thành bài học hoặc nộp bài luyện tập; quản trị viên có thể sao lưu tiến độ qua cloud.</p>
         </section>}
         <div class="account-footer"><span>{account.user.email}</span><button class="quiet-button" onClick={() => void signOut()}>Đăng xuất</button></div>
         {status && <p class="auth-status" role="status">{status}</p>}
