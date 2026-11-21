@@ -317,7 +317,7 @@
  body>.sidebar[data-principia-mobile-nav]>.navlabel,body>.sidebar[data-principia-mobile-nav]>.sidebottom{display:none!important}
  #app .layout>.main{padding-bottom:calc(104px + env(safe-area-inset-bottom))!important}
 }
-@media(min-width:761px){#principiaDownloadFab{width:auto!important;min-width:116px!important;height:48px!important;padding:0 16px!important;border-radius:16px!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:8px!important}#principiaDownloadFab:after{content:'Download';font:700 13px/1 inherit!important;letter-spacing:.1px}}
+
 
 
 /* Responsive phone/tablet rules extracted from the shared stylesheet. */
