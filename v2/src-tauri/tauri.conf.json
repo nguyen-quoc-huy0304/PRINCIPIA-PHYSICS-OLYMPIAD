@@ -20,11 +20,16 @@
         "resizable": true
       }
     ],
-    "security": { "csp": null }
+    "security": {
+      "csp": null
+    }
   },
   "bundle": {
     "active": true,
     "targets": "all",
-    "icon": []
+    "icon": [
+      "../../assets/images/principia-logo-round.png",
+      "../../desktop/icons/icon.ico"
+    ]
   }
 }
