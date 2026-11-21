@@ -72,6 +72,7 @@ export async function publishLegacyContentToCloud(uid: string): Promise<number> 
     const value = localStorage.getItem(key);
     return value === null ? [] : [[key, value]];
   })) as Record<string, string>;
+  if (!Object.keys(entries).length) throw new Error('Thiết bị chưa có dữ liệu bài học/đề thi để xuất bản; đã giữ nguyên nội dung cloud.');
   const [app, firestore] = await Promise.all([getFirebaseApp(), import('firebase/firestore')]);
   const db = firestore.getFirestore(app);
   const collectionRef = firestore.collection(db, 'principiaContent', 'legacyData', 'items');
@@ -86,7 +87,8 @@ export async function publishLegacyContentToCloud(uid: string): Promise<number> 
       writes.push({ id, data: { key, part, total: chunks.length, value: chunk, updatedAt: firestore.serverTimestamp() } });
     });
   }
-  const stale = existing.docs.map(item => item.id).filter(id => !expected.has(id));
+  const publishedKeys = new Set(Object.keys(entries));
+  const stale = existing.docs.filter(item => publishedKeys.has(String(item.data().key))).map(item => item.id).filter(id => !expected.has(id));
   const operations = [
     ...writes.map(item => ({ kind: 'set' as const, ...item })),
     ...stale.map(id => ({ kind: 'delete' as const, id }))
