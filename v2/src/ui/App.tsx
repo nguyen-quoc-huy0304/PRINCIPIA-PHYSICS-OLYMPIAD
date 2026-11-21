@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'preact/hooks';
+import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import type { AuthResult } from '../core/auth';
 import {
   completeGoogleRedirect, createEmailAccount, observeAuth, sendPasswordReset,
@@ -75,6 +75,11 @@ export function App() {
   const [lessonFiles, setLessonFiles] = useState<Array<{ name: string; type: string; size: number; dataUrl: string; addedAt: string }>>([]);
   const [simulationSubject, setSimulationSubject] = useState('physics');
   const [workspaceNotice, setWorkspaceNotice] = useState('');
+  const [mediaVideoUrl, setMediaVideoUrl] = useState('');
+  const [mediaOcrStatus, setMediaOcrStatus] = useState('');
+  const [mediaOcrBusy, setMediaOcrBusy] = useState(false);
+  const mediaVideoRef = useRef<HTMLVideoElement>(null);
+  useEffect(() => () => { if (mediaVideoUrl) URL.revokeObjectURL(mediaVideoUrl); }, [mediaVideoUrl]);
   const currentLessonStorageKey = activeLesson ? `principia_lesson_workspace:${account?.user.uid || 'guest'}:${[...lessonPath, activeLesson].map(item => item.id || item.name).join('::')}` : '';
   useEffect(() => {
     if (!currentLessonStorageKey) return;
@@ -120,7 +125,7 @@ export function App() {
     setLessonFiles(next);
     saveLessonWorkspace({ files: next } as any);
   };
-  const saveLessonWorkspace = (patch: { note?: string; submission?: string }) => {
+  const saveLessonWorkspace = (patch: { note?: string; submission?: string; files?: typeof lessonFiles }) => {
     if (!currentLessonStorageKey) return;
     try {
       const current = JSON.parse(localStorage.getItem(currentLessonStorageKey) || '{}');
@@ -130,6 +135,95 @@ export function App() {
       setWorkspaceNotice('Không lưu được. Bộ nhớ trình duyệt có thể đã đầy.');
     }
   };
+  const saveLessonMedia = (patch: Partial<Pick<LegacyNode, 'transcript' | 'translatedTranscript' | 'videoOcr' | 'summary' | 'dubLang'>>) => {
+    if (!activeLesson) return;
+    try {
+      const tree = JSON.parse(localStorage.getItem('halo_data') || 'null') as LegacyNode[] | null;
+      if (!tree) throw new Error('Không tìm thấy dữ liệu bài học cũ.');
+      const update = (nodes: LegacyNode[]): boolean => {
+        for (const node of nodes) {
+          if (node.id === activeLesson.id) { Object.assign(node, patch); return true; }
+          if (node.children && update(node.children)) return true;
+        }
+        return false;
+      };
+      if (!update(tree)) throw new Error('Không tìm thấy bài học trong dữ liệu cục bộ.');
+      localStorage.setItem('halo_data', JSON.stringify(tree));
+      setBackupVersion(value => value + 1);
+      setActiveLesson(current => current ? { ...current, ...patch } : current);
+      setWorkspaceNotice('Đã lưu dữ liệu media vào kho bài học trên thiết bị này.');
+    } catch (error: any) { setWorkspaceNotice(error?.message || 'Không thể lưu dữ liệu media.'); }
+  };
+  const handleMediaVideo = (event: Event) => {
+    const input = event.currentTarget as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('video/')) { setMediaOcrStatus('Hãy chọn một tệp video hợp lệ.'); return; }
+    if (file.size > 250_000_000) { setMediaOcrStatus('Video vượt quá giới hạn 250 MB.'); return; }
+    setMediaVideoUrl(URL.createObjectURL(file));
+    setMediaOcrStatus('Đã tải video. Chờ video sẵn sàng để quét OCR.');
+    input.value = '';
+  };
+  const runMediaOcr = async () => {
+    const video = mediaVideoRef.current;
+    if (!video || !video.videoWidth || !Number.isFinite(video.duration) || !video.duration) {
+      setMediaOcrStatus('Hãy chọn video và đợi video tải xong trước.'); return;
+    }
+    setMediaOcrBusy(true); setMediaOcrStatus('Đang tải bộ nhận dạng OCR…');
+    let worker: any;
+    try {
+      const w = window as any;
+      if (!w.Tesseract) await new Promise<void>((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+        script.onload = () => resolve(); script.onerror = () => reject(new Error('Không tải được thư viện OCR.'));
+        document.head.appendChild(script);
+      });
+      worker = await w.Tesseract.createWorker('eng+vie');
+      const canvas = document.createElement('canvas');
+      const scale = Math.min(1, 1280 / video.videoWidth);
+      canvas.width = Math.round(video.videoWidth * scale); canvas.height = Math.round(video.videoHeight * scale);
+      const context = canvas.getContext('2d');
+      if (!context) throw new Error('Không tạo được vùng xử lý hình ảnh.');
+      const duration = Math.max(0, video.duration - 0.2);
+      const samples = Math.min(12, Math.max(1, Math.ceil(duration / 12)));
+      const chunks: string[] = [];
+      for (let i = 0; i < samples; i++) {
+        video.currentTime = samples === 1 ? 0 : duration * i / (samples - 1);
+        await new Promise<void>((resolve, reject) => {
+          const timeout = window.setTimeout(() => reject(new Error('Video không tua được tới khung hình cần quét.')), 10000);
+          video.onseeked = () => { window.clearTimeout(timeout); resolve(); };
+        });
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const result = await worker.recognize(canvas);
+        const text = String(result.data.text || '').trim();
+        if (text && !chunks.includes(text)) chunks.push(text);
+        setMediaOcrStatus(`Đã quét ${i + 1}/${samples} khung hình…`);
+      }
+      const extracted = chunks.join('\n\n');
+      if (extracted) {
+        setActiveLesson(current => current ? { ...current, videoOcr: extracted } : current);
+        saveLessonMedia({ videoOcr: extracted });
+      }
+      setMediaOcrStatus(extracted ? `Hoàn tất OCR: nhận được ${extracted.length.toLocaleString('vi-VN')} ký tự.` : 'Không nhận dạng được chữ trong các khung hình đã quét.');
+    } catch (error: any) { setMediaOcrStatus(error?.message || 'OCR chưa thực hiện được.'); }
+    finally { if (worker) await worker.terminate(); setMediaOcrBusy(false); }
+  };
+  const summarizeMediaTranscript = () => {
+    const source = (activeLesson?.transcript || '').trim();
+    if (!source) { setMediaOcrStatus('Hãy nhập transcript trước khi tóm tắt.'); return; }
+    const sentences = source.split(/(?<=[.!?。！？])\s+/).filter(Boolean);
+    const summary = sentences.length <= 5 ? sentences.join(' ') : [...sentences.slice(0, 2), ...sentences.slice(-2)].join(' ');
+    setActiveLesson(current => current ? { ...current, summary } : current);
+    saveLessonMedia({ summary });
+  };
+  const speakMediaText = (source: string, lang: string) => {
+    if (!('speechSynthesis' in window)) { setMediaOcrStatus('Thiết bị chưa hỗ trợ đọc văn bản.'); return; }
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(source); utterance.lang = lang || 'vi-VN';
+    window.speechSynthesis.speak(utterance);
+  };
+
   const [localProgress, setLocalProgress] = useState(() => {
     try { return JSON.parse(localStorage.getItem('principia_v2_progress') || '{\"completed\":[],\"attempts\":[],\"xp\":0}') as { completed: string[]; attempts: Array<{ title: string; score: number; total: number; at: string }>; xp: number }; }
     catch { return { completed: [] as string[], attempts: [] as Array<{ title: string; score: number; total: number; at: string }>, xp: 0 }; }
@@ -424,12 +518,18 @@ export function App() {
               </div>}
               {lessonTool === 'media' && <div class="lesson-tool-panel media-reference-panel">
                 <h3>Nội dung video & nhận dạng</h3>
-                {activeLesson.transcript && <section><b>Transcript</b><pre>{activeLesson.transcript}</pre></section>}
-                {activeLesson.translatedTranscript && <section><b>Bản dịch transcript</b><pre>{activeLesson.translatedTranscript}</pre></section>}
-                {activeLesson.videoOcr && <section><b>Văn bản nhận dạng từ video (OCR)</b><pre>{activeLesson.videoOcr}</pre></section>}
-                {activeLesson.summary && <section><b>Tóm tắt bài học</b><pre>{activeLesson.summary}</pre></section>}
-                {activeLesson.dubLang && <p class="empty-state">Ngôn ngữ lồng tiếng: {activeLesson.dubLang}</p>}
-                {!activeLesson.transcript && !activeLesson.translatedTranscript && !activeLesson.videoOcr && !activeLesson.summary && <p class="empty-state">Bài học này chưa có transcript, OCR hoặc tóm tắt được lưu. Nội dung sẽ xuất hiện tại đây khi dữ liệu nguồn có sẵn.</p>}
+                <label class="secondary-button file-button">Chọn video để OCR<input type="file" accept="video/*" onChange={handleMediaVideo} /></label>
+                {mediaVideoUrl && <><video ref={mediaVideoRef} class="media-ocr-video" src={mediaVideoUrl} controls playsInline /><button class="secondary-button" type="button" disabled={mediaOcrBusy} onClick={() => void runMediaOcr()}>{mediaOcrBusy ? 'Đang nhận dạng…' : 'Quét chữ trong video (OCR)'}</button></>}
+                {mediaOcrStatus && <p class="workspace-notice" role="status">{mediaOcrStatus}</p>}
+                <label>Transcript<textarea rows={6} value={activeLesson.transcript || ''} onInput={event => setActiveLesson(current => current ? { ...current, transcript: event.currentTarget.value } : current)} placeholder="Dán hoặc nhập lời thoại video…" /></label>
+                <div class="chat-actions"><button class="secondary-button" type="button" onClick={() => saveLessonMedia({ transcript: activeLesson.transcript || '' })}>Lưu transcript</button>{activeLesson.transcript && <button class="quiet-button" type="button" onClick={() => speakMediaText(activeLesson.transcript || '', 'vi-VN')}>▶ Đọc transcript</button>}</div>
+                <label>Bản dịch transcript<textarea rows={5} value={activeLesson.translatedTranscript || ''} onInput={event => setActiveLesson(current => current ? { ...current, translatedTranscript: event.currentTarget.value } : current)} placeholder="Nhập bản dịch hoặc chỉnh sửa tại đây…" /></label>
+                <div class="chat-actions"><button class="secondary-button" type="button" onClick={() => saveLessonMedia({ translatedTranscript: activeLesson.translatedTranscript || '' })}>Lưu bản dịch</button>{activeLesson.translatedTranscript && <button class="quiet-button" type="button" onClick={() => speakMediaText(activeLesson.translatedTranscript || '', activeLesson.dubLang || 'vi-VN')}>▶ Đọc bản dịch</button>}</div>
+                <label>Văn bản OCR<textarea rows={6} value={activeLesson.videoOcr || ''} onInput={event => setActiveLesson(current => current ? { ...current, videoOcr: event.currentTarget.value } : current)} placeholder="Kết quả OCR sẽ xuất hiện tại đây…" /></label>
+                <button class="secondary-button" type="button" onClick={() => saveLessonMedia({ videoOcr: activeLesson.videoOcr || '' })}>Lưu kết quả OCR</button>
+                <label>Tóm tắt bài học<textarea rows={4} value={activeLesson.summary || ''} onInput={event => setActiveLesson(current => current ? { ...current, summary: event.currentTarget.value } : current)} placeholder="Tóm tắt nội dung…" /></label>
+                <div class="chat-actions"><button class="secondary-button" type="button" onClick={summarizeMediaTranscript}>Tạo tóm tắt nhanh từ transcript</button><button class="secondary-button" type="button" onClick={() => saveLessonMedia({ summary: activeLesson.summary || '' })}>Lưu tóm tắt</button></div>
+                <label>Ngôn ngữ đọc<select value={activeLesson.dubLang || 'vi-VN'} onChange={event => saveLessonMedia({ dubLang: event.currentTarget.value })}><option value="vi-VN">Tiếng Việt</option><option value="en-US">English</option><option value="ja-JP">日本語</option><option value="ko-KR">한국어</option><option value="fr-FR">Français</option></select></label>
               </div>}
               {lessonTool === 'simulation' && <div class="lesson-tool-panel">
                 <h3>PhET Interactive Simulations</h3>
