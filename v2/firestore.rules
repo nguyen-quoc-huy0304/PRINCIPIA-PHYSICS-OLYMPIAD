@@ -43,9 +43,13 @@ service cloud.firestore {
       allow create, update: if signedIn() && request.auth.uid == uid
         && request.resource.data.keys().hasOnly(['completed', 'attempts', 'xp', 'streak', 'lastStudyDate', 'updatedAt'])
         && request.resource.data.completed is list
+        && request.resource.data.completed.size() <= 5000
         && request.resource.data.attempts is list
+        && request.resource.data.attempts.size() <= 100
         && request.resource.data.xp is number
+        && request.resource.data.xp >= 0
         && request.resource.data.streak is number
+        && request.resource.data.streak >= 0
         && request.resource.data.lastStudyDate is string;
       allow delete: if isPrincipiaAdmin();
     }
