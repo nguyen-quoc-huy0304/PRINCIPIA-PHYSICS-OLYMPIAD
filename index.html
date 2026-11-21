@@ -1249,7 +1249,7 @@ function card(n){
  <div class="tile-actions" onclick="event.stopPropagation()">${n.type==='tab'||n.type==='lesson'?'<button type="button" title="Tùy chỉnh icon" onclick="editNode(\''+n.id+'\')">🎨 Icon</button>':''}<button type="button" onclick="editNode('${n.id}')">✎</button><button type="button" onclick="deleteNode('${n.id}')">⋯</button></div>
  ${n.type==='lesson'||n.type==='tab'?`<div class="tileicon lesson-tile-icon">${nodeIconHTML(n,'')}</div>`:''}<h3>${esc(n.name)}</h3><p>${n.type==='tab'?'Mở tab để xem các nội dung bên trong':n.type==='lesson'?'Mở bài học':'Bắt đầu hoạt động'}</p><div class="tilefoot"><span>${amount}</span><span>↗</span></div></div>`;
 }
-function topbar(){return `<div class="top"><div><div class="eyebrow">PRINCIPIA • PHYSICS OLYMPIAD</div><div class="muted small">Your personal learning world</div><div class="principia-clockbar"><span class="principia-time-pill" title="Giờ hiện tại"><b id="principiaLiveTime">--:--</b></span><button class="principia-time-pill" type="button" onclick="toggleTopbarStudyClock()" title="Bấm để bắt đầu hoặc tạm dừng đồng hồ học"><b id="principiaStopwatch">${fmtClock(principiaClock.seconds)}</b><span id="principiaStopwatchState">${principiaClock.running?'Tạm dừng':'Bắt đầu'}</span></button></div></div><div class="topright"><button class="pill" type="button" onclick="openGameStats()" title="Xem thành tích và nhiệm vụ">🔥 ${streak} ngày học</button><button class="pill" type="button" onclick="openRewardCollection()" title="Mở kho vật phẩm đã nhận">⚡ ${xp} XP</button>${avatarHTML()}</div></div>`}
+function topbar(){return `<div class="top"><div><div class="eyebrow">PRINCIPIA • PHYSICS OLYMPIAD</div><div class="muted small">Your personal learning world</div><div class="principia-clockbar"><span class="principia-time-pill" title="Giờ hiện tại"><b id="principiaLiveTime">--:--</b></span><button class="principia-time-pill" type="button" onclick="toggleTopbarStudyClock()" title="Bấm để bắt đầu hoặc tạm dừng đồng hồ học"><b id="principiaStopwatch">${fmtClock(principiaClock.seconds)}</b><span id="principiaStopwatchState">${principiaClock.running?'Tạm dừng':'Bắt đầu'}</span></button></div><button type="button" class="principia-music-pill" onclick="principiaMusicOpen()" title="Mở Music & Focus">♫ <span>Music</span></button></div><div class="topright"><button class="pill" type="button" onclick="openGameStats()" title="Xem thành tích và nhiệm vụ">🔥 ${streak} ngày học</button><button class="pill" type="button" onclick="openRewardCollection()" title="Mở kho vật phẩm đã nhận">⚡ ${xp} XP</button>${avatarHTML()}</div></div>`}
 let principiaClock={mode:'stopwatch',seconds:0,left:1500,running:false,interval:null};
 function updatePrincipiaClockBar(){const t=document.getElementById('principiaLiveTime');if(t)t.textContent=new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit',hour12:false});const sw=document.getElementById('principiaStopwatch');if(sw)sw.textContent=fmtClock(principiaClock.seconds);const st=document.getElementById('principiaStopwatchState');if(st)st.textContent=principiaClock.running?'Ⅱ':'▶';}
 function startPrincipiaLiveClock(){if(window.__principiaWallClock)return;updatePrincipiaClockBar();window.__principiaWallClock=setInterval(updatePrincipiaClockBar,1000);}
@@ -2701,6 +2701,92 @@ button,.secondary,.primary,.danger,.tab,.pill,.nav .ni,.tileicon,.iconbtn,.cl-ic
 
 
 
+
+<style id="principia-music-island-css">
+/* PRINCIPIA_MUSIC_ISLAND_V1 */
+.principia-music-pill{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:999px;padding:8px 13px;background:linear-gradient(135deg,rgba(151,126,255,.2),rgba(255,255,255,.08));color:var(--txt);font-weight:750;font-size:12px;cursor:pointer;box-shadow:0 4px 16px #00000012;transition:transform .18s,background .18s}
+.principia-music-pill:hover{transform:translateY(-1px);background:rgba(151,126,255,.25)}
+.principia-music-pill:before{content:"";width:7px;height:7px;border-radius:50%;background:#a78bfa;box-shadow:0 0 0 4px #a78bfa22}
+#principiaMusicWindow{position:fixed;inset:0;z-index:100500;background:rgba(7,9,22,.62);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);display:flex;align-items:center;justify-content:center;padding:18px}
+#principiaMusicWindow[hidden]{display:none!important}
+#principiaMusicWindow .pm-card{width:min(760px,96vw);height:min(690px,90vh);display:flex;flex-direction:column;overflow:hidden;border:1px solid var(--line);border-radius:22px;background:var(--card);color:var(--txt);box-shadow:0 25px 90px #0008}
+#principiaMusicWindow .pm-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line)}
+#principiaMusicWindow .pm-title{font-weight:850;font-size:16px}
+#principiaMusicWindow .pm-sub{font-size:11px;color:var(--muted);margin-top:3px}
+#principiaMusicWindow .pm-actions{display:flex;gap:7px}
+#principiaMusicWindow button,#principiaMusicWindow select,#principiaMusicWindow input{font:inherit}
+#principiaMusicWindow .pm-btn{border:1px solid var(--line);border-radius:10px;padding:8px 11px;background:var(--bg-2);color:var(--txt);cursor:pointer}
+#principiaMusicWindow .pm-settings{display:grid;grid-template-columns:145px minmax(0,1fr);gap:8px;padding:12px 14px;border-bottom:1px solid var(--line)}
+#principiaMusicWindow .pm-settings input,#principiaMusicWindow .pm-settings select{min-width:0;width:100%;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--bg);color:var(--txt)}
+#principiaMusicWindow .pm-settings .pm-track{grid-column:1/-1}
+#principiaMusicWindow .pm-player{flex:1;min-height:0;background:#090b16;position:relative}
+#principiaMusicWindow iframe{width:100%;height:100%;border:0;background:#090b16}
+#principiaMusicWindow .pm-empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:28px;color:#e8e7f5;gap:10px}
+#principiaMusicWindow .pm-empty strong{font-size:20px}
+#principiaMusicWindow .pm-empty p{max-width:440px;color:#b9bad0;font-size:13px;line-height:1.6}
+#principiaMusicWindow .pm-foot{padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+#principiaMusicWindow .pm-focus-active{background:rgba(139,92,246,.2);border-color:#9b87ff}
+body.principia-focus-mode .principia-music-pill{border-color:#9b87ff;box-shadow:0 0 0 3px #9b87ff22}
+@media(max-width:600px){
+ .principia-music-pill{padding:7px 10px;font-size:11px}
+ #principiaMusicWindow{padding:0;align-items:stretch}
+ #principiaMusicWindow .pm-card{width:100%;height:100%;max-height:100%;border-radius:0;border:0}
+ #principiaMusicWindow .pm-settings{grid-template-columns:1fr}
+ #principiaMusicWindow .pm-settings .pm-track{grid-column:auto}
+ #principiaMusicWindow .pm-foot{font-size:11px}
+}
+</style>
+
+<script id="principia-music-island-script">
+/* PRINCIPIA_MUSIC_ISLAND_V1: embedded Music & Focus island */
+(function(){
+ 'use strict';
+ const KEY='principia_music_island_v1';
+ const defaults={source:'spotify',url:'',track:'',focus:false};
+ function read(){try{return Object.assign({},defaults,JSON.parse(localStorage.getItem(KEY)||'{}'))}catch(e){return {...defaults}}}
+ function save(v){try{localStorage.setItem(KEY,JSON.stringify(v))}catch(e){}}
+ function safeUrl(raw,source){
+  let u=String(raw||'').trim(); if(!u)return '';
+  if(!/^https?:\/\//i.test(u))u='https://'+u;
+  try{
+   const x=new URL(u);
+   if(source==='spotify'&&/open\.spotify\.com$/i.test(x.hostname)&&!x.pathname.startsWith('/embed/'))x.pathname='/embed'+x.pathname;
+   return /^https?:$/.test(x.protocol)?x.href:'';
+  }catch(e){return ''}
+ }
+ function ensure(){
+  let root=document.getElementById('principiaMusicWindow');if(root)return root;
+  root=document.createElement('div');root.id='principiaMusicWindow';root.hidden=true;
+  root.innerHTML='<div class="pm-card" role="dialog" aria-modal="true" aria-label="Music and Focus"><div class="pm-head"><div><div class="pm-title">♫ Music & Focus</div><div class="pm-sub" id="pmNowPlaying">Chọn nguồn nhạc để bắt đầu</div></div><div class="pm-actions"><button class="pm-btn" type="button" id="pmMin" title="Thu nhỏ">—</button><button class="pm-btn" type="button" id="pmClose" title="Đóng">✕</button></div></div><div class="pm-settings"><select id="pmSource" aria-label="Nguồn nhạc"><option value="spotify">Spotify</option><option value="soundmusic">SoundMusic</option><option value="other">Website khác</option></select><input id="pmUrl" type="url" inputmode="url" placeholder="Dán link nhạc / playlist / website..." aria-label="Địa chỉ nguồn nhạc"><input class="pm-track" id="pmTrack" placeholder="Tên bài hát / playlist (tuỳ chọn)" aria-label="Tên bài hát hoặc playlist"><button class="pm-btn" id="pmLoad" type="button">Mở nhạc trong PRINCIPIA</button><button class="pm-btn" id="pmFocus" type="button">◉ Focus mode: Tắt</button></div><div class="pm-player" id="pmPlayer"><div class="pm-empty" id="pmEmpty"><strong>🎧 Không gian âm nhạc của bạn</strong><p>Dán link Spotify, SoundMusic hoặc website nhạc để phát ngay trong PRINCIPIA. Một số trang chặn nhúng sẽ cần mở bằng tab riêng.</p></div></div><div class="pm-foot"><span id="pmStatus">Sẵn sàng · Cài đặt được lưu trên thiết bị</span><button class="pm-btn" id="pmExternal" type="button">Mở ngoài ↗</button></div></div>';
+  document.body.appendChild(root);
+  root.addEventListener('click',e=>{if(e.target===root)hide()});
+  root.querySelector('#pmMin').onclick=hide;root.querySelector('#pmClose').onclick=closePlayer;
+  root.querySelector('#pmLoad').onclick=load;root.querySelector('#pmFocus').onclick=toggleFocus;
+  root.querySelector('#pmExternal').onclick=()=>{const v=read(),u=safeUrl(v.url,v.source);if(u)window.open(u,'_blank','noopener,noreferrer');else status('Hãy nhập link nhạc trước')};
+  root.querySelector('#pmSource').onchange=()=>{const v=read();v.source=root.querySelector('#pmSource').value;save(v)};
+  root.querySelector('#pmUrl').onkeydown=e=>{if(e.key==='Enter')load()};
+  root.querySelector('#pmTrack').oninput=()=>{const v=read();v.track=root.querySelector('#pmTrack').value;save(v);updateLabel(v)};
+  return root;
+ }
+ function status(t){const n=document.getElementById('pmStatus');if(n)n.textContent=t}
+ function updateLabel(v){const n=document.getElementById('pmNowPlaying');if(n)n.textContent=v.track?('Đang mở: '+v.track):({spotify:'Nguồn Spotify',soundmusic:'Nguồn SoundMusic',other:'Website nhạc'}[v.source]||'Music & Focus')}
+ function open(){const r=ensure(),v=read();r.hidden=false;document.getElementById('pmSource').value=v.source;document.getElementById('pmUrl').value=v.url;document.getElementById('pmTrack').value=v.track;updateLabel(v);syncFocus(v);if(v.url&&!document.querySelector('#pmPlayer iframe'))load();setTimeout(()=>document.getElementById('pmUrl')?.focus(),50)}
+ function hide(){const r=document.getElementById('principiaMusicWindow');if(r)r.hidden=true}
+ function closePlayer(){const p=document.getElementById('pmPlayer');if(p)p.innerHTML='<div class="pm-empty" id="pmEmpty"><strong>🎧 Không gian âm nhạc của bạn</strong><p>Nhấn Music để mở lại trình phát.</p></div>';hide()}
+ function load(){
+  const r=ensure(),v=read();v.source=document.getElementById('pmSource').value;v.url=document.getElementById('pmUrl').value.trim();v.track=document.getElementById('pmTrack').value.trim();save(v);
+  const u=safeUrl(v.url,v.source);if(!u){status('Link chưa hợp lệ · Hãy nhập địa chỉ https://');return}
+  const p=document.getElementById('pmPlayer');p.innerHTML='';
+  const frame=document.createElement('iframe');frame.src=u;frame.title='Trình phát nhạc nhúng';frame.allow='autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';frame.allowFullscreen=true;frame.referrerPolicy='strict-origin-when-cross-origin';p.appendChild(frame);
+  updateLabel(v);status('Đang tải nguồn nhạc · Nếu bị chặn, chọn “Mở ngoài” ↗');
+ }
+ function syncFocus(v){const b=document.getElementById('pmFocus');if(b){b.textContent='◉ Focus mode: '+(v.focus?'Bật':'Tắt');b.classList.toggle('pm-focus-active',!!v.focus)}document.body.classList.toggle('principia-focus-mode',!!v.focus)}
+ function toggleFocus(){const v=read();v.focus=!v.focus;save(v);syncFocus(v);status(v.focus?'Focus mode đã bật · Chúc bạn học tập tập trung!':'Đã tắt Focus mode')}
+ window.principiaMusicOpen=open;
+ const oldTitle=window.addEventListener;
+ document.addEventListener('mouseover',e=>{if(e.target.closest?.('.principia-music-pill')){const v=read();e.target.closest('.principia-music-pill').title=v.track?('Đang phát: '+v.track):'Mở Music & Focus'}});
+})();
+</script>
 </body>
 </html>
 
