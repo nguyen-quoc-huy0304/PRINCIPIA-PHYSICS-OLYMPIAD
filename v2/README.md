@@ -21,6 +21,7 @@ V2 is being developed on the isolated `rebuild-v2` branch. The production `main`
 - Music & Focus workspace with Spotify/YouTube/SoundCloud embeds, custom music sites, focus mode and Pomodoro timer.
 - Mini browser with URL validation, navigation history, sandboxed frames and external-open fallback.
 - Custom game-platform hub with Chess.com, Lichess, Sudoku, GeoGuessr and user-added links.
+- Rust-backed kinematics, kinetic-energy and projectile calculators in the native Tauri app, with matching TypeScript browser fallbacks.
 - Account profile editor and local light/dark theme preference.
 - Account-scoped offline document library with PDF/image/video/audio preview and download.
 - Learning completion, quiz history, EXP and daily streak; personal progress can sync to the signed-in user's Firestore document.
