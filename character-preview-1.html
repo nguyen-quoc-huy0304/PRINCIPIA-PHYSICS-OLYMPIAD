@@ -4,52 +4,87 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#eee">
-  <title>PRO — Nhân vật 01</title>
+  <title>PRO — Xem trước nhân vật 02–05</title>
   <style>
     * { box-sizing: border-box; }
     body {
-      margin: 0;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 24px;
-      background: #eee;
-      font-family: Arial, sans-serif;
+      margin: 0; padding: 28px 18px 48px; min-height: 100vh;
+      background: #f1f2f5; color: #20232b;
+      font-family: system-ui, sans-serif;
     }
-    main {
-      width: min(900px, 100%);
-      min-height: 70vh;
-      display: grid;
-      place-items: center;
-      padding: 24px;
-      border-radius: 24px;
-      background: #fff;
-      box-shadow: 0 12px 40px rgba(0,0,0,.08);
+    header { max-width: 1100px; margin: 0 auto 24px; text-align: center; }
+    h1 { margin: 0 0 8px; font-size: clamp(24px, 4vw, 34px); }
+    header p { margin: 0; color: #687080; }
+    .grid {
+      max-width: 1100px; margin: auto; display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 20px;
     }
-    img {
-      display: block;
-      max-width: 100%;
-      max-height: 80vh;
-      height: auto;
-      object-fit: contain;
-    }
-    .missing {
-      color: #666;
+    .character-card {
+      min-width: 0; background: #fff; border-radius: 16px;
+      padding: 16px; box-shadow: 0 8px 26px rgba(25,35,55,.08);
       text-align: center;
-      line-height: 1.6;
     }
-    .missing code { color: #222; }
+    .avatar {
+      width: min(210px, 100%); height: 290px; margin: 0 auto 12px;
+      border-radius: 10px; background-color: #f2f2f4;
+      background-repeat: no-repeat;
+    }
+    #character-1 .avatar { background-image: url("image_f3efa2.jpg"); background-position: 3% 8%; background-size: 460% auto; }
+    #character-2 .avatar { background-image: url("image_f3efa2.jpg"); background-position: 34% 62%; background-size: 380% auto; }
+    #character-3 .avatar { background-image: url("image_f3efa2.jpg"); background-position: 63% 12%; background-size: 420% auto; }
+    #character-4 .avatar { background-image: url("image_f3efa2.jpg"); background-position: 97% 10%; background-size: 420% auto; }
+    h2 { font-size: 1.05rem; margin: 4px 0 6px; }
+    .description { font-size: .9rem; color: #555; margin: 0; line-height: 1.5; }
+    #asset-warning {
+      display: none; max-width: 760px; margin: 22px auto 0; padding: 14px 16px;
+      background: #fff4df; border: 1px solid #f0d49a; border-radius: 12px;
+      color: #76531c; line-height: 1.5;
+    }
   </style>
 </head>
 <body>
-  <main>
-    <img src="image.png" alt="PRO Character"
-      onerror="this.hidden=true;document.getElementById('missing').hidden=false">
-    <p id="missing" class="missing" hidden>
-      Đã tạo trang xem trước nhân vật số 01.<br>
-      Chưa có tệp <code>image.png</code> trong kho mã nguồn nên ảnh chưa thể hiển thị.
-    </p>
+  <header>
+    <h1>PRO — Bộ nhân vật xem trước</h1>
+    <p>4 mẫu nhân vật bạn vừa gửi. Đây chỉ là trang xem trước, chưa thay nhân vật trong app.</p>
+  </header>
+  <main class="grid">
+    <article class="character-card" id="character-1">
+      <div class="avatar" role="img" aria-label="Tóc trắng xoăn dài, nơ đỏ, đồng phục thủy thủ kem, váy đỏ, cầm sách PRO"></div>
+      <h2>Nhân vật 1</h2>
+      <p class="description">Tóc trắng xoăn dài, nơ đỏ, phụ kiện bánh răng, áo thủy thủ trắng/kem, váy xếp ly đỏ và cầm sách “PRO”.</p>
+    </article>
+    <article class="character-card" id="character-2">
+      <div class="avatar" role="img" aria-label="Đồ ngủ sọc xanh trắng, dùng compa trên sách PRO"></div>
+      <h2>Nhân vật 2</h2>
+      <p class="description">Ngồi quỳ mặc đồ ngủ sọc xanh trắng, đeo vòng cổ đỏ, dùng compa đo trên cuốn sách mở “PRO”.</p>
+    </article>
+    <article class="character-card" id="character-3">
+      <div class="avatar" role="img" aria-label="Đồng phục tối màu họa tiết vàng, cầm compa và sách PRO"></div>
+      <h2>Nhân vật 3</h2>
+      <p class="description">Mặc đồng phục tối màu viền họa tiết vàng kiểu mạch/bánh răng, tay phải cầm compa, tay trái kẹp sách “PRO”.</p>
+    </article>
+    <article class="character-card" id="character-4">
+      <div class="avatar" role="img" aria-label="Trang phục steampunk, corset, bánh răng kim loại, bốt cao cổ"></div>
+      <h2>Nhân vật 4</h2>
+      <p class="description">Mặc trang phục phong cách steampunk với áo trễ vai, corset, bánh răng kim loại, bốt cao cổ và đọc sách “PRO”.</p>
+    </article>
   </main>
+  <p id="asset-warning">Đã dựng xong 4 khung xem trước, nhưng chưa tìm thấy tệp <code>image_f3efa2.jpg</code> trong kho mã nguồn. Hãy gửi ảnh gốc hoặc đường dẫn ảnh truy cập được để hiển thị đúng các phần cắt.</p>
+  <script>
+    const probe = new Image();
+    probe.onload = () => {};
+    probe.onerror = () => {
+      document.getElementById('asset-warning').style.display = 'block';
+      document.querySelectorAll('.avatar').forEach(el => {
+        el.style.backgroundImage = 'none';
+        el.style.display = 'grid';
+        el.style.placeItems = 'center';
+        el.textContent = 'Thiếu ảnh gốc image_f3efa2.jpg';
+        el.style.color = '#777';
+        el.style.fontSize = '13px';
+      });
+    };
+    probe.src = 'image_f3efa2.jpg';
+  </script>
 </body>
 </html>
