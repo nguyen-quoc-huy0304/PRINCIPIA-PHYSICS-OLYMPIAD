@@ -1167,7 +1167,13 @@ export function App() {
         {status && <p class="auth-status" role="status">{status}</p>}
       </main>
       <nav class="bottom-nav" aria-label="Điều hướng chính">
-        {sections.map(item => <button type="button" class={section === item.id ? 'active' : ''} onClick={() => chooseSection(item.id)}><span>{item.icon}</span><small>{item.label}</small></button>)}
+        {section === 'learn' && activeLesson ? <>
+          <button type="button" class={lessonTool === 'media' ? 'active' : ''} onClick={() => setLessonTool('media')}><span>▤</span><small>Video / OCR</small></button>
+          <button type="button" class={lessonTool === 'files' ? 'active' : ''} onClick={() => setLessonTool('files')}><span>▧</span><small>Tài liệu</small></button>
+          <button type="button" class={lessonTool === 'note' ? 'active' : ''} onClick={() => setLessonTool('note')}><span>✎</span><small>Ghi chép</small></button>
+          {sections.filter(item => !['home','learn','legacy'].includes(item.id)).map(item => <button type="button" class={section === item.id ? 'active' : ''} onClick={() => chooseSection(item.id)}><span>{item.icon}</span><small>{item.label}</small></button>)}
+          <button type="button" onClick={() => setActiveLesson(null)}><span>←</span><small>Danh sách</small></button>
+        </> : sections.filter(item => !(section === 'chat' && item.id === 'home')).map(item => <button type="button" class={section === item.id ? 'active' : ''} onClick={() => chooseSection(item.id)}><span>{item.icon}</span><small>{item.label}</small></button>)}
       </nav>
     </div>
   );
