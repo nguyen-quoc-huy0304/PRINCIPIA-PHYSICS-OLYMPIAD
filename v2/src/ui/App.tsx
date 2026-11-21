@@ -13,8 +13,9 @@ import type { MotionResult, ProjectileResult } from '../core/physics';
 import { restoreLegacyDataFromCloud, syncLegacyDataToCloud, restoreProgressFromCloud, syncProgressToCloud, publishLegacyContentToCloud, restorePublishedContentFromCloud } from '../core/cloud-data';
 import { getCorrectOptionIndexes, isQuestionCorrect, validateQuizQuestions, gradeQuiz } from '../core/quiz';
 import type { QuizQuestion as Question } from '../core/quiz';
+import { LearningSuite } from './LearningSuite';
 
-type Section = 'home' | 'learn' | 'quiz' | 'physics' | 'library' | 'music' | 'browser' | 'games' | 'chat' | 'downloads' | 'progress' | 'profile' | 'legacy';
+type Section = 'home' | 'learn' | 'quiz' | 'suite' | 'physics' | 'library' | 'music' | 'browser' | 'games' | 'chat' | 'downloads' | 'progress' | 'profile' | 'legacy';
 type Mode = 'login' | 'signup';
 type QuizEditorState = { id?: string; name: string; questionsText: string };
 type CustomAIProvider = { id: string; name: string; url: string };
@@ -28,6 +29,7 @@ const sections: { id: Section; label: string; icon: string }[] = [
   { id: 'home', label: 'Tổng quan', icon: '⌂' },
   { id: 'learn', label: 'Học tập', icon: '▤' },
   { id: 'quiz', label: 'Luyện đề', icon: '◎' },
+  { id: 'suite', label: 'Trung tâm học tập', icon: '✦' },
   { id: 'physics', label: 'Máy tính', icon: '⚛' },
   { id: 'library', label: 'Tài liệu', icon: '▧' },
   { id: 'music', label: 'Music & Focus', icon: '♫' },
@@ -511,6 +513,19 @@ export function App() {
   const submitQuiz = () => {
     const grade = gradeQuiz(questions, answers);
     const attempt = { title: activeQuiz?.name || 'Bài luyện tập', score: grade.score, total: grade.total, at: new Date().toISOString() };
+    try {
+      const mistakeKey = 'principia_suite:' + (account?.user.uid || 'guest') + ':mistakes';
+      const existing = JSON.parse(localStorage.getItem(mistakeKey) || '[]');
+      const captured = questions.flatMap((question, index) => {
+        if (question.type === 'long_answer' || isQuestionCorrect(question, answers[index])) return [];
+        const correctIndexes = getCorrectOptionIndexes(question);
+        const correctText = question.type === 'short_answer' ? (question.expected || 'Đáp án trong đề') : correctIndexes.map(i => question.a[i]).join(' / ');
+        const answerValue = answers[index];
+        const answerText = Array.isArray(answerValue) ? answerValue.map(i => question.a[i]).join(' / ') : typeof answerValue === 'number' ? (question.a[answerValue] || 'Chưa trả lời') : (answerValue || 'Chưa trả lời');
+        return [{ id: String(Date.now()) + '-' + index, question: question.q, answer: answerText, correct: correctText, explanation: question.explanation || 'Hãy xem lại lời giải hoặc hỏi gia sư AI để hiểu nguyên nhân.', source: activeQuiz?.name || 'Bài luyện tập', at: new Date().toISOString() }];
+      });
+      localStorage.setItem(mistakeKey, JSON.stringify([...captured, ...(Array.isArray(existing) ? existing : [])].slice(0, 300)));
+    } catch {}
     saveProgress({ ...withStudyActivity(localProgress, grade.score * 5), attempts: [attempt, ...localProgress.attempts].slice(0, 100) });
     if (grade.pendingReview > 0) {
       setStatus(`Đã chấm ${grade.total} câu trắc nghiệm/tự động; ${grade.pendingReview} câu tự luận cần giáo viên chấm.`);
@@ -1011,6 +1026,17 @@ export function App() {
             {!learningNodes.length && <p class="empty-state">Chưa tìm thấy dữ liệu bài học trên thiết bị này. Hãy nhập bản sao lưu từ phiên bản cũ.</p>}
           </section>}
         </>}
+        {section === 'suite' && <LearningSuite
+          userId={account.user.uid}
+          lessons={lessons}
+          quizzes={[...quizzes, ...fun]}
+          progress={localProgress}
+          onAttempt={(title, score, total) => {
+            const attempt = { title, score, total, at: new Date().toISOString() };
+            saveProgress({ ...withStudyActivity(localProgress, score * 5), attempts: [attempt, ...localProgress.attempts].slice(0, 100) });
+          }}
+          onTaskComplete={(xpGain) => saveProgress(withStudyActivity(localProgress, xpGain))}
+        />}
         {section === 'quiz' && <>
           {activeQuiz ? <section class="content-panel">
             <button class="back-link" onClick={() => { setActiveQuiz(null); setQuizSubmitted(false); }}>← Quay lại danh sách</button>
