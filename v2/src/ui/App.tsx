@@ -333,7 +333,7 @@ export function App() {
     if (mediaSourceLang === target) { setMediaOcrStatus('Ngôn ngữ nguồn và đích đang giống nhau.'); return; }
     setMediaOcrBusy(true); setMediaOcrStatus('Đang dịch transcript qua MyMemory…');
     try {
-      const chunks = sourceText.match(/[\\s\\S]{1,430}(?:\\s|$)/g) || [sourceText];
+      const chunks = sourceText.match(/[\s\S]{1,430}(?:\s|$)/g) || [sourceText];
       const translated: string[] = [];
       for (let index = 0; index < chunks.length; index++) {
         const query = chunks[index].trim();
