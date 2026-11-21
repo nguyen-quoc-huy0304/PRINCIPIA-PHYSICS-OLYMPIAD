@@ -5,7 +5,7 @@ type Node = {
   id: string; name: string; icon?: string; type?: string; content?: string; note?: string; video?: string;
   children?: Node[]; questions?: Question[]; quiz?: Question[];
 };
-type Question = { q: string; a: string[]; correct: number; type?: string; correctValues?: Array<string | number>; expected?: string; explanation?: string };
+type Question = { q: string; a: string[]; correct: number; type?: 'true_false' | 'single_select' | 'multi_select' | 'short_answer' | 'long_answer'; correctValues?: Array<string | number>; expected?: string; explanation?: string };
 type Progress = { completed: string[]; attempts: Array<{ title: string; score: number; total: number; at: string }>; xp: number; streak: number; lastStudyDate: string };
 type Mistake = { id: string; question: string; answer: string; correct: string; explanation: string; source: string; at: string };
 type Card = { id: string; front: string; back: string; due: number; interval: number; ease: number; reps: number };
