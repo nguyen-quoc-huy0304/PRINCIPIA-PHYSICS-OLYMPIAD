@@ -6,6 +6,7 @@ import {
 } from '../core/auth';
 import { collectLegacyData, downloadLegacyBackup, restoreLegacyBackup } from '../core/legacy-migration';
 import type { LegacyBackup } from '../core/legacy-migration';
+import { restoreLegacyDataFromCloud, syncLegacyDataToCloud } from '../core/cloud-data';
 
 type Section = 'home' | 'learn' | 'quiz' | 'progress';
 type Mode = 'login' | 'signup';
@@ -132,6 +133,28 @@ export function App() {
     finally { input.value = ''; }
   }
 
+  async function handleCloudSync() {
+    setBusy(true); setStatus('Đang đồng bộ dữ liệu lên tài khoản PRINCIPIA…');
+    try {
+      const count = await syncLegacyDataToCloud(account!.user.uid);
+      setStatus(`Đã đồng bộ ${count} mục dữ liệu lên đám mây.`);
+    } catch (error: any) {
+      setStatus(error?.message || 'Đồng bộ thất bại. Hãy kiểm tra kết nối và Firestore Security Rules.');
+    } finally { setBusy(false); }
+  }
+
+  async function handleCloudRestore() {
+    if (!confirm('Khôi phục dữ liệu đám mây sẽ ghi đè các mục trùng tên trên thiết bị này. Bạn muốn tiếp tục?')) return;
+    setBusy(true); setStatus('Đang tải dữ liệu từ đám mây…');
+    try {
+      const count = await restoreLegacyDataFromCloud(account!.user.uid);
+      setBackupVersion(value => value + 1);
+      setStatus(`Đã khôi phục ${count} mục dữ liệu. Hãy tải lại ứng dụng để nạp nội dung.`);
+    } catch (error: any) {
+      setStatus(error?.message || 'Khôi phục thất bại. Hãy kiểm tra kết nối và Firestore Security Rules.');
+    } finally { setBusy(false); }
+  }
+
   function chooseSection(next: Section) {
     setSection(next);
     setLessonPath([]); setActiveLesson(null);
@@ -236,6 +259,8 @@ export function App() {
             <div class="backup-actions">
               <button class="secondary-button" onClick={downloadLegacyBackup}>Tải bản sao lưu</button>
               <label class="secondary-button file-button">Khôi phục tệp<input type="file" accept="application/json,.json" onChange={handleRestore} /></label>
+              <button class="secondary-button" disabled={busy} onClick={() => void handleCloudSync()}>Đồng bộ cloud</button>
+              <button class="secondary-button" disabled={busy} onClick={() => void handleCloudRestore()}>Khôi phục cloud</button>
             </div>
           </section>
         </>}
