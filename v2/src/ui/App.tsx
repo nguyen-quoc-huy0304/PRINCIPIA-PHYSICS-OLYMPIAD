@@ -444,54 +444,53 @@ export function App() {
   };
 
   const [localProgress, setLocalProgress] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('principia_v2_progress') || '{\"completed\":[],\"attempts\":[],\"xp\":0,\"streak\":0,\"lastStudyDate\":\"\"}') as { completed: string[]; attempts: Array<{ title: string; score: number; total: number; at: string }>; xp: number; streak: number; lastStudyDate: string }; }
+    try { return JSON.parse(localStorage.getItem('principia_v2_progress') || '{"completed":[],"attempts":[],"xp":0,"streak":0,"lastStudyDate":""}') as { completed: string[]; attempts: Array<{ title: string; score: number; total: number; at: string }>; xp: number; streak: number; lastStudyDate: string }; }
     catch { return { completed: [] as string[], attempts: [] as Array<{ title: string; score: number; total: number; at: string }>, xp: 0, streak: 0, lastStudyDate: '' }; }
   });
+  const localProgressRef = useRef(localProgress);
   const progressStorageKey = account ? `principia_v2_progress:${account.user.uid}` : 'principia_v2_progress:guest';
   useEffect(() => {
-    if (!account) return;
+    let active = true;
+    const key = account ? `principia_v2_progress:${account.user.uid}` : 'principia_v2_progress:guest';
+    let safe = { completed: [] as string[], attempts: [] as Array<{ title: string; score: number; total: number; at: string }>, xp: 0, streak: 0, lastStudyDate: '' };
     try {
-      const scoped = localStorage.getItem(`principia_v2_progress:${account.user.uid}`);
-      const legacyLocal = localStorage.getItem('principia_v2_progress');
-      const parsed = JSON.parse(scoped || legacyLocal || '{"completed":[],"attempts":[],"xp":0}');
-      const safe = {
+      const raw = localStorage.getItem(key) || localStorage.getItem('principia_v2_progress');
+      const parsed = raw ? JSON.parse(raw) : {};
+      safe = {
         completed: Array.isArray(parsed.completed) ? parsed.completed.filter((value: unknown) => typeof value === 'string') : [],
         attempts: Array.isArray(parsed.attempts) ? parsed.attempts.filter((value: any) => value && typeof value.title === 'string' && typeof value.score === 'number' && typeof value.total === 'number' && typeof value.at === 'string').slice(0, 100) : [],
         xp: Number.isFinite(parsed.xp) ? Math.max(0, parsed.xp) : 0,
         streak: Number.isFinite(parsed.streak) ? Math.max(0, parsed.streak) : 0,
         lastStudyDate: typeof parsed.lastStudyDate === 'string' ? parsed.lastStudyDate : ''
       };
-      setLocalProgress(safe);
-      if (!scoped && legacyLocal) localStorage.setItem(`principia_v2_progress:${account.user.uid}`, JSON.stringify(safe));
-    } catch { setLocalProgress({ completed: [], attempts: [], xp: 0, streak: 0, lastStudyDate: '' }); }
+      localStorage.setItem(key, JSON.stringify(safe));
+    } catch {}
+    localProgressRef.current = safe;
+    setLocalProgress(safe);
+    if (!account) return () => { active = false; };
+    restoreProgressFromCloud(account.user.uid).then(cloud => {
+      if (!active || !cloud) return;
+      const current = localProgressRef.current;
+      const merged = {
+        completed: [...new Set([...current.completed, ...cloud.completed])],
+        attempts: [...new Map([...current.attempts, ...cloud.attempts].map(item => [item.at, item])).values()].sort((left, right) => right.at.localeCompare(left.at)).slice(0, 100),
+        xp: Math.max(current.xp, cloud.xp),
+        streak: cloud.lastStudyDate >= current.lastStudyDate ? cloud.streak : current.streak,
+        lastStudyDate: cloud.lastStudyDate >= current.lastStudyDate ? cloud.lastStudyDate : current.lastStudyDate
+      };
+      localProgressRef.current = merged;
+      setLocalProgress(merged);
+      try { localStorage.setItem(key, JSON.stringify(merged)); } catch {}
+      void syncProgressToCloud(account.user.uid, merged).catch(() => {});
+    }).catch(() => {});
+    return () => { active = false; };
   }, [account?.user.uid]);
   const saveProgress = (next: typeof localProgress) => {
+    localProgressRef.current = next;
     setLocalProgress(next);
     try { localStorage.setItem(progressStorageKey, JSON.stringify(next)); } catch { setStatus('Không thể lưu tiến độ: bộ nhớ trình duyệt đã đầy hoặc bị chặn.'); }
     if (account) void syncProgressToCloud(account.user.uid, next).catch(() => setStatus('Tiến độ đã lưu trên thiết bị; cloud chưa đồng bộ được. Hãy thử lại khi kết nối ổn định.'));
   };
-  useEffect(() => {
-    if (!account) return;
-    let active = true;
-    restoreProgressFromCloud(account.user.uid).then(cloud => {
-      if (!active) return;
-      if (cloud) {
-        const merged = {
-          completed: [...new Set([...localProgress.completed, ...cloud.completed])],
-          attempts: [...new Map([...localProgress.attempts, ...cloud.attempts].map(item => [item.at, item])).values()].sort((a,b) => b.at.localeCompare(a.at)).slice(0,100),
-          xp: Math.max(localProgress.xp, cloud.xp),
-          streak: cloud.lastStudyDate >= localProgress.lastStudyDate ? cloud.streak : localProgress.streak,
-          lastStudyDate: cloud.lastStudyDate >= localProgress.lastStudyDate ? cloud.lastStudyDate : localProgress.lastStudyDate
-        };
-        setLocalProgress(merged);
-        try { localStorage.setItem(`principia_v2_progress:${account.user.uid}`, JSON.stringify(merged)); } catch {}
-        void syncProgressToCloud(account.user.uid, merged).catch(() => {});
-      } else if (localProgress.completed.length || localProgress.attempts.length || localProgress.xp) {
-        void syncProgressToCloud(account.user.uid, localProgress).catch(() => {});
-      }
-    }).catch(() => {});
-    return () => { active = false; };
-  }, [account?.user.uid]);
   const lessonKey = (node: LegacyNode) => [...lessonPath, node].map(item => item.id || item.name).join('::');
   const withStudyActivity = (current: typeof localProgress, xpGain: number) => {
     const today = new Date().toLocaleDateString('sv-SE');
