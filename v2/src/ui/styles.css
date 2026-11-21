@@ -115,3 +115,18 @@
 .lesson-file-list a{color:#c7baff;font-size:12px;text-decoration:none;white-space:nowrap}
 .lesson-file-list button{border:0;background:transparent;color:#ff9eaa;font-size:12px;cursor:pointer}
 @media(max-width:560px){.lesson-file-list article{flex-wrap:wrap}.lesson-file-list article>div{flex-basis:100%}}
+
+.chat-workspace{display:grid;gap:16px}
+.chat-heading{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.chat-heading h2{margin:0 0 5px}
+.chat-heading p{margin:0;color:#aeb2c9;font-size:13px}
+.chat-heading select{min-width:145px;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.14);background:#171c31;color:#f4f5ff}
+.chat-provider-note{padding:12px 14px;border-radius:12px;background:rgba(153,133,255,.08);color:#b9bad0;font-size:12px;line-height:1.6}
+.chat-history{display:grid;gap:10px;max-height:48vh;min-height:170px;overflow:auto;padding:12px;border:1px solid rgba(255,255,255,.08);border-radius:14px;background:rgba(0,0,0,.12)}
+.chat-user-message{justify-self:end;width:min(88%,680px);padding:12px 14px;border-radius:14px 14px 3px 14px;background:rgba(120,103,210,.17);overflow-wrap:anywhere}
+.chat-user-message small{color:#b6a7ff;font-size:10px;letter-spacing:.08em}
+.chat-user-message p{margin:7px 0 0;white-space:pre-wrap;line-height:1.6;font-size:13px}
+.chat-composer{display:grid;gap:10px}
+.chat-composer textarea{width:100%;resize:vertical;min-height:100px;padding:14px;border:1px solid rgba(255,255,255,.13);border-radius:13px;background:#0b1020;color:#f4f5ff;font:inherit;line-height:1.6}
+.chat-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+@media(max-width:560px){.chat-heading{align-items:flex-start;flex-direction:column}.chat-heading select{width:100%}.chat-user-message{width:100%}.chat-actions button{flex:1 1 42%}}
