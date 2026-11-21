@@ -417,6 +417,58 @@
       #codelearnWorkspace #clVideoStage{min-height:28vh!important;padding:10px!important}
       #codelearnWorkspace #clVideoStage iframe{min-height:220px!important}
     }
+
+    /* Mobile screen-edge stack: Home nav OR lesson tools at the bottom,
+       AI immediately above it, and Download above AI. Desktop is untouched. */
+    @media(max-width:900px){
+      body:has(#codelearnWorkspace.active)>.sidebar[data-principia-web-nav]{
+        display:none!important;visibility:hidden!important;pointer-events:none!important
+      }
+      #codelearnWorkspace.active .cl-iconbar{
+        position:fixed!important;inset:auto 0 0 0!important;top:auto!important;
+        z-index:2147483001!important;display:flex!important;flex-direction:row!important;
+        align-items:center!important;justify-content:space-around!important;
+        width:100vw!important;min-width:100vw!important;max-width:100vw!important;
+        height:auto!important;min-height:68px!important;max-height:calc(78px + env(safe-area-inset-bottom))!important;
+        box-sizing:border-box!important;padding:7px 8px calc(7px + env(safe-area-inset-bottom))!important;
+        margin:0!important;overflow-x:auto!important;overflow-y:hidden!important;
+        background:rgba(20,21,39,.97)!important;border:0!important;
+        border-top:1px solid rgba(220,215,255,.2)!important;border-radius:0!important;
+        box-shadow:0 -8px 28px rgba(0,0,0,.34)!important;
+        -webkit-backdrop-filter:blur(24px) saturate(1.4)!important;backdrop-filter:blur(24px) saturate(1.4)!important
+      }
+      #codelearnWorkspace.active .cl-iconbar .cl-ico-btn{
+        flex:1 0 62px!important;min-width:62px!important;max-width:120px!important;
+        min-height:50px!important;height:auto!important;padding:6px 4px!important;
+        display:flex!important;align-items:center!important;justify-content:center!important;
+        white-space:nowrap!important;touch-action:pan-x!important
+      }
+      #codelearnWorkspace.active .cl-body{padding-bottom:calc(86px + env(safe-area-inset-bottom))!important}
+      .chat-bubble-btn{
+        position:fixed!important;right:14px!important;
+        bottom:calc(82px + env(safe-area-inset-bottom))!important;
+        z-index:2147483002!important
+      }
+      .chat-box{
+        position:fixed!important;left:10px!important;right:10px!important;
+        bottom:calc(142px + env(safe-area-inset-bottom))!important;
+        width:auto!important;max-width:none!important;
+        max-height:calc(100dvh - 180px)!important;
+        z-index:2147483003!important
+      }
+      #principiaDownloadFab{
+        position:fixed!important;right:14px!important;
+        bottom:calc(148px + env(safe-area-inset-bottom))!important;
+        z-index:2147483001!important
+      }
+    }
+    @media(max-width:600px){
+      #codelearnWorkspace.active .cl-iconbar{min-height:66px!important;padding:6px 5px calc(6px + env(safe-area-inset-bottom))!important}
+      #codelearnWorkspace.active .cl-iconbar .cl-ico-btn{flex-basis:60px!important;min-width:60px!important;font-size:11px!important}
+      .chat-bubble-btn{right:12px!important;bottom:calc(80px + env(safe-area-inset-bottom))!important}
+      .chat-box{bottom:calc(138px + env(safe-area-inset-bottom))!important}
+      #principiaDownloadFab{right:12px!important;bottom:calc(146px + env(safe-area-inset-bottom))!important}
+    }
   `;
   document.head.appendChild(style);
   let busy=false,observer;
