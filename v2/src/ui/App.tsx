@@ -501,7 +501,7 @@ export function App() {
               <button class="primary-button" type="button" disabled={!chatDraft.trim()} onClick={() => {
                 const urls: Record<string, string> = { chatgpt: 'https://chatgpt.com/', gemini: 'https://gemini.google.com/app', claude: 'https://claude.ai/new', deepseek: 'https://chat.deepseek.com/', copilot: 'https://copilot.microsoft.com/' };
                 const text = chatDraft.trim();
-                const opened = window.open(urls[chatProvider] || urls.chatgpt, '_blank', 'noopener,noreferrer');
+                const opened = window.open(urls[chatProvider] || urls.chatgpt, '_blank');
                 if (opened) {
                   void navigator.clipboard?.writeText(text).then(() => setChatNotice('Đã mở AI và sao chép câu hỏi. Dán vào khung chat của AI để gửi.'));
                   setChatNotice('Đã mở AI. Nếu chưa tự sao chép được, hãy dùng nút Sao chép câu hỏi.');
