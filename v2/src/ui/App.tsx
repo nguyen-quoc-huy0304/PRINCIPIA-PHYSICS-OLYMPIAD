@@ -469,8 +469,12 @@ export function App() {
     setLocalProgress(safe);
     if (!account) return () => { active = false; };
     restoreProgressFromCloud(account.user.uid).then(cloud => {
-      if (!active || !cloud) return;
+      if (!active) return;
       const current = localProgressRef.current;
+      if (!cloud) {
+        if (current.completed.length || current.attempts.length || current.xp) void syncProgressToCloud(account.user.uid, current).catch(() => {});
+        return;
+      }
       const merged = {
         completed: [...new Set([...current.completed, ...cloud.completed])],
         attempts: [...new Map([...current.attempts, ...cloud.attempts].map(item => [item.at, item])).values()].sort((left, right) => right.at.localeCompare(left.at)).slice(0, 100),
