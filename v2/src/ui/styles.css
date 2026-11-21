@@ -289,3 +289,16 @@ body.principia-focus-mode .topbar{border-color:rgba(153,133,255,.22)}
   .main-content{width:min(1040px,calc(100% - 300px));max-width:1040px;margin:64px 0 80px calc(236px + max(32px,(100vw - 236px - 1040px)/2))}
   .account-footer{margin-bottom:35px}
 }
+
+
+.downloads-panel{display:grid;gap:16px}
+.downloads-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.downloads-heading h2{margin:0 0 5px}.downloads-heading p{margin:0;color:#aeb2c9;font-size:12px}
+.release-status{padding:7px 10px;border:1px solid rgba(230,184,111,.25);border-radius:999px;color:#e6c58f;font-size:10px;white-space:nowrap}
+.download-platform-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.download-platform-grid article{display:flex;align-items:center;gap:11px;padding:14px;border:1px solid rgba(255,255,255,.08);border-radius:13px;background:rgba(255,255,255,.025)}
+.download-platform-grid article>span{display:grid;place-items:center;width:38px;height:38px;border-radius:10px;background:rgba(153,133,255,.12);font-size:19px}
+.download-platform-grid article>div{display:grid;gap:4px;min-width:0;flex:1}
+.download-platform-grid b{font-size:12px}.download-platform-grid small{font-size:10px;color:#aeb2c9;line-height:1.4}
+.download-platform-grid em{font-size:9px;font-style:normal;color:#b9a1a0;white-space:nowrap}
+@media(max-width:560px){.downloads-heading{align-items:flex-start;flex-direction:column}.download-platform-grid{grid-template-columns:1fr}}
