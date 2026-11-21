@@ -522,7 +522,7 @@ export function App() {
     if (!account?.isAdmin) return;
     setLessonEditor({
       id: node?.id, name: node?.name || '', icon: node?.icon || '📘',
-      type: node?.type === 'folder' ? 'folder' : 'lesson',
+      type: node ? (node.type === 'lesson' || !!node.content || !!node.video ? 'lesson' : 'folder') : 'lesson',
       content: node?.content || '', note: node?.note || '', video: node?.video || ''
     });
   }
@@ -537,7 +537,7 @@ export function App() {
         type: lessonEditor.type,
         ...(lessonEditor.type === 'lesson' ? {
           content: lessonEditor.content, note: lessonEditor.note, video: lessonEditor.video,
-          quiz: lessonEditor.id ? undefined : []
+          ...(lessonEditor.id ? {} : { quiz: [] })
         } : { children: [] })
       };
       let saved = false;
@@ -575,7 +575,7 @@ export function App() {
       if (!saved) throw new Error('Không tìm thấy mục cần chỉnh sửa.');
       localStorage.setItem('halo_data', JSON.stringify(tree));
       setBackupVersion(value => value + 1);
-      if (activeLesson && lessonEditor.id === activeLesson.id) setActiveLesson(current => current ? { ...current, ...nextNode } : current);
+      if (activeLesson && lessonEditor.id === activeLesson.id) setActiveLesson(current => current ? { ...current, name: nextNode.name, icon: nextNode.icon, content: nextNode.content, note: nextNode.note, video: nextNode.video } : current);
       setLessonEditor(null);
       setStatus('Đã lưu nội dung vào kho bài học trên thiết bị. Hãy đồng bộ cloud để sao lưu bản quản trị.');
     } catch (error: any) { setStatus(error?.message || 'Không thể lưu nội dung bài học.'); }
