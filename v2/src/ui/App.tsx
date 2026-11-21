@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import type { AuthResult } from '../core/auth';
 import {
   completeGoogleRedirect, createEmailAccount, observeAuth, sendPasswordReset,
-  signInWithEmail, signInWithGoogle, signOut
+  signInWithEmail, signInWithGoogle, signOut, updateDisplayName
 } from '../core/auth';
 import { collectLegacyData, downloadLegacyBackup, restoreLegacyBackup } from '../core/legacy-migration';
 import type { LegacyBackup } from '../core/legacy-migration';
@@ -10,7 +10,7 @@ import { deleteLibraryBlob, getLibraryBlob, listLibraryItems, saveLibraryFiles }
 import type { PrincipiaLibraryItem } from '../core/library';
 import { restoreLegacyDataFromCloud, syncLegacyDataToCloud, restoreProgressFromCloud, syncProgressToCloud, publishLegacyContentToCloud, restorePublishedContentFromCloud } from '../core/cloud-data';
 
-type Section = 'home' | 'learn' | 'quiz' | 'library' | 'music' | 'browser' | 'games' | 'chat' | 'progress' | 'legacy';
+type Section = 'home' | 'learn' | 'quiz' | 'library' | 'music' | 'browser' | 'games' | 'chat' | 'progress' | 'profile' | 'legacy';
 type Mode = 'login' | 'signup';
 type Question = { q: string; a: string[]; correct: number; type?: 'true_false' | 'single_select' | 'multi_select' | 'short_answer' | 'long_answer'; correctValues?: string[]; expected?: string; rubric?: string; points?: number; explanation?: string };
 type QuizEditorState = { id?: string; name: string; questionsText: string };
@@ -31,6 +31,7 @@ const sections: { id: Section; label: string; icon: string }[] = [
   { id: 'games', label: 'Giải trí', icon: '🎮' },
   { id: 'chat', label: 'AI Chat', icon: '✧' },
   { id: 'progress', label: 'Tiến độ', icon: '↗' },
+  { id: 'profile', label: 'Hồ sơ', icon: '◉' },
   { id: 'legacy', label: 'Đầy đủ tính năng', icon: '✦' }
 ];
 
@@ -108,6 +109,8 @@ export function App() {
   }, [chatStorageKey]);
 
   const [status, setStatus] = useState('');
+  const [profileName, setProfileName] = useState('');
+  const [lightTheme, setLightTheme] = useState(() => localStorage.getItem('principia_v2_theme') === 'light');
   const [busy, setBusy] = useState(false);
   const [welcome, setWelcome] = useState(false);
   const [backupVersion, setBackupVersion] = useState(0);
@@ -478,6 +481,8 @@ export function App() {
     return () => { active = false; unsubscribe?.(); };
   }, []);
 
+  useEffect(() => { if (account) setProfileName(account.user.displayName || ''); }, [account?.user.uid]);
+  useEffect(() => { try { localStorage.setItem('principia_v2_theme', lightTheme ? 'light' : 'dark'); } catch {} }, [lightTheme]);
   useEffect(() => {
     if (!account) return;
     let active = true;
@@ -520,6 +525,17 @@ export function App() {
       localStorage.setItem('principia_v2_ai_selected', next[next.length - 1].id);
       setChatNotice('Đã thêm AI tùy chỉnh.');
     } catch { setChatNotice('Địa chỉ AI không hợp lệ. Chỉ chấp nhận http hoặc https.'); }
+  }
+
+  async function saveProfile() {
+    if (!account) return;
+    setBusy(true);
+    try {
+      const next = await updateDisplayName(profileName);
+      setAccount(next);
+      setStatus('Đã cập nhật tên hiển thị.');
+    } catch (error: any) { setStatus(error?.message || 'Không cập nhật được hồ sơ.'); }
+    finally { setBusy(false); }
   }
 
   async function runAuth(action: () => Promise<AuthResult>) {
@@ -808,7 +824,7 @@ export function App() {
   }
 
   return (
-    <div class={musicFocus ? "app-shell focus-mode" : "app-shell"}>
+    <div class={(musicFocus ? "app-shell focus-mode" : "app-shell") + (lightTheme ? " light-theme" : "")}>
       <header class="topbar">
         <img class="topbar-logo" src="/legacy/assets/images/principia-logo-round.svg" alt="" />
         <div class="brand-copy"><strong>PRINCIPIA</strong><span>PHYSICS OLYMPIAD · PRO</span></div>
@@ -1068,6 +1084,16 @@ export function App() {
             </div>
           </form>
           {chatNotice && <p class="workspace-notice" role="status">{chatNotice}</p>}
+        </section>}
+        {section === 'profile' && <section class="content-panel profile-panel">
+          <div class="profile-heading"><div><h2>Hồ sơ tài khoản</h2><p>Thông tin đăng nhập và tuỳ chỉnh riêng của bạn.</p></div><span class="profile-role">{account.isAdmin ? 'ADMIN' : 'LEARNER'}</span></div>
+          <div class="profile-avatar">{(account.user.displayName || account.user.email || 'P').slice(0,1).toUpperCase()}</div>
+          <label>Tên hiển thị<input value={profileName} onInput={event => setProfileName(event.currentTarget.value)} placeholder="Tên của bạn" /></label>
+          <label>Email<input value={account.user.email || ''} readOnly /></label>
+          <p class="empty-state">Trạng thái email: {account.user.emailVerified ? 'Đã xác minh' : 'Chưa xác minh'}.</p>
+          <button class="primary-button" type="button" disabled={busy || !profileName.trim()} onClick={() => void saveProfile()}>Lưu hồ sơ</button>
+          <div class="profile-theme"><div><b>Giao diện</b><small>Chọn chế độ hiển thị cho thiết bị này.</small></div><button class="secondary-button" type="button" onClick={() => setLightTheme(value => !value)}>{lightTheme ? 'Chuyển sang tối' : 'Chuyển sang sáng'}</button></div>
+          <button class="quiet-button" type="button" onClick={() => void signOut()}>Đăng xuất tài khoản</button>
         </section>}
         {section === 'progress' && <section class="content-panel progress-panel">
           <div><strong>{(Number.isFinite(xp) ? xp : 0) + localProgress.xp}</strong><span>EXP tích lũy</span></div>
