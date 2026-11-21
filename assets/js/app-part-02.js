@@ -423,7 +423,7 @@ function startPrincipiaJourney(){
  localStorage.setItem('principia_welcome_seen_v4_'+id,'1');
  localStorage.setItem('principia_home_greeted_v2_'+id,'1');
  setPage('home');
- if(window.grantPrincipiaReward)grantPrincipiaReward('welcome:'+id,'Quà chào mừng');
+ // Giveaway/reward popup removed; keep the welcome screen and continue to Home.
 }
 function render(){
  const app=$('#app');
