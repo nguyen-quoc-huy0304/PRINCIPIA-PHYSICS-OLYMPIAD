@@ -18,6 +18,10 @@ V2 is being developed on the isolated `rebuild-v2` branch. The production `main`
 - Lesson video playback, personal notes, local lesson attachments, PhET simulation embed.
 - Transcript editing, OCR of uploaded local video frames using Tesseract.js, editable OCR text, quick transcript summary, browser speech playback, and an AI-assisted translation prompt.
 - Account-scoped AI prompt history, built-in AI providers, and custom external AI links. AI responses are still handled by the selected provider's website; V2 does not pretend to run a model locally or call a provider API.
+- Music & Focus workspace with Spotify/YouTube/SoundCloud embeds, custom music sites, focus mode and Pomodoro timer.
+- Mini browser with URL validation, navigation history, sandboxed frames and external-open fallback.
+- Custom game-platform hub with Chess.com, Lichess, Sudoku, GeoGuessr and user-added links.
+- Account profile editor and local light/dark theme preference.
 - Account-scoped offline document library with PDF/image/video/audio preview and download.
 - Learning completion, quiz history, EXP and daily streak; personal progress can sync to the signed-in user's Firestore document.
 - Private per-account backup/restore, admin publishing of shared lesson and quiz data, and automatic retrieval of published content for signed-in learners.
@@ -36,7 +40,7 @@ V2 is being developed on the isolated `rebuild-v2` branch. The production `main`
 - Full native parity for every old screen and interaction; the legacy iframe is only a temporary compatibility bridge and must be removed after migration.
 - Full video workspace, robust automatic transcript translation, live speech recognition, teacher submission/review workflow, and cloud-backed document storage.
 - Direct AI API integrations (which require provider API keys and secure server-side handling); current AI chat opens an external provider and copies the prompt.
-- Companion characters, sticker studio, games, music/focus island, mini browser, and remaining legacy account/settings tools.
+- Companion characters and sticker studio (waiting for the complete user-supplied character pack), game stats/achievements, and remaining legacy account/settings tools.
 - Cross-device and offline conflict tests, browser/device end-to-end tests, performance benchmarks on real hardware.
 - Signed desktop installers and Android/iOS packages, auto-update signing configuration, and store distribution setup.
 
