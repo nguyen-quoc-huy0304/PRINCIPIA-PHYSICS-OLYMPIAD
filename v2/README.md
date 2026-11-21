@@ -1,38 +1,46 @@
-# PRINCIPIA V2 — migration foundation
+# PRINCIPIA V2 — performance-first migration
 
-This folder is an isolated replacement architecture. The current production app remains untouched until parity, data migration, and performance checks pass.
+This folder is an isolated replacement architecture. The current production app remains untouched until feature parity, data migration, and performance checks pass.
 
-## Stack
-- Preact + TypeScript + Vite for a small, code-split web UI.
-- Tauri 2 + Rust for desktop/mobile application shells.
-- C++ compiled to WebAssembly only for computationally heavy physics workloads.
-- Firebase modules imported on demand for auth and cloud data.
+## Runtime architecture
+- **Web:** Preact + TypeScript + Vite. Small UI runtime, production minification, split UI/Firebase chunks.
+- **Desktop/mobile shell:** Tauri 2 + Rust. The desktop shell renders local bundled assets instead of loading the production website over the network.
+- **Native compute:** Rust commands for validated motion, kinetic-energy, and projectile calculations. Web uses equivalent TypeScript fallbacks.
+- **Heavy numerical workloads:** C++ compiled to WebAssembly only when profiling shows that it beats the Rust/native or optimized JS path.
+- **Identity and sync:** Firebase Auth/Firestore, loaded lazily and protected by server-side Security Rules.
+
+## Performance rules
+1. Keep startup code small; dynamically import large screens and optional features.
+2. Never load Firebase modules until authentication or cloud data is needed.
+3. Cache static assets and user content with explicit versioning; avoid refetching entire app bundles.
+4. Keep long lists virtualized and expensive calculations off the UI thread.
+5. Use Rust for native work and C++/WASM for measured hot loops, not for ordinary UI.
+6. Release builds use optimization level 3, thin LTO, one codegen unit, and stripped symbols.
+7. Benchmark cold start, warm start, navigation latency, memory, and representative physics workloads on the same devices.
 
 ## Local development
 ```sh
 npm install
 npm run dev
-``
+```
 
-## Production build
+## Web production build
 ```sh
 npm run build
-``
+```
 
-## Desktop
-Install Rust stable and platform prerequisites, then:
+## Desktop development and release
+Install Rust stable and platform prerequisites:
 ```sh
 npm run tauri dev
 npm run tauri build
-``
+```
 
-## Migration rules
+## Migration and data safety
 1. Keep the existing production site and Electron release intact while V2 is developed.
-2. Move feature-by-feature; preserve account identity, learning content, quiz banks, notes, progress, and media.
-3. Never copy private Firebase credentials or admin secrets into the client. Enforce roles with Firebase Security Rules.
-4. Load routes and large features lazily; virtualize long lists; avoid rendering the whole workspace on each state update.
-5. Benchmark startup, navigation, memory, and physics calculations on the same devices before/after.
-6. Switch production only after feature parity, data migration, auth, and device tests are complete.
+2. Migrate account identity, learning content, quiz banks, notes, progress, and media without destructive changes.
+3. Never place admin secrets in client code. Enforce the single-admin write policy through Firebase Security Rules.
+4. Switch production only after feature parity, auth, data migration, and device tests pass.
 
 ## Current status
-Foundation only. This is not yet a replacement for the production PRINCIPIA app; legacy features have not yet been migrated.
+The V2 foundation and native physics bridge are in place. This is not yet a replacement for the production PRINCIPIA app; authentication, lessons, quiz bank, progress, chat, and data migration still need to be ported and tested.
