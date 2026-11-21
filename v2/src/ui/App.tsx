@@ -54,6 +54,27 @@ export function App() {
   const [activeQuiz, setActiveQuiz] = useState<LegacyNode | null>(null);
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [quizSubmitted, setQuizSubmitted] = useState(false);
+  const [localProgress, setLocalProgress] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('principia_v2_progress') || '{\"completed\":[],\"attempts\":[],\"xp\":0}') as { completed: string[]; attempts: Array<{ title: string; score: number; total: number; at: string }>; xp: number }; }
+    catch { return { completed: [] as string[], attempts: [] as Array<{ title: string; score: number; total: number; at: string }>, xp: 0 }; }
+  });
+  const saveProgress = (next: typeof localProgress) => {
+    setLocalProgress(next);
+    try { localStorage.setItem('principia_v2_progress', JSON.stringify(next)); } catch { setStatus('Không thể lưu tiến độ: bộ nhớ trình duyệt đã đầy hoặc bị chặn.'); }
+  };
+  const lessonKey = (node: LegacyNode) => [...lessonPath, node].map(item => item.id || item.name).join('::');
+  const markLessonComplete = (node: LegacyNode) => {
+    const key = lessonKey(node);
+    if (localProgress.completed.includes(key)) return;
+    saveProgress({ ...localProgress, completed: [...localProgress.completed, key], xp: localProgress.xp + 10 });
+    setStatus('Đã hoàn thành bài học · +10 EXP.');
+  };
+  const submitQuiz = () => {
+    const score = questions.filter((q, i) => answers[i] === q.correct).length;
+    const attempt = { title: activeQuiz?.name || 'Bài luyện tập', score, total: questions.length, at: new Date().toISOString() };
+    saveProgress({ ...localProgress, attempts: [attempt, ...localProgress.attempts].slice(0, 100), xp: localProgress.xp + score * 5 });
+    setQuizSubmitted(true);
+  };
 
   useEffect(() => {
     let active = true;
@@ -281,6 +302,7 @@ export function App() {
             </div>}
             {activeLesson.content && <><h3>Nội dung bài học</h3><pre class="lesson-content">{activeLesson.content}</pre></>}
             {activeLesson.note && <><h3>Ghi chú</h3><pre class="lesson-content">{activeLesson.note}</pre></>}
+            <div class="lesson-completion"><span>{localProgress.completed.includes(lessonKey(activeLesson)) ? '✓ Đã hoàn thành' : 'Hoàn thành bài học để lưu tiến độ'}</span><button class="secondary-button" disabled={localProgress.completed.includes(lessonKey(activeLesson))} onClick={() => markLessonComplete(activeLesson)}>{localProgress.completed.includes(lessonKey(activeLesson)) ? 'Đã ghi nhận' : 'Đánh dấu hoàn thành · +10 EXP'}</button></div>
             {!activeLesson.content && !activeLesson.note && !activeLesson.video && <p class="empty-state">Bài học chưa có nội dung.</p>}
             {(activeLesson.quiz?.length || activeLesson.questions?.length) ? <button class="primary-button quiz-submit" onClick={() => openQuizNode(activeLesson)}>Làm câu hỏi bài học ({(activeLesson.quiz || activeLesson.questions || []).length})</button> : null}
           </section> : <section class="content-panel">
@@ -307,8 +329,8 @@ export function App() {
                 {answer}
               </label>)}</div>
             </article>)}
-            {!quizSubmitted ? <button class="primary-button quiz-submit" disabled={!questions.length} onClick={() => setQuizSubmitted(true)}>Nộp bài</button> :
-              <p class="quiz-result">Kết quả: {questions.filter((q, i) => answers[i] === q.correct).length}/{questions.length} câu đúng.</p>}
+            {!quizSubmitted ? <button class="primary-button quiz-submit" disabled={!questions.length || Object.keys(answers).length !== questions.length} onClick={submitQuiz}>Nộp bài</button> :
+              <><p class="quiz-result">Kết quả: {questions.filter((q, i) => answers[i] === q.correct).length}/{questions.length} câu đúng · +{questions.filter((q, i) => answers[i] === q.correct).length * 5} EXP.</p><p class="empty-state">Lần làm bài đã được lưu vào lịch sử tiến độ trên thiết bị.</p></>}
           </section> : <section class="content-panel">
             <div class="section-toolbar">
               <button class="back-link" disabled={!quizPath.length} onClick={() => setQuizPath(path => path.slice(0, -1))}>← Quay lại</button>
@@ -327,10 +349,11 @@ export function App() {
           <iframe class="legacy-frame" src="/legacy/index.html" title="PRINCIPIA full legacy workspace" loading="lazy" allow="clipboard-read; clipboard-write; fullscreen; autoplay; encrypted-media; picture-in-picture" />
         </section>}
         {section === 'progress' && <section class="content-panel progress-panel">
-          <div><strong>{Number.isFinite(xp) ? xp : 0}</strong><span>EXP tích lũy</span></div>
-          <div><strong>{Number.isFinite(streak) ? streak : 0}</strong><span>Chuỗi ngày học</span></div>
-          <div><strong>{completed.length}</strong><span>Bài/mục hoàn thành</span></div>
-          <p class="empty-state">Tiến độ được đọc trực tiếp từ dữ liệu cũ trên thiết bị. Đồng bộ đám mây sẽ được hoàn thiện ở bước tiếp theo.</p>
+          <div><strong>{(Number.isFinite(xp) ? xp : 0) + localProgress.xp}</strong><span>EXP tích lũy</span></div>
+          <div><strong>{Number.isFinite(streak) ? streak : 0}</strong><span>Chuỗi ngày học (bản cũ)</span></div>
+          <div><strong>{completed.length + localProgress.completed.length}</strong><span>Bài/mục hoàn thành</span></div>
+          <div class="progress-history"><h3>Lịch sử làm bài</h3>{localProgress.attempts.length ? localProgress.attempts.map((attempt, index) => <article key={`${attempt.at}-${index}`}><b>{attempt.title}</b><span>{attempt.score}/{attempt.total} câu đúng · {new Date(attempt.at).toLocaleString('vi-VN')}</span></article>) : <p class="empty-state">Chưa có lần làm đề nào được lưu trong V2.</p>}</div>
+          <p class="empty-state">Tiến độ mới được lưu trên thiết bị này. Tiến độ cũ vẫn được giữ nguyên; đồng bộ phần tiến độ V2 lên cloud sẽ được nối ở bước tiếp theo.</p>
         </section>}
         <div class="account-footer"><span>{account.user.email}</span><button class="quiet-button" onClick={() => void signOut()}>Đăng xuất</button></div>
         {status && <p class="auth-status" role="status">{status}</p>}
