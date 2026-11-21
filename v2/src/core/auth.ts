@@ -75,3 +75,12 @@ export async function signOut(): Promise<void> {
   ]);
   await authSdk.signOut(authSdk.getAuth(app));
 }
+
+
+export async function updateDisplayName(name: string): Promise<AuthResult> {
+  const [app, authSdk] = await Promise.all([getFirebaseApp(), import('firebase/auth')]);
+  const user = authSdk.getAuth(app).currentUser;
+  if (!user) throw new Error('Bạn cần đăng nhập trước khi cập nhật hồ sơ.');
+  await authSdk.updateProfile(user, { displayName: name.trim() });
+  return toResult(user);
+}
