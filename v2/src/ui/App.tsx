@@ -54,6 +54,35 @@ export function App() {
   const [activeQuiz, setActiveQuiz] = useState<LegacyNode | null>(null);
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [quizSubmitted, setQuizSubmitted] = useState(false);
+  const [lessonTool, setLessonTool] = useState<'note' | 'submit' | 'simulation'>('note');
+  const [privateNote, setPrivateNote] = useState('');
+  const [assignmentText, setAssignmentText] = useState('');
+  const [simulationSubject, setSimulationSubject] = useState('physics');
+  const [workspaceNotice, setWorkspaceNotice] = useState('');
+  const currentLessonStorageKey = activeLesson ? `principia_lesson_workspace:${account?.user.uid || 'guest'}:${[...lessonPath, activeLesson].map(item => item.id || item.name).join('::')}` : '';
+  useEffect(() => {
+    if (!currentLessonStorageKey) return;
+    try {
+      const saved = JSON.parse(localStorage.getItem(currentLessonStorageKey) || '{}');
+      setPrivateNote(typeof saved.note === 'string' ? saved.note : '');
+      setAssignmentText(typeof saved.submission === 'string' ? saved.submission : '');
+      setLessonTool('note');
+      setWorkspaceNotice('');
+    } catch {
+      setPrivateNote('');
+      setAssignmentText('');
+    }
+  }, [currentLessonStorageKey]);
+  const saveLessonWorkspace = (patch: { note?: string; submission?: string }) => {
+    if (!currentLessonStorageKey) return;
+    try {
+      const current = JSON.parse(localStorage.getItem(currentLessonStorageKey) || '{}');
+      localStorage.setItem(currentLessonStorageKey, JSON.stringify({ ...current, ...patch, updatedAt: new Date().toISOString() }));
+      setWorkspaceNotice('Đã lưu trên tài khoản của thiết bị này.');
+    } catch {
+      setWorkspaceNotice('Không lưu được. Bộ nhớ trình duyệt có thể đã đầy.');
+    }
+  };
   const [localProgress, setLocalProgress] = useState(() => {
     try { return JSON.parse(localStorage.getItem('principia_v2_progress') || '{\"completed\":[],\"attempts\":[],\"xp\":0}') as { completed: string[]; attempts: Array<{ title: string; score: number; total: number; at: string }>; xp: number }; }
     catch { return { completed: [] as string[], attempts: [] as Array<{ title: string; score: number; total: number; at: string }>, xp: 0 }; }
@@ -321,6 +350,33 @@ export function App() {
             </div>}
             {activeLesson.content && <><h3>Nội dung bài học</h3><pre class="lesson-content">{activeLesson.content}</pre></>}
             {activeLesson.note && <><h3>Ghi chú</h3><pre class="lesson-content">{activeLesson.note}</pre></>}
+            <div class="lesson-tools">
+              <div class="lesson-tool-tabs" role="tablist" aria-label="Công cụ bài học">
+                <button type="button" class={lessonTool === 'note' ? 'active' : ''} onClick={() => setLessonTool('note')}>✎ Ghi chép</button>
+                <button type="button" class={lessonTool === 'submit' ? 'active' : ''} onClick={() => setLessonTool('submit')}>⇧ Nộp bài</button>
+                <button type="button" class={lessonTool === 'simulation' ? 'active' : ''} onClick={() => setLessonTool('simulation')}>⚛ Mô phỏng</button>
+              </div>
+              {lessonTool === 'note' && <div class="lesson-tool-panel">
+                <h3>Ghi chép cá nhân</h3>
+                <textarea value={privateNote} onInput={event => setPrivateNote(event.currentTarget.value)} placeholder="Ghi lại công thức, ý tưởng và điều cần nhớ…" rows={7} />
+                <button class="secondary-button" onClick={() => saveLessonWorkspace({ note: privateNote })}>Lưu ghi chép</button>
+              </div>}
+              {lessonTool === 'submit' && <div class="lesson-tool-panel">
+                <h3>Bài làm / câu hỏi gửi giáo viên</h3>
+                <p class="empty-state">Phần trả lời được lưu riêng trên thiết bị hiện tại. Chức năng gửi bài lên hệ thống giáo viên sẽ được nối với quyền và dữ liệu cloud ở bước tiếp theo.</p>
+                <textarea value={assignmentText} onInput={event => setAssignmentText(event.currentTarget.value)} placeholder="Nhập lời giải, kết quả hoặc câu hỏi của bạn…" rows={7} />
+                <button class="secondary-button" onClick={() => saveLessonWorkspace({ submission: assignmentText })}>Lưu bài làm nháp</button>
+              </div>}
+              {lessonTool === 'simulation' && <div class="lesson-tool-panel">
+                <h3>PhET Interactive Simulations</h3>
+                <select value={simulationSubject} onChange={event => setSimulationSubject(event.currentTarget.value)}>
+                  <option value="physics">Vật lý</option><option value="math">Toán học</option><option value="chemistry">Hóa học</option><option value="biology">Sinh học</option>
+                </select>
+                <iframe class="phet-frame" title="PhET simulations" src={`https://phet.colorado.edu/vi/simulations/filter?subjects=${simulationSubject}&type=html`} loading="lazy" allow="fullscreen" />
+                <a href={`https://phet.colorado.edu/vi/simulations/filter?subjects=${simulationSubject}&type=html`} target="_blank" rel="noreferrer">Mở PhET trong tab mới ↗</a>
+              </div>}
+              {workspaceNotice && <p class="workspace-notice" role="status">{workspaceNotice}</p>}
+            </div>
             <div class="lesson-completion"><span>{localProgress.completed.includes(lessonKey(activeLesson)) ? '✓ Đã hoàn thành' : 'Hoàn thành bài học để lưu tiến độ'}</span><button class="secondary-button" disabled={localProgress.completed.includes(lessonKey(activeLesson))} onClick={() => markLessonComplete(activeLesson)}>{localProgress.completed.includes(lessonKey(activeLesson)) ? 'Đã ghi nhận' : 'Đánh dấu hoàn thành · +10 EXP'}</button></div>
             {!activeLesson.content && !activeLesson.note && !activeLesson.video && <p class="empty-state">Bài học chưa có nội dung.</p>}
             {(activeLesson.quiz?.length || activeLesson.questions?.length) ? <button class="primary-button quiz-submit" onClick={() => openQuizNode(activeLesson)}>Làm câu hỏi bài học ({(activeLesson.quiz || activeLesson.questions || []).length})</button> : null}
@@ -372,7 +428,7 @@ export function App() {
           <div><strong>{Number.isFinite(streak) ? streak : 0}</strong><span>Chuỗi ngày học (bản cũ)</span></div>
           <div><strong>{completed.length + localProgress.completed.length}</strong><span>Bài/mục hoàn thành</span></div>
           <div class="progress-history"><h3>Lịch sử làm bài</h3>{localProgress.attempts.length ? localProgress.attempts.map((attempt, index) => <article key={`${attempt.at}-${index}`}><b>{attempt.title}</b><span>{attempt.score}/{attempt.total} câu đúng · {new Date(attempt.at).toLocaleString('vi-VN')}</span></article>) : <p class="empty-state">Chưa có lần làm đề nào được lưu trong V2.</p>}</div>
-          <p class="empty-state">Tiến độ mới được lưu trên thiết bị này. Tiến độ cũ vẫn được giữ nguyên; đồng bộ phần tiến độ V2 lên cloud sẽ được nối ở bước tiếp theo.</p>
+          <p class="empty-state">Tiến độ V2 được lưu theo tài khoản trên thiết bị; quản trị viên có thể sao lưu và khôi phục tiến độ qua cloud.</p>
         </section>}
         <div class="account-footer"><span>{account.user.email}</span><button class="quiet-button" onClick={() => void signOut()}>Đăng xuất</button></div>
         {status && <p class="auth-status" role="status">{status}</p>}
