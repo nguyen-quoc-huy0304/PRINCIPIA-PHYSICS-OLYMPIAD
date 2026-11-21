@@ -11,7 +11,7 @@ import type { PrincipiaLibraryItem } from '../core/library';
 import { calculateMotion, calculateKineticEnergy, calculateProjectile } from '../core/physics';
 import type { MotionResult, ProjectileResult } from '../core/physics';
 import { restoreLegacyDataFromCloud, syncLegacyDataToCloud, restoreProgressFromCloud, syncProgressToCloud, publishLegacyContentToCloud, restorePublishedContentFromCloud } from '../core/cloud-data';
-import { getCorrectOptionIndexes, isQuestionCorrect, validateQuizQuestions } from '../core/quiz';
+import { getCorrectOptionIndexes, isQuestionCorrect, validateQuizQuestions, gradeQuiz } from '../core/quiz';
 import type { QuizQuestion as Question } from '../core/quiz';
 
 type Section = 'home' | 'learn' | 'quiz' | 'physics' | 'library' | 'music' | 'browser' | 'games' | 'chat' | 'downloads' | 'progress' | 'profile' | 'legacy';
@@ -509,9 +509,12 @@ export function App() {
     setStatus('Đã hoàn thành bài học · +10 EXP.');
   };
   const submitQuiz = () => {
-    const score = questions.filter((q, i) => q.type !== 'long_answer' && isQuestionCorrect(q, answers[i])).length;
-    const attempt = { title: activeQuiz?.name || 'Bài luyện tập', score, total: questions.length, at: new Date().toISOString() };
-    saveProgress({ ...withStudyActivity(localProgress, score * 5), attempts: [attempt, ...localProgress.attempts].slice(0, 100) });
+    const grade = gradeQuiz(questions, answers);
+    const attempt = { title: activeQuiz?.name || 'Bài luyện tập', score: grade.score, total: grade.total, at: new Date().toISOString() };
+    saveProgress({ ...withStudyActivity(localProgress, grade.score * 5), attempts: [attempt, ...localProgress.attempts].slice(0, 100) });
+    if (grade.pendingReview > 0) {
+      setStatus(`Đã chấm ${grade.total} câu trắc nghiệm/tự động; ${grade.pendingReview} câu tự luận cần giáo viên chấm.`);
+    }
     setQuizSubmitted(true);
   };
 
