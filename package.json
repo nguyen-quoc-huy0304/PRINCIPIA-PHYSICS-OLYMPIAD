@@ -6,7 +6,7 @@
   "main": "desktop/main.cjs",
   "scripts": {
     "start": "electron .",
-    "dist:win": "electron-builder --win nsis",
+    "dist:win": "electron-builder --win nsis --publish never",
     "build:physics": "tsc -p tsconfig.physics.json"
   },
   "devDependencies": {
@@ -28,7 +28,7 @@
       "target": [
         "nsis"
       ],
-      "artifactName": "PRINCIPIA-Setup-${version}.${ext}"
+      "artifactName": "PRINCIPIA-Setup.${ext}"
     },
     "nsis": {
       "oneClick": false,
@@ -46,14 +46,14 @@
         "AppImage",
         "deb"
       ],
-      "artifactName": "PRINCIPIA-${version}-${arch}.${ext}"
+      "artifactName": "PRINCIPIA-linux-${arch}.${ext}"
     },
     "mac": {
       "target": [
         "dmg",
         "zip"
       ],
-      "artifactName": "PRINCIPIA-${version}-${arch}.${ext}"
+      "artifactName": "PRINCIPIA-mac-${arch}.${ext}"
     }
   },
   "dependencies": {
