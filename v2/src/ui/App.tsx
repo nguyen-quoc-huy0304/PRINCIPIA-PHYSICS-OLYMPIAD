@@ -6,9 +6,11 @@ import {
 } from '../core/auth';
 import { collectLegacyData, downloadLegacyBackup, restoreLegacyBackup } from '../core/legacy-migration';
 import type { LegacyBackup } from '../core/legacy-migration';
+import { deleteLibraryBlob, getLibraryBlob, listLibraryItems, saveLibraryFiles } from '../core/library';
+import type { PrincipiaLibraryItem } from '../core/library';
 import { restoreLegacyDataFromCloud, syncLegacyDataToCloud, restoreProgressFromCloud, syncProgressToCloud, publishLegacyContentToCloud, restorePublishedContentFromCloud } from '../core/cloud-data';
 
-type Section = 'home' | 'learn' | 'quiz' | 'chat' | 'progress' | 'legacy';
+type Section = 'home' | 'learn' | 'quiz' | 'library' | 'chat' | 'progress' | 'legacy';
 type Mode = 'login' | 'signup';
 type Question = { q: string; a: string[]; correct: number; type?: 'true_false' | 'single_select' | 'multi_select' | 'short_answer' | 'long_answer'; correctValues?: string[]; expected?: string; rubric?: string; points?: number; explanation?: string };
 type QuizEditorState = { id?: string; name: string; questionsText: string };
@@ -22,6 +24,7 @@ const sections: { id: Section; label: string; icon: string }[] = [
   { id: 'home', label: 'Tổng quan', icon: '⌂' },
   { id: 'learn', label: 'Học tập', icon: '▤' },
   { id: 'quiz', label: 'Luyện đề', icon: '◎' },
+  { id: 'library', label: 'Tài liệu', icon: '▧' },
   { id: 'chat', label: 'AI Chat', icon: '✧' },
   { id: 'progress', label: 'Tiến độ', icon: '↗' },
   { id: 'legacy', label: 'Đầy đủ tính năng', icon: '✦' }
@@ -65,6 +68,10 @@ export function App() {
   const [chatDraft, setChatDraft] = useState('');
   const [chatMessages, setChatMessages] = useState<Array<{ role: 'user'; text: string; at: string }>>([]);
   const [chatNotice, setChatNotice] = useState('');
+  const [libraryItems, setLibraryItems] = useState<PrincipiaLibraryItem[]>([]);
+  const [libraryNotice, setLibraryNotice] = useState('');
+  const [libraryPreview, setLibraryPreview] = useState<PrincipiaLibraryItem | null>(null);
+  const [libraryPreviewUrl, setLibraryPreviewUrl] = useState('');
   const chatStorageKey = `principia_v2_chat:${account?.user.uid || 'guest'}:${chatProvider}`;
   useEffect(() => {
     try {
@@ -114,6 +121,45 @@ export function App() {
       setLessonFiles([]);
     }
   }, [currentLessonStorageKey]);
+  useEffect(() => {
+    if (!account) return;
+    let active = true;
+    listLibraryItems(account.user.uid).then(items => { if (active) setLibraryItems(items); })
+      .catch(error => { if (active) setLibraryNotice(error?.message || 'Không tải được thư viện tài liệu.'); });
+    return () => { active = false; };
+  }, [account?.user.uid]);
+  useEffect(() => () => { if (libraryPreviewUrl) URL.revokeObjectURL(libraryPreviewUrl); }, [libraryPreviewUrl]);
+  const handleLibraryUpload = async (event: Event) => {
+    const input = event.currentTarget as HTMLInputElement;
+    const files = Array.from(input.files || []);
+    if (!files.length || !account) return;
+    const accepted = files.filter(file => file.size <= 100_000_000);
+    if (accepted.length !== files.length) setLibraryNotice('Đã bỏ qua tệp vượt quá 100 MB.');
+    try {
+      const items = await saveLibraryFiles(accepted, account.user.uid);
+      setLibraryItems(items); setLibraryNotice(`Đã lưu ${accepted.length} tài liệu ngoại tuyến trên thiết bị này.`);
+    } catch (error: any) { setLibraryNotice(error?.message || 'Không thể lưu tài liệu.'); }
+    finally { input.value = ''; }
+  };
+  const openLibraryPreview = async (item: PrincipiaLibraryItem) => {
+    if (!account) return;
+    try {
+      const blob = await getLibraryBlob(item.id, account.user.uid);
+      if (!blob) throw new Error('Không tìm thấy tệp trong kho tài liệu.');
+      if (libraryPreviewUrl) URL.revokeObjectURL(libraryPreviewUrl);
+      setLibraryPreviewUrl(URL.createObjectURL(blob)); setLibraryPreview(item);
+    } catch (error: any) { setLibraryNotice(error?.message || 'Không mở được tài liệu.'); }
+  };
+  const removeLibraryItem = async (item: PrincipiaLibraryItem) => {
+    if (!account || !confirm(`Xóa “${item.name}” khỏi thư viện trên thiết bị này?`)) return;
+    try {
+      await deleteLibraryBlob(item.id, account.user.uid);
+      setLibraryItems(await listLibraryItems(account.user.uid));
+      if (libraryPreview?.id === item.id) { setLibraryPreview(null); setLibraryPreviewUrl(''); }
+      setLibraryNotice('Đã xóa tài liệu.');
+    } catch (error: any) { setLibraryNotice(error?.message || 'Không xóa được tài liệu.'); }
+  };
+
   const handleLessonFiles = async (event: Event) => {
     const input = event.currentTarget as HTMLInputElement;
     const selected = Array.from(input.files || []);
@@ -816,6 +862,23 @@ export function App() {
         {section === 'legacy' && <section class="legacy-workspace">
           <div class="legacy-banner"><div><strong>PRINCIPIA · Không gian đầy đủ tính năng</strong><p>Mở toàn bộ giao diện và công cụ của phiên bản cũ trong V2 để không mất chức năng trong lúc chuyển đổi.</p></div><a href="/legacy/index.html" target="_blank" rel="noreferrer">Mở toàn màn hình ↗</a></div>
           <iframe class="legacy-frame" src="/legacy/index.html" title="PRINCIPIA full legacy workspace" loading="lazy" allow="clipboard-read; clipboard-write; fullscreen; autoplay; encrypted-media; picture-in-picture" />
+        </section>}
+        {section === 'library' && <section class="content-panel library-workspace">
+          <div class="library-heading"><div><h2>Thư viện tài liệu</h2><p>Tệp được lưu ngoại tuyến trong kho riêng của tài khoản trên thiết bị này.</p></div><label class="primary-button file-button">＋ Thêm tài liệu<input type="file" multiple accept=".pdf,.epub,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.md,image/*,video/*,audio/*" onChange={handleLibraryUpload} /></label></div>
+          <p class="empty-state">Hỗ trợ PDF, hình ảnh, video, âm thanh và tài liệu phổ biến. Mỗi tệp tối đa 100 MB. Thư viện chưa đồng bộ giữa các thiết bị.</p>
+          {libraryNotice && <p class="workspace-notice" role="status">{libraryNotice}</p>}
+          <div class="library-list">{libraryItems.map(item => <article key={item.id}>
+            <span class="library-file-icon">{item.type.includes('pdf') ? 'PDF' : item.type.startsWith('image/') ? 'IMG' : item.type.startsWith('video/') ? 'VID' : item.type.startsWith('audio/') ? 'AUD' : 'FILE'}</span>
+            <div><b>{item.name}</b><small>{(item.size / 1024 / 1024).toFixed(2)} MB · {new Date(item.addedAt).toLocaleDateString('vi-VN')}</small></div>
+            <button class="secondary-button" type="button" onClick={() => void openLibraryPreview(item)}>Mở</button>
+            <button class="quiet-button" type="button" onClick={() => void removeLibraryItem(item)}>Xóa</button>
+          </article>)}</div>
+          {!libraryItems.length && <p class="empty-state">Thư viện đang trống. Thêm tài liệu để bắt đầu.</p>}
+          {libraryPreview && libraryPreviewUrl && <section class="library-preview">
+            <div class="library-preview-heading"><b>{libraryPreview.name}</b><button class="quiet-button" type="button" onClick={() => { setLibraryPreview(null); setLibraryPreviewUrl(''); }}>Đóng</button></div>
+            {libraryPreview.type === 'application/pdf' || libraryPreview.name.toLowerCase().endsWith('.pdf') ? <iframe title={libraryPreview.name} src={libraryPreviewUrl} /> : libraryPreview.type.startsWith('image/') ? <img src={libraryPreviewUrl} alt={libraryPreview.name} /> : libraryPreview.type.startsWith('video/') ? <video src={libraryPreviewUrl} controls /> : libraryPreview.type.startsWith('audio/') ? <audio src={libraryPreviewUrl} controls /> : <p class="empty-state">Định dạng này không có trình xem trực tiếp. Tải tệp xuống để mở bằng ứng dụng phù hợp.</p>}
+            <a href={libraryPreviewUrl} download={libraryPreview.name}>Tải tài liệu xuống</a>
+          </section>}
         </section>}
         {section === 'chat' && <section class="content-panel chat-workspace">
           <div class="chat-heading"><div><h2>AI Study Assistant</h2><p>Soạn câu hỏi, lưu lịch sử và mở AI đã chọn trong trình duyệt.</p></div>
