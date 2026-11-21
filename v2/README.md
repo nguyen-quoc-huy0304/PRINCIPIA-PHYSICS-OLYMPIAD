@@ -36,7 +36,7 @@ npm run tauri dev
 npm run tauri build
 ```
 
-## Migration and data safety
+## Cloud data and access control\n- Legacy local data is exported/imported as JSON and can be synced per account in chunked Firestore documents.\n- `firestore.rules` contains proposed V2 rules: learners read academic content, only the verified admin email can edit content/question banks/media, and each user can sync only their own progress/backup.\n- These rules are **not deployed automatically**. Review the collection names and existing production rules before deploying them in Firebase Console; do not overwrite live rules blindly.\n\n## Migration and data safety
 1. Keep the existing production site and Electron release intact while V2 is developed.
 2. Migrate account identity, learning content, quiz banks, notes, progress, and media without destructive changes.
 3. Never place admin secrets in client code. Enforce the single-admin write policy through Firebase Security Rules.
