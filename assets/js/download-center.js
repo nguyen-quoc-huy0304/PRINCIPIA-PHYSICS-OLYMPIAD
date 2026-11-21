@@ -13,7 +13,7 @@
     if(window.principiaDesktop?.isDesktop === true) return;
     if(/\\b(PRINCIPIA_APP|standalone)\\b/i.test(navigator.userAgent)) return;
     if(document.getElementById('principiaDownloadFab'))return;
-    const fab=document.createElement('button');fab.id='principiaDownloadFab';fab.type='button';fab.innerHTML='<span aria-hidden="true">↓</span> Tải ứng dụng';fab.setAttribute('aria-label','Tải ứng dụng PRINCIPIA');document.body.appendChild(fab);
+    const fab=document.createElement('button');fab.id='principiaDownloadFab';fab.type='button';fab.innerHTML='<span aria-hidden="true">⇩</span>';fab.setAttribute('aria-label','Tải ứng dụng PRINCIPIA');fab.title='Tải ứng dụng';document.body.appendChild(fab);
     const overlay=document.createElement('div');overlay.id='principiaDownloadOverlay';overlay.innerHTML='<section class="pd-modal" role="dialog" aria-modal="true" aria-labelledby="pdTitle"><header class="pd-head"><div><div class="pd-kicker">PRINCIPIA • PHYSICS OLYMPIAD</div><h2 id="pdTitle">Tải ứng dụng</h2><p>Mang PRINCIPIA theo bạn trên mọi thiết bị.</p></div><button class="pd-close" type="button" aria-label="Đóng">×</button></header><div class="pd-grid"></div><footer class="pd-foot"><span>🔄 Ứng dụng desktop sẽ kiểm tra bản cập nhật khi khởi động.</span><a href="'+RELEASES+'" target="_blank" rel="noopener">Lịch sử phiên bản ↗</a></footer></section>';
     document.body.appendChild(overlay);
     const grid=overlay.querySelector('.pd-grid');
