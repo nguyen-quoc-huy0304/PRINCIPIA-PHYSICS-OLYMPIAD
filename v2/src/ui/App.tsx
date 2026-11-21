@@ -8,7 +8,7 @@ import { collectLegacyData, downloadLegacyBackup, restoreLegacyBackup } from '..
 import type { LegacyBackup } from '../core/legacy-migration';
 import { restoreLegacyDataFromCloud, syncLegacyDataToCloud } from '../core/cloud-data';
 
-type Section = 'home' | 'learn' | 'quiz' | 'progress';
+type Section = 'home' | 'learn' | 'quiz' | 'progress' | 'legacy';
 type Mode = 'login' | 'signup';
 type Question = { q: string; a: string[]; correct: number };
 type LegacyNode = {
@@ -20,7 +20,8 @@ const sections: { id: Section; label: string; icon: string }[] = [
   { id: 'home', label: 'Tổng quan', icon: '⌂' },
   { id: 'learn', label: 'Học tập', icon: '▤' },
   { id: 'quiz', label: 'Luyện đề', icon: '◎' },
-  { id: 'progress', label: 'Tiến độ', icon: '↗' }
+  { id: 'progress', label: 'Tiến độ', icon: '↗' },
+  { id: 'legacy', label: 'Đầy đủ tính năng', icon: '✦' }
 ];
 
 function parseArray<T>(raw?: string): T[] {
@@ -179,7 +180,7 @@ export function App() {
       <div class="auth-screen">
         <div class="auth-glow" />
         <section class="auth-card">
-          <img class="principia-logo" src="/principia-logo-round.png" alt="PRINCIPIA" />
+          <img class="principia-logo" src="/legacy/assets/images/principia-logo-round.svg" alt="PRINCIPIA" />
           <p class="eyebrow">PHYSICS OLYMPIAD · PRO</p>
           <h1>{mode === 'login' ? 'Chào mừng trở lại' : 'Tạo tài khoản'}</h1>
           <p class="auth-subtitle">Không gian học tập khoa học của PRINCIPIA.</p>
@@ -308,6 +309,10 @@ export function App() {
             {!quizNodes.length && <p class="empty-state">Chưa tìm thấy ngân hàng câu hỏi. Hãy nhập bản sao lưu từ phiên bản cũ.</p>}
           </section>}
         </>}
+        {section === 'legacy' && <section class="legacy-workspace">
+          <div class="legacy-banner"><div><strong>PRINCIPIA · Không gian đầy đủ tính năng</strong><p>Mở toàn bộ giao diện và công cụ của phiên bản cũ trong V2 để không mất chức năng trong lúc chuyển đổi.</p></div><a href="/legacy/index.html" target="_blank" rel="noreferrer">Mở toàn màn hình ↗</a></div>
+          <iframe class="legacy-frame" src="/legacy/index.html" title="PRINCIPIA full legacy workspace" loading="lazy" allow="clipboard-read; clipboard-write; fullscreen; autoplay; encrypted-media; picture-in-picture" />
+        </section>}
         {section === 'progress' && <section class="content-panel progress-panel">
           <div><strong>{Number.isFinite(xp) ? xp : 0}</strong><span>EXP tích lũy</span></div>
           <div><strong>{Number.isFinite(streak) ? streak : 0}</strong><span>Chuỗi ngày học</span></div>
