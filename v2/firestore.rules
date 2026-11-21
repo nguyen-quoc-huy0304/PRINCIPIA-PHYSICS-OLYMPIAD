@@ -40,7 +40,15 @@ service cloud.firestore {
 
     match /principiaProgress/{uid} {
       allow read: if isPrincipiaAdmin() || (signedIn() && request.auth.uid == uid);
-      allow write: if isPrincipiaAdmin();
+      // Learners may update only their own private progress document; published content remains admin-only.
+      allow create, update: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['completed', 'attempts', 'xp', 'streak', 'lastStudyDate', 'updatedAt'])
+        && request.resource.data.completed is list
+        && request.resource.data.attempts is list
+        && request.resource.data.xp is number
+        && request.resource.data.streak is number
+        && request.resource.data.lastStudyDate is string;
+      allow delete: if isPrincipiaAdmin();
     }
 
     match /principiaLeaderboard/{uid} {
