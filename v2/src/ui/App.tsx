@@ -1,18 +1,18 @@
 import { useEffect, useMemo, useState } from 'preact/hooks';
 import type { AuthResult } from '../core/auth';
 import {
-  completeGoogleRedirect,
-  createEmailAccount,
-  observeAuth,
-  sendPasswordReset,
-  signInWithEmail,
-  signInWithGoogle,
-  signOut
+  completeGoogleRedirect, createEmailAccount, observeAuth, sendPasswordReset,
+  signInWithEmail, signInWithGoogle, signOut
 } from '../core/auth';
 import { collectLegacyData, downloadLegacyBackup, restoreLegacyBackup } from '../core/legacy-migration';
 
 type Section = 'home' | 'learn' | 'quiz' | 'progress';
 type Mode = 'login' | 'signup';
+type Question = { q: string; a: string[]; correct: number };
+type LegacyNode = {
+  id: string; name: string; icon?: string; type?: string; content?: string;
+  children?: LegacyNode[]; questions?: Question[]; quiz?: Question[];
+};
 
 const sections: { id: Section; label: string; icon: string }[] = [
   { id: 'home', label: 'Tổng quan', icon: '⌂' },
@@ -20,6 +20,18 @@ const sections: { id: Section; label: string; icon: string }[] = [
   { id: 'quiz', label: 'Luyện đề', icon: '◎' },
   { id: 'progress', label: 'Tiến độ', icon: '↗' }
 ];
+
+function parseArray<T>(raw?: string): T[] {
+  if (!raw) return [];
+  try { const value = JSON.parse(raw); return Array.isArray(value) ? value as T[] : []; }
+  catch { return []; }
+}
+function countNodes(nodes: LegacyNode[], type: string): number {
+  return nodes.reduce((sum, node) => sum + (node.type === type ? 1 : 0) + countNodes(node.children || [], type), 0);
+}
+function countQuestions(nodes: LegacyNode[]): number {
+  return nodes.reduce((sum, node) => sum + (node.questions?.length || node.quiz?.length || 0) + countQuestions(node.children || []), 0);
+}
 
 export function App() {
   const [account, setAccount] = useState<AuthResult | null>(null);
@@ -33,6 +45,12 @@ export function App() {
   const [busy, setBusy] = useState(false);
   const [welcome, setWelcome] = useState(false);
   const [backupVersion, setBackupVersion] = useState(0);
+  const [lessonPath, setLessonPath] = useState<LegacyNode[]>([]);
+  const [activeLesson, setActiveLesson] = useState<LegacyNode | null>(null);
+  const [quizPath, setQuizPath] = useState<LegacyNode[]>([]);
+  const [activeQuiz, setActiveQuiz] = useState<LegacyNode | null>(null);
+  const [answers, setAnswers] = useState<Record<number, number>>({});
+  const [quizSubmitted, setQuizSubmitted] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -50,24 +68,28 @@ export function App() {
     }).catch(error => {
       if (active) setStatus(error?.message || 'Không thể kết nối dịch vụ đăng nhập.');
     });
-    return () => {
-      active = false;
-      unsubscribe?.();
-    };
+    return () => { active = false; unsubscribe?.(); };
   }, []);
 
   const legacy = useMemo(() => {
-    try { return collectLegacyData(); } catch { return { entries: {}, format: 'principia-legacy-backup' as const, version: 1 as const, createdAt: '' }; }
+    try { return collectLegacyData(); }
+    catch { return { entries: {}, format: 'principia-legacy-backup' as const, version: 1 as const, createdAt: '' }; }
   }, [backupVersion]);
+  const lessons = useMemo(() => parseArray<LegacyNode>(legacy.entries['halo_data']), [legacy]);
+  const quizzes = useMemo(() => parseArray<LegacyNode>(legacy.entries['halo_quiz']), [legacy]);
+  const fun = useMemo(() => parseArray<LegacyNode>(legacy.entries['halo_fun']), [legacy]);
+  const learningNodes = lessonPath.length ? lessonPath[lessonPath.length - 1].children || [] : lessons;
+  const quizNodes = quizPath.length ? quizPath[quizPath.length - 1].children || [] : quizzes;
+  const questions = activeQuiz?.questions || activeQuiz?.quiz || [];
+  const xp = Number(legacy.entries['halo_xp'] || 0);
+  const streak = Number(legacy.entries['halo_streak'] || 0);
+  const completed = parseArray<string>(legacy.entries['halo_completed']);
 
   async function runAuth(action: () => Promise<AuthResult>) {
-    setBusy(true);
-    setStatus('');
+    setBusy(true); setStatus('');
     try {
       const result = await action();
-      setAccount(result);
-      setWelcome(true);
-      setPassword('');
+      setAccount(result); setWelcome(true); setPassword('');
     } catch (error: any) {
       const messages: Record<string, string> = {
         'auth/invalid-credential': 'Email hoặc mật khẩu chưa chính xác.',
@@ -78,30 +100,23 @@ export function App() {
         'auth/too-many-requests': 'Bạn thao tác quá nhanh. Hãy thử lại sau.'
       };
       setStatus(messages[error?.code] || error?.message || 'Đăng nhập chưa thành công.');
-    } finally {
-      setBusy(false);
-    }
+    } finally { setBusy(false); }
   }
 
   async function handleGoogle() {
-    setBusy(true);
-    setStatus('Đang mở Google để xác thực…');
+    setBusy(true); setStatus('Đang mở Google để xác thực…');
     try { await signInWithGoogle(); }
     catch (error: any) { setStatus(error?.message || 'Không thể mở đăng nhập Google.'); setBusy(false); }
   }
 
   async function handleReset() {
-    if (!email.trim()) {
-      setStatus('Nhập email trước, sau đó chọn Quên mật khẩu.');
-      return;
-    }
+    if (!email.trim()) { setStatus('Nhập email trước, sau đó chọn Quên mật khẩu.'); return; }
     setBusy(true);
     try {
       await sendPasswordReset(email);
       setStatus('Đã gửi liên kết đặt lại mật khẩu. Hãy kiểm tra cả thư mục Spam.');
-    } catch (error: any) {
-      setStatus(error?.message || 'Không gửi được email đặt lại mật khẩu.');
-    } finally { setBusy(false); }
+    } catch (error: any) { setStatus(error?.message || 'Không gửi được email đặt lại mật khẩu.'); }
+    finally { setBusy(false); }
   }
 
   async function handleRestore(event: Event) {
@@ -112,9 +127,27 @@ export function App() {
       const count = restoreLegacyBackup(await file.text());
       setBackupVersion(value => value + 1);
       setStatus(`Đã khôi phục ${count} mục dữ liệu. Hãy tải lại ứng dụng để nạp lại nội dung cũ.`);
-    } catch (error: any) {
-      setStatus(error?.message || 'Không thể đọc tệp sao lưu.');
-    } finally { input.value = ''; }
+    } catch (error: any) { setStatus(error?.message || 'Không thể đọc tệp sao lưu.'); }
+    finally { input.value = ''; }
+  }
+
+  function chooseSection(next: Section) {
+    setSection(next);
+    setLessonPath([]); setActiveLesson(null);
+    setQuizPath([]); setActiveQuiz(null);
+    setAnswers({}); setQuizSubmitted(false);
+    setStatus('');
+  }
+
+  function openLearningNode(node: LegacyNode) {
+    if (node.type === 'lesson' || node.content) setActiveLesson(node);
+    else setLessonPath(path => [...path, node]);
+  }
+
+  function openQuizNode(node: LegacyNode) {
+    const items = node.questions || node.quiz || [];
+    if (items.length) { setActiveQuiz(node); setAnswers({}); setQuizSubmitted(false); }
+    else setQuizPath(path => [...path, node]);
   }
 
   if (!account) {
@@ -136,7 +169,7 @@ export function App() {
             else void runAuth(() => createEmailAccount(email, password, displayName));
           }}>
             {mode === 'signup' && (
-              <label> Tên hiển thị
+              <label>Tên hiển thị
                 <input value={displayName} onInput={event => setDisplayName(event.currentTarget.value)} placeholder="Tên của bạn" autocomplete="name" />
               </label>
             )}
@@ -189,35 +222,77 @@ export function App() {
       <main class="main-content">
         <p class="eyebrow">LEARNING WORKSPACE</p>
         <h1>{sections.find(item => item.id === section)?.label}</h1>
-        <p class="intro">Xin chào {account.user.displayName || 'bạn'}. PRINCIPIA V2 đang chuyển các mô-đun học tập sang kiến trúc mới.</p>
-        <section class="stats-grid">
-          <article><strong>{legacy.entries['halo_data'] ? 'Đã tìm thấy' : 'Chưa phát hiện'}</strong><span>Dữ liệu bài học cũ</span></article>
-          <article><strong>{legacy.entries['halo_quiz'] ? 'Đã tìm thấy' : 'Chưa phát hiện'}</strong><span>Ngân hàng câu hỏi cũ</span></article>
-          <article><strong>{legacy.entries['halo_completed'] ? 'Đã tìm thấy' : 'Chưa phát hiện'}</strong><span>Tiến độ học tập cũ</span></article>
-        </section>
-        <section class="migration-card">
-          <span class="status-dot" />
-          <div><strong>Đang bảo toàn dữ liệu bản cũ</strong><p>Đã phát hiện {Object.keys(legacy.entries).length} mục dữ liệu trên thiết bị này. Hãy sao lưu trước khi chuyển thiết bị hoặc đổi phiên bản.</p></div>
-        </section>
-        <section class="backup-panel">
-          <div><strong>Sao lưu & khôi phục</strong><p>Xuất dữ liệu PRINCIPIA đang lưu trên thiết bị thành tệp JSON.</p></div>
-          <div class="backup-actions">
-            <button class="secondary-button" onClick={downloadLegacyBackup}>Tải bản sao lưu</button>
-            <label class="secondary-button file-button">Khôi phục tệp<input type="file" accept="application/json,.json" onChange={handleRestore} /></label>
-          </div>
-        </section>
-        <div class="account-footer">
-          <span>{account.user.email}</span>
-          <button class="quiet-button" onClick={() => void signOut()}>Đăng xuất</button>
-        </div>
+        {section === 'home' && <>
+          <p class="intro">Xin chào {account.user.displayName || 'bạn'}. PRINCIPIA V2 đang chuyển các mô-đun học tập sang kiến trúc mới.</p>
+          <section class="stats-grid">
+            <article><strong>{countNodes(lessons, 'lesson')}</strong><span>Bài học cũ</span></article>
+            <article><strong>{countQuestions(quizzes) + countQuestions(fun)}</strong><span>Câu hỏi cũ</span></article>
+            <article><strong>{completed.length}</strong><span>Mục đã hoàn thành</span></article>
+          </section>
+          <section class="migration-card"><span class="status-dot" /><div><strong>Đang bảo toàn dữ liệu bản cũ</strong><p>Đã phát hiện {Object.keys(legacy.entries).length} mục dữ liệu trên thiết bị này. Sao lưu trước khi chuyển thiết bị hoặc đổi phiên bản.</p></div></section>
+          <section class="backup-panel">
+            <div><strong>Sao lưu & khôi phục</strong><p>Xuất dữ liệu bài học, câu hỏi, tiến độ và cài đặt đang lưu trên thiết bị thành tệp JSON.</p></div>
+            <div class="backup-actions">
+              <button class="secondary-button" onClick={downloadLegacyBackup}>Tải bản sao lưu</button>
+              <label class="secondary-button file-button">Khôi phục tệp<input type="file" accept="application/json,.json" onChange={handleRestore} /></label>
+            </div>
+          </section>
+        </>}
+        {section === 'learn' && <>
+          {activeLesson ? <section class="content-panel">
+            <button class="back-link" onClick={() => setActiveLesson(null)}>← Quay lại danh sách</button>
+            <h2>{activeLesson.icon || '📘'} {activeLesson.name}</h2>
+            <pre class="lesson-content">{activeLesson.content || 'Bài học chưa có nội dung.'}</pre>
+          </section> : <section class="content-panel">
+            <div class="section-toolbar">
+              <button class="back-link" disabled={!lessonPath.length} onClick={() => setLessonPath(path => path.slice(0, -1))}>← Quay lại</button>
+              <span>{lessonPath.map(node => node.name).join(' / ') || 'Tất cả môn học'}</span>
+            </div>
+            <div class="node-grid">
+              {learningNodes.map(node => <button class="node-card" onClick={() => openLearningNode(node)}>
+                <span>{node.icon || (node.type === 'lesson' ? '📘' : '📂')}</span><b>{node.name}</b><small>{node.type === 'lesson' ? 'Mở bài học' : `${node.children?.length || 0} mục`}</small>
+              </button>)}
+            </div>
+            {!learningNodes.length && <p class="empty-state">Chưa tìm thấy dữ liệu bài học trên thiết bị này. Hãy nhập bản sao lưu từ phiên bản cũ.</p>}
+          </section>}
+        </>}
+        {section === 'quiz' && <>
+          {activeQuiz ? <section class="content-panel">
+            <button class="back-link" onClick={() => { setActiveQuiz(null); setQuizSubmitted(false); }}>← Quay lại danh sách</button>
+            <h2>{activeQuiz.name}</h2>
+            {questions.map((question, index) => <article class="question-card">
+              <b>{index + 1}. {question.q}</b>
+              <div class="answer-list">{question.a.map((answer, answerIndex) => <label class={quizSubmitted && answerIndex === question.correct ? 'correct-answer' : ''}>
+                <input type="radio" name={`q-${index}`} checked={answers[index] === answerIndex} disabled={quizSubmitted} onChange={() => setAnswers(current => ({ ...current, [index]: answerIndex }))} />
+                {answer}
+              </label>)}</div>
+            </article>)}
+            {!quizSubmitted ? <button class="primary-button quiz-submit" disabled={!questions.length} onClick={() => setQuizSubmitted(true)}>Nộp bài</button> :
+              <p class="quiz-result">Kết quả: {questions.filter((q, i) => answers[i] === q.correct).length}/{questions.length} câu đúng.</p>}
+          </section> : <section class="content-panel">
+            <div class="section-toolbar">
+              <button class="back-link" disabled={!quizPath.length} onClick={() => setQuizPath(path => path.slice(0, -1))}>← Quay lại</button>
+              <span>{quizPath.map(node => node.name).join(' / ') || 'Ngân hàng đề'}</span>
+            </div>
+            <div class="node-grid">
+              {quizNodes.map(node => <button class="node-card" onClick={() => openQuizNode(node)}>
+                <span>{node.icon || '📝'}</span><b>{node.name}</b><small>{(node.questions || node.quiz || []).length ? `${(node.questions || node.quiz || []).length} câu hỏi` : `${node.children?.length || 0} mục`}</small>
+              </button>)}
+            </div>
+            {!quizNodes.length && <p class="empty-state">Chưa tìm thấy ngân hàng câu hỏi. Hãy nhập bản sao lưu từ phiên bản cũ.</p>}
+          </section>}
+        </>}
+        {section === 'progress' && <section class="content-panel progress-panel">
+          <div><strong>{Number.isFinite(xp) ? xp : 0}</strong><span>EXP tích lũy</span></div>
+          <div><strong>{Number.isFinite(streak) ? streak : 0}</strong><span>Chuỗi ngày học</span></div>
+          <div><strong>{completed.length}</strong><span>Bài/mục hoàn thành</span></div>
+          <p class="empty-state">Tiến độ được đọc trực tiếp từ dữ liệu cũ trên thiết bị. Đồng bộ đám mây sẽ được hoàn thiện ở bước tiếp theo.</p>
+        </section>}
+        <div class="account-footer"><span>{account.user.email}</span><button class="quiet-button" onClick={() => void signOut()}>Đăng xuất</button></div>
         {status && <p class="auth-status" role="status">{status}</p>}
       </main>
       <nav class="bottom-nav" aria-label="Điều hướng chính">
-        {sections.map(item => (
-          <button type="button" class={section === item.id ? 'active' : ''} onClick={() => setSection(item.id)}>
-            <span>{item.icon}</span><small>{item.label}</small>
-          </button>
-        ))}
+        {sections.map(item => <button type="button" class={section === item.id ? 'active' : ''} onClick={() => chooseSection(item.id)}><span>{item.icon}</span><small>{item.label}</small></button>)}
       </nav>
     </div>
   );
