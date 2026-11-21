@@ -14,6 +14,7 @@ type Question = { q: string; a: string[]; correct: number };
 type LegacyNode = {
   id: string; name: string; icon?: string; type?: string; content?: string; note?: string; video?: string;
   children?: LegacyNode[]; questions?: Question[]; quiz?: Question[];
+  transcript?: string; translatedTranscript?: string; videoOcr?: string; summary?: string; dubLang?: string;
 };
 
 const sections: { id: Section; label: string; icon: string }[] = [
@@ -68,7 +69,7 @@ export function App() {
   const [activeQuiz, setActiveQuiz] = useState<LegacyNode | null>(null);
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [quizSubmitted, setQuizSubmitted] = useState(false);
-  const [lessonTool, setLessonTool] = useState<'note' | 'files' | 'submit' | 'simulation'>('note');
+  const [lessonTool, setLessonTool] = useState<'note' | 'files' | 'submit' | 'simulation' | 'media'>('note');
   const [privateNote, setPrivateNote] = useState('');
   const [assignmentText, setAssignmentText] = useState('');
   const [lessonFiles, setLessonFiles] = useState<Array<{ name: string; type: string; size: number; dataUrl: string; addedAt: string }>>([]);
@@ -401,6 +402,7 @@ export function App() {
                 <button type="button" class={lessonTool === 'note' ? 'active' : ''} onClick={() => setLessonTool('note')}>✎ Ghi chép</button>
                 <button type="button" class={lessonTool === 'files' ? 'active' : ''} onClick={() => setLessonTool('files')}>▧ Tài liệu</button>
                 <button type="button" class={lessonTool === 'submit' ? 'active' : ''} onClick={() => setLessonTool('submit')}>⇧ Nộp bài</button>
+                <button type="button" class={lessonTool === 'media' ? 'active' : ''} onClick={() => setLessonTool('media')}>▤ Transcript & OCR</button>
                 <button type="button" class={lessonTool === 'simulation' ? 'active' : ''} onClick={() => setLessonTool('simulation')}>⚛ Mô phỏng</button>
               </div>
               {lessonTool === 'note' && <div class="lesson-tool-panel">
@@ -419,6 +421,15 @@ export function App() {
                 <p class="empty-state">Phần trả lời được lưu riêng trên thiết bị hiện tại. Chức năng gửi bài lên hệ thống giáo viên sẽ được nối với quyền và dữ liệu cloud ở bước tiếp theo.</p>
                 <textarea value={assignmentText} onInput={event => setAssignmentText(event.currentTarget.value)} placeholder="Nhập lời giải, kết quả hoặc câu hỏi của bạn…" rows={7} />
                 <button class="secondary-button" onClick={() => saveLessonWorkspace({ submission: assignmentText })}>Lưu bài làm nháp</button>
+              </div>}
+              {lessonTool === 'media' && <div class="lesson-tool-panel media-reference-panel">
+                <h3>Nội dung video & nhận dạng</h3>
+                {activeLesson.transcript && <section><b>Transcript</b><pre>{activeLesson.transcript}</pre></section>}
+                {activeLesson.translatedTranscript && <section><b>Bản dịch transcript</b><pre>{activeLesson.translatedTranscript}</pre></section>}
+                {activeLesson.videoOcr && <section><b>Văn bản nhận dạng từ video (OCR)</b><pre>{activeLesson.videoOcr}</pre></section>}
+                {activeLesson.summary && <section><b>Tóm tắt bài học</b><pre>{activeLesson.summary}</pre></section>}
+                {activeLesson.dubLang && <p class="empty-state">Ngôn ngữ lồng tiếng: {activeLesson.dubLang}</p>}
+                {!activeLesson.transcript && !activeLesson.translatedTranscript && !activeLesson.videoOcr && !activeLesson.summary && <p class="empty-state">Bài học này chưa có transcript, OCR hoặc tóm tắt được lưu. Nội dung sẽ xuất hiện tại đây khi dữ liệu nguồn có sẵn.</p>}
               </div>}
               {lessonTool === 'simulation' && <div class="lesson-tool-panel">
                 <h3>PhET Interactive Simulations</h3>
