@@ -5,6 +5,7 @@ import {
   signInWithEmail, signInWithGoogle, signOut
 } from '../core/auth';
 import { collectLegacyData, downloadLegacyBackup, restoreLegacyBackup } from '../core/legacy-migration';
+import type { LegacyBackup } from '../core/legacy-migration';
 
 type Section = 'home' | 'learn' | 'quiz' | 'progress';
 type Mode = 'login' | 'signup';
@@ -71,9 +72,9 @@ export function App() {
     return () => { active = false; unsubscribe?.(); };
   }, []);
 
-  const legacy = useMemo(() => {
+  const legacy = useMemo<LegacyBackup>(() => {
     try { return collectLegacyData(); }
-    catch { return { entries: {}, format: 'principia-legacy-backup' as const, version: 1 as const, createdAt: '' }; }
+    catch { return { entries: {} as Record<string, string>, format: 'principia-legacy-backup' as const, version: 1 as const, createdAt: '' }; }
   }, [backupVersion]);
   const lessons = useMemo(() => parseArray<LegacyNode>(legacy.entries['halo_data']), [legacy]);
   const quizzes = useMemo(() => parseArray<LegacyNode>(legacy.entries['halo_quiz']), [legacy]);
