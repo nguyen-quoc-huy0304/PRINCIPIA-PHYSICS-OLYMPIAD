@@ -454,7 +454,7 @@ export function App() {
     const key = account ? `principia_v2_progress:${account.user.uid}` : 'principia_v2_progress:guest';
     let safe = { completed: [] as string[], attempts: [] as Array<{ title: string; score: number; total: number; at: string }>, xp: 0, streak: 0, lastStudyDate: '' };
     try {
-      const raw = localStorage.getItem(key) || localStorage.getItem('principia_v2_progress');
+      const raw = localStorage.getItem(key) || (!account ? localStorage.getItem('principia_v2_progress') : null);
       const parsed = raw ? JSON.parse(raw) : {};
       safe = {
         completed: Array.isArray(parsed.completed) ? parsed.completed.filter((value: unknown) => typeof value === 'string') : [],
