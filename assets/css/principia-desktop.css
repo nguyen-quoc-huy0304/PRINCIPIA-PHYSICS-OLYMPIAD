@@ -1225,3 +1225,14 @@ input,textarea,select{background:#0b1020!important;border-color:rgba(158,175,215
 @media(max-width:900px){.principia-welcome-screen{padding:20px 22px 18px}.pw-content{grid-template-columns:1fr;gap:22px;padding:50px 0 38px}.pw-copy{text-align:center}.pw-kicker,.pw-note{justify-content:center}.pw-overline{margin-top:22px}.pw-copy h1{font-size:clamp(48px,12vw,76px);letter-spacing:-3px}.pw-copy>p{margin-left:auto;margin-right:auto}.pw-visual{min-height:390px}.pw-art-panel{width:min(390px,100%);min-height:390px}.pw-character-halo{height:245px;width:245px}.pw-orbit-a{width:430px;height:430px}.pw-orbit-b{width:490px;height:490px}.pw-chip-top{right:0;top:3%}.pw-chip-bottom{left:0;bottom:4%}.pw-footer{font-size:7px}}
 @media(max-width:520px){.principia-welcome-screen{padding:16px 16px 14px;min-height:100svh}.pw-brand img{width:40px;height:40px}.pw-brand b{font-size:13px}.pw-brand small{font-size:8px}.pw-account{max-width:54%;padding:8px 10px;font-size:9px}.pw-content{padding:35px 0 24px;gap:12px}.pw-kicker{font-size:8px;letter-spacing:1.4px}.pw-overline{font-size:10px}.pw-copy h1{font-size:clamp(43px,13vw,64px);letter-spacing:-2.5px}.pw-copy h2{font-size:23px}.pw-copy>p{font-size:13px;line-height:1.7;margin-bottom:22px}.pw-start-button{width:100%;justify-content:center;padding:14px 17px}.pw-note{margin-top:22px;font-size:8px}.pw-visual{min-height:340px}.pw-art-panel{min-height:340px;padding:15px 17px 14px;border-radius:23px}.pw-character-halo{width:215px;height:215px;margin:13px auto 5px}.pw-speech{margin-bottom:13px;padding:9px 18px}.pw-floating-chip{font-size:8px;padding:8px 10px}.pw-chip-bottom{bottom:1%}.pw-footer{font-size:6px;letter-spacing:1px}.pw-footer span:last-child{display:none}}
 @media(prefers-reduced-motion:reduce){.pw-copy,.pw-visual,.pw-character-halo:before,.pw-character-halo:after,.pw-character-halo img{animation:none!important}}
+
+
+/* PRINCIPIA logo crop: preserve the supplied artwork and use a true circular viewport on every platform. */
+.brand-logo-img,.welcome-logo-img{
+  border-radius:50%!important;
+  object-fit:cover!important;
+  object-position:center!important;
+  overflow:hidden!important;
+}
+.brand-logo-img{aspect-ratio:1/1!important;}
+.welcome-logo-img{aspect-ratio:1/1!important;}
