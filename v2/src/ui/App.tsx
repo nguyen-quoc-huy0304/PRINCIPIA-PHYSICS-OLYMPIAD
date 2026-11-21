@@ -10,7 +10,7 @@ import { deleteLibraryBlob, getLibraryBlob, listLibraryItems, saveLibraryFiles }
 import type { PrincipiaLibraryItem } from '../core/library';
 import { restoreLegacyDataFromCloud, syncLegacyDataToCloud, restoreProgressFromCloud, syncProgressToCloud, publishLegacyContentToCloud, restorePublishedContentFromCloud } from '../core/cloud-data';
 
-type Section = 'home' | 'learn' | 'quiz' | 'library' | 'music' | 'chat' | 'progress' | 'legacy';
+type Section = 'home' | 'learn' | 'quiz' | 'library' | 'music' | 'browser' | 'chat' | 'progress' | 'legacy';
 type Mode = 'login' | 'signup';
 type Question = { q: string; a: string[]; correct: number; type?: 'true_false' | 'single_select' | 'multi_select' | 'short_answer' | 'long_answer'; correctValues?: string[]; expected?: string; rubric?: string; points?: number; explanation?: string };
 type QuizEditorState = { id?: string; name: string; questionsText: string };
@@ -27,6 +27,7 @@ const sections: { id: Section; label: string; icon: string }[] = [
   { id: 'quiz', label: 'Luyện đề', icon: '◎' },
   { id: 'library', label: 'Tài liệu', icon: '▧' },
   { id: 'music', label: 'Music & Focus', icon: '♫' },
+  { id: 'browser', label: 'Trình duyệt', icon: '⌕' },
   { id: 'chat', label: 'AI Chat', icon: '✧' },
   { id: 'progress', label: 'Tiến độ', icon: '↗' },
   { id: 'legacy', label: 'Đầy đủ tính năng', icon: '✦' }
@@ -82,6 +83,13 @@ export function App() {
   const [musicCustomSources, setMusicCustomSources] = useState<Array<{name:string;url:string}>>(() => { try { const list=JSON.parse(localStorage.getItem('principia_music_island_v1') || '{}').customSources; return Array.isArray(list)?list:[]; } catch { return []; } });
   const [focusSeconds, setFocusSeconds] = useState(25 * 60);
   const [focusRunning, setFocusRunning] = useState(false);
+  const [browserAddress, setBrowserAddress] = useState('https://www.google.com/');
+  const [browserUrl, setBrowserUrl] = useState('');
+  const [browserHistory, setBrowserHistory] = useState<string[]>([]);
+  const [browserIndex, setBrowserIndex] = useState(-1);
+  const [browserReload, setBrowserReload] = useState(0);
+  const [browserNotice, setBrowserNotice] = useState('');
+
 
   const chatStorageKey = `principia_v2_chat:${account?.user.uid || 'guest'}:${chatProvider}`;
   useEffect(() => {
@@ -177,6 +185,15 @@ export function App() {
     } catch { setLibraryNotice('Địa chỉ nền tảng không hợp lệ.'); }
   };
   const formatFocusTime = (seconds: number) => String(Math.floor(seconds / 60)).padStart(2, '0') + ':' + String(seconds % 60).padStart(2, '0');
+  const navigateMiniBrowser = (raw = browserAddress) => {
+    try {
+      const url = new URL(/^https?:\\/\\//i.test(raw.trim()) ? raw.trim() : 'https://' + raw.trim());
+      if (!['http:', 'https:'].includes(url.protocol)) throw new Error();
+      const next = [...browserHistory.slice(0, browserIndex + 1), url.href].slice(-30);
+      setBrowserHistory(next); setBrowserIndex(next.length - 1); setBrowserUrl(url.href); setBrowserAddress(url.href); setBrowserNotice('');
+    } catch { setBrowserNotice('Địa chỉ không hợp lệ. Chỉ hỗ trợ website http hoặc https.'); }
+  };
+
   const handleLibraryUpload = async (event: Event) => {
     const input = event.currentTarget as HTMLInputElement;
     const files = Array.from(input.files || []);
@@ -929,6 +946,18 @@ export function App() {
         {section === 'legacy' && <section class="legacy-workspace">
           <div class="legacy-banner"><div><strong>PRINCIPIA · Không gian đầy đủ tính năng</strong><p>Mở toàn bộ giao diện và công cụ của phiên bản cũ trong V2 để không mất chức năng trong lúc chuyển đổi.</p></div><a href="/legacy/index.html" target="_blank" rel="noreferrer">Mở toàn màn hình ↗</a></div>
           <iframe class="legacy-frame" src="/legacy/index.html" title="PRINCIPIA full legacy workspace" loading="lazy" allow="clipboard-read; clipboard-write; fullscreen; autoplay; encrypted-media; picture-in-picture" />
+        </section>}
+        {section === 'browser' && <section class="content-panel browser-workspace">
+          <div class="browser-heading"><div><h2>Trình duyệt mini</h2><p>Mở website trong PRINCIPIA nếu trang đó cho phép nhúng.</p></div><button class="secondary-button" type="button" disabled={!browserUrl} onClick={() => window.open(browserUrl, '_blank')}>Mở tab ngoài ↗</button></div>
+          <form class="browser-toolbar" onSubmit={event => { event.preventDefault(); navigateMiniBrowser(); }}>
+            <button type="button" class="secondary-button" disabled={browserIndex <= 0} onClick={() => { const next = browserIndex - 1; setBrowserIndex(next); setBrowserUrl(browserHistory[next]); setBrowserAddress(browserHistory[next]); }}>←</button>
+            <button type="button" class="secondary-button" disabled={browserIndex < 0 || browserIndex >= browserHistory.length - 1} onClick={() => { const next = browserIndex + 1; setBrowserIndex(next); setBrowserUrl(browserHistory[next]); setBrowserAddress(browserHistory[next]); }}>→</button>
+            <input value={browserAddress} onInput={event => setBrowserAddress(event.currentTarget.value)} placeholder="https://example.com" />
+            <button class="primary-button" type="submit">Đi</button>
+            <button class="secondary-button" type="button" disabled={!browserUrl} onClick={() => setBrowserReload(value => value + 1)}>↻</button>
+          </form>
+          {browserNotice && <p class="workspace-notice" role="status">{browserNotice}</p>}
+          {browserUrl ? <iframe key={browserUrl + ':' + browserReload} class="mini-browser-frame" title="Trình duyệt mini PRINCIPIA" src={browserUrl} referrerPolicy="strict-origin-when-cross-origin" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox" /> : <div class="music-external-note"><b>Chưa mở website</b><p>Nhập địa chỉ vào thanh công cụ phía trên. Một số trang sẽ từ chối hiển thị trong khung nhúng; khi đó hãy chọn Mở tab ngoài.</p></div>}
         </section>}
         {section === 'music' && <section class="content-panel music-workspace">
           <div class="music-heading"><div><h2>♫ Music & Focus</h2><p>Không gian âm nhạc và bộ hẹn giờ tập trung.</p></div><button class={musicFocus ? 'primary-button' : 'secondary-button'} type="button" onClick={() => setMusicFocus(value => !value)}>{musicFocus ? 'Tắt Focus mode' : 'Bật Focus mode'}</button></div>
