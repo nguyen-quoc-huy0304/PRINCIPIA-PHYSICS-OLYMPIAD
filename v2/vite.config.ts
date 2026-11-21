@@ -18,7 +18,8 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes('node_modules/preact')) return 'ui-core';
-          if (id.includes('node_modules/firebase')) return 'firebase';
+          // Firebase is intentionally left to Rollup's dynamic-import splitting:
+          // auth and Firestore must not be downloaded during the initial app boot.
         }
       }
     }
