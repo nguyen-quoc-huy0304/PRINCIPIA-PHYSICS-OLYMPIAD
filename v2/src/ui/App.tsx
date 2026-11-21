@@ -12,7 +12,7 @@ import { calculateMotion, calculateKineticEnergy, calculateProjectile } from '..
 import type { MotionResult, ProjectileResult } from '../core/physics';
 import { restoreLegacyDataFromCloud, syncLegacyDataToCloud, restoreProgressFromCloud, syncProgressToCloud, publishLegacyContentToCloud, restorePublishedContentFromCloud } from '../core/cloud-data';
 
-type Section = 'home' | 'learn' | 'quiz' | 'physics' | 'library' | 'music' | 'browser' | 'games' | 'chat' | 'progress' | 'profile' | 'legacy';
+type Section = 'home' | 'learn' | 'quiz' | 'physics' | 'library' | 'music' | 'browser' | 'games' | 'chat' | 'downloads' | 'progress' | 'profile' | 'legacy';
 type Mode = 'login' | 'signup';
 type Question = { q: string; a: string[]; correct: number; type?: 'true_false' | 'single_select' | 'multi_select' | 'short_answer' | 'long_answer'; correctValues?: string[]; expected?: string; rubric?: string; points?: number; explanation?: string };
 type QuizEditorState = { id?: string; name: string; questionsText: string };
@@ -1178,6 +1178,14 @@ export function App() {
             </div>
           </form>
           {chatNotice && <p class="workspace-notice" role="status">{chatNotice}</p>}
+        </section>}
+        {section === 'downloads' && <section class="content-panel downloads-panel">
+          <div class="downloads-heading"><div><h2>Tải ứng dụng PRINCIPIA</h2><p>Bản V2 đang được hoàn thiện và chưa phát hành bộ cài chính thức.</p></div><span class="release-status">V2 · Đang phát triển</span></div>
+          <div class="download-platform-grid">
+            {['Windows 10/11','macOS','Linux','Android','iOS'].map((platform,index) => <article><span>{['⊞','','🐧','◉',''][index]}</span><div><b>{platform}</b><small>{index < 3 ? 'Bộ cài desktop V2 chưa được ký và kiểm thử.' : 'Bản mobile V2 chưa được ký và phát hành.'}</small></div><em>Chưa phát hành</em></article>)}
+          </div>
+          <p class="empty-state">Không dùng các bộ cài cũ làm bản V2. Khi V2 hoàn tất, trang này sẽ có đúng bộ cài theo từng nền tảng và hướng dẫn cập nhật.</p>
+          <button class="secondary-button" type="button" onClick={() => window.open('https://github.com/nguyen-quoc-huy0304/PRINCIPIA-PHYSICS-OLYMPIAD.ghithub.io/releases/latest','_blank')}>Xem lịch sử phát hành ↗</button>
         </section>}
         {section === 'profile' && <section class="content-panel profile-panel">
           <div class="profile-heading"><div><h2>Hồ sơ tài khoản</h2><p>Thông tin đăng nhập và tuỳ chỉnh riêng của bạn.</p></div><span class="profile-role">{account.isAdmin ? 'ADMIN' : 'LEARNER'}</span></div>
