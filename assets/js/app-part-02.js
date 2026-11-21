@@ -431,7 +431,6 @@ function render(){
  if(!getPrincipiaAccount() && page!=='account'){page='account';stack=[];}
  // Giữ màn hình chào cho tới khi người dùng chủ động bấm Bắt đầu hành trình.
 
- if(page==='welcome' && localStorage.getItem('principia_welcome_seen_v4_'+(getPrincipiaAccount()?.uid||getPrincipiaAccount()?.email||'guest'))==='1'){page='home';}
  if(page==='welcome'){
   const welcomeAccount=getPrincipiaAccount()||{};
   const welcomeName=(welcomeAccount.name||profile?.name||'bạn').trim();
