@@ -27,6 +27,7 @@
       "package.json"
     ],
     "win": {
+      "icon": "desktop/icons/icon.ico",
       "target": [
         "nsis"
       ],

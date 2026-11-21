@@ -49,7 +49,7 @@ async function isFrameBlocked(value) {
       if (source === "'none'") return false;
       if (source === "'self'") return false;
       try {
-        const parsed = new URL(source.replace(/^\*\./, 'wildcard.' ));
+        const parsed = new URL(source.replace(/^\*\./, 'wildcard.'));
         if (parsed.origin === appOrigin) return true;
         if (source.includes('*.') && appHost.endsWith(parsed.hostname.replace(/^wildcard\./, ''))) return true;
       } catch {}
@@ -114,6 +114,7 @@ function createWindow() {
     minHeight: 650,
     backgroundColor: '#0b1020',
     title: 'PRINCIPIA • PHYSICS OLYMPIAD',
+    icon: path.join(__dirname, 'icons', 'icon.ico'),
     autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
