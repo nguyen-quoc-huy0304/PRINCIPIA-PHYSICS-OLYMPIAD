@@ -10,7 +10,7 @@ import { deleteLibraryBlob, getLibraryBlob, listLibraryItems, saveLibraryFiles }
 import type { PrincipiaLibraryItem } from '../core/library';
 import { restoreLegacyDataFromCloud, syncLegacyDataToCloud, restoreProgressFromCloud, syncProgressToCloud, publishLegacyContentToCloud, restorePublishedContentFromCloud } from '../core/cloud-data';
 
-type Section = 'home' | 'learn' | 'quiz' | 'library' | 'music' | 'browser' | 'chat' | 'progress' | 'legacy';
+type Section = 'home' | 'learn' | 'quiz' | 'library' | 'music' | 'browser' | 'games' | 'chat' | 'progress' | 'legacy';
 type Mode = 'login' | 'signup';
 type Question = { q: string; a: string[]; correct: number; type?: 'true_false' | 'single_select' | 'multi_select' | 'short_answer' | 'long_answer'; correctValues?: string[]; expected?: string; rubric?: string; points?: number; explanation?: string };
 type QuizEditorState = { id?: string; name: string; questionsText: string };
@@ -28,6 +28,7 @@ const sections: { id: Section; label: string; icon: string }[] = [
   { id: 'library', label: 'Tài liệu', icon: '▧' },
   { id: 'music', label: 'Music & Focus', icon: '♫' },
   { id: 'browser', label: 'Trình duyệt', icon: '⌕' },
+  { id: 'games', label: 'Giải trí', icon: '🎮' },
   { id: 'chat', label: 'AI Chat', icon: '✧' },
   { id: 'progress', label: 'Tiến độ', icon: '↗' },
   { id: 'legacy', label: 'Đầy đủ tính năng', icon: '✦' }
@@ -89,6 +90,12 @@ export function App() {
   const [browserIndex, setBrowserIndex] = useState(-1);
   const [browserReload, setBrowserReload] = useState(0);
   const [browserNotice, setBrowserNotice] = useState('');
+  const [gamePlatforms, setGamePlatforms] = useState<Array<{id:string;name:string;icon:string;url:string;custom?:boolean}>>(() => {
+    const defaults = [{id:'chesscom',name:'Chess.com',icon:'♟️',url:'https://www.chess.com/'},{id:'lichess',name:'Lichess',icon:'♜',url:'https://lichess.org/'},{id:'sudoku',name:'Sudoku',icon:'🔢',url:'https://www.sudoku.com/'},{id:'geoguessr',name:'GeoGuessr',icon:'🌍',url:'https://www.geoguessr.com/'}];
+    try { const saved = JSON.parse(localStorage.getItem('principia_game_platforms') || 'null'); return Array.isArray(saved) ? saved : defaults; } catch { return defaults; }
+  });
+  const [activeGameId, setActiveGameId] = useState(() => localStorage.getItem('principia_active_game_tab') || 'chesscom');
+
 
 
   const chatStorageKey = `principia_v2_chat:${account?.user.uid || 'guest'}:${chatProvider}`;
@@ -154,6 +161,8 @@ export function App() {
     document.body.classList.toggle('principia-focus-mode', musicFocus);
     return () => document.body.classList.remove('principia-focus-mode');
   }, [musicSource, musicUrl, musicTrack, musicFocus, musicCustomSources]);
+  useEffect(() => { try { localStorage.setItem('principia_game_platforms', JSON.stringify(gamePlatforms)); } catch {} }, [gamePlatforms]);
+  useEffect(() => { localStorage.setItem('principia_active_game_tab', activeGameId); }, [activeGameId]);
   useEffect(() => {
     if (!focusRunning) return;
     const timer = window.setInterval(() => setFocusSeconds(value => Math.max(0, value - 1)), 1000);
@@ -185,6 +194,24 @@ export function App() {
     } catch { setLibraryNotice('Địa chỉ nền tảng không hợp lệ.'); }
   };
   const formatFocusTime = (seconds: number) => String(Math.floor(seconds / 60)).padStart(2, '0') + ':' + String(seconds % 60).padStart(2, '0');
+  const addGamePlatform = () => {
+    const name = prompt('Tên nền tảng (ví dụ: Cờ vua):')?.trim();
+    if (!name) return;
+    const raw = prompt('Địa chỉ website (https://…):')?.trim();
+    if (!raw) return;
+    try {
+      const url = new URL(/^https?:\\/\\//i.test(raw) ? raw : 'https://' + raw);
+      const id = 'custom-' + Date.now();
+      setGamePlatforms(current => [...current, { id, name: name.slice(0, 40), icon: '🎮', url: url.href, custom: true }]);
+      setActiveGameId(id);
+    } catch { setBrowserNotice('URL trò chơi không hợp lệ.'); }
+  };
+  const removeGamePlatform = (id: string) => {
+    const item = gamePlatforms.find(game => game.id === id);
+    if (!item?.custom || !confirm('Xóa nền tảng ' + item.name + '?')) return;
+    const next = gamePlatforms.filter(game => game.id !== id);
+    setGamePlatforms(next); if (activeGameId === id) setActiveGameId(next[0]?.id || '');
+  };
   const navigateMiniBrowser = (raw = browserAddress) => {
     try {
       const url = new URL(/^https?:\/\//i.test(raw.trim()) ? raw.trim() : 'https://' + raw.trim());
@@ -946,6 +973,12 @@ export function App() {
         {section === 'legacy' && <section class="legacy-workspace">
           <div class="legacy-banner"><div><strong>PRINCIPIA · Không gian đầy đủ tính năng</strong><p>Mở toàn bộ giao diện và công cụ của phiên bản cũ trong V2 để không mất chức năng trong lúc chuyển đổi.</p></div><a href="/legacy/index.html" target="_blank" rel="noreferrer">Mở toàn màn hình ↗</a></div>
           <iframe class="legacy-frame" src="/legacy/index.html" title="PRINCIPIA full legacy workspace" loading="lazy" allow="clipboard-read; clipboard-write; fullscreen; autoplay; encrypted-media; picture-in-picture" />
+        </section>}
+        {section === 'games' && <section class="content-panel games-workspace">
+          <div class="games-heading"><div><h2>Khu vực giải trí</h2><p>Mở các nền tảng trò chơi và rèn luyện tư duy.</p></div><button class="secondary-button" type="button" onClick={addGamePlatform}>＋ Thêm nền tảng</button></div>
+          <div class="game-tabs">{gamePlatforms.map(game => <button type="button" class={activeGameId === game.id ? 'active' : ''} onClick={() => setActiveGameId(game.id)}><span>{game.icon}</span>{game.name}{game.custom && <i onClick={event => { event.stopPropagation(); removeGamePlatform(game.id); }}>×</i>}</button>)}</div>
+          {(() => { const game = gamePlatforms.find(item => item.id === activeGameId); return game ? <><div class="games-frame-toolbar"><b>{game.name}</b><button class="secondary-button" type="button" onClick={() => window.open(game.url,'_blank')}>Mở trang gốc ↗</button></div><iframe class="games-frame" title={game.name} src={game.url} loading="lazy" sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox" /></> : <p class="empty-state">Chưa có nền tảng trò chơi.</p>; })()}
+          <p class="empty-state">Một số website không cho phép nhúng hoặc yêu cầu đăng nhập riêng. Khi đó hãy dùng nút Mở trang gốc.</p>
         </section>}
         {section === 'browser' && <section class="content-panel browser-workspace">
           <div class="browser-heading"><div><h2>Trình duyệt mini</h2><p>Mở website trong PRINCIPIA nếu trang đó cho phép nhúng.</p></div><button class="secondary-button" type="button" disabled={!browserUrl} onClick={() => window.open(browserUrl, '_blank')}>Mở tab ngoài ↗</button></div>
