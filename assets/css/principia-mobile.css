@@ -200,3 +200,32 @@
     }
   
 }
+
+
+/* Mobile-only AI and download controls. */
+/* Mobile only: keep AI and download controls fixed above the fixed navigation.
+   Desktop layout is intentionally untouched. */
+@media(max-width:900px){
+  .chat-bubble-btn{
+    position:fixed!important;right:16px!important;
+    bottom:calc(82px + env(safe-area-inset-bottom))!important;
+    z-index:2147482000!important;
+  }
+  .chat-box{
+    position:fixed!important;right:10px!important;left:10px!important;
+    bottom:calc(142px + env(safe-area-inset-bottom))!important;
+    width:auto!important;max-width:none!important;
+    max-height:calc(100dvh - 180px)!important;
+    z-index:2147482001!important;
+  }
+  #principiaDownloadFab{
+    position:fixed!important;right:16px!important;
+    bottom:calc(144px + env(safe-area-inset-bottom))!important;
+    z-index:2147481999!important;
+  }
+}
+@media(max-width:600px){
+  .chat-bubble-btn{right:14px!important;bottom:calc(78px + env(safe-area-inset-bottom))!important}
+  .chat-box{bottom:calc(136px + env(safe-area-inset-bottom))!important}
+  #principiaDownloadFab{right:14px!important;bottom:calc(136px + env(safe-area-inset-bottom))!important}
+}
