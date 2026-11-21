@@ -540,6 +540,13 @@ export function App() {
   const xp = Number(legacy.entries['halo_xp'] || 0);
   const streak = Number(legacy.entries['halo_streak'] || 0);
   const completed = parseArray<string>(legacy.entries['halo_completed']);
+  const achievementList = [
+    { id: 'first-lesson', title: 'Bước đầu tiên', description: 'Hoàn thành bài học đầu tiên', unlocked: completed.length + localProgress.completed.length >= 1, icon: '🌱' },
+    { id: 'five-lessons', title: 'Chăm chỉ', description: 'Hoàn thành 5 bài học', unlocked: completed.length + localProgress.completed.length >= 5, icon: '📚' },
+    { id: 'first-quiz', title: 'Thử sức', description: 'Nộp bài luyện tập đầu tiên', unlocked: localProgress.attempts.length >= 1, icon: '🎯' },
+    { id: 'streak-three', title: 'Giữ nhịp', description: 'Học liên tiếp 3 ngày', unlocked: localProgress.streak >= 3, icon: '🔥' },
+    { id: 'xp-hundred', title: 'Nhà chinh phục', description: 'Tích lũy 100 EXP', unlocked: localProgress.xp + xp >= 100, icon: '🏆' }
+  ];
 
   function addCustomAIProvider() {
     const name = prompt('Tên AI muốn thêm (ví dụ: Perplexity):')?.trim();
@@ -1152,6 +1159,7 @@ export function App() {
           <div><strong>{(Number.isFinite(xp) ? xp : 0) + localProgress.xp}</strong><span>EXP tích lũy</span></div>
           <div><strong>{Math.max(Number.isFinite(streak) ? streak : 0, localProgress.streak)}</strong><span>Chuỗi ngày học</span></div>
           <div><strong>{completed.length + localProgress.completed.length}</strong><span>Bài/mục hoàn thành</span></div>
+          <div class="achievement-panel"><h3>Thành tựu</h3><div class="achievement-grid">{achievementList.map(item => <article class={item.unlocked ? 'unlocked' : 'locked'}><span>{item.icon}</span><div><b>{item.title}</b><small>{item.description}</small></div><em>{item.unlocked ? 'Đã mở' : 'Chưa mở'}</em></article>)}</div></div>
           <div class="progress-history"><h3>Lịch sử làm bài</h3>{localProgress.attempts.length ? localProgress.attempts.map((attempt, index) => <article key={`${attempt.at}-${index}`}><b>{attempt.title}</b><span>{attempt.score}/{attempt.total} câu đúng · {new Date(attempt.at).toLocaleString('vi-VN')}</span></article>) : <p class="empty-state">Chưa có lần làm đề nào được lưu trong V2.</p>}</div>
           <p class="empty-state">Tiến độ V2 được lưu theo tài khoản trên thiết bị. Chuỗi ngày học tăng khi hoàn thành bài học hoặc nộp bài luyện tập; quản trị viên có thể sao lưu tiến độ qua cloud.</p>
         </section>}
