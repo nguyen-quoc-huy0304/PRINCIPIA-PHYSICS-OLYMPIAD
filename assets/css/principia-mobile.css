@@ -518,3 +518,6 @@
 
 /* Circularly crop excess outside the original logo on mobile/tablet */
 .brand-logo-img,.welcome-logo-img,.account-brand-logo{border-radius:50%!important;overflow:hidden!important;object-fit:cover!important;background:transparent!important;padding:0!important}
+
+/* Keep the first-login welcome page full-bleed on mobile. */
+@media(max-width:900px){.principia-welcome-screen{width:100%;min-height:100svh;overflow-x:hidden}.pw-content{width:100%}.pw-visual{width:100%}}
