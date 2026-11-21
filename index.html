@@ -93,13 +93,13 @@ p{line-height:1.7}
 .dropzone{border:1px dashed #62558c;border-radius:13px;padding:18px;text-align:center;color:var(--muted)}
 @media(max-width:760px){
  .layout{grid-template-columns:1fr}
- /* Mobile navigation: no sticky top bar; keep emoji icons visible */
- .sidebar{height:auto;position:relative;top:auto;z-index:8;flex-direction:row;overflow-x:auto;padding:8px;border-right:0;border-bottom:1px solid var(--line)}
- .brand{padding:0;margin-right:4px;font-size:0}
- .brand .logo{width:33px;height:33px}
- .navlabel,.sidebottom{display:none}
- .nav{width:auto;white-space:nowrap;padding:9px;font-size:11px;flex:0 0 auto}
- .nav-default-icon{display:inline-grid!important;place-items:center!important;min-width:24px!important;min-height:24px!important;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif!important;font-size:20px!important;line-height:1!important;visibility:visible!important;opacity:1!important}
+ /* Mobile nav should sit after content, not pin or push content down */
+ .sidebar{height:auto;position:static;top:auto;z-index:8;flex-direction:row;overflow-x:auto;padding:8px;border-right:0;border-top:1px solid var(--line);border-bottom:0;order:2}
+ .main{order:1}
+ .brand{display:none!important}
+ .navlabel,.sidebottom{display:none!important}
+ .nav{width:auto;white-space:nowrap;padding:9px;font-size:11px;flex:0 0 auto;display:flex!important;align-items:center!important;gap:8px}
+ .nav-default-icon{display:inline-flex!important;align-items:center!important;justify-content:center!important;width:28px!important;height:28px!important;min-width:28px!important;min-height:28px!important;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif!important;font-size:23px!important;line-height:1!important;visibility:visible!important;opacity:1!important;flex:0 0 28px!important}
  .main{padding:18px 13px}
  .top{align-items:flex-start;flex-direction:column}
  .topright{width:100%;justify-content:space-between}
@@ -1365,7 +1365,7 @@ function entertainmentWeekKey(d=new Date()){const x=new Date(Date.UTC(d.getFullY
 function entertainmentState(){const wk=entertainmentWeekKey();let st;try{st=JSON.parse(localStorage.getItem('principia_fun_league')||'null')}catch(e){}if(!st||st.week!==wk){st={week:wk,points:0,matches:0,wins:0};localStorage.setItem('principia_fun_league',JSON.stringify(st));}return st}
 function leagueBots(){const names=['NewtonBot','Einstein AI','Gauss.exe','CurieBot','Feynman AI','TeslaMind','NoetherBot'];const st=entertainmentState();let seed=0;for(const c of st.week)seed=(seed*31+c.charCodeAt(0))>>>0;return names.map((name,i)=>{seed=(seed*1664525+1013904223)>>>0;return {name,points:150+seed%650,avatar:['🤖','🧠','🦾','👾','⚙️','🛰️','🔬'][i]}}).sort((a,b)=>b.points-a.points)}
 function leagueRank(points){return points>=900?{name:'Đại kiện tướng',icon:'👑'}:points>=600?{name:'Cao thủ',icon:'💎'}:points>=350?{name:'Chiến binh',icon:'🥇'}:points>=150?{name:'Kỳ thủ',icon:'🥈'}:{name:'Tân binh',icon:'🌱'}}
-const PRINCIPIA_DEFAULT_NAV=[['home','home','Home'],['library','books','Học tập'],['quiz','calculator','Quiz'],['fun','puzzle','Đố vui'],['entertainment','game','Giải trí'],['progress','trophy','Tiến độ']];
+const PRINCIPIA_DEFAULT_NAV=[['home','sparkle','Trang chủ'],['library','books','Học tập'],['quiz','calculator','Quiz'],['fun','puzzle','Đố vui'],['entertainment','game','Giải trí'],['progress','trophy','Tiến độ']];
 /* PRINCIPIA: icon emoji hiện đại, vẫn ưu tiên ảnh do người dùng tải lên. */
 const PRINCIPIA_NAV_IMAGE_STYLE='<style>.nav-image-empty{display:inline-flex;align-items:center;justify-content:center;width:64px;height:64px;border:1px dashed var(--line);border-radius:14px;color:var(--muted);font-size:11px;text-align:center}.nav-custom-icon{width:28px;height:28px;object-fit:cover;border-radius:9px;flex:none}.nav-default-icon{font-size:23px;line-height:1;display:inline-grid;place-items:center;width:28px;height:28px;flex:none}.node-emoji-icon{font-size:42px;line-height:1.2;display:inline-flex;align-items:center;justify-content:center;min-width:1.25em;min-height:1.25em}.icon-choice-grid{grid-template-columns:repeat(6,minmax(0,1fr))}.icon-choice{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:7px 3px}.icon-choice-name{font-size:10px;line-height:1.2}.nav .ni{display:none!important}</style>';
 document.head.insertAdjacentHTML('beforeend',PRINCIPIA_NAV_IMAGE_STYLE);
