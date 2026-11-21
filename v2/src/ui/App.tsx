@@ -200,7 +200,7 @@ export function App() {
     const raw = prompt('Địa chỉ website (https://…):')?.trim();
     if (!raw) return;
     try {
-      const url = new URL(/^https?:\\/\\//i.test(raw) ? raw : 'https://' + raw);
+      const url = new URL(/^https?:\/\//i.test(raw) ? raw : 'https://' + raw);
       const id = 'custom-' + Date.now();
       setGamePlatforms(current => [...current, { id, name: name.slice(0, 40), icon: '🎮', url: url.href, custom: true }]);
       setActiveGameId(id);
