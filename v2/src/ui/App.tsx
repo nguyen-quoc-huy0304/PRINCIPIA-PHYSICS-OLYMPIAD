@@ -54,7 +54,7 @@ export function App() {
   const [activeQuiz, setActiveQuiz] = useState<LegacyNode | null>(null);
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [quizSubmitted, setQuizSubmitted] = useState(false);
-  const [lessonTool, setLessonTool] = useState<'note' | 'submit' | 'simulation'>('note');
+  const [lessonTool, setLessonTool] = useState<'note' | 'files' | 'submit' | 'simulation'>('note');
   const [privateNote, setPrivateNote] = useState('');
   const [assignmentText, setAssignmentText] = useState('');
   const [lessonFiles, setLessonFiles] = useState<Array<{ name: string; type: string; size: number; dataUrl: string; addedAt: string }>>([]);
