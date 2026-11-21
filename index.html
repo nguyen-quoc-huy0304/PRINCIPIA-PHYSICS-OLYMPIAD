@@ -215,11 +215,11 @@
 <div id="toast"></div>
 <!-- PRINCIPIA_STARTUP_DIAGNOSTICS_V1 -->
 <script src="/assets/js/app-part-01.js"></script>
-<script src="/assets/js/app-part-02.js?v=20261121-welcome3"></script>
+<script src="/assets/js/app-part-02.js?v=20261121-authfix1"></script>
 
 <!-- Firebase SDK được nạp nền sau khi giao diện đã hiển thị; tránh chặn toàn bộ trang nếu CDN chậm. -->
 
-<script src="/assets/js/app-part-03.js?v=20261121-welcome2"></script>
+<script src="/assets/js/app-part-03.js?v=20261121-authfix1"></script>
 
 
 
@@ -268,7 +268,7 @@
   if(window.principiaDesktop) return;
   const mobileCss=document.createElement('link');
   mobileCss.rel='stylesheet';
-  mobileCss.href='/assets/css/principia-mobile.css?v=6';
+  mobileCss.href='/assets/css/principia-mobile.css?v=7';
   document.head.appendChild(mobileCss);
   // Keep the desktop DOM/layout intact. Portal the nav only on phone/tablet widths.
   let busy=false,observer;
