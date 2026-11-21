@@ -57,16 +57,23 @@
   const r=ensure(),v=read();v.source=document.getElementById('pmSource').value;v.url=document.getElementById('pmUrl').value.trim();v.track=document.getElementById('pmTrack').value.trim();save(v);
   const custom=v.source.startsWith('custom:');const actualSource=custom?'other':v.source;const u=safeUrl(v.url,actualSource);if(!u){status('Link chưa hợp lệ · Hãy nhập địa chỉ https://');return}
   const p=document.getElementById('pmPlayer');p.innerHTML='';
-  let frame;
-  if(window.principiaDesktop?.isDesktop){
-   frame=document.createElement('webview');frame.setAttribute('partition','persist:principia-music');frame.setAttribute('allowpopups','');frame.setAttribute('webpreferences','autoplayPolicy=no-user-gesture-required');frame.src=u;frame.title='Music Island · '+v.source;frame.style.cssText='display:flex;width:100%;height:100%;border:0;background:#090b16';
-   frame.addEventListener('did-fail-load',e=>{if(e.errorCode!==-3)status('Không tải được trang ('+e.errorDescription+')')});
-   frame.addEventListener('dom-ready',()=>status('Đã tải website trong trình duyệt PRINCIPIA'));
+  if(window.principiaDesktop?.isDesktop && typeof window.principiaDesktop.openBlockedBrowser==='function'){
+   const placeholder=document.createElement('div');placeholder.className='pm-desktop-browser-placeholder';placeholder.textContent='Đang mở website trong trình duyệt tích hợp PRINCIPIA…';p.appendChild(placeholder);
+   const place=()=>{const r=p.getBoundingClientRect();return {x:r.left,y:r.top,width:r.width,height:r.height}};
+   const close=()=>{window.principiaDesktop.closeBrowser?.()};
+   const open=async()=>{try{await window.principiaDesktop.openBlockedBrowser(u,place());status('Đang mở website trong trình duyệt tích hợp PRINCIPIA')}catch(e){status('Không mở được website trong app: '+(e?.message||'Lỗi không xác định'))}};
+   open();
+   const update=()=>{if(document.getElementById('principiaMusicWindow')?.hidden){close();return}window.principiaDesktop.updateBrowserBounds?.(place())};
+   window.addEventListener('resize',update,{passive:true});
+   window.addEventListener('scroll',update,true);
+   const off=window.principiaDesktop.onBrowserRelayout?.(update);
+   const observer=new MutationObserver(()=>{if(document.getElementById('principiaMusicWindow')?.hidden){close();observer.disconnect();window.removeEventListener('resize',update);window.removeEventListener('scroll',update,true);if(typeof off==='function')off()}});
+   observer.observe(document.getElementById('principiaMusicWindow'),{attributes:true,attributeFilter:['hidden']});
+   window.principiaMusicDesktopClose=()=>{close();observer.disconnect();window.removeEventListener('resize',update);window.removeEventListener('scroll',update,true);if(typeof off==='function')off()};
   }else{
-   frame=document.createElement('iframe');frame.src=u;frame.title='Trình phát nhạc nhúng';frame.allow='autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';frame.allowFullscreen=true;frame.referrerPolicy='strict-origin-when-cross-origin';
+   const frame=document.createElement('iframe');frame.src=u;frame.title='Trình phát nhạc nhúng';frame.allow='autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';frame.allowFullscreen=true;frame.referrerPolicy='strict-origin-when-cross-origin';p.appendChild(frame);
   }
-  p.appendChild(frame);
-  updateLabel(v);status(window.principiaDesktop?.isDesktop?'Đang mở bằng trình duyệt tích hợp PRINCIPIA':'Đang mở website trong Music Island · Bản web có thể bị website chặn iframe');
+  updateLabel(v);status(window.principiaDesktop?.isDesktop?'Đang mở website bằng trình duyệt tích hợp PRINCIPIA':'Đang mở website trong Music Island · Bản web có thể bị website chặn iframe');
  }
  function syncFocus(v){const b=document.getElementById('pmFocus');if(b){b.textContent='◉ Focus mode: '+(v.focus?'Bật':'Tắt');b.classList.toggle('pm-focus-active',!!v.focus)}document.body.classList.toggle('principia-focus-mode',!!v.focus)}
  function toggleFocus(){const v=read();v.focus=!v.focus;save(v);syncFocus(v);status(v.focus?'Focus mode đã bật · Chúc bạn học tập tập trung!':'Đã tắt Focus mode')}
