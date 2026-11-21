@@ -58,9 +58,25 @@ export function App() {
     try { return JSON.parse(localStorage.getItem('principia_v2_progress') || '{\"completed\":[],\"attempts\":[],\"xp\":0}') as { completed: string[]; attempts: Array<{ title: string; score: number; total: number; at: string }>; xp: number }; }
     catch { return { completed: [] as string[], attempts: [] as Array<{ title: string; score: number; total: number; at: string }>, xp: 0 }; }
   });
+  const progressStorageKey = account ? `principia_v2_progress:${account.user.uid}` : 'principia_v2_progress:guest';
+  useEffect(() => {
+    if (!account) return;
+    try {
+      const scoped = localStorage.getItem(`principia_v2_progress:${account.user.uid}`);
+      const legacyLocal = localStorage.getItem('principia_v2_progress');
+      const parsed = JSON.parse(scoped || legacyLocal || '{"completed":[],"attempts":[],"xp":0}');
+      const safe = {
+        completed: Array.isArray(parsed.completed) ? parsed.completed.filter((value: unknown) => typeof value === 'string') : [],
+        attempts: Array.isArray(parsed.attempts) ? parsed.attempts.filter((value: any) => value && typeof value.title === 'string' && typeof value.score === 'number' && typeof value.total === 'number' && typeof value.at === 'string').slice(0, 100) : [],
+        xp: Number.isFinite(parsed.xp) ? Math.max(0, parsed.xp) : 0
+      };
+      setLocalProgress(safe);
+      if (!scoped && legacyLocal) localStorage.setItem(`principia_v2_progress:${account.user.uid}`, JSON.stringify(safe));
+    } catch { setLocalProgress({ completed: [], attempts: [], xp: 0 }); }
+  }, [account?.user.uid]);
   const saveProgress = (next: typeof localProgress) => {
     setLocalProgress(next);
-    try { localStorage.setItem('principia_v2_progress', JSON.stringify(next)); } catch { setStatus('Không thể lưu tiến độ: bộ nhớ trình duyệt đã đầy hoặc bị chặn.'); }
+    try { localStorage.setItem(progressStorageKey, JSON.stringify(next)); } catch { setStatus('Không thể lưu tiến độ: bộ nhớ trình duyệt đã đầy hoặc bị chặn.'); }
   };
   const lessonKey = (node: LegacyNode) => [...lessonPath, node].map(item => item.id || item.name).join('::');
   const markLessonComplete = (node: LegacyNode) => {
