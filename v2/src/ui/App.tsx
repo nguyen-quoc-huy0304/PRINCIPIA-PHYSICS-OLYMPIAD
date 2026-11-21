@@ -272,10 +272,10 @@ export function App() {
           {activeLesson ? <section class="content-panel">
             <button class="back-link" onClick={() => setActiveLesson(null)}>← Quay lại danh sách</button>
             <h2>{activeLesson.icon || '📘'} {activeLesson.name}</h2>
-            {activeLesson.video && /^https?:\\/\\//i.test(activeLesson.video) && <div class="lesson-video">
+            {activeLesson.video && /^https?:\/\//i.test(activeLesson.video) && <div class="lesson-video">
               <a href={activeLesson.video} target="_blank" rel="noreferrer">Mở video bài học ↗</a>
               {(() => {
-                const match = activeLesson.video!.match(/(?:youtube\\.com\\/watch\\?v=|youtu\\.be\\/)([a-zA-Z0-9_-]{6,})/);
+                const match = activeLesson.video!.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{6,})/);
                 return match ? <iframe title="Video bài học" src={`https://www.youtube-nocookie.com/embed/${match[1]}`} allow="accelerometer; autoplay; encrypted-media; picture-in-picture" allowFullScreen /> : null;
               })()}
             </div>}
