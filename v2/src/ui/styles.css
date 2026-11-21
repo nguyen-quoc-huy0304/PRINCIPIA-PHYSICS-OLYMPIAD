@@ -92,3 +92,5 @@
 .lesson-video iframe{display:block;width:100%;aspect-ratio:16/9;min-height:220px;border:0;border-radius:12px;background:#080d18}
 .lesson-content{white-space:pre-wrap;overflow-wrap:anywhere}
 .permission-note{flex-basis:100%;margin:0;color:var(--muted,#9ba8bd);font-size:12px}
+
+.lesson-completion{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:22px;padding:14px 16px;border:1px solid rgba(160,145,255,.2);border-radius:14px;background:rgba(139,119,255,.06);color:#c9c4e8;font-size:12px}.progress-history{grid-column:1/-1;padding:18px;border:1px solid rgba(255,255,255,.08);border-radius:14px;background:rgba(255,255,255,.025)}.progress-history h3{margin:0 0 12px;font-size:14px}.progress-history article{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:12px}.progress-history article span{color:#9ea4bf;text-align:right}@media(max-width:600px){.progress-history article{flex-direction:column}.progress-history article span{text-align:left}.lesson-completion{align-items:flex-start;flex-direction:column}}
