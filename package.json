@@ -12,7 +12,8 @@
   "devDependencies": {
     "electron": "^35.2.1",
     "electron-builder": "^26.0.12",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "electron-updater": "^6.6.2"
   },
   "build": {
     "appId": "vn.principia.physicsolympiad",
@@ -35,6 +36,25 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "nguyen-quoc-huy0304",
+      "repo": "PRINCIPIA-PHYSICS-OLYMPIAD.ghithub.io"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "artifactName": "PRINCIPIA-${version}-${arch}.${ext}"
+    },
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "artifactName": "PRINCIPIA-${version}-${arch}.${ext}"
     }
   }
-}
+}\n
