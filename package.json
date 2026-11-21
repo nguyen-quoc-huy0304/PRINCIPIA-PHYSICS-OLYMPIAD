@@ -1,6 +1,6 @@
 {
   "name": "principia-physics-olympiad-desktop",
-  "version": "1.0.0",
+  "version": "1.0.4",
   "private": true,
   "description": "PRINCIPIA Physics Olympiad desktop app with a hybrid embedded browser",
   "main": "desktop/main.cjs",
