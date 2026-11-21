@@ -10,7 +10,7 @@ import { restoreLegacyDataFromCloud, syncLegacyDataToCloud, restoreProgressFromC
 
 type Section = 'home' | 'learn' | 'quiz' | 'chat' | 'progress' | 'legacy';
 type Mode = 'login' | 'signup';
-type Question = { q: string; a: string[]; correct: number };
+type Question = { q: string; a: string[]; correct: number; type?: 'true_false' | 'single_select' | 'multi_select' | 'short_answer' | 'long_answer'; correctValues?: string[]; expected?: string; rubric?: string; points?: number; explanation?: string };
 type LegacyNode = {
   id: string; name: string; icon?: string; type?: string; content?: string; note?: string; video?: string;
   children?: LegacyNode[]; questions?: Question[]; quiz?: Question[];
@@ -36,6 +36,17 @@ function countNodes(nodes: LegacyNode[], type: string): number {
 }
 function countQuestions(nodes: LegacyNode[]): number {
   return nodes.reduce((sum, node) => sum + (node.questions?.length || node.quiz?.length || 0) + countQuestions(node.children || []), 0);
+}
+function isQuestionCorrect(question: Question, answer: number | number[] | string | undefined): boolean {
+  const type = question.type || 'single_select';
+  if (type === 'long_answer') return false;
+  if (type === 'short_answer') {
+    const expected = (question.expected || '').split(/\\r?\\n|\\|/).map(value => value.trim().toLocaleLowerCase()).filter(Boolean);
+    return typeof answer === 'string' && expected.length > 0 && expected.includes(answer.trim().toLocaleLowerCase());
+  }
+  const correct = (question.correctValues || [String(question.correct)]).map(String).sort();
+  if (type === 'multi_select') return Array.isArray(answer) && [...answer].map(String).sort().join(',') === correct.join(',');
+  return typeof answer === 'number' && answer === question.correct;
 }
 
 export function App() {
@@ -68,7 +79,7 @@ export function App() {
   const [lessonEditor, setLessonEditor] = useState<{ id?: string; name: string; icon: string; type: 'lesson' | 'folder'; content: string; note: string; video: string } | null>(null);
   const [quizPath, setQuizPath] = useState<LegacyNode[]>([]);
   const [activeQuiz, setActiveQuiz] = useState<LegacyNode | null>(null);
-  const [answers, setAnswers] = useState<Record<number, number>>({});
+  const [answers, setAnswers] = useState<Record<number, number | number[] | string>>({});
   const [quizSubmitted, setQuizSubmitted] = useState(false);
   const [lessonTool, setLessonTool] = useState<'note' | 'files' | 'submit' | 'simulation' | 'media'>('note');
   const [privateNote, setPrivateNote] = useState('');
@@ -265,7 +276,7 @@ export function App() {
     setStatus('Đã hoàn thành bài học · +10 EXP.');
   };
   const submitQuiz = () => {
-    const score = questions.filter((q, i) => answers[i] === q.correct).length;
+    const score = questions.filter((q, i) => isQuestionCorrect(q, answers[i])).length;
     const attempt = { title: activeQuiz?.name || 'Bài luyện tập', score, total: questions.length, at: new Date().toISOString() };
     saveProgress({ ...withStudyActivity(localProgress, score * 5), attempts: [attempt, ...localProgress.attempts].slice(0, 100) });
     setQuizSubmitted(true);
@@ -665,13 +676,18 @@ export function App() {
             <h2>{activeQuiz.name}</h2>
             {questions.map((question, index) => <article class="question-card">
               <b>{index + 1}. {question.q}</b>
-              <div class="answer-list">{question.a.map((answer, answerIndex) => <label class={quizSubmitted && answerIndex === question.correct ? 'correct-answer' : ''}>
-                <input type="radio" name={`q-${index}`} checked={answers[index] === answerIndex} disabled={quizSubmitted} onChange={() => setAnswers(current => ({ ...current, [index]: answerIndex }))} />
+              {(question.type === 'short_answer' || question.type === 'long_answer') ? <label class="written-answer">
+                <span>{question.type === 'long_answer' ? 'Câu trả lời tự luận' : 'Nhập đáp án ngắn'}</span>
+                {question.type === 'long_answer' ? <textarea rows={5} value={typeof answers[index] === 'string' ? answers[index] as string : ''} disabled={quizSubmitted} onInput={event => setAnswers(current => ({ ...current, [index]: event.currentTarget.value }))} /> : <input value={typeof answers[index] === 'string' ? answers[index] as string : ''} disabled={quizSubmitted} onInput={event => setAnswers(current => ({ ...current, [index]: event.currentTarget.value }))} />}
+                {question.type === 'long_answer' && <small>Bài tự luận được lưu trong lượt làm bài; cần giáo viên chấm theo rubric.</small>}
+              </label> : <div class="answer-list">{question.a.map((answer, answerIndex) => <label class={quizSubmitted && (question.type === 'multi_select' ? (question.correctValues || []).includes(String(answerIndex)) : answerIndex === question.correct) ? 'correct-answer' : ''}>
+                <input type={question.type === 'multi_select' ? 'checkbox' : 'radio'} name={`q-${index}`} checked={question.type === 'multi_select' ? Array.isArray(answers[index]) && (answers[index] as number[]).includes(answerIndex) : answers[index] === answerIndex} disabled={quizSubmitted} onChange={event => setAnswers(current => ({ ...current, [index]: question.type === 'multi_select' ? (event.currentTarget.checked ? [...(Array.isArray(current[index]) ? current[index] as number[] : []), answerIndex] : (Array.isArray(current[index]) ? current[index] as number[] : []).filter(value => value !== answerIndex)) : answerIndex }))} />
                 {answer}
-              </label>)}</div>
+              </label>)}</div>}
+              {quizSubmitted && question.explanation && <p class="question-explanation">{question.explanation}</p>}
             </article>)}
-            {!quizSubmitted ? <button class="primary-button quiz-submit" disabled={!questions.length || Object.keys(answers).length !== questions.length} onClick={submitQuiz}>Nộp bài</button> :
-              <><p class="quiz-result">Kết quả: {questions.filter((q, i) => answers[i] === q.correct).length}/{questions.length} câu đúng · +{questions.filter((q, i) => answers[i] === q.correct).length * 5} EXP.</p><p class="empty-state">Lần làm bài đã được lưu vào lịch sử tiến độ trên thiết bị.</p></>}
+            {!quizSubmitted ? <button class="primary-button quiz-submit" disabled={!questions.length || Object.keys(answers).filter(key => typeof answers[Number(key)] === 'string' ? String(answers[Number(key)]).trim().length > 0 : Array.isArray(answers[Number(key)]) ? (answers[Number(key)] as number[]).length > 0 : true).length !== questions.length} onClick={submitQuiz}>Nộp bài</button> :
+              <><p class="quiz-result">Kết quả: {questions.filter((q, i) => isQuestionCorrect(q, answers[i])).length}/{questions.length} câu đúng · +{questions.filter((q, i) => answers[i] === q.correct).length * 5} EXP.</p><p class="empty-state">Lần làm bài đã được lưu vào lịch sử tiến độ trên thiết bị.</p></>}
           </section> : <section class="content-panel">
             <div class="section-toolbar">
               <button class="back-link" disabled={!quizPath.length} onClick={() => setQuizPath(path => path.slice(0, -1))}>← Quay lại</button>
