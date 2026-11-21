@@ -1042,7 +1042,7 @@ export function App() {
               {quizSubmitted && question.explanation && <p class="question-explanation">{question.explanation}</p>}
             </article>)}
             {!quizSubmitted ? <button class="primary-button quiz-submit" disabled={!questions.length || Object.keys(answers).filter(key => typeof answers[Number(key)] === 'string' ? String(answers[Number(key)]).trim().length > 0 : Array.isArray(answers[Number(key)]) ? (answers[Number(key)] as number[]).length > 0 : true).length !== questions.length} onClick={submitQuiz}>Nộp bài</button> :
-              <><p class="quiz-result">Kết quả: {questions.filter((q, i) => isQuestionCorrect(q, answers[i])).length}/{questions.length} câu đúng · +{questions.filter((q, i) => answers[i] === q.correct).length * 5} EXP.</p><p class="empty-state">Lần làm bài đã được lưu vào lịch sử tiến độ trên thiết bị.</p></>}
+              <><p class="quiz-result">Kết quả: {questions.filter((q, i) => isQuestionCorrect(q, answers[i])).length}/{questions.length} câu đúng · +{questions.filter((q, i) => isQuestionCorrect(q, answers[i])).length * 5} EXP.</p><p class="empty-state">Lần làm bài đã được lưu trong tiến độ tài khoản; nếu đã đăng nhập, tiến độ sẽ được đồng bộ cloud.</p></>}
           </section> : <section class="content-panel">
             <div class="section-toolbar">
               <button class="back-link" disabled={!quizPath.length} onClick={() => setQuizPath(path => path.slice(0, -1))}>← Quay lại</button>
