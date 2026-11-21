@@ -9,16 +9,16 @@
  function save(v){try{localStorage.setItem(KEY,JSON.stringify(v))}catch(e){}}
  function safeUrl(raw,source){
   let u=String(raw||'').trim();if(!u)return '';
-  if(!/^https?:\\/\\//i.test(u))u='https://'+u;
+  if(!/^https?:\/\//i.test(u))u='https://'+u;
   try{
    const x=new URL(u);if(!/^https?:$/.test(x.protocol))return '';
-   if(source==='spotify'&&/open\\.spotify\\.com$/i.test(x.hostname)&&!x.pathname.startsWith('/embed/'))x.pathname='/embed'+x.pathname;
+   if(source==='spotify'&&/open\.spotify\.com$/i.test(x.hostname)&&!x.pathname.startsWith('/embed/'))x.pathname='/embed'+x.pathname;
    if(source==='youtube'){
-    let id='';if(/youtu\\.be$/i.test(x.hostname))id=x.pathname.split('/').filter(Boolean)[0]||'';
-    else if(/youtube(-nocookie)?\\.com$/i.test(x.hostname)){id=x.searchParams.get('v')||((x.pathname.match(/\\/(?:shorts|live|embed)\\/([^/?]+)/)||[])[1]||'');}
+    let id='';if(/youtu\.be$/i.test(x.hostname))id=x.pathname.split('/').filter(Boolean)[0]||'';
+    else if(/youtube(-nocookie)?\.com$/i.test(x.hostname)){id=x.searchParams.get('v')||((x.pathname.match(/\/(?:shorts|live|embed)\/([^/?]+)/)||[])[1]||'');}
     if(id)return 'https://www.youtube-nocookie.com/embed/'+encodeURIComponent(id)+'?autoplay=1&rel=0';
    }
-   if(source==='soundcloud'&&/soundcloud\\.com$/i.test(x.hostname))return 'https://w.soundcloud.com/player/?url='+encodeURIComponent(x.href)+'&auto_play=true&visual=true';
+   if(source==='soundcloud'&&/soundcloud\.com$/i.test(x.hostname))return 'https://w.soundcloud.com/player/?url='+encodeURIComponent(x.href)+'&auto_play=true&visual=true';
    return x.href;
   }catch(e){return ''}
  }
