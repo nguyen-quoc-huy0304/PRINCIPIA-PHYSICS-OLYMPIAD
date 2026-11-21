@@ -261,11 +261,15 @@ export function App() {
       const samples = Math.min(12, Math.max(1, Math.ceil(duration / 12)));
       const chunks: string[] = [];
       for (let i = 0; i < samples; i++) {
-        video.currentTime = samples === 1 ? 0 : duration * i / (samples - 1);
-        await new Promise<void>((resolve, reject) => {
-          const timeout = window.setTimeout(() => reject(new Error('Video không tua được tới khung hình cần quét.')), 10000);
-          video.onseeked = () => { window.clearTimeout(timeout); resolve(); };
-        });
+        const targetTime = samples === 1 ? 0 : duration * i / (samples - 1);
+        if (Math.abs(video.currentTime - targetTime) > 0.05) {
+          await new Promise<void>((resolve, reject) => {
+            const timeout = window.setTimeout(() => { video.removeEventListener('seeked', onSeeked); reject(new Error('Video không tua được tới khung hình cần quét.')); }, 10000);
+            const onSeeked = () => { window.clearTimeout(timeout); resolve(); };
+            video.addEventListener('seeked', onSeeked, { once: true });
+            video.currentTime = targetTime;
+          });
+        }
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
         const result = await worker.recognize(canvas);
         const text = String(result.data.text || '').trim();
@@ -800,6 +804,7 @@ export function App() {
                 {mediaOcrStatus && <p class="workspace-notice" role="status">{mediaOcrStatus}</p>}
                 <label>Transcript<textarea rows={6} value={activeLesson.transcript || ''} onInput={event => setActiveLesson(current => current ? { ...current, transcript: event.currentTarget.value } : current)} placeholder="Dán hoặc nhập lời thoại video…" /></label>
                 <div class="chat-actions"><button class="secondary-button" type="button" onClick={() => saveLessonMedia({ transcript: activeLesson.transcript || '' })}>Lưu transcript</button>{activeLesson.transcript && <button class="quiet-button" type="button" onClick={() => speakMediaText(activeLesson.transcript || '', 'vi-VN')}>▶ Đọc transcript</button>}</div>
+                {activeLesson.transcript && <button class="secondary-button" type="button" onClick={() => { setChatDraft('Hãy dịch transcript sau sang tiếng Việt tự nhiên, giữ nguyên thuật ngữ vật lý và công thức. Chỉ trả về bản dịch theo từng đoạn:\\n\\n' + (activeLesson.transcript || '')); chooseSection('chat'); }}>Soạn yêu cầu dịch bằng AI ↗</button>}
                 <label>Bản dịch transcript<textarea rows={5} value={activeLesson.translatedTranscript || ''} onInput={event => setActiveLesson(current => current ? { ...current, translatedTranscript: event.currentTarget.value } : current)} placeholder="Nhập bản dịch hoặc chỉnh sửa tại đây…" /></label>
                 <div class="chat-actions"><button class="secondary-button" type="button" onClick={() => saveLessonMedia({ translatedTranscript: activeLesson.translatedTranscript || '' })}>Lưu bản dịch</button>{activeLesson.translatedTranscript && <button class="quiet-button" type="button" onClick={() => speakMediaText(activeLesson.translatedTranscript || '', activeLesson.dubLang || 'vi-VN')}>▶ Đọc bản dịch</button>}</div>
                 <label>Văn bản OCR<textarea rows={6} value={activeLesson.videoOcr || ''} onInput={event => setActiveLesson(current => current ? { ...current, videoOcr: event.currentTarget.value } : current)} placeholder="Kết quả OCR sẽ xuất hiện tại đây…" /></label>
