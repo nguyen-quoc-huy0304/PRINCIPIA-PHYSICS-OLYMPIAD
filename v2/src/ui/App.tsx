@@ -1146,6 +1146,7 @@ export function App() {
               <option value="chatgpt">ChatGPT</option><option value="gemini">Google Gemini</option><option value="claude">Claude</option><option value="deepseek">DeepSeek</option><option value="copilot">Microsoft Copilot</option>
               {customAIProviders.map(provider => <option value={provider.id}>{provider.name}</option>)}
             </select><button class="secondary-button" type="button" onClick={addCustomAIProvider}>＋ Thêm AI</button></div>
+            <button class="secondary-button download-chat-link" type="button" onClick={() => chooseSection('downloads')}>⇩ Tải ứng dụng</button>
           </div>
           <div class="chat-provider-note">PRINCIPIA lưu lịch sử lời nhắc trên thiết bị. Khi mở AI, bạn cần đăng nhập và gửi nội dung ở trang của nhà cung cấp; V2 chưa giả lập phản hồi AI hoặc tự gửi dữ liệu của bạn.</div>
           <div class="chat-history">
