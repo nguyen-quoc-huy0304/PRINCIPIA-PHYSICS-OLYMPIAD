@@ -281,7 +281,7 @@ export function App() {
     if (!selected.length) return;
     const maxFileBytes = 250_000;
     const accepted = selected.filter(file => file.size <= maxFileBytes);
-    if (accepted.length !== selected.length) setWorkspaceNotice('Một số tệp vượt quá giới hạn 1,5 MB nên không được thêm.');
+    if (accepted.length !== selected.length) setWorkspaceNotice('Một số tệp vượt quá giới hạn 250 KB nên không được thêm.');
     try {
       const added = await Promise.all(accepted.map(file => new Promise<{ name: string; type: string; size: number; dataUrl: string; addedAt: string }>((resolve, reject) => {
         const reader = new FileReader();
@@ -293,7 +293,7 @@ export function App() {
       })));
       const next = [...lessonFiles, ...added].slice(-8);
       setLessonFiles(next);
-      saveLessonWorkspace({ files: next } as any);
+      saveLessonWorkspace({ files: next });
       setWorkspaceNotice('Đã thêm tệp vào tài liệu bài học trên thiết bị này.');
     } catch (error: any) {
       setWorkspaceNotice(error?.message || 'Không thể thêm tệp.');
@@ -302,7 +302,7 @@ export function App() {
   const removeLessonFile = (name: string, addedAt: string) => {
     const next = lessonFiles.filter(file => !(file.name === name && file.addedAt === addedAt));
     setLessonFiles(next);
-    saveLessonWorkspace({ files: next } as any);
+    saveLessonWorkspace({ files: next });
   };
   const saveLessonWorkspace = (patch: { note?: string; submission?: string; files?: typeof lessonFiles; transcript?: string; translatedTranscript?: string; videoOcr?: string; summary?: string; dubLang?: string }) => {
     if (!currentLessonStorageKey) return;
