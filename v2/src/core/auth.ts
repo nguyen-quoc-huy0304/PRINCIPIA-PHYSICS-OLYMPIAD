@@ -7,7 +7,7 @@ function toResult(user: User): AuthResult {
   return {
     user,
     // UI hint only. Firestore Security Rules must enforce all write permissions.
-    isAdmin: (user.email ?? '').toLowerCase() === PRINCIPIA_ADMIN_EMAIL
+    isAdmin: user.emailVerified && (user.email ?? '').toLowerCase() === PRINCIPIA_ADMIN_EMAIL
   };
 }
 
