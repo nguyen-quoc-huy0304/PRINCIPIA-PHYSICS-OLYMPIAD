@@ -6,7 +6,7 @@ import {
 } from '../core/auth';
 import { collectLegacyData, downloadLegacyBackup, restoreLegacyBackup } from '../core/legacy-migration';
 import type { LegacyBackup } from '../core/legacy-migration';
-import { restoreLegacyDataFromCloud, syncLegacyDataToCloud } from '../core/cloud-data';
+import { restoreLegacyDataFromCloud, syncLegacyDataToCloud, restoreProgressFromCloud, syncProgressToCloud } from '../core/cloud-data';
 
 type Section = 'home' | 'learn' | 'quiz' | 'progress' | 'legacy';
 type Mode = 'login' | 'signup';
@@ -159,7 +159,8 @@ export function App() {
     setBusy(true); setStatus('Đang đồng bộ dữ liệu lên tài khoản PRINCIPIA…');
     try {
       const count = await syncLegacyDataToCloud(account!.user.uid);
-      setStatus(`Đã đồng bộ ${count} mục dữ liệu lên đám mây.`);
+      await syncProgressToCloud(account!.user.uid, localProgress);
+      setStatus(`Đã đồng bộ ${count} mục dữ liệu và tiến độ học tập lên đám mây.`);
     } catch (error: any) {
       setStatus(error?.message || 'Đồng bộ thất bại. Hãy kiểm tra kết nối và Firestore Security Rules.');
     } finally { setBusy(false); }
@@ -170,8 +171,10 @@ export function App() {
     setBusy(true); setStatus('Đang tải dữ liệu từ đám mây…');
     try {
       const count = await restoreLegacyDataFromCloud(account!.user.uid);
+      const cloudProgress = await restoreProgressFromCloud(account!.user.uid);
+      if (cloudProgress) saveProgress(cloudProgress);
       setBackupVersion(value => value + 1);
-      setStatus(`Đã khôi phục ${count} mục dữ liệu. Hãy tải lại ứng dụng để nạp nội dung.`);
+      setStatus(`Đã khôi phục ${count} mục dữ liệu${cloudProgress ? ' và tiến độ học tập' : ''}.`);
     } catch (error: any) {
       setStatus(error?.message || 'Khôi phục thất bại. Hãy kiểm tra kết nối và Firestore Security Rules.');
     } finally { setBusy(false); }
