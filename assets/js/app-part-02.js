@@ -409,19 +409,63 @@ function accountPage(){
 }
 function setAccountMode(mode){accountMode=mode==='signup'?'signup':'login';render();renderGoogleAccount();}
 
+function principiaWelcomeCharacterSrc(){
+ try{
+  const settings=JSON.parse(localStorage.getItem('principia_sticker_settings')||'{}');
+  if(typeof settings.selected==='string' && settings.selected.startsWith('data:image/'))return settings.selected;
+ }catch(e){}
+ const svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 360"><defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#c9b7ff"/><stop offset="1" stop-color="#8bd5ef"/></linearGradient><linearGradient id="hair" x2="1" y2="1"><stop stop-color="#30254e"/><stop offset="1" stop-color="#7357a8"/></linearGradient><linearGradient id="skin" x2="0" y2="1"><stop stop-color="#fff0e7"/><stop offset="1" stop-color="#f5c8ba"/></linearGradient></defs><circle cx="160" cy="174" r="145" fill="url(#bg)"/><circle cx="160" cy="174" r="132" fill="none" stroke="#fff" stroke-opacity=".8" stroke-width="4"/><path d="M55 350Q61 260 160 254Q259 260 265 350" fill="#6552a4" stroke="#fff" stroke-width="6"/><path d="M80 155Q55 23 158 23Q278 15 250 167L232 251H87Z" fill="url(#hair)"/><ellipse cx="160" cy="147" rx="82" ry="96" fill="url(#skin)" stroke="#fff" stroke-width="5"/><path d="M78 130Q75 24 161 30Q244 23 245 118Q211 89 186 92Q133 65 78 130Z" fill="url(#hair)"/><path d="M83 105Q48 171 95 231L111 236L104 142ZM239 105Q276 173 226 232L210 236L217 142Z" fill="#3c2c60"/><path d="M111 140Q132 124 148 140M173 140Q190 124 210 140" fill="none" stroke="#563a60" stroke-width="6" stroke-linecap="round"/><ellipse cx="130" cy="162" rx="18" ry="24" fill="#fff"/><ellipse cx="190" cy="162" rx="18" ry="24" fill="#fff"/><ellipse cx="134" cy="166" rx="11" ry="17" fill="#51417e"/><ellipse cx="194" cy="166" rx="11" ry="17" fill="#51417e"/><circle cx="138" cy="157" r="5" fill="#fff"/><circle cx="198" cy="157" r="5" fill="#fff"/><ellipse cx="104" cy="194" rx="17" ry="9" fill="#f28da9" opacity=".55"/><ellipse cx="216" cy="194" rx="17" ry="9" fill="#f28da9" opacity=".55"/><path d="M145 211Q160 225 176 211" fill="none" stroke="#b65e7a" stroke-width="5" stroke-linecap="round"/><path d="M111 263L160 302L209 263" fill="none" stroke="#fff" stroke-width="6"/><path d="M254 61Q277 39 291 59Q300 79 277 94Q252 85 254 61Z" fill="#fff"/><path d="M273 51L279 66L294 72L279 78L273 94L267 78L252 72L267 66Z" fill="#ffd56f"/></svg>';
+ return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+}
+function startPrincipiaJourney(){
+ const acc=getPrincipiaAccount();
+ const id=acc?.uid||acc?.email||'guest';
+ localStorage.setItem('principia_welcome_seen_v4_'+id,'1');
+ localStorage.setItem('principia_home_greeted_v2_'+id,'1');
+ setPage('home');
+ if(window.grantPrincipiaReward)grantPrincipiaReward('welcome:'+id,'Quà chào mừng');
+}
 function render(){
  const app=$('#app');
  // Chỉ cho phép xem workspace sau khi có phiên PRINCIPIA đã xác thực.
  if(!getPrincipiaAccount() && page!=='account'){page='account';stack=[];}
  // Giữ màn hình chào cho tới khi người dùng chủ động bấm Bắt đầu hành trình.
 
- if(page==='welcome' && localStorage.getItem('principia_welcome_seen_v3_'+(getPrincipiaAccount()?.uid||'guest'))==='1'){page='home';}
+ if(page==='welcome' && localStorage.getItem('principia_welcome_seen_v4_'+(getPrincipiaAccount()?.uid||getPrincipiaAccount()?.email||'guest'))==='1'){page='home';}
  if(page==='welcome'){
-  const coverStyle = outerCoverImg ? `style="background-image:url('${outerCoverImg}')"` : '';
-  const coverCls = outerCoverImg ? 'welcome has-user-cover' : 'welcome';
-  app.innerHTML=`<div class="${coverCls}" ${coverStyle}><div class="welcome-card"><img class="welcome-logo-img" src="${PRINCIPIA_LOGO_URI}" alt="Principia Physics Olympiad Logo"><div class="eyebrow">PRINCIPIA • PHYSICS OLYMPIAD</div><h1>PRO<span style="color:var(--purple)">.</span></h1><p>Khám phá kiến thức, xây dựng thói quen học tập và chinh phục từng thử thách.</p><button class="primary" onclick="localStorage.setItem('principia_welcome_seen_v3_'+(getPrincipiaAccount()?.uid||'guest'),'1');setPage('home');if(window.grantPrincipiaReward)grantPrincipiaReward('welcome:'+((getPrincipiaAccount()?.uid||getPrincipiaAccount()?.email)||'guest'),'Quà chào mừng')">Bắt đầu hành trình →</button><p class="small">LEARN · EXPLORE · GROW</p></div></div>`;
+  const welcomeAccount=getPrincipiaAccount()||{};
+  const welcomeName=(welcomeAccount.name||profile?.name||'bạn').trim();
+  const characterSrc=principiaWelcomeCharacterSrc();
+  app.innerHTML=`<main class="principia-welcome-screen">
+   <div class="pw-glow pw-glow-one"></div><div class="pw-glow pw-glow-two"></div><div class="pw-stars"></div>
+   <header class="pw-header">
+    <div class="pw-brand"><img src="${PRINCIPIA_LOGO_URI}" alt="PRINCIPIA"><span><b>PRINCIPIA</b><small>PHYSICS OLYMPIAD · PRO</small></span></div>
+    <div class="pw-account"><span class="pw-online-dot"></span><span>${esc(welcomeAccount.email||'Tài khoản đã đăng nhập')}</span></div>
+   </header>
+   <section class="pw-content">
+    <div class="pw-copy">
+     <div class="pw-kicker"><span></span> YOUR NEXT CHAPTER STARTS HERE</div>
+     <div class="pw-overline">WELCOME TO</div>
+     <h1>PRINCIPIA <span>PRO</span></h1>
+     <h2>Chào mừng <em>${esc(welcomeName)}</em><br>đến với PRINCIPIA!</h2>
+     <p>Một không gian học tập được tạo ra để bạn khám phá Vật lý, chinh phục thử thách và tiến bộ theo cách của riêng mình.</p>
+     <button class="pw-start-button" type="button" onclick="startPrincipiaJourney()">Bắt đầu hành trình <span aria-hidden="true">→</span></button>
+     <div class="pw-note"><span class="pw-note-line"></span> HỌC TẬP · KHÁM PHÁ · BỨT PHÁ</div>
+    </div>
+    <div class="pw-visual">
+     <div class="pw-orbit pw-orbit-a"></div><div class="pw-orbit pw-orbit-b"></div>
+     <div class="pw-art-panel"><div class="pw-art-top"><span>PRINCIPIA COMPANION</span><i>● ONLINE</i></div>
+      <div class="pw-character-halo"><img src="${esc(characterSrc)}" alt="Nhân vật chibi PRINCIPIA"></div>
+      <div class="pw-speech"><span class="pw-speech-dot"></span><b>Sẵn sàng chưa?</b><small>Cùng bắt đầu hành trình nhé!</small></div>
+      <div class="pw-art-bottom"><span>LEARN</span><span>EXPLORE</span><span>GROW</span></div>
+     </div>
+     <div class="pw-floating-chip pw-chip-top">01 <span>START</span></div><div class="pw-floating-chip pw-chip-bottom">YOUR LEARNING WORLD</div>
+    </div>
+   </section>
+   <footer class="pw-footer"><span>PRINCIPIA • PHYSICS OLYMPIAD</span><span>MADE FOR CURIOUS MINDS</span></footer>
+  </main>`;
   return;
-}
+ }
  let nav=principiaNav();
  let body=page==='account'?accountPage():page==='home'?home():page==='library'?library():page==='lesson'?lesson():page==='quiz'?quizHome():page==='fun'?funHome():page==='entertainment'?entertainmentPage():page==='play'?playPage():page==='lessonplay'?lessonPlayPage():page==='progress'?progressPage():morePage();
  const outerCoverHtml = `<div class="outer-cover-banner"><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;"><img class="outer-cover-thumb" src="${outerCoverImg}" alt="Ảnh ngoài trang"><div><div class="eyebrow">ẢNH NGOÀI TRANG</div><div class="small muted">Hiển thị ảnh bạn đưa ngay ngoài không gian học tập</div></div></div><div style="display:flex;gap:8px;flex-wrap:wrap;"><button class="secondary" onclick="$('#outerCoverInput').click()">Đổi ảnh ngoài</button><button class="secondary" onclick="resetOuterCover()">Ảnh mặc định</button><input type="file" id="outerCoverInput" accept="image/*" class="hidden" onchange="updateOuterCover(this.files[0])"></div></div>`;
