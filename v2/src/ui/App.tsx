@@ -8,9 +8,11 @@ import { collectLegacyData, downloadLegacyBackup, restoreLegacyBackup } from '..
 import type { LegacyBackup } from '../core/legacy-migration';
 import { deleteLibraryBlob, getLibraryBlob, listLibraryItems, saveLibraryFiles } from '../core/library';
 import type { PrincipiaLibraryItem } from '../core/library';
+import { calculateMotion, calculateKineticEnergy, calculateProjectile } from '../core/physics';
+import type { MotionResult, ProjectileResult } from '../core/physics';
 import { restoreLegacyDataFromCloud, syncLegacyDataToCloud, restoreProgressFromCloud, syncProgressToCloud, publishLegacyContentToCloud, restorePublishedContentFromCloud } from '../core/cloud-data';
 
-type Section = 'home' | 'learn' | 'quiz' | 'library' | 'music' | 'browser' | 'games' | 'chat' | 'progress' | 'profile' | 'legacy';
+type Section = 'home' | 'learn' | 'quiz' | 'physics' | 'library' | 'music' | 'browser' | 'games' | 'chat' | 'progress' | 'profile' | 'legacy';
 type Mode = 'login' | 'signup';
 type Question = { q: string; a: string[]; correct: number; type?: 'true_false' | 'single_select' | 'multi_select' | 'short_answer' | 'long_answer'; correctValues?: string[]; expected?: string; rubric?: string; points?: number; explanation?: string };
 type QuizEditorState = { id?: string; name: string; questionsText: string };
@@ -25,6 +27,7 @@ const sections: { id: Section; label: string; icon: string }[] = [
   { id: 'home', label: 'Tổng quan', icon: '⌂' },
   { id: 'learn', label: 'Học tập', icon: '▤' },
   { id: 'quiz', label: 'Luyện đề', icon: '◎' },
+  { id: 'physics', label: 'Máy tính', icon: '⚛' },
   { id: 'library', label: 'Tài liệu', icon: '▧' },
   { id: 'music', label: 'Music & Focus', icon: '♫' },
   { id: 'browser', label: 'Trình duyệt', icon: '⌕' },
@@ -91,6 +94,15 @@ export function App() {
   const [browserIndex, setBrowserIndex] = useState(-1);
   const [browserReload, setBrowserReload] = useState(0);
   const [browserNotice, setBrowserNotice] = useState('');
+  const [motionInput, setMotionInput] = useState({ u: '0', a: '9.8', t: '2' });
+  const [motionResult, setMotionResult] = useState<MotionResult | null>(null);
+  const [energyInput, setEnergyInput] = useState({ mass: '1', speed: '10' });
+  const [energyResult, setEnergyResult] = useState<number | null>(null);
+  const [projectileInput, setProjectileInput] = useState({ speed: '20', angle: '45', gravity: '9.80665' });
+  const [projectileResult, setProjectileResult] = useState<ProjectileResult | null>(null);
+  const [physicsNotice, setPhysicsNotice] = useState('');
+  const [physicsBusy, setPhysicsBusy] = useState(false);
+
   const [gamePlatforms, setGamePlatforms] = useState<Array<{id:string;name:string;icon:string;url:string;custom?:boolean}>>(() => {
     const defaults = [{id:'chesscom',name:'Chess.com',icon:'♟️',url:'https://www.chess.com/'},{id:'lichess',name:'Lichess',icon:'♜',url:'https://lichess.org/'},{id:'sudoku',name:'Sudoku',icon:'🔢',url:'https://www.sudoku.com/'},{id:'geoguessr',name:'GeoGuessr',icon:'🌍',url:'https://www.geoguessr.com/'}];
     try { const saved = JSON.parse(localStorage.getItem('principia_game_platforms') || 'null'); return Array.isArray(saved) ? saved : defaults; } catch { return defaults; }
@@ -197,6 +209,24 @@ export function App() {
     } catch { setLibraryNotice('Địa chỉ nền tảng không hợp lệ.'); }
   };
   const formatFocusTime = (seconds: number) => String(Math.floor(seconds / 60)).padStart(2, '0') + ':' + String(seconds % 60).padStart(2, '0');
+  const runMotionCalculation = async () => {
+    setPhysicsBusy(true); setPhysicsNotice('');
+    try { setMotionResult(await calculateMotion(Number(motionInput.u), Number(motionInput.a), Number(motionInput.t))); }
+    catch (error: any) { setPhysicsNotice(error?.message || 'Không tính được chuyển động.'); }
+    finally { setPhysicsBusy(false); }
+  };
+  const runEnergyCalculation = async () => {
+    setPhysicsBusy(true); setPhysicsNotice('');
+    try { setEnergyResult(await calculateKineticEnergy(Number(energyInput.mass), Number(energyInput.speed))); }
+    catch (error: any) { setPhysicsNotice(error?.message || 'Không tính được động năng.'); }
+    finally { setPhysicsBusy(false); }
+  };
+  const runProjectileCalculation = async () => {
+    setPhysicsBusy(true); setPhysicsNotice('');
+    try { setProjectileResult(await calculateProjectile(Number(projectileInput.speed), Number(projectileInput.angle), Number(projectileInput.gravity))); }
+    catch (error: any) { setPhysicsNotice(error?.message || 'Không tính được chuyển động ném xiên.'); }
+    finally { setPhysicsBusy(false); }
+  };
   const addGamePlatform = () => {
     const name = prompt('Tên nền tảng (ví dụ: Cờ vua):')?.trim();
     if (!name) return;
@@ -1028,6 +1058,29 @@ export function App() {
             <div><span>POMODORO · THỜI GIAN TẬP TRUNG</span><strong>{formatFocusTime(focusSeconds)}</strong><small>{focusSeconds === 0 ? 'Hoàn thành phiên tập trung!' : focusRunning ? 'Đang tập trung' : 'Sẵn sàng bắt đầu'}</small></div>
             <div class="focus-timer-actions"><button class="primary-button" type="button" disabled={focusSeconds === 0} onClick={() => setFocusRunning(value => !value)}>{focusRunning ? 'Tạm dừng' : 'Bắt đầu'}</button><button class="secondary-button" type="button" onClick={() => { setFocusRunning(false); setFocusSeconds(25*60); }}>Đặt lại 25 phút</button></div>
           </div>
+        </section>}
+        {section === 'physics' && <section class="physics-workspace">
+          <div class="physics-intro"><h2>Máy tính Vật lý</h2><p>Các phép tính cơ học dùng Rust trong ứng dụng Tauri và TypeScript khi chạy trên web.</p></div>
+          <div class="physics-grid">
+            <article class="physics-card"><h3>Chuyển động thẳng biến đổi đều</h3><div class="physics-inputs">
+              <label>Vận tốc đầu u (m/s)<input type="number" value={motionInput.u} onInput={event => setMotionInput(v => ({...v,u:event.currentTarget.value}))} /></label>
+              <label>Gia tốc a (m/s²)<input type="number" value={motionInput.a} onInput={event => setMotionInput(v => ({...v,a:event.currentTarget.value}))} /></label>
+              <label>Thời gian t (s)<input type="number" value={motionInput.t} onInput={event => setMotionInput(v => ({...v,t:event.currentTarget.value}))} /></label>
+            </div><button class="primary-button" type="button" disabled={physicsBusy} onClick={() => void runMotionCalculation()}>Tính chuyển động</button>
+            {motionResult && <div class="physics-result"><span>Quãng dời: <b>{motionResult.position.toFixed(4)} m</b></span><span>Vận tốc cuối: <b>{motionResult.velocity.toFixed(4)} m/s</b></span><span>Gia tốc: <b>{motionResult.acceleration.toFixed(4)} m/s²</b></span></div>}</article>
+            <article class="physics-card"><h3>Động năng</h3><div class="physics-inputs">
+              <label>Khối lượng m (kg)<input type="number" min="0" value={energyInput.mass} onInput={event => setEnergyInput(v => ({...v,mass:event.currentTarget.value}))} /></label>
+              <label>Tốc độ v (m/s)<input type="number" min="0" value={energyInput.speed} onInput={event => setEnergyInput(v => ({...v,speed:event.currentTarget.value}))} /></label>
+            </div><button class="primary-button" type="button" disabled={physicsBusy} onClick={() => void runEnergyCalculation()}>Tính động năng</button>
+            {energyResult !== null && <div class="physics-result"><span>Wđ = <b>{energyResult.toFixed(4)} J</b></span></div>}</article>
+            <article class="physics-card"><h3>Ném xiên (bỏ qua lực cản)</h3><div class="physics-inputs">
+              <label>Tốc độ đầu v₀ (m/s)<input type="number" min="0" value={projectileInput.speed} onInput={event => setProjectileInput(v => ({...v,speed:event.currentTarget.value}))} /></label>
+              <label>Góc ném α (°)<input type="number" min="0" max="90" value={projectileInput.angle} onInput={event => setProjectileInput(v => ({...v,angle:event.currentTarget.value}))} /></label>
+              <label>Gia tốc trọng trường g (m/s²)<input type="number" min="0.0001" value={projectileInput.gravity} onInput={event => setProjectileInput(v => ({...v,gravity:event.currentTarget.value}))} /></label>
+            </div><button class="primary-button" type="button" disabled={physicsBusy} onClick={() => void runProjectileCalculation()}>Tính ném xiên</button>
+            {projectileResult && <div class="physics-result"><span>Tầm xa: <b>{projectileResult.range.toFixed(4)} m</b></span><span>Thời gian bay: <b>{projectileResult.flight_time.toFixed(4)} s</b></span><span>Độ cao cực đại: <b>{projectileResult.max_height.toFixed(4)} m</b></span><span>Tốc độ chạm đất: <b>{projectileResult.impact_speed.toFixed(4)} m/s</b></span></div>}</article>
+          </div>
+          {physicsNotice && <p class="workspace-notice" role="status">{physicsNotice}</p>}
         </section>}
         {section === 'library' && <section class="content-panel library-workspace">
           <div class="library-heading"><div><h2>Thư viện tài liệu</h2><p>Tệp được lưu ngoại tuyến trong kho riêng của tài khoản trên thiết bị này.</p></div><label class="primary-button file-button">＋ Thêm tài liệu<input type="file" multiple accept=".pdf,.epub,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.md,image/*,video/*,audio/*" onChange={handleLibraryUpload} /></label></div>
