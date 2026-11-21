@@ -1143,3 +1143,21 @@ input,textarea,select{box-shadow:inset 0 3px 9px rgba(0,0,0,.2),0 1px 0 rgba(255
 .tile,.panel,.welcome-card{border-color:rgba(255,255,255,.13)!important;box-shadow:0 12px 30px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.07)}
 .tile{transition:transform .22s,box-shadow .22s}.tile:hover{transform:translateY(-4px);box-shadow:0 20px 42px rgba(0,0,0,.28)}
 }
+
+
+/* Unified premium back control: shared by web and every app shell */
+.principia-back-btn{
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:9px!important;
+  min-height:38px!important;padding:0 15px!important;margin:0 0 12px!important;
+  border:1px solid rgba(190,178,255,.28)!important;border-radius:13px!important;
+  color:#f4f1ff!important;background:linear-gradient(135deg,rgba(135,112,225,.20),rgba(70,75,115,.16))!important;
+  box-shadow:0 5px 16px rgba(0,0,0,.16),inset 0 1px 0 rgba(255,255,255,.10)!important;
+  font:600 13px/1.1 inherit!important;letter-spacing:.01em!important;cursor:pointer!important;
+  transition:transform .18s ease,border-color .18s ease,background .18s ease,box-shadow .18s ease!important;
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)
+}
+.principia-back-btn::first-letter{font-size:18px}
+.principia-back-btn:hover{transform:translateY(-2px)!important;border-color:rgba(190,178,255,.55)!important;background:linear-gradient(135deg,rgba(145,121,245,.32),rgba(75,83,135,.25))!important;box-shadow:0 9px 22px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.15)!important}
+.principia-back-btn:active{transform:translateY(0)!important}
+@media(max-width:900px){.principia-back-btn{min-height:36px!important;padding:0 13px!important;margin-bottom:9px!important;font-size:12px!important}}
+@media(prefers-reduced-motion:reduce){.principia-back-btn{transition:none!important}}
