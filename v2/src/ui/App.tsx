@@ -8,7 +8,7 @@ import { collectLegacyData, downloadLegacyBackup, restoreLegacyBackup } from '..
 import type { LegacyBackup } from '../core/legacy-migration';
 import { restoreLegacyDataFromCloud, syncLegacyDataToCloud, restoreProgressFromCloud, syncProgressToCloud } from '../core/cloud-data';
 
-type Section = 'home' | 'learn' | 'quiz' | 'progress' | 'legacy';
+type Section = 'home' | 'learn' | 'quiz' | 'chat' | 'progress' | 'legacy';
 type Mode = 'login' | 'signup';
 type Question = { q: string; a: string[]; correct: number };
 type LegacyNode = {
@@ -20,6 +20,7 @@ const sections: { id: Section; label: string; icon: string }[] = [
   { id: 'home', label: 'Tổng quan', icon: '⌂' },
   { id: 'learn', label: 'Học tập', icon: '▤' },
   { id: 'quiz', label: 'Luyện đề', icon: '◎' },
+  { id: 'chat', label: 'AI Chat', icon: '✧' },
   { id: 'progress', label: 'Tiến độ', icon: '↗' },
   { id: 'legacy', label: 'Đầy đủ tính năng', icon: '✦' }
 ];
@@ -44,6 +45,19 @@ export function App() {
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [chatProvider, setChatProvider] = useState(() => localStorage.getItem('principia_v2_ai_selected') || 'chatgpt');
+  const [chatDraft, setChatDraft] = useState('');
+  const [chatMessages, setChatMessages] = useState<Array<{ role: 'user'; text: string; at: string }>>([]);
+  const [chatNotice, setChatNotice] = useState('');
+  const chatStorageKey = `principia_v2_chat:${account?.user.uid || 'guest'}:${chatProvider}`;
+  useEffect(() => {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(chatStorageKey) || '[]');
+      setChatMessages(Array.isArray(parsed) ? parsed.filter((item: any) => item && item.role === 'user' && typeof item.text === 'string' && typeof item.at === 'string').slice(-100) : []);
+    } catch { setChatMessages([]); }
+    setChatNotice('');
+  }, [chatStorageKey]);
+
   const [status, setStatus] = useState('');
   const [busy, setBusy] = useState(false);
   const [welcome, setWelcome] = useState(false);
@@ -461,6 +475,43 @@ export function App() {
         {section === 'legacy' && <section class="legacy-workspace">
           <div class="legacy-banner"><div><strong>PRINCIPIA · Không gian đầy đủ tính năng</strong><p>Mở toàn bộ giao diện và công cụ của phiên bản cũ trong V2 để không mất chức năng trong lúc chuyển đổi.</p></div><a href="/legacy/index.html" target="_blank" rel="noreferrer">Mở toàn màn hình ↗</a></div>
           <iframe class="legacy-frame" src="/legacy/index.html" title="PRINCIPIA full legacy workspace" loading="lazy" allow="clipboard-read; clipboard-write; fullscreen; autoplay; encrypted-media; picture-in-picture" />
+        </section>}
+        {section === 'chat' && <section class="content-panel chat-workspace">
+          <div class="chat-heading"><div><h2>AI Study Assistant</h2><p>Soạn câu hỏi, lưu lịch sử và mở AI đã chọn trong trình duyệt.</p></div>
+            <select value={chatProvider} onChange={event => { localStorage.setItem('principia_v2_ai_selected', event.currentTarget.value); setChatProvider(event.currentTarget.value); }}>
+              <option value="chatgpt">ChatGPT</option><option value="gemini">Google Gemini</option><option value="claude">Claude</option><option value="deepseek">DeepSeek</option><option value="copilot">Microsoft Copilot</option>
+            </select>
+          </div>
+          <div class="chat-provider-note">PRINCIPIA lưu lịch sử lời nhắc trên thiết bị. Khi mở AI, bạn cần đăng nhập và gửi nội dung ở trang của nhà cung cấp; V2 chưa giả lập phản hồi AI hoặc tự gửi dữ liệu của bạn.</div>
+          <div class="chat-history">
+            {chatMessages.length ? chatMessages.map((message, index) => <article class="chat-user-message" key={message.at + index}><small>BẠN · {new Date(message.at).toLocaleString('vi-VN')}</small><p>{message.text}</p></article>) : <div class="empty-state">Chưa có lời nhắc nào. Hãy nhập câu hỏi để bắt đầu.</div>}
+          </div>
+          <form class="chat-composer" onSubmit={event => {
+            event.preventDefault();
+            const text = chatDraft.trim();
+            if (!text) return;
+            const next = [...chatMessages, { role: 'user' as const, text, at: new Date().toISOString() }].slice(-100);
+            setChatMessages(next);
+            try { localStorage.setItem(chatStorageKey, JSON.stringify(next)); setChatNotice('Đã lưu lời nhắc vào lịch sử PRINCIPIA.'); }
+            catch { setChatNotice('Bộ nhớ trình duyệt đầy; lời nhắc chỉ còn trong phiên này.'); }
+            setChatDraft('');
+          }}>
+            <textarea value={chatDraft} onInput={event => setChatDraft(event.currentTarget.value)} placeholder="Hỏi về vật lý, toán học hoặc nội dung bài học…" rows={4} />
+            <div class="chat-actions"><button class="secondary-button" type="submit" disabled={!chatDraft.trim()}>Lưu lời nhắc</button>
+              <button class="primary-button" type="button" disabled={!chatDraft.trim()} onClick={() => {
+                const urls: Record<string, string> = { chatgpt: 'https://chatgpt.com/', gemini: 'https://gemini.google.com/app', claude: 'https://claude.ai/new', deepseek: 'https://chat.deepseek.com/', copilot: 'https://copilot.microsoft.com/' };
+                const text = chatDraft.trim();
+                const opened = window.open(urls[chatProvider] || urls.chatgpt, '_blank', 'noopener,noreferrer');
+                if (opened) {
+                  void navigator.clipboard?.writeText(text).then(() => setChatNotice('Đã mở AI và sao chép câu hỏi. Dán vào khung chat của AI để gửi.'));
+                  setChatNotice('Đã mở AI. Nếu chưa tự sao chép được, hãy dùng nút Sao chép câu hỏi.');
+                } else setChatNotice('Trình duyệt chặn cửa sổ bật lên. Hãy cho phép pop-up rồi thử lại.');
+              }}>Mở AI ↗</button>
+              <button class="secondary-button" type="button" disabled={!chatDraft.trim()} onClick={() => { void navigator.clipboard?.writeText(chatDraft.trim()); setChatNotice('Đã sao chép câu hỏi.'); }}>Sao chép câu hỏi</button>
+              <button class="quiet-button" type="button" disabled={!chatMessages.length} onClick={() => { if (confirm('Xóa toàn bộ lịch sử lời nhắc của AI này?')) { setChatMessages([]); localStorage.removeItem(chatStorageKey); } }}>Xóa lịch sử</button>
+            </div>
+          </form>
+          {chatNotice && <p class="workspace-notice" role="status">{chatNotice}</p>}
         </section>}
         {section === 'progress' && <section class="content-panel progress-panel">
           <div><strong>{(Number.isFinite(xp) ? xp : 0) + localProgress.xp}</strong><span>EXP tích lũy</span></div>
