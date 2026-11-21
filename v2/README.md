@@ -1,49 +1,53 @@
-# PRINCIPIA V2 — performance-first migration
+# PRINCIPIA V2 — native rebuild
 
-This folder is an isolated replacement architecture. The current production app remains untouched until feature parity, data migration, and performance checks pass.
+V2 is being developed on the isolated `rebuild-v2` branch. The production `main` branch is intentionally untouched until the new app reaches feature parity and passes device testing.
 
-## Runtime architecture
-- **Web:** Preact + TypeScript + Vite. Small UI runtime, production minification, split UI/Firebase chunks.
-- **Desktop/mobile shell:** Tauri 2 + Rust. The desktop shell renders local bundled assets instead of loading the production website over the network.
-- **Native compute:** Rust commands for validated motion, kinetic-energy, and projectile calculations. Web uses equivalent TypeScript fallbacks.
-- **Heavy numerical workloads:** C++ compiled to WebAssembly only when profiling shows that it beats the Rust/native or optimized JS path.
-- **Identity and sync:** Firebase Auth/Firestore, loaded lazily and protected by server-side Security Rules.
+## Architecture
+- **Web UI:** Preact + TypeScript + Vite.
+- **Desktop/mobile shell:** Tauri 2 + Rust.
+- **Physics:** Rust native calculations with TypeScript fallbacks; C++/WASM is reserved for workloads proven faster by benchmarks.
+- **Identity and data:** Firebase Authentication and Firestore with security rules.
+- **Local files:** IndexedDB for the account-scoped document library; localStorage for small per-account settings and drafts.
 
-## Performance rules
-1. Keep startup code small; dynamically import large screens and optional features.
-2. Never load Firebase modules until authentication or cloud data is needed.
-3. Cache static assets and user content with explicit versioning; avoid refetching entire app bundles.
-4. Keep long lists virtualized and expensive calculations off the UI thread.
-5. Use Rust for native work and C++/WASM for measured hot loops, not for ordinary UI.
-6. Release builds use optimization level 3, thin LTO, one codegen unit, and stripped symbols.
-7. Benchmark cold start, warm start, navigation latency, memory, and representative physics workloads on the same devices.
+## Implemented in V2 so far
+- Firebase email/password and Google redirect sign-in, password reset, visibility toggle, welcome screen, and verified-email admin role hint.
+- Original circular PRINCIPIA logo is reused; it is not redrawn.
+- Responsive web shell with bottom navigation on mobile.
+- Native lesson/course browsing and administrator lesson/folder editor.
+- Admin question-bank editor with JSON authoring for single choice, true/false, multiple choice, short answer and long answer question types.
+- Lesson video playback, personal notes, local lesson attachments, PhET simulation embed.
+- Transcript editing, OCR of uploaded local video frames using Tesseract.js, editable OCR text, quick transcript summary, browser speech playback, and an AI-assisted translation prompt.
+- Account-scoped AI prompt history, built-in AI providers, and custom external AI links. AI responses are still handled by the selected provider's website; V2 does not pretend to run a model locally or call a provider API.
+- Account-scoped offline document library with PDF/image/video/audio preview and download.
+- Learning completion, quiz history, EXP and daily streak; personal progress can sync to the signed-in user's Firestore document.
+- Private per-account backup/restore, admin publishing of shared lesson and quiz data, and automatic retrieval of published content for signed-in learners.
+- Rust physics core and TypeScript fallback; CI checks the web build and Rust code.
+
+## Access model
+- Only the verified account `huyquocnguyen03042011@gmail.com` receives the admin role hint.
+- Published lessons, quiz banks and media are admin-write-only in `firestore.rules`.
+- Each signed-in learner can read published academic content and write only their own private backup/progress documents.
+- The role shown in the UI is not a security boundary; Firestore Security Rules must enforce access.
+
+## Important deployment step
+`firestore.rules` is a proposal in this repository and **has not been deployed** to Firebase. Review it against the live database's existing collections before deploying. Until the matching rules are deployed, cloud publishing, backup and per-user progress sync may be denied or behave differently from the local app.
+
+## Still being migrated / verified
+- Full native parity for every old screen and interaction; the legacy iframe is only a temporary compatibility bridge and must be removed after migration.
+- Full video workspace, robust automatic transcript translation, live speech recognition, teacher submission/review workflow, and cloud-backed document storage.
+- Direct AI API integrations (which require provider API keys and secure server-side handling); current AI chat opens an external provider and copies the prompt.
+- Companion characters, sticker studio, games, music/focus island, mini browser, and remaining legacy account/settings tools.
+- Cross-device and offline conflict tests, browser/device end-to-end tests, performance benchmarks on real hardware.
+- Signed desktop installers and Android/iOS packages, auto-update signing configuration, and store distribution setup.
 
 ## Local development
 ```sh
 npm install
 npm run dev
-```
-
-## Web production build
-```sh
 npm run build
 ```
 
-## Desktop development and release
-Install Rust stable and platform prerequisites:
-```sh
-npm run tauri dev
-npm run tauri build
-```
+For the desktop shell, install Rust stable and the platform prerequisites, then run `npm run tauri dev` or `npm run tauri build`.
 
-## Cloud data and access control\n- Legacy local data is exported/imported as JSON and can be synced per account in chunked Firestore documents.\n- `firestore.rules` contains proposed V2 rules: learners read academic content, only the verified admin email can edit content/question banks/media, and each user can sync only their own progress/backup.\n- These rules are **not deployed automatically**. Review the collection names and existing production rules before deploying them in Firebase Console; do not overwrite live rules blindly.\n\n## Migration and data safety
-1. Keep the existing production site and Electron release intact while V2 is developed.
-2. Migrate account identity, learning content, quiz banks, notes, progress, and media without destructive changes.
-3. Never place admin secrets in client code. Enforce the single-admin write policy through Firebase Security Rules.
-4. Switch production only after feature parity, auth, data migration, and device tests pass.
-
-## Current status
-The V2 foundation now includes modular Firebase sign-in (Google redirect, email/password, password reset), a welcome screen, read-only views for legacy lessons, embedded lesson videos/notes/quizzes, legacy challenge banks, persistent account-scoped lesson completion and quiz history, local JSON backup/restore, administrator-only chunked Firestore backup plus V2 progress sync/restore, and native Rust physics commands with TypeScript web fallbacks. The original production logo is reused.\n\nThis is still **not** a full replacement: full video/document workspaces, AI chat and tools, complete CodeLearn workspace and lesson editor/course interactions, transcript/OCR/translation pipeline, companion and game features, and full end-to-end migration/device testing remain to be ported. Firestore rules are provided for review but have not been deployed. No production switch or release package has been made.
-
-## Full legacy compatibility workspace
-The original PRINCIPIA page and all currently loaded legacy CSS/JS modules are copied under `public/legacy/`. V2 exposes this complete workspace through the **Đầy đủ tính năng** navigation item in an isolated same-origin iframe. This is a compatibility bridge so the existing feature set remains accessible while each feature is ported into the new Preact/Rust architecture. It is not yet a full native rewrite of every legacy screen. Legacy localStorage data remains on the same browser origin; when testing on a different preview origin, use the JSON backup/restore tools to transfer local data.
+## Release safety
+Do not merge V2 into `main`, delete the legacy code, or distribute installers until the feature checklist is complete, the Firebase rules are reviewed/deployed, and Windows, Linux, macOS, Android and iOS builds have been tested on real devices.
