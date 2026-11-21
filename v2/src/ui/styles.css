@@ -106,3 +106,12 @@
 .phet-frame{width:100%;height:min(68vh,650px);border:1px solid rgba(255,255,255,.1);border-radius:12px;background:#fff}
 .lesson-tool-panel a{color:#c7baff;text-decoration:none;font-size:13px}
 .workspace-notice{margin:0;color:#9ed9bb;font-size:12px}
+
+.lesson-file-list{display:grid;gap:8px}
+.lesson-file-list article{display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid rgba(255,255,255,.09);border-radius:12px;background:rgba(255,255,255,.025)}
+.lesson-file-list article>div{display:grid;gap:3px;min-width:0;flex:1}
+.lesson-file-list b{overflow-wrap:anywhere;font-size:13px}
+.lesson-file-list small{color:#9298b4;font-size:11px}
+.lesson-file-list a{color:#c7baff;font-size:12px;text-decoration:none;white-space:nowrap}
+.lesson-file-list button{border:0;background:transparent;color:#ff9eaa;font-size:12px;cursor:pointer}
+@media(max-width:560px){.lesson-file-list article{flex-wrap:wrap}.lesson-file-list article>div{flex-basis:100%}}
