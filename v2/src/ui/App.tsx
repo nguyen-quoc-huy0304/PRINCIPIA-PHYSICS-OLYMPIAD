@@ -126,6 +126,7 @@ export function App() {
   useEffect(() => {
     if (!account) return;
     let active = true;
+    setLibraryItems([]); setLibraryPreview(null); setLibraryPreviewUrl('');
     listLibraryItems(account.user.uid).then(items => { if (active) setLibraryItems(items); })
       .catch(error => { if (active) setLibraryNotice(error?.message || 'Không tải được thư viện tài liệu.'); });
     return () => { active = false; };
@@ -166,7 +167,7 @@ export function App() {
     const input = event.currentTarget as HTMLInputElement;
     const selected = Array.from(input.files || []);
     if (!selected.length) return;
-    const maxFileBytes = 1_500_000;
+    const maxFileBytes = 250_000;
     const accepted = selected.filter(file => file.size <= maxFileBytes);
     if (accepted.length !== selected.length) setWorkspaceNotice('Một số tệp vượt quá giới hạn 1,5 MB nên không được thêm.');
     try {
@@ -178,7 +179,7 @@ export function App() {
         reader.onerror = () => reject(new Error('Không đọc được tệp.'));
         reader.readAsDataURL(file);
       })));
-      const next = [...lessonFiles, ...added].slice(-12);
+      const next = [...lessonFiles, ...added].slice(-8);
       setLessonFiles(next);
       saveLessonWorkspace({ files: next } as any);
       setWorkspaceNotice('Đã thêm tệp vào tài liệu bài học trên thiết bị này.');
@@ -787,7 +788,7 @@ export function App() {
               </div>}
               {lessonTool === 'files' && <div class="lesson-tool-panel">
                 <h3>Tài liệu bài học</h3>
-                <p class="empty-state">Thêm tài liệu để mở lại trên thiết bị này. Mỗi tệp tối đa 1,5 MB; tối đa 12 tệp mỗi bài.</p>
+                <p class="empty-state">Tệp đính kèm nhỏ được lưu cùng bản nháp trên thiết bị này (tối đa 250 KB/tệp, 8 tệp/bài). Dùng Thư viện tài liệu cho PDF hoặc tệp lớn.</p>
                 <label class="secondary-button file-button">＋ Thêm tài liệu<input type="file" multiple onChange={handleLessonFiles} /></label>
                 {lessonFiles.length ? <div class="lesson-file-list">{lessonFiles.map(file => <article><div><b>{file.name}</b><small>{(file.size / 1024).toFixed(1)} KB · {new Date(file.addedAt).toLocaleDateString('vi-VN')}</small></div><a href={file.dataUrl} download={file.name}>Tải / mở</a><button type="button" onClick={() => removeLessonFile(file.name, file.addedAt)}>Xóa</button></article>)}</div> : <p class="empty-state">Chưa có tài liệu đính kèm.</p>}
               </div>}
