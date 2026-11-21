@@ -119,7 +119,7 @@ export function App() {
   const quizzes = useMemo(() => parseArray<LegacyNode>(legacy.entries['halo_quiz']), [legacy]);
   const fun = useMemo(() => parseArray<LegacyNode>(legacy.entries['halo_fun']), [legacy]);
   const learningNodes = lessonPath.length ? lessonPath[lessonPath.length - 1].children || [] : lessons;
-  const quizNodes = quizPath.length ? quizPath[quizPath.length - 1].children || [] : quizzes;
+  const quizNodes = quizPath.length ? quizPath[quizPath.length - 1].children || [] : [...quizzes, ...fun.map(node => ({ ...node, name: node.name || 'Thử thách' }))];
   const questions = activeQuiz?.questions || activeQuiz?.quiz || [];
   const xp = Number(legacy.entries['halo_xp'] || 0);
   const streak = Number(legacy.entries['halo_streak'] || 0);
@@ -353,7 +353,7 @@ export function App() {
           </section> : <section class="content-panel">
             <div class="section-toolbar">
               <button class="back-link" disabled={!quizPath.length} onClick={() => setQuizPath(path => path.slice(0, -1))}>← Quay lại</button>
-              <span>{quizPath.map(node => node.name).join(' / ') || 'Ngân hàng đề'}</span>
+              <span>{quizPath.map(node => node.name).join(' / ') || 'Ngân hàng đề & thử thách'}</span>
             </div>
             <div class="node-grid">
               {quizNodes.map(node => <button class="node-card" onClick={() => openQuizNode(node)}>
