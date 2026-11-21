@@ -380,7 +380,7 @@ export function App() {
     else setLessonPath(path => [...path, node]);
   }
 
-  function startLessonEditor(node?: LegacyNode) {
+  function startLessonEditor(node?: Partial<LegacyNode>) {
     if (!account?.isAdmin) return;
     setLessonEditor({
       id: node?.id, name: node?.name || '', icon: node?.icon || '📘',
@@ -407,7 +407,8 @@ export function App() {
         const update = (nodes: LegacyNode[]): boolean => {
           for (const node of nodes) {
             if (node.id === lessonEditor.id) {
-              Object.assign(node, nextNode);
+              Object.assign(node, { name: nextNode.name, icon: nextNode.icon, type: nextNode.type });
+              if (lessonEditor.type === 'lesson') Object.assign(node, { content: nextNode.content, note: nextNode.note, video: nextNode.video });
               if (lessonEditor.type === 'folder' && !node.children) node.children = [];
               saved = true; return true;
             }
@@ -436,7 +437,7 @@ export function App() {
       if (!saved) throw new Error('Không tìm thấy mục cần chỉnh sửa.');
       localStorage.setItem('halo_data', JSON.stringify(tree));
       setBackupVersion(value => value + 1);
-      if (activeLesson && lessonEditor.id === activeLesson.id) setActiveLesson(nextNode);
+      if (activeLesson && lessonEditor.id === activeLesson.id) setActiveLesson(current => current ? { ...current, ...nextNode } : current);
       setLessonEditor(null);
       setStatus('Đã lưu nội dung vào kho bài học trên thiết bị. Hãy đồng bộ cloud để sao lưu bản quản trị.');
     } catch (error: any) { setStatus(error?.message || 'Không thể lưu nội dung bài học.'); }
