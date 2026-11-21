@@ -100,6 +100,7 @@ export function App() {
       setPrivateNote(typeof saved.note === 'string' ? saved.note : '');
       setAssignmentText(typeof saved.submission === 'string' ? saved.submission : '');
       setLessonFiles(Array.isArray(saved.files) ? saved.files.filter((file: any) => file && typeof file.name === 'string' && typeof file.dataUrl === 'string') : []);
+      setActiveLesson(current => current ? { ...current, transcript: saved.transcript ?? current.transcript, translatedTranscript: saved.translatedTranscript ?? current.translatedTranscript, videoOcr: saved.videoOcr ?? current.videoOcr, summary: saved.summary ?? current.summary, dubLang: saved.dubLang ?? current.dubLang } : current);
       setLessonTool('note');
       setWorkspaceNotice('');
     } catch {
@@ -137,7 +138,7 @@ export function App() {
     setLessonFiles(next);
     saveLessonWorkspace({ files: next } as any);
   };
-  const saveLessonWorkspace = (patch: { note?: string; submission?: string; files?: typeof lessonFiles }) => {
+  const saveLessonWorkspace = (patch: { note?: string; submission?: string; files?: typeof lessonFiles; transcript?: string; translatedTranscript?: string; videoOcr?: string; summary?: string; dubLang?: string }) => {
     if (!currentLessonStorageKey) return;
     try {
       const current = JSON.parse(localStorage.getItem(currentLessonStorageKey) || '{}');
@@ -149,6 +150,12 @@ export function App() {
   };
   const saveLessonMedia = (patch: Partial<Pick<LegacyNode, 'transcript' | 'translatedTranscript' | 'videoOcr' | 'summary' | 'dubLang'>>) => {
     if (!activeLesson) return;
+    if (!account?.isAdmin) {
+      saveLessonWorkspace(patch);
+      setActiveLesson(current => current ? { ...current, ...patch } : current);
+      setWorkspaceNotice('Đã lưu ghi chú media cá nhân trên thiết bị này; nội dung khóa học chung không bị thay đổi.');
+      return;
+    }
     try {
       const tree = JSON.parse(localStorage.getItem('halo_data') || 'null') as LegacyNode[] | null;
       if (!tree) throw new Error('Không tìm thấy dữ liệu bài học cũ.');
