@@ -6,18 +6,35 @@
   "main": "desktop/main.cjs",
   "scripts": {
     "start": "electron .",
-    "dist:win": "electron-builder --win nsis"
+    "dist:win": "electron-builder --win nsis",
+    "build:physics": "tsc -p tsconfig.physics.json"
   },
   "devDependencies": {
     "electron": "^35.2.1",
-    "electron-builder": "^26.0.12"
+    "electron-builder": "^26.0.12",
+    "typescript": "^5.8.3"
   },
   "build": {
     "appId": "vn.principia.physicsolympiad",
     "productName": "PRINCIPIA Physics Olympiad",
-    "directories": { "output": "dist" },
-    "files": ["desktop/**/*", "package.json"],
-    "win": { "target": ["nsis"], "artifactName": "PRINCIPIA-Setup-${version}.${ext}" },
-    "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true, "createDesktopShortcut": true, "createStartMenuShortcut": true }
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "desktop/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "artifactName": "PRINCIPIA-Setup-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
   }
 }
