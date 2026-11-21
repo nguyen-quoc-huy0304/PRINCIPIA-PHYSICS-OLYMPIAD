@@ -43,4 +43,4 @@ npm run tauri build
 4. Switch production only after feature parity, auth, data migration, and device tests pass.
 
 ## Current status
-The V2 foundation and native physics bridge are in place. This is not yet a replacement for the production PRINCIPIA app; authentication, lessons, quiz bank, progress, chat, and data migration still need to be ported and tested.
+The V2 foundation now includes modular Firebase sign-in (Google redirect, email/password, password reset), a welcome screen, basic read-only views for legacy lessons/quizzes/progress, local JSON backup/restore, per-account chunked Firestore backup, and native Rust physics commands with TypeScript web fallbacks. The original production logo is reused.\n\nThis is still **not** a full replacement: video/document workspaces, AI chat and tools, full lesson editor/course interactions, all existing companion and game features, and full end-to-end migration/device testing remain to be ported. Firestore rules are provided for review but have not been deployed. No production switch or release package has been made.
