@@ -38,6 +38,12 @@ jobs:
         with:
           node-version: 22
       - run: npm install
+      - name: Regenerate Windows icon from the cropped circular logo with alpha transparency
+        if: matrix.platform == 'windows'
+        shell: pwsh
+        run: |
+          python -m pip install --upgrade pillow
+          python desktop/scripts/generate-icons.py
       - run: npm run ${{ matrix.command }}
       - uses: actions/upload-artifact@v4
         with:
