@@ -1187,3 +1187,24 @@ input,textarea,select{box-shadow:inset 0 3px 9px rgba(0,0,0,.2),0 1px 0 rgba(255
  *,*::before,*::after{transition:none!important;scroll-behavior:auto!important}
  .tile:hover,.stat:hover,.welcome-card,.hero{transform:none!important}
 }
+
+
+/* Mobile bottom navigation: keep only the emblem at the start of the bar */
+@media(max-width:760px){
+ #app .layout>.sidebar{display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:flex-start!important;gap:3px!important}
+ #app .layout>.sidebar>.brand{
+  display:flex!important;flex:0 0 44px!important;width:44px!important;min-width:44px!important;
+  height:48px!important;align-items:center!important;justify-content:center!important;
+  padding:0!important;margin:0 3px 0 0!important;border:0!important;
+  font-size:0!important;color:transparent!important;letter-spacing:0!important;
+ }
+ #app .layout>.sidebar>.brand:after{content:none!important;display:none!important}
+ #app .layout>.sidebar>.brand .brand-logo-img{
+  display:block!important;width:36px!important;height:36px!important;
+  min-width:36px!important;max-width:36px!important;object-fit:contain!important;
+ }
+ #app .layout>.sidebar>.nav{
+  flex:1 1 0!important;min-width:0!important;max-width:none!important;
+ }
+ #app .layout>.sidebar>.navlabel,#app .layout>.sidebar>.sidebottom{display:none!important}
+}
