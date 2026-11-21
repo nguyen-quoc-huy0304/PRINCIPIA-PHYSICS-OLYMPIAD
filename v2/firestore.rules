@@ -11,15 +11,14 @@ service cloud.firestore {
         && request.auth.token.email_verified == true;
     }
 
-    // All PRINCIPIA content and cloud writes are administrator-only.
-    // Learner accounts can sign in and read published academic material.
+    // Published PRINCIPIA content is administrator-managed. Each learner may manage only their own private backup/progress.
     match /principiaUsers/{uid} {
       allow read: if isPrincipiaAdmin() || (signedIn() && request.auth.uid == uid);
-      allow write: if isPrincipiaAdmin();
+      allow write: if isPrincipiaAdmin() || (signedIn() && request.auth.uid == uid);
 
       match /legacyData/{documentId} {
         allow read: if isPrincipiaAdmin() || (signedIn() && request.auth.uid == uid);
-        allow write: if isPrincipiaAdmin();
+        allow write: if isPrincipiaAdmin() || (signedIn() && request.auth.uid == uid);
       }
     }
 
