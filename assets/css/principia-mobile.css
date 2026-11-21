@@ -515,3 +515,6 @@
   .chat-bubble-btn{right:12px!important;bottom:calc(78px + env(safe-area-inset-bottom))!important}
   #principiaDownloadFab{right:12px!important;bottom:calc(140px + env(safe-area-inset-bottom))!important}
 }
+
+/* Circularly crop excess outside the original logo on mobile/tablet */
+.brand-logo-img,.welcome-logo-img,.account-brand-logo{border-radius:50%!important;overflow:hidden!important;object-fit:cover!important;background:transparent!important;padding:0!important}
