@@ -260,8 +260,11 @@ export function App() {
             <div class="backup-actions">
               <button class="secondary-button" onClick={downloadLegacyBackup}>Tải bản sao lưu</button>
               <label class="secondary-button file-button">Khôi phục tệp<input type="file" accept="application/json,.json" onChange={handleRestore} /></label>
-              <button class="secondary-button" disabled={busy} onClick={() => void handleCloudSync()}>Đồng bộ cloud</button>
-              <button class="secondary-button" disabled={busy} onClick={() => void handleCloudRestore()}>Khôi phục cloud</button>
+              {account.isAdmin && <>
+                <button class="secondary-button" disabled={busy} onClick={() => void handleCloudSync()}>Đồng bộ cloud</button>
+                <button class="secondary-button" disabled={busy} onClick={() => void handleCloudRestore()}>Khôi phục cloud</button>
+              </>}
+              {!account.isAdmin && <p class="permission-note">Tài khoản học viên chỉ xem nội dung; quyền ghi và đồng bộ dữ liệu lên cloud dành cho quản trị viên.</p>}
             </div>
           </section>
         </>}
