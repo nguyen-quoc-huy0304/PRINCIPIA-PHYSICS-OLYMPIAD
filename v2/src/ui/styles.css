@@ -216,3 +216,15 @@ body.principia-focus-mode .topbar{border-color:rgba(153,133,255,.22)}
 .browser-toolbar button{white-space:nowrap}
 .mini-browser-frame{display:block;width:100%;height:min(72vh,780px);min-height:420px;border:1px solid rgba(255,255,255,.12);border-radius:13px;background:#fff}
 @media(max-width:560px){.browser-heading{align-items:flex-start;flex-direction:column}.browser-toolbar{flex-wrap:wrap}.browser-toolbar input{flex-basis:100%;order:-1}.browser-toolbar button{flex:1}.mini-browser-frame{height:62vh;min-height:360px}}
+
+
+.games-workspace{display:grid;gap:14px}
+.games-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.games-heading h2{margin:0 0 5px}.games-heading p{margin:0;color:#aeb2c9;font-size:12px}
+.game-tabs{display:flex;gap:8px;overflow-x:auto;padding:2px 0 8px;scrollbar-width:thin}
+.game-tabs button{display:flex;align-items:center;gap:8px;flex:0 0 auto;padding:10px 13px;border:1px solid rgba(255,255,255,.1);border-radius:12px;background:rgba(255,255,255,.035);color:#aeb2c9;font-size:12px}
+.game-tabs button.active{border-color:rgba(174,157,255,.45);background:rgba(153,133,255,.14);color:#e6e0ff}
+.game-tabs button span{font-size:18px}.game-tabs button i{font-style:normal;color:#ff9eaa;font-size:16px;padding-left:4px}
+.games-frame-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.games-frame{width:100%;height:min(68vh,700px);min-height:380px;border:1px solid rgba(255,255,255,.12);border-radius:13px;background:#fff}
+@media(max-width:560px){.games-heading{align-items:flex-start;flex-direction:column}.games-frame{height:60vh;min-height:340px}}
