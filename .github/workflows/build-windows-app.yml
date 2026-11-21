@@ -28,7 +28,7 @@ jobs:
             command: dist:linux
             artifact: PRINCIPIA-Linux
           - platform: macos
-            os: macos-14
+            os: macos-latest
             command: dist:mac
             artifact: PRINCIPIA-macOS
     runs-on: ${{ matrix.os }}
