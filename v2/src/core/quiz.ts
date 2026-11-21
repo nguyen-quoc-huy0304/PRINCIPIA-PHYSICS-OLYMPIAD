@@ -55,6 +55,9 @@ export function validateQuizQuestions(value: unknown): QuizQuestion[] {
     const type = item.type || 'single_select';
     if (!QUESTION_TYPES.has(type)) throw new Error(prefix + 'có dạng câu hỏi không được hỗ trợ.');
     const question = { ...item, type } as QuizQuestion;
+    if (question.correctValues !== undefined && (!Array.isArray(question.correctValues) || question.correctValues.some(value => typeof value !== 'string' && typeof value !== 'number'))) {
+      throw new Error(prefix + 'có danh sách correctValues không hợp lệ.');
+    }
     if (type === 'short_answer') {
       if (typeof question.expected !== 'string' || !question.expected.trim()) throw new Error(prefix + 'cần có đáp án trong trường expected.');
     } else if (type === 'long_answer') {
