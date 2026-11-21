@@ -248,3 +248,16 @@ body.principia-focus-mode .topbar{border-color:rgba(153,133,255,.22)}
 .light-theme input,.light-theme textarea,.light-theme select{background:#fff!important;color:#20263a!important;border-color:rgba(26,33,60,.2)!important}
 .light-theme .bottom-nav button{color:#68708a}.light-theme .bottom-nav button.active{color:#5e4ab8}
 @media(max-width:560px){.profile-heading{align-items:flex-start;flex-direction:column}.profile-theme{align-items:flex-start;flex-direction:column}}
+
+
+.physics-workspace{display:grid;gap:16px}
+.physics-intro h2{margin:0 0 5px}.physics-intro p{margin:0;color:#aeb2c9;font-size:12px;line-height:1.6}
+.physics-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.physics-card{display:grid;align-content:start;gap:13px;padding:17px;border:1px solid rgba(153,133,255,.18);border-radius:15px;background:rgba(255,255,255,.025)}
+.physics-card h3{margin:0;font-size:14px;color:#e1dcff}
+.physics-inputs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.physics-inputs label{display:grid;gap:6px;color:#bfc3d9;font-size:11px}
+.physics-inputs input{width:100%;min-width:0;padding:10px;border:1px solid rgba(255,255,255,.13);border-radius:9px;background:#0b1020;color:#f4f5ff;font:inherit}
+.physics-result{display:grid;gap:8px;padding:12px;border-radius:11px;background:rgba(153,133,255,.08);color:#bfc3d9;font-size:12px}
+.physics-result b{color:#e6e0ff;font-variant-numeric:tabular-nums}
+@media(max-width:600px){.physics-grid{grid-template-columns:1fr}.physics-card{padding:14px}}
