@@ -295,6 +295,30 @@
     body>.sidebar[data-principia-web-nav]>.brand:after{display:none!important;content:none!important}
     body>.sidebar[data-principia-web-nav]>.brand .brand-logo-img{display:block!important;width:40px!important;height:40px!important;min-width:40px!important;object-fit:contain!important}
     body>.sidebar[data-principia-web-nav]>.navlabel,body>.sidebar[data-principia-web-nav]>.sidebottom{display:none!important}
+    /* Mobile: every primary destination shares one persistent bottom navigation bar. */
+    body>.sidebar[data-principia-web-nav]>*:not(.brand):not(.nav):not(.sidebottom){display:none!important}
+    body>.sidebar[data-principia-web-nav]>.nav{
+      display:flex!important;visibility:visible!important;opacity:1!important;
+      flex:1 0 62px!important;min-width:62px!important;max-width:110px!important;
+      align-self:stretch!important
+    }
+    body>.sidebar[data-principia-web-nav]>.nav>span:last-child{
+      display:block!important;white-space:nowrap!important;overflow:visible!important
+    }
+    @media(max-width:900px){
+      body>.sidebar[data-principia-web-nav]{
+        position:fixed!important;left:0!important;right:0!important;bottom:0!important;top:auto!important;
+        display:flex!important;flex-direction:row!important;align-items:center!important;
+        width:100%!important;min-width:0!important;max-width:none!important;
+        overflow-x:auto!important;overflow-y:hidden!important;flex-wrap:nowrap!important;
+        z-index:2147483000!important
+      }
+      body>.sidebar[data-principia-web-nav]>.nav{flex:0 0 72px!important;min-width:72px!important;max-width:90px!important}
+      #app .layout>.main{padding-bottom:calc(104px + env(safe-area-inset-bottom))!important}
+    }
+    @media(max-width:600px){
+      body>.sidebar[data-principia-web-nav]>.nav{flex-basis:66px!important;min-width:66px!important;max-width:82px!important}
+    }
     body>.sidebar[data-principia-web-nav]>.nav{
       display:flex!important;flex:1 0 78px!important;min-width:70px!important;max-width:150px!important;width:auto!important;
       min-height:54px!important;height:auto!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;
