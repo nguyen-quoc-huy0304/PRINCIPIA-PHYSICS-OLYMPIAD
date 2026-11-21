@@ -275,3 +275,17 @@ body.principia-focus-mode .topbar{border-color:rgba(153,133,255,.22)}
 .achievement-grid em{font-size:9px;font-style:normal;color:#9298b4;white-space:nowrap}
 .achievement-grid .unlocked em{color:#a9e0c7}
 @media(max-width:560px){.achievement-grid{grid-template-columns:1fr}}
+
+
+/* Desktop uses a dedicated left navigation rail; mobile keeps the bottom bar. */
+@media(min-width:900px){
+  .app-shell{min-height:100vh}
+  .topbar{position:sticky;top:0;z-index:12;grid-column:1/-1}
+  .bottom-nav{left:0;right:auto;top:76px;bottom:0;transform:none;width:236px;max-height:calc(100vh - 76px);overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;gap:7px;padding:22px 14px calc(22px + env(safe-area-inset-bottom));border:0;border-right:1px solid rgba(255,255,255,.09);border-radius:0;background:rgba(12,15,30,.96);box-shadow:none}
+  .bottom-nav button{display:flex;align-items:center;justify-content:flex-start;gap:13px;width:100%;min-width:0;padding:12px 14px;border-radius:11px;text-align:left}
+  .bottom-nav button span{display:grid;place-items:center;width:22px;font-size:19px}
+  .bottom-nav button small{font-size:12px;white-space:nowrap}
+  .bottom-nav button.active{background:rgba(153,133,255,.13);color:#e1dcff}
+  .main-content{width:min(1040px,calc(100% - 300px));max-width:1040px;margin:64px auto 80px;grid-column:2}
+  .account-footer{margin-bottom:35px}
+}
