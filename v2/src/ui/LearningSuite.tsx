@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'preact/hooks';
+import { getCorrectOptionIndexes } from '../core/quiz';
 
 type Node = {
   id: string; name: string; icon?: string; type?: string; content?: string; note?: string; video?: string;
@@ -70,7 +71,7 @@ export function LearningSuite({ userId, lessons, quizzes, progress, onAttempt, o
 
   const lessonFlat = useMemo(() => FLAT(lessons), [lessons]);
   const quizFlat = useMemo(() => FLAT(quizzes), [quizzes]);
-  const questionBank = useMemo(() => quizFlat.flatMap(node => (node.questions || node.quiz || []).filter(q => q && q.q && Array.isArray(q.a) && q.a.length >= 2 && (q.type || 'single_select') === 'single_select').map(q => ({ ...q, __source: node.name } as Question & { __source: string }))), [quizFlat]);
+  const questionBank = useMemo(() => quizFlat.flatMap(node => (node.questions || node.quiz || []).filter(q => q && q.q && Array.isArray(q.a) && q.a.length >= 2 && (!q.type || q.type === 'single_select' || q.type === 'true_false')).map(q => ({ ...q, __source: node.name } as Question & { __source: string }))), [quizFlat]);
   const dueCards = cards.filter(card => card.due <= Date.now());
   const searchResults = useMemo(() => {
     const term = query.trim().toLocaleLowerCase();
@@ -103,7 +104,7 @@ export function LearningSuite({ userId, lessons, quizzes, progress, onAttempt, o
     { id: 'mistakes', name: 'Học từ sai lầm', icon: '🛠️', desc: 'Ôn lại 10 câu sai', unlocked: mistakes.length >= 10 }
   ];
   const addMistake = (question: Question, answer: number, source: string) => {
-    const correctIndex = Number(question.correct);
+    const correctIndex = getCorrectOptionIndexes(question)[0] ?? Number(question.correct);
     const item: Mistake = { id: String(Date.now()) + Math.random().toString(36).slice(2), question: question.q, answer: question.a[answer] || 'Chưa trả lời', correct: question.a[correctIndex] || 'Đáp án chuẩn trong ngân hàng đề', explanation: question.explanation || 'Hãy xem lại lời giải trong bài học hoặc hỏi AI để hiểu vì sao đáp án này đúng.', source, at: new Date().toISOString() };
     setMistakes(current => [item, ...current].slice(0, 300));
   };
@@ -116,7 +117,7 @@ export function LearningSuite({ userId, lessons, quizzes, progress, onAttempt, o
   const submitPractice = () => {
     let score = 0;
     practice.forEach((question, index) => {
-      if (practiceAnswers[index] === Number(question.correct)) score++;
+      if (practiceAnswers[index] === (getCorrectOptionIndexes(question)[0] ?? Number(question.correct))) score++;
       else addMistake(question, practiceAnswers[index], practiceTitle);
     });
     setPracticeDone(true); setPracticeRunning(false);
@@ -170,7 +171,7 @@ export function LearningSuite({ userId, lessons, quizzes, progress, onAttempt, o
       <div class="suite-panel-head"><div><h3>Phòng luyện thi Olympic</h3><p>Đề trộn ngẫu nhiên từ ngân hàng đề PRINCIPIA hiện có.</p></div><span class="suite-stat">{totalQuestions} câu trong ngân hàng</span></div>
       {!practice.length ? <div class="suite-empty"><span>🏅</span><h3>Sẵn sàng thử thách?</h3><p>Mỗi lượt chọn tối đa 20 câu trắc nghiệm ngẫu nhiên, giới hạn 30 phút và lưu câu trả lời sai vào sổ lỗi sai.</p><button class="primary-button" onClick={startPractice}>Bắt đầu luyện đề</button></div> : <>
         <div class="suite-practice-meta"><b>{practiceTitle}</b><span>{Math.floor(practiceSeconds / 60).toString().padStart(2, '0')}:{(practiceSeconds % 60).toString().padStart(2, '0')}</span><span>{Object.keys(practiceAnswers).length}/{practice.length} câu đã trả lời</span></div>
-        {practice.map((question, index) => <article class="question-card"><b>{index + 1}. {question.q}</b><div class="answer-list">{question.a.map((answer, answerIndex) => <label class={(practiceDone && answerIndex === Number(question.correct) ? 'correct' : '') + (practiceDone && practiceAnswers[index] === answerIndex && answerIndex !== Number(question.correct) ? ' incorrect' : '')}><input type="radio" name={'olympiad-' + index} checked={practiceAnswers[index] === answerIndex} disabled={practiceDone} onChange={() => setPracticeAnswers(current => ({ ...current, [index]: answerIndex }))} />{answer}</label>)}</div>{practiceDone && question.explanation && <p class="empty-state">Giải thích: {question.explanation}</p>}</article>)}
+        {practice.map((question, index) => <article class="question-card"><b>{index + 1}. {question.q}</b><div class="answer-list">{question.a.map((answer, answerIndex) => <label class={(practiceDone && answerIndex === (getCorrectOptionIndexes(question)[0] ?? Number(question.correct)) ? 'correct' : '') + (practiceDone && practiceAnswers[index] === answerIndex && answerIndex !== Number(question.correct) ? ' incorrect' : '')}><input type="radio" name={'olympiad-' + index} checked={practiceAnswers[index] === answerIndex} disabled={practiceDone} onChange={() => setPracticeAnswers(current => ({ ...current, [index]: answerIndex }))} />{answer}</label>)}</div>{practiceDone && question.explanation && <p class="empty-state">Giải thích: {question.explanation}</p>}</article>)}
         {!practiceDone ? <div class="suite-actions"><button class="secondary-button" onClick={() => { setPractice([]); setPracticeRunning(false); }}>Bỏ lượt</button><button class="primary-button" onClick={submitPractice}>Nộp bài và chấm điểm</button></div> : <div class="suite-result"><h3>Đã hoàn thành lượt luyện đề</h3><p>{practice.filter((q, i) => practiceAnswers[i] === Number(q.correct)).length}/{practice.length} câu đúng</p><button class="primary-button" onClick={() => setPractice([])}>Tạo đề mới</button></div>}
       </>}
     </div>}
