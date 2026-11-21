@@ -6,7 +6,9 @@
   "main": "desktop/main.cjs",
   "scripts": {
     "start": "electron .",
-    "dist:win": "electron-builder --win nsis --publish never",
+    "dist:win": "electron-builder --win nsis --x64 --publish never",
+    "dist:linux": "electron-builder --linux AppImage --x64 --publish never",
+    "dist:mac": "electron-builder --mac dmg zip --x64 --publish never",
     "build:physics": "tsc -p tsconfig.physics.json"
   },
   "devDependencies": {
