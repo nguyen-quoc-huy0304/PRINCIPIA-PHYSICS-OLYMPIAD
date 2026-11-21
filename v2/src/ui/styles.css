@@ -45,7 +45,7 @@
 .file-button{position:relative;overflow:hidden}
 .file-button input{position:absolute;inset:0;opacity:0;width:100%;cursor:pointer}
 .account-footer{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:22px;color:#8f95b1;font-size:11px}
-@media(max-width:600px){.auth-card{padding:28px 22px}.main-content{margin-top:55px}.stats-grid{grid-template-columns:1fr}.backup-panel{align-items:flex-start;flex-direction:column}.backup-actions{justify-content:flex-start}.account-chip{max-width:50%}.brand-copy span{font-size:8px}.bottom-nav{gap:2px}.bottom-nav button{min-width:0;flex:1;padding:6px 4px}}
+@media(max-width:600px){.auth-card{padding:28px 22px}.main-content{margin-top:55px}.stats-grid{grid-template-columns:1fr}.backup-panel{align-items:flex-start;flex-direction:column}.backup-actions{justify-content:flex-start}.account-chip{max-width:50%}.brand-copy span{font-size:8px}.bottom-nav{gap:4px;justify-content:flex-start;overflow-x:auto;scrollbar-width:none}.bottom-nav::-webkit-scrollbar{display:none}.bottom-nav button{min-width:0;flex:0 0 58px;padding:6px 3px}.bottom-nav button small{font-size:9px;white-space:nowrap}}
 
 
 .content-panel{margin-top:25px;padding:clamp(16px,3vw,24px);border:1px solid rgba(255,255,255,.09);border-radius:20px;background:rgba(255,255,255,.035)}
