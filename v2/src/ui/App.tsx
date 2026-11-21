@@ -11,11 +11,11 @@ import type { PrincipiaLibraryItem } from '../core/library';
 import { calculateMotion, calculateKineticEnergy, calculateProjectile } from '../core/physics';
 import type { MotionResult, ProjectileResult } from '../core/physics';
 import { restoreLegacyDataFromCloud, syncLegacyDataToCloud, restoreProgressFromCloud, syncProgressToCloud, publishLegacyContentToCloud, restorePublishedContentFromCloud } from '../core/cloud-data';
+import { getCorrectOptionIndexes, isQuestionCorrect, validateQuizQuestions } from '../core/quiz';
+import type { QuizQuestion as Question } from '../core/quiz';
 
 type Section = 'home' | 'learn' | 'quiz' | 'physics' | 'library' | 'music' | 'browser' | 'games' | 'chat' | 'downloads' | 'progress' | 'profile' | 'legacy';
 type Mode = 'login' | 'signup';
-import { getCorrectOptionIndexes, isQuestionCorrect, validateQuizQuestions } from '../core/quiz';
-import type { QuizQuestion as Question } from '../core/quiz';
 type QuizEditorState = { id?: string; name: string; questionsText: string };
 type CustomAIProvider = { id: string; name: string; url: string };
 type LegacyNode = {
