@@ -6,7 +6,7 @@ import {
 } from '../core/auth';
 import { collectLegacyData, downloadLegacyBackup, restoreLegacyBackup } from '../core/legacy-migration';
 import type { LegacyBackup } from '../core/legacy-migration';
-import { restoreLegacyDataFromCloud, syncLegacyDataToCloud, restoreProgressFromCloud, syncProgressToCloud } from '../core/cloud-data';
+import { restoreLegacyDataFromCloud, syncLegacyDataToCloud, restoreProgressFromCloud, syncProgressToCloud, publishLegacyContentToCloud, restorePublishedContentFromCloud } from '../core/cloud-data';
 
 type Section = 'home' | 'learn' | 'quiz' | 'chat' | 'progress' | 'legacy';
 type Mode = 'login' | 'signup';
@@ -301,6 +301,20 @@ export function App() {
     return () => { active = false; unsubscribe?.(); };
   }, []);
 
+  useEffect(() => {
+    if (!account) return;
+    let active = true;
+    restorePublishedContentFromCloud().then(count => {
+      if (active && count) {
+        setBackupVersion(value => value + 1);
+        setStatus(`Đã tải ${count} mục nội dung học tập được quản trị viên xuất bản.`);
+      }
+    }).catch(error => {
+      if (active) setStatus(error?.message || 'Chưa tải được nội dung học tập từ cloud.');
+    });
+    return () => { active = false; };
+  }, [account?.user.uid]);
+
   const legacy = useMemo<LegacyBackup>(() => {
     try { return collectLegacyData(); }
     catch { return { entries: {} as Record<string, string>, format: 'principia-legacy-backup' as const, version: 1 as const, createdAt: '' }; }
@@ -365,8 +379,9 @@ export function App() {
     setBusy(true); setStatus('Đang đồng bộ dữ liệu lên tài khoản PRINCIPIA…');
     try {
       const count = await syncLegacyDataToCloud(account!.user.uid);
+      const published = await publishLegacyContentToCloud(account!.user.uid);
       await syncProgressToCloud(account!.user.uid, localProgress);
-      setStatus(`Đã đồng bộ ${count} mục dữ liệu và tiến độ học tập lên đám mây.`);
+      setStatus(`Đã sao lưu ${count} mục dữ liệu cá nhân, xuất bản ${published} mục nội dung học tập và đồng bộ tiến độ.`);
     } catch (error: any) {
       setStatus(error?.message || 'Đồng bộ thất bại. Hãy kiểm tra kết nối và Firestore Security Rules.');
     } finally { setBusy(false); }
@@ -377,10 +392,11 @@ export function App() {
     setBusy(true); setStatus('Đang tải dữ liệu từ đám mây…');
     try {
       const count = await restoreLegacyDataFromCloud(account!.user.uid);
+      const published = await restorePublishedContentFromCloud();
       const cloudProgress = await restoreProgressFromCloud(account!.user.uid);
       if (cloudProgress) saveProgress(cloudProgress);
       setBackupVersion(value => value + 1);
-      setStatus(`Đã khôi phục ${count} mục dữ liệu${cloudProgress ? ' và tiến độ học tập' : ''}.`);
+      setStatus(`Đã khôi phục ${count} mục dữ liệu cá nhân, ${published} mục nội dung học tập${cloudProgress ? ' và tiến độ học tập' : ''}.`);
     } catch (error: any) {
       setStatus(error?.message || 'Khôi phục thất bại. Hãy kiểm tra kết nối và Firestore Security Rules.');
     } finally { setBusy(false); }
