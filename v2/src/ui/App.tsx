@@ -10,7 +10,7 @@ import { deleteLibraryBlob, getLibraryBlob, listLibraryItems, saveLibraryFiles }
 import type { PrincipiaLibraryItem } from '../core/library';
 import { restoreLegacyDataFromCloud, syncLegacyDataToCloud, restoreProgressFromCloud, syncProgressToCloud, publishLegacyContentToCloud, restorePublishedContentFromCloud } from '../core/cloud-data';
 
-type Section = 'home' | 'learn' | 'quiz' | 'library' | 'chat' | 'progress' | 'legacy';
+type Section = 'home' | 'learn' | 'quiz' | 'library' | 'music' | 'chat' | 'progress' | 'legacy';
 type Mode = 'login' | 'signup';
 type Question = { q: string; a: string[]; correct: number; type?: 'true_false' | 'single_select' | 'multi_select' | 'short_answer' | 'long_answer'; correctValues?: string[]; expected?: string; rubric?: string; points?: number; explanation?: string };
 type QuizEditorState = { id?: string; name: string; questionsText: string };
@@ -26,6 +26,7 @@ const sections: { id: Section; label: string; icon: string }[] = [
   { id: 'learn', label: 'Học tập', icon: '▤' },
   { id: 'quiz', label: 'Luyện đề', icon: '◎' },
   { id: 'library', label: 'Tài liệu', icon: '▧' },
+  { id: 'music', label: 'Music & Focus', icon: '♫' },
   { id: 'chat', label: 'AI Chat', icon: '✧' },
   { id: 'progress', label: 'Tiến độ', icon: '↗' },
   { id: 'legacy', label: 'Đầy đủ tính năng', icon: '✦' }
@@ -74,6 +75,14 @@ export function App() {
   const [libraryNotice, setLibraryNotice] = useState('');
   const [libraryPreview, setLibraryPreview] = useState<PrincipiaLibraryItem | null>(null);
   const [libraryPreviewUrl, setLibraryPreviewUrl] = useState('');
+  const [musicSource, setMusicSource] = useState(() => { try { return JSON.parse(localStorage.getItem('principia_music_island_v1') || '{}').source || 'spotify'; } catch { return 'spotify'; } });
+  const [musicUrl, setMusicUrl] = useState(() => { try { return JSON.parse(localStorage.getItem('principia_music_island_v1') || '{}').url || 'https://open.spotify.com/'; } catch { return 'https://open.spotify.com/'; } });
+  const [musicTrack, setMusicTrack] = useState(() => { try { return JSON.parse(localStorage.getItem('principia_music_island_v1') || '{}').track || ''; } catch { return ''; } });
+  const [musicFocus, setMusicFocus] = useState(() => { try { return !!JSON.parse(localStorage.getItem('principia_music_island_v1') || '{}').focus; } catch { return false; } });
+  const [musicCustomSources, setMusicCustomSources] = useState<Array<{name:string;url:string}>>(() => { try { const list=JSON.parse(localStorage.getItem('principia_music_island_v1') || '{}').customSources; return Array.isArray(list)?list:[]; } catch { return []; } });
+  const [focusSeconds, setFocusSeconds] = useState(25 * 60);
+  const [focusRunning, setFocusRunning] = useState(false);
+
   const chatStorageKey = `principia_v2_chat:${account?.user.uid || 'guest'}:${chatProvider}`;
   useEffect(() => {
     try {
@@ -132,6 +141,42 @@ export function App() {
     return () => { active = false; };
   }, [account?.user.uid]);
   useEffect(() => () => { if (libraryPreviewUrl) URL.revokeObjectURL(libraryPreviewUrl); }, [libraryPreviewUrl]);
+  useEffect(() => {
+    try { localStorage.setItem('principia_music_island_v1', JSON.stringify({ source: musicSource, url: musicUrl, track: musicTrack, focus: musicFocus, customSources: musicCustomSources })); } catch {}
+    document.body.classList.toggle('principia-focus-mode', musicFocus);
+    return () => document.body.classList.remove('principia-focus-mode');
+  }, [musicSource, musicUrl, musicTrack, musicFocus, musicCustomSources]);
+  useEffect(() => {
+    if (!focusRunning) return;
+    const timer = window.setInterval(() => setFocusSeconds(value => Math.max(0, value - 1)), 1000);
+    return () => window.clearInterval(timer);
+  }, [focusRunning]);
+  useEffect(() => { if (focusSeconds === 0) setFocusRunning(false); }, [focusSeconds]);
+
+  const musicEmbedUrl = (() => {
+    try {
+      const url = new URL(musicUrl);
+      if (musicSource === 'spotify' && url.hostname.endsWith('spotify.com')) return 'https://open.spotify.com/embed' + url.pathname.replace(/^\\/embed/, '') + url.search;
+      if (musicSource === 'youtube') {
+        const id = url.hostname === 'youtu.be' ? url.pathname.slice(1) : url.searchParams.get('v') || (url.pathname.match(/\\/(?:shorts|live|embed)\\/([^/]+)/) || [])[1];
+        return id ? 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(id) : '';
+      }
+      if (musicSource === 'soundcloud' && url.hostname.endsWith('soundcloud.com')) return 'https://w.soundcloud.com/player/?url=' + encodeURIComponent(url.href) + '&visual=true';
+      return '';
+    } catch { return ''; }
+  })();
+  const addMusicSource = () => {
+    const name = prompt('Tên nền tảng nhạc:')?.trim();
+    if (!name) return;
+    const raw = prompt('Địa chỉ website (https://…):')?.trim();
+    if (!raw) return;
+    try {
+      const url = new URL(/^https?:\\/\\//i.test(raw) ? raw : 'https://' + raw);
+      const next = [...musicCustomSources, { name: name.slice(0, 35), url: url.href }];
+      setMusicCustomSources(next); setMusicSource('custom:' + (next.length - 1)); setMusicUrl(url.href);
+    } catch { setLibraryNotice('Địa chỉ nền tảng không hợp lệ.'); }
+  };
+  const formatFocusTime = (seconds: number) => String(Math.floor(seconds / 60)).padStart(2, '0') + ':' + String(seconds % 60).padStart(2, '0');
   const handleLibraryUpload = async (event: Event) => {
     const input = event.currentTarget as HTMLInputElement;
     const files = Array.from(input.files || []);
@@ -719,7 +764,7 @@ export function App() {
   }
 
   return (
-    <div class="app-shell">
+    <div class={musicFocus ? "app-shell focus-mode" : "app-shell"}>
       <header class="topbar">
         <img class="topbar-logo" src="/legacy/assets/images/principia-logo-round.svg" alt="" />
         <div class="brand-copy"><strong>PRINCIPIA</strong><span>PHYSICS OLYMPIAD · PRO</span></div>
@@ -884,6 +929,27 @@ export function App() {
         {section === 'legacy' && <section class="legacy-workspace">
           <div class="legacy-banner"><div><strong>PRINCIPIA · Không gian đầy đủ tính năng</strong><p>Mở toàn bộ giao diện và công cụ của phiên bản cũ trong V2 để không mất chức năng trong lúc chuyển đổi.</p></div><a href="/legacy/index.html" target="_blank" rel="noreferrer">Mở toàn màn hình ↗</a></div>
           <iframe class="legacy-frame" src="/legacy/index.html" title="PRINCIPIA full legacy workspace" loading="lazy" allow="clipboard-read; clipboard-write; fullscreen; autoplay; encrypted-media; picture-in-picture" />
+        </section>}
+        {section === 'music' && <section class="content-panel music-workspace">
+          <div class="music-heading"><div><h2>♫ Music & Focus</h2><p>Không gian âm nhạc và bộ hẹn giờ tập trung.</p></div><button class={musicFocus ? 'primary-button' : 'secondary-button'} type="button" onClick={() => setMusicFocus(value => !value)}>{musicFocus ? 'Tắt Focus mode' : 'Bật Focus mode'}</button></div>
+          <div class="music-controls">
+            <label>Nền tảng<select value={musicSource} onChange={event => {
+              const value = event.currentTarget.value; setMusicSource(value);
+              const homes: Record<string,string> = { spotify:'https://open.spotify.com/', youtube:'https://www.youtube.com/', soundcloud:'https://soundcloud.com/', cloudmusic:'https://music.163.com/', other:'' };
+              setMusicUrl(value.startsWith('custom:') ? musicCustomSources[Number(value.split(':')[1])]?.url || '' : homes[value] || '');
+            }}>
+              <option value="spotify">Spotify</option><option value="youtube">YouTube</option><option value="soundcloud">SoundCloud</option><option value="cloudmusic">CloudMusic · NetEase</option><option value="other">Website khác</option>
+              {musicCustomSources.map((source,index) => <option value={'custom:'+index}>{source.name}</option>)}
+            </select></label>
+            <button class="secondary-button" type="button" onClick={addMusicSource}>＋ Thêm nền tảng</button>
+            <label>Link bài hát / playlist<input value={musicUrl} onInput={event => setMusicUrl(event.currentTarget.value)} placeholder="Dán link Spotify, YouTube, SoundCloud…" /></label>
+            <label>Tên bài hát / playlist<input value={musicTrack} onInput={event => setMusicTrack(event.currentTarget.value)} placeholder="Tuỳ chọn" /></label>
+          </div>
+          {musicEmbedUrl ? <iframe class="music-player-frame" title="Music player" src={musicEmbedUrl} allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy" /> : <div class="music-external-note"><b>Website này không hỗ trợ trình phát nhúng.</b><p>Mở nguồn nhạc trong trình duyệt ngoài để tiếp tục nghe.</p><button class="primary-button" type="button" onClick={() => { try { const url = new URL(musicUrl); if (['http:','https:'].includes(url.protocol)) window.open(url.href,'_blank'); } catch { setLibraryNotice('Link nhạc chưa hợp lệ.'); } }}>Mở nguồn nhạc ↗</button></div>}
+          <div class="focus-timer">
+            <div><span>POMODORO · THỜI GIAN TẬP TRUNG</span><strong>{formatFocusTime(focusSeconds)}</strong><small>{focusSeconds === 0 ? 'Hoàn thành phiên tập trung!' : focusRunning ? 'Đang tập trung' : 'Sẵn sàng bắt đầu'}</small></div>
+            <div class="focus-timer-actions"><button class="primary-button" type="button" disabled={focusSeconds === 0} onClick={() => setFocusRunning(value => !value)}>{focusRunning ? 'Tạm dừng' : 'Bắt đầu'}</button><button class="secondary-button" type="button" onClick={() => { setFocusRunning(false); setFocusSeconds(25*60); }}>Đặt lại 25 phút</button></div>
+          </div>
         </section>}
         {section === 'library' && <section class="content-panel library-workspace">
           <div class="library-heading"><div><h2>Thư viện tài liệu</h2><p>Tệp được lưu ngoại tuyến trong kho riêng của tài khoản trên thiết bị này.</p></div><label class="primary-button file-button">＋ Thêm tài liệu<input type="file" multiple accept=".pdf,.epub,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.md,image/*,video/*,audio/*" onChange={handleLibraryUpload} /></label></div>
