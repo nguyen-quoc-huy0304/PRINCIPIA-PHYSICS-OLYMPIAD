@@ -273,7 +273,6 @@
   mobileCss.rel='stylesheet';
   mobileCss.href='/assets/css/principia-mobile.css?v=2';
   document.head.appendChild(mobileCss);
-  if(window.principiaDesktop) return;
   // Keep the desktop DOM/layout intact. Portal the nav only on phone/tablet widths.
   let busy=false,observer;
   function moveNav(){
@@ -288,22 +287,6 @@
       delete nav.dataset.principiaWebNav;
       layout.insertBefore(nav,layout.firstChild);
     }
-    busy=false;
-  }
-  function start(){
-    moveNav();
-    observer=new MutationObserver(moveNav);
-    observer.observe(document.getElementById('app')||document.body,{childList:true,subtree:true});
-    window.addEventListener('resize',moveNav,{passive:true});
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
-  let busy=false,observer;
-  function moveNav(){
-    if(busy)return;
-    const nav=document.querySelector('#app .layout>.sidebar')||document.querySelector('body>.sidebar[data-principia-web-nav]');
-    if(!nav)return;
-    busy=true;
-    if(nav.parentElement!==document.body){nav.dataset.principiaWebNav='1';document.body.appendChild(nav);}
     busy=false;
   }
   function start(){
