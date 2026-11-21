@@ -261,7 +261,30 @@ export function App() {
   const saveProgress = (next: typeof localProgress) => {
     setLocalProgress(next);
     try { localStorage.setItem(progressStorageKey, JSON.stringify(next)); } catch { setStatus('Không thể lưu tiến độ: bộ nhớ trình duyệt đã đầy hoặc bị chặn.'); }
+    if (account) void syncProgressToCloud(account.user.uid, next).catch(() => setStatus('Tiến độ đã lưu trên thiết bị; cloud chưa đồng bộ được. Hãy thử lại khi kết nối ổn định.'));
   };
+  useEffect(() => {
+    if (!account) return;
+    let active = true;
+    restoreProgressFromCloud(account.user.uid).then(cloud => {
+      if (!active) return;
+      if (cloud) {
+        const merged = {
+          completed: [...new Set([...localProgress.completed, ...cloud.completed])],
+          attempts: [...new Map([...localProgress.attempts, ...cloud.attempts].map(item => [item.at, item])).values()].sort((a,b) => b.at.localeCompare(a.at)).slice(0,100),
+          xp: Math.max(localProgress.xp, cloud.xp),
+          streak: cloud.lastStudyDate >= localProgress.lastStudyDate ? cloud.streak : localProgress.streak,
+          lastStudyDate: cloud.lastStudyDate >= localProgress.lastStudyDate ? cloud.lastStudyDate : localProgress.lastStudyDate
+        };
+        setLocalProgress(merged);
+        try { localStorage.setItem(`principia_v2_progress:${account.user.uid}`, JSON.stringify(merged)); } catch {}
+        void syncProgressToCloud(account.user.uid, merged).catch(() => {});
+      } else if (localProgress.completed.length || localProgress.attempts.length || localProgress.xp) {
+        void syncProgressToCloud(account.user.uid, localProgress).catch(() => {});
+      }
+    }).catch(() => {});
+    return () => { active = false; };
+  }, [account?.user.uid]);
   const lessonKey = (node: LegacyNode) => [...lessonPath, node].map(item => item.id || item.name).join('::');
   const withStudyActivity = (current: typeof localProgress, xpGain: number) => {
     const today = new Date().toLocaleDateString('sv-SE');
