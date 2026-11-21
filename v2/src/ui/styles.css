@@ -134,3 +134,11 @@
 .media-reference-panel section{display:grid;gap:8px;padding:13px;border:1px solid rgba(255,255,255,.09);border-radius:12px;background:rgba(255,255,255,.025)}
 .media-reference-panel section b{font-size:13px;color:#d9d1ff}
 .media-reference-panel pre{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;color:#c0c4d8;font:13px/1.7 inherit}
+
+
+/* Native video OCR workspace */
+.media-ocr-video{display:block;width:100%;max-height: min(58vh,520px);border:1px solid rgba(255,255,255,.12);border-radius:14px;background:#05070d}
+.media-reference-panel>label{display:grid;gap:8px;color:#d9d1ff;font-size:12px;font-weight:650}
+.media-reference-panel>label textarea{font-weight:400}
+.media-reference-panel .chat-actions{margin-top:-4px}
+@media(max-width:560px){.media-ocr-video{max-height:38vh}.media-reference-panel>label textarea{min-height:100px}}
