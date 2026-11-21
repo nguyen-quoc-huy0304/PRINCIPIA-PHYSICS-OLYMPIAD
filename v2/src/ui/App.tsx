@@ -436,7 +436,7 @@ export function App() {
     return (
       <div class="welcome-screen">
         <section class="welcome-card">
-          <img class="principia-logo welcome-logo" src="/principia-logo-round.png" alt="PRINCIPIA" />
+          <img class="principia-logo welcome-logo" src="/legacy/assets/images/principia-logo-round.svg" alt="PRINCIPIA" />
           <p class="eyebrow">PRINCIPIA · PHYSICS OLYMPIAD</p>
           <h1>Chào mừng, {account.user.displayName || account.user.email?.split('@')[0] || 'bạn'}!</h1>
           <p>Không gian học tập của bạn đã sẵn sàng.</p>
@@ -450,7 +450,7 @@ export function App() {
   return (
     <div class="app-shell">
       <header class="topbar">
-        <img class="topbar-logo" src="/principia-logo-round.png" alt="" />
+        <img class="topbar-logo" src="/legacy/assets/images/principia-logo-round.svg" alt="" />
         <div class="brand-copy"><strong>PRINCIPIA</strong><span>PHYSICS OLYMPIAD · PRO</span></div>
         <div class="account-chip"><span>{account.isAdmin ? 'ADMIN' : 'LEARNER'}</span><b>{account.user.displayName || account.user.email}</b></div>
       </header>
