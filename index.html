@@ -877,6 +877,19 @@ html[data-theme="light"] #codelearnWorkspace #clTab-note select#ytDubLang{color:
 html[data-theme="light"] #modal .icon-choice-name{color:#25283a!important}
 @media(max-width:420px){#modal .icon-choice-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
 </style>
+
+<style id="principia-mobile-nav-final-fix">
+/* Final mobile nav override: mobile is flex-column, content first, nav after */
+@media(max-width:760px){
+ #app .layout{display:flex!important;flex-direction:column!important;min-height:100vh!important}
+ #app .layout>.main{order:1!important;width:100%!important;min-width:0!important}
+ #app .layout>.sidebar{order:2!important;position:static!important;top:auto!important;height:auto!important;width:100%!important;min-width:0!important;display:flex!important;flex-direction:row!important;align-items:center!important;gap:6px!important;overflow-x:auto!important;overflow-y:hidden!important;padding:8px 10px!important;border:0!important;border-top:1px solid var(--line)!important;border-radius:0!important;flex-wrap:nowrap!important}
+ #app .sidebar .brand,#app .sidebar .navlabel,#app .sidebar .sidebottom{display:none!important}
+ #app .sidebar .nav{display:flex!important;flex:0 0 auto!important;align-items:center!important;justify-content:center!important;gap:6px!important;min-height:44px!important;width:auto!important;padding:7px 10px!important;white-space:nowrap!important;order:initial!important}
+ #app .sidebar .nav-default-icon{display:inline-flex!important;visibility:visible!important;opacity:1!important;align-items:center!important;justify-content:center!important;flex:0 0 26px!important;width:26px!important;height:26px!important;min-width:26px!important;min-height:26px!important;font-size:22px!important;line-height:1!important;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif!important}
+ #app .sidebar .nav>span:last-child{display:inline!important;visibility:visible!important;opacity:1!important}
+}
+</style>
 </head>
 <body>
 <div id="app"></div>
