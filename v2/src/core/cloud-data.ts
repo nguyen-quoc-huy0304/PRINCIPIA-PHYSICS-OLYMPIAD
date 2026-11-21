@@ -107,6 +107,8 @@ export type PrincipiaProgress = {
   completed: string[];
   attempts: Array<{ title: string; score: number; total: number; at: string }>;
   xp: number;
+  streak?: number;
+  lastStudyDate?: string;
 };
 
 export async function syncProgressToCloud(uid: string, progress: PrincipiaProgress): Promise<void> {
@@ -117,6 +119,8 @@ export async function syncProgressToCloud(uid: string, progress: PrincipiaProgre
     completed: progress.completed,
     attempts: progress.attempts.slice(0, 100),
     xp: progress.xp,
+    streak: progress.streak || 0,
+    lastStudyDate: progress.lastStudyDate || '',
     updatedAt: firestore.serverTimestamp()
   });
 }
@@ -131,6 +135,8 @@ export async function restoreProgressFromCloud(uid: string): Promise<PrincipiaPr
   return {
     completed: Array.isArray(data.completed) ? data.completed.filter((value: unknown): value is string => typeof value === 'string') : [],
     attempts: Array.isArray(data.attempts) ? data.attempts.filter((value: any) => value && typeof value.title === 'string' && typeof value.score === 'number' && typeof value.total === 'number' && typeof value.at === 'string').slice(0, 100) : [],
-    xp: Number.isFinite(data.xp) ? Math.max(0, data.xp) : 0
+    xp: Number.isFinite(data.xp) ? Math.max(0, data.xp) : 0,
+    streak: Number.isFinite(data.streak) ? Math.max(0, data.streak) : 0,
+    lastStudyDate: typeof data.lastStudyDate === 'string' ? data.lastStudyDate : ''
   };
 }
