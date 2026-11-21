@@ -140,8 +140,8 @@ app.whenReady().then(() => {
   browserSession.setPermissionRequestHandler((_webContents, _permission, callback) => callback(false));
   ipcMain.handle('principia-browser:is-blocked', (_event, url) => isFrameBlocked(url));
   ipcMain.handle('principia-browser:open', async (_event, url, bounds) => {
-    if (!isAllowedWebUrl(url) || !isKnownFrameBlocked(url)) {
-      throw new Error('Địa chỉ không thuộc nhóm website cần mở bằng trình duyệt tích hợp.');
+    if (!isAllowedWebUrl(url)) {
+      throw new Error('Chỉ hỗ trợ website có địa chỉ HTTP hoặc HTTPS.');
     }
     createBrowserView();
     const nextBounds = safeBounds(bounds);
