@@ -114,6 +114,8 @@ function createWindow() {
     minHeight: 650,
     backgroundColor: '#0b1020',
     title: 'PRO',
+    // Giữ nguyên 3 nút Windows nhưng cho giao diện ứng dụng phủ lên dải title bar.
+    titleBarOverlay: { color: '#0c0d16', symbolColor: '#ffffff', height: 24 },
     icon: path.join(__dirname, 'icons', 'icon.ico'),
     autoHideMenuBar: true,
     webPreferences: {
