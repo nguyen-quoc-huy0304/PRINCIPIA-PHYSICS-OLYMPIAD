@@ -3,7 +3,7 @@
 V2 is being developed on the isolated `rebuild-v2` branch. The production `main` branch is intentionally untouched until the new app reaches feature parity and passes device testing.
 
 ## Architecture
-- **Web UI:** Preact + TypeScript + Vite.
+- **Web UI:** Preact + TypeScript + Vite, with a desktop sidebar layout and a separate mobile bottom-navigation layout.
 - **Desktop/mobile shell:** Tauri 2 + Rust.
 - **Physics:** Rust native calculations with TypeScript fallbacks; C++/WASM is reserved for workloads proven faster by benchmarks.
 - **Identity and data:** Firebase Authentication and Firestore with security rules.
@@ -24,7 +24,7 @@ V2 is being developed on the isolated `rebuild-v2` branch. The production `main`
 - Rust-backed kinematics, kinetic-energy and projectile calculators in the native Tauri app, with matching TypeScript browser fallbacks.
 - Account profile editor and local light/dark theme preference.
 - Account-scoped offline document library with PDF/image/video/audio preview and download.
-- Learning completion, quiz history, EXP and daily streak; personal progress can sync to the signed-in user's Firestore document.
+- Learning completion, quiz history, EXP, daily streak and achievement badges; personal progress can sync to the signed-in user's Firestore document.
 - Private per-account backup/restore, admin publishing of shared lesson and quiz data, and automatic retrieval of published content for signed-in learners.
 - Rust physics core and TypeScript fallback; CI checks the web build and Rust code.
 
