@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>PRINCIPIA • PHYSICS OLYMPIAD — PRO</title>
-<link rel="stylesheet" href="/assets/css/principia-app.css?v=1795320000000">
+<link rel="stylesheet" href="/assets/css/principia-app.css?v=1795321000000">
 
 
 
@@ -265,6 +265,20 @@
 <script id="principia-music-island-script" src="/assets/js/app-part-09.js"></script>
 <script src="/assets/js/app-part-10.js"></script>
 <script defer src="/assets/js/physics-engine.js"></script>
-<script src="/assets/js/download-center.js"></script>\n</body>
+<script src="/assets/js/download-center.js"></script>\n<script>
+(function(){
+ const mq=window.matchMedia('(max-width:760px)');let busy=false,obs;
+ function move(){
+  if(busy)return;const nav=document.querySelector('#app .layout>.sidebar')||document.querySelector('body>.sidebar[data-principia-mobile-nav]');if(!nav)return;busy=true;
+  if(mq.matches){if(nav.parentElement!==document.body){nav.dataset.principiaMobileNav='1';document.body.appendChild(nav);}}
+  else{const layout=document.querySelector('#app .layout'),main=layout&&layout.querySelector(':scope>.main');if(layout&&main&&nav.parentElement!==layout){delete nav.dataset.principiaMobileNav;layout.insertBefore(nav,main);}}
+  busy=false;
+ }
+ function start(){move();obs=new MutationObserver(move);obs.observe(document.getElementById('app')||document.body,{childList:true,subtree:true});mq.addEventListener&&mq.addEventListener('change',move);window.addEventListener('resize',move,{passive:true});}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
+})();
+</script>
+
+</body>
 </html>
 
