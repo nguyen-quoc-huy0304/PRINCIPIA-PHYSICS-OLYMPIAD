@@ -9,7 +9,8 @@
     "dist:win": "electron-builder --win nsis --x64 --publish never",
     "dist:linux": "electron-builder --linux AppImage --x64 --publish never",
     "dist:mac": "electron-builder --mac dmg zip --x64 --publish never",
-    "build:physics": "tsc -p tsconfig.physics.json"
+    "build:physics": "tsc -p tsconfig.physics.json",
+    "lan": "node tools/lan-server.cjs"
   },
   "devDependencies": {
     "electron": "^35.2.1",
