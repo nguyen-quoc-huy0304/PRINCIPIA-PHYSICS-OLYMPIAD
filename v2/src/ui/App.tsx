@@ -59,9 +59,12 @@ function isQuestionCorrect(question: Question, answer: number | number[] | strin
     const expected = (question.expected || '').split(/\\r?\\n|\\|/).map(value => value.trim().toLocaleLowerCase()).filter(Boolean);
     return typeof answer === 'string' && expected.length > 0 && expected.includes(answer.trim().toLocaleLowerCase());
   }
-  const correct = (question.correctValues || [String(question.correct)]).map(String).sort();
+  const correct = (question.correctValues || [String(question.correct)]).map(value => {
+    const labelIndex = question.a.findIndex(option => option.trim().toLocaleLowerCase() === String(value).trim().toLocaleLowerCase());
+    return String(labelIndex >= 0 ? labelIndex : value);
+  }).sort();
   if (type === 'multi_select') return Array.isArray(answer) && [...answer].map(String).sort().join(',') === correct.join(',');
-  return typeof answer === 'number' && answer === question.correct;
+  return typeof answer === 'number' && answer === Number(question.correct);
 }
 
 export function App() {
