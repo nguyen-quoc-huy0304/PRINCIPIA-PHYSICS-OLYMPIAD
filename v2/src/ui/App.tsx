@@ -57,6 +57,7 @@ export function App() {
   const [lessonTool, setLessonTool] = useState<'note' | 'submit' | 'simulation'>('note');
   const [privateNote, setPrivateNote] = useState('');
   const [assignmentText, setAssignmentText] = useState('');
+  const [lessonFiles, setLessonFiles] = useState<Array<{ name: string; type: string; size: number; dataUrl: string; addedAt: string }>>([]);
   const [simulationSubject, setSimulationSubject] = useState('physics');
   const [workspaceNotice, setWorkspaceNotice] = useState('');
   const currentLessonStorageKey = activeLesson ? `principia_lesson_workspace:${account?.user.uid || 'guest'}:${[...lessonPath, activeLesson].map(item => item.id || item.name).join('::')}` : '';
@@ -66,13 +67,44 @@ export function App() {
       const saved = JSON.parse(localStorage.getItem(currentLessonStorageKey) || '{}');
       setPrivateNote(typeof saved.note === 'string' ? saved.note : '');
       setAssignmentText(typeof saved.submission === 'string' ? saved.submission : '');
+      setLessonFiles(Array.isArray(saved.files) ? saved.files.filter((file: any) => file && typeof file.name === 'string' && typeof file.dataUrl === 'string') : []);
       setLessonTool('note');
       setWorkspaceNotice('');
     } catch {
       setPrivateNote('');
       setAssignmentText('');
+      setLessonFiles([]);
     }
   }, [currentLessonStorageKey]);
+  const handleLessonFiles = async (event: Event) => {
+    const input = event.currentTarget as HTMLInputElement;
+    const selected = Array.from(input.files || []);
+    if (!selected.length) return;
+    const maxFileBytes = 1_500_000;
+    const accepted = selected.filter(file => file.size <= maxFileBytes);
+    if (accepted.length !== selected.length) setWorkspaceNotice('Một số tệp vượt quá giới hạn 1,5 MB nên không được thêm.');
+    try {
+      const added = await Promise.all(accepted.map(file => new Promise<{ name: string; type: string; size: number; dataUrl: string; addedAt: string }>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => typeof reader.result === 'string'
+          ? resolve({ name: file.name, type: file.type || 'application/octet-stream', size: file.size, dataUrl: reader.result, addedAt: new Date().toISOString() })
+          : reject(new Error('Không đọc được tệp.'));
+        reader.onerror = () => reject(new Error('Không đọc được tệp.'));
+        reader.readAsDataURL(file);
+      })));
+      const next = [...lessonFiles, ...added].slice(-12);
+      setLessonFiles(next);
+      saveLessonWorkspace({ files: next } as any);
+      setWorkspaceNotice('Đã thêm tệp vào tài liệu bài học trên thiết bị này.');
+    } catch (error: any) {
+      setWorkspaceNotice(error?.message || 'Không thể thêm tệp.');
+    } finally { input.value = ''; }
+  };
+  const removeLessonFile = (name: string, addedAt: string) => {
+    const next = lessonFiles.filter(file => !(file.name === name && file.addedAt === addedAt));
+    setLessonFiles(next);
+    saveLessonWorkspace({ files: next } as any);
+  };
   const saveLessonWorkspace = (patch: { note?: string; submission?: string }) => {
     if (!currentLessonStorageKey) return;
     try {
@@ -353,6 +385,7 @@ export function App() {
             <div class="lesson-tools">
               <div class="lesson-tool-tabs" role="tablist" aria-label="Công cụ bài học">
                 <button type="button" class={lessonTool === 'note' ? 'active' : ''} onClick={() => setLessonTool('note')}>✎ Ghi chép</button>
+                <button type="button" class={lessonTool === 'files' ? 'active' : ''} onClick={() => setLessonTool('files')}>▧ Tài liệu</button>
                 <button type="button" class={lessonTool === 'submit' ? 'active' : ''} onClick={() => setLessonTool('submit')}>⇧ Nộp bài</button>
                 <button type="button" class={lessonTool === 'simulation' ? 'active' : ''} onClick={() => setLessonTool('simulation')}>⚛ Mô phỏng</button>
               </div>
@@ -360,6 +393,12 @@ export function App() {
                 <h3>Ghi chép cá nhân</h3>
                 <textarea value={privateNote} onInput={event => setPrivateNote(event.currentTarget.value)} placeholder="Ghi lại công thức, ý tưởng và điều cần nhớ…" rows={7} />
                 <button class="secondary-button" onClick={() => saveLessonWorkspace({ note: privateNote })}>Lưu ghi chép</button>
+              </div>}
+              {lessonTool === 'files' && <div class="lesson-tool-panel">
+                <h3>Tài liệu bài học</h3>
+                <p class="empty-state">Thêm tài liệu để mở lại trên thiết bị này. Mỗi tệp tối đa 1,5 MB; tối đa 12 tệp mỗi bài.</p>
+                <label class="secondary-button file-button">＋ Thêm tài liệu<input type="file" multiple onChange={handleLessonFiles} /></label>
+                {lessonFiles.length ? <div class="lesson-file-list">{lessonFiles.map(file => <article><div><b>{file.name}</b><small>{(file.size / 1024).toFixed(1)} KB · {new Date(file.addedAt).toLocaleDateString('vi-VN')}</small></div><a href={file.dataUrl} download={file.name}>Tải / mở</a><button type="button" onClick={() => removeLessonFile(file.name, file.addedAt)}>Xóa</button></article>)}</div> : <p class="empty-state">Chưa có tài liệu đính kèm.</p>}
               </div>}
               {lessonTool === 'submit' && <div class="lesson-tool-panel">
                 <h3>Bài làm / câu hỏi gửi giáo viên</h3>
