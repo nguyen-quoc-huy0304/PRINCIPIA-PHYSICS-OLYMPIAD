@@ -3,7 +3,7 @@ export type QuizQuestion = {
   a: string[];
   correct: number;
   type?: 'true_false' | 'single_select' | 'multi_select' | 'short_answer' | 'long_answer';
-  correctValues?: string[];
+  correctValues?: Array<string | number>;
   expected?: string;
   rubric?: string;
   points?: number;
