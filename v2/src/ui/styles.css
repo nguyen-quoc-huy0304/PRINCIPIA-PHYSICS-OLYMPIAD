@@ -184,3 +184,25 @@
 .chat-provider-controls select{min-width:150px;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.14);background:#171c31;color:#f4f5ff}
 .chat-provider-controls button{white-space:nowrap;font-size:11px}
 @media(max-width:560px){.chat-provider-controls{width:100%;flex-direction:column;align-items:stretch}.chat-provider-controls select{width:100%}}
+
+
+.music-workspace{display:grid;gap:18px}
+.music-heading{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.music-heading h2{margin:0 0 5px}.music-heading p{margin:0;color:#aeb2c9;font-size:12px}
+.music-controls{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:15px;border:1px solid rgba(255,255,255,.09);border-radius:15px;background:rgba(255,255,255,.025)}
+.music-controls label{display:grid;gap:7px;color:#bfc3d9;font-size:12px}
+.music-controls input,.music-controls select{width:100%;min-width:0;padding:11px;border:1px solid rgba(255,255,255,.13);border-radius:10px;background:#0b1020;color:#f4f5ff;font:inherit}
+.music-controls>button{align-self:end;justify-self:start}
+.music-player-frame{width:100%;height:380px;border:1px solid rgba(255,255,255,.1);border-radius:14px;background:#080d18}
+.music-external-note{display:grid;gap:8px;padding:20px;border:1px dashed rgba(255,255,255,.16);border-radius:14px;color:#d9d1ff}
+.music-external-note p{margin:0;color:#aeb2c9;font-size:12px}
+.music-external-note button{justify-self:start}
+.focus-timer{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:20px;border:1px solid rgba(153,133,255,.22);border-radius:16px;background:linear-gradient(120deg,rgba(105,84,197,.15),rgba(255,255,255,.025))}
+.focus-timer>div:first-child{display:grid;gap:6px}
+.focus-timer span{font-size:9px;letter-spacing:.14em;color:#a99ce8}
+.focus-timer strong{font-size:clamp(34px,7vw,54px);font-variant-numeric:tabular-nums;letter-spacing:.04em}
+.focus-timer small{color:#aeb2c9;font-size:11px}
+.focus-timer-actions{display:flex;gap:8px;flex-wrap:wrap}
+body.principia-focus-mode .app-shell{background:radial-gradient(ellipse at 80% 5%,rgba(108,87,211,.12),transparent 38%),#080d19}
+body.principia-focus-mode .topbar{border-color:rgba(153,133,255,.22)}
+@media(max-width:560px){.music-heading{align-items:flex-start;flex-direction:column}.music-controls{grid-template-columns:1fr}.music-player-frame{height:300px}.focus-timer{align-items:flex-start;flex-direction:column}.focus-timer-actions{width:100%}.focus-timer-actions button{flex:1}}
