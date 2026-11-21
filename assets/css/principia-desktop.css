@@ -1236,3 +1236,42 @@ input,textarea,select{background:#0b1020!important;border-color:rgba(158,175,215
 }
 .brand-logo-img{aspect-ratio:1/1!important;}
 .welcome-logo-img{aspect-ratio:1/1!important;}
+
+
+/* PRINCIPIA AUTH + BRAND PATCH — consistent across desktop and mobile */
+.brand-logo-img,.welcome-logo-img,.account-brand-logo,
+.pw-brand>img{
+ display:block!important;
+ aspect-ratio:1/1!important;
+ width:58px!important;height:58px!important;
+ min-width:58px!important;min-height:58px!important;
+ object-fit:cover!important;object-position:center!important;
+ border-radius:50%!important;overflow:hidden!important;
+ background:transparent!important;padding:0!important;
+}
+.welcome-logo-img{width:118px!important;height:118px!important}
+.account-brand-logo{width:92px!important;height:92px!important;margin:0 auto 14px!important}
+.pw-brand>img{width:46px!important;height:46px!important}
+.account-page{min-height:calc(100vh - 20px);display:grid;place-items:center;padding:28px 16px}
+.account-page-card{width:min(460px,100%);margin:0 auto;padding:clamp(22px,4vw,34px)!important;border:1px solid rgba(177,163,255,.2)!important;border-radius:26px!important;background:linear-gradient(145deg,rgba(24,29,51,.98),rgba(13,17,31,.98))!important;box-shadow:0 24px 70px rgba(0,0,0,.34)!important}
+.auth-switch{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:5px;margin:20px 0 18px;border:1px solid var(--line);border-radius:15px;background:rgba(0,0,0,.14)}
+.auth-switch button{min-height:42px;border:0;border-radius:11px;background:transparent;color:var(--muted);font-weight:750}
+.auth-switch button.active{background:linear-gradient(135deg,#9d8af5,#6d58d5);color:#fff;box-shadow:0 5px 14px rgba(109,88,213,.28)}
+.auth-form{display:grid;gap:9px;text-align:left}
+.auth-form>label{font-size:13px;font-weight:750;margin-top:5px}
+.auth-form input{width:100%;min-width:0;min-height:46px;padding:11px 13px;border:1px solid var(--line);border-radius:12px;background:rgba(4,8,20,.42);color:var(--text);box-sizing:border-box}
+.principia-password-wrap{width:100%;margin-top:0}
+.principia-password-wrap>input{flex:1}
+.principia-password-wrap>button{min-width:48px;min-height:46px;border-radius:12px!important}
+.auth-form>button[type=submit]{width:100%;min-height:48px;margin-top:7px}
+.auth-form [onclick="sendPrincipiaPasswordReset()"]{font-size:13px;font-weight:750;text-decoration:underline;text-underline-offset:3px}
+.google-login-fallback{width:100%;min-height:48px;justify-content:center;border:1px solid var(--line);border-radius:13px;background:#fff;color:#202124;font-weight:750}
+.google-login-fallback>span{font-size:19px;font-weight:900;color:#4285f4}
+.google-account-status{min-height:20px;margin-top:8px;font-size:12px;line-height:1.5}
+@media(max-width:900px){
+ .account-page{min-height:100dvh;padding:18px 14px 96px}
+ .account-page-card{width:min(460px,100%);padding:24px 18px!important}
+ .account-brand-logo{width:84px!important;height:84px!important}
+ .brand-logo-img{width:42px!important;height:42px!important;min-width:42px!important;min-height:42px!important}
+ .pw-brand>img{width:42px!important;height:42px!important;min-width:42px!important;min-height:42px!important}
+}
