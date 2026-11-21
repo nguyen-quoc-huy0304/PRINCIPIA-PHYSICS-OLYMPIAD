@@ -57,8 +57,16 @@
   const r=ensure(),v=read();v.source=document.getElementById('pmSource').value;v.url=document.getElementById('pmUrl').value.trim();v.track=document.getElementById('pmTrack').value.trim();save(v);
   const custom=v.source.startsWith('custom:');const actualSource=custom?'other':v.source;const u=safeUrl(v.url,actualSource);if(!u){status('Link chưa hợp lệ · Hãy nhập địa chỉ https://');return}
   const p=document.getElementById('pmPlayer');p.innerHTML='';
-  const frame=document.createElement('iframe');frame.src=u;frame.title='Trình phát nhạc nhúng';frame.allow='autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';frame.allowFullscreen=true;frame.referrerPolicy='strict-origin-when-cross-origin';p.appendChild(frame);
-  updateLabel(v);status('Đang mở website trong Music Island · Nếu website chặn iframe, dùng Mở ngoài ↗');
+  let frame;
+  if(window.principiaDesktop?.isDesktop){
+   frame=document.createElement('webview');frame.setAttribute('partition','persist:principia-music');frame.setAttribute('allowpopups','');frame.setAttribute('webpreferences','autoplayPolicy=no-user-gesture-required');frame.src=u;frame.title='Music Island · '+v.source;frame.style.cssText='display:flex;width:100%;height:100%;border:0;background:#090b16';
+   frame.addEventListener('did-fail-load',e=>{if(e.errorCode!==-3)status('Không tải được trang ('+e.errorDescription+')')});
+   frame.addEventListener('dom-ready',()=>status('Đã tải website trong trình duyệt PRINCIPIA'));
+  }else{
+   frame=document.createElement('iframe');frame.src=u;frame.title='Trình phát nhạc nhúng';frame.allow='autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';frame.allowFullscreen=true;frame.referrerPolicy='strict-origin-when-cross-origin';
+  }
+  p.appendChild(frame);
+  updateLabel(v);status(window.principiaDesktop?.isDesktop?'Đang mở bằng trình duyệt tích hợp PRINCIPIA':'Đang mở website trong Music Island · Bản web có thể bị website chặn iframe');
  }
  function syncFocus(v){const b=document.getElementById('pmFocus');if(b){b.textContent='◉ Focus mode: '+(v.focus?'Bật':'Tắt');b.classList.toggle('pm-focus-active',!!v.focus)}document.body.classList.toggle('principia-focus-mode',!!v.focus)}
  function toggleFocus(){const v=read();v.focus=!v.focus;save(v);syncFocus(v);status(v.focus?'Focus mode đã bật · Chúc bạn học tập tập trung!':'Đã tắt Focus mode')}
