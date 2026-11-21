@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#111322">
+<title>PRINCIPIA • Resource Vault</title>
+<style>
+:root{color-scheme:dark;--bg:#0b0d18;--panel:#14182a;--line:#292f49;--text:#f4f5ff;--muted:#9ba3bf;--accent:#8b7cff;--cyan:#62d7ed}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(900px 500px at 90% -10%,#25234d 0%,transparent 60%),var(--bg);color:var(--text);font:15px/1.5 Inter,system-ui,Segoe UI,sans-serif}
+main{width:min(1100px,calc(100% - 32px));margin:32px auto 70px}.top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:24px}.brand{display:flex;align-items:center;gap:13px}.logo{width:48px;height:48px;border-radius:50%;object-fit:cover;border:1px solid #ffffff30}.eyebrow{color:var(--cyan);font-size:11px;font-weight:800;letter-spacing:.18em}.muted{color:var(--muted)}h1{font-size:clamp(26px,4vw,38px);line-height:1.12;margin:3px 0}h2{font-size:17px;margin:0 0 12px}.panel{background:linear-gradient(145deg,#171b30,#111525);border:1px solid var(--line);border-radius:18px;padding:18px;margin:14px 0;box-shadow:0 16px 50px #0002}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.stat{background:#ffffff06;border:1px solid var(--line);border-radius:13px;padding:13px}.stat strong{display:block;font-size:24px}.toolbar{display:flex;gap:9px;flex-wrap:wrap;align-items:center}input,select{background:#0c1020;border:1px solid var(--line);border-radius:11px;padding:11px 12px;color:var(--text);font:inherit;min-width:0}input:focus,select:focus{outline:2px solid #8b7cff66;border-color:var(--accent)}.grow{flex:1;min-width:190px}button,.button{border:1px solid #514a86;background:#29264c;color:#fff;border-radius:11px;padding:10px 14px;font:700 13px inherit;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:7px}button:hover,.button:hover{filter:brightness(1.16)}.primary{background:linear-gradient(135deg,#7666f5,#9a69e9);border:0}.soft{background:#ffffff09;border-color:var(--line)}.danger{background:#4b202e;border-color:#713347}.resource-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-top:14px}.resource{background:#111629;border:1px solid var(--line);border-radius:15px;padding:15px;min-width:0}.resource h3{font-size:15px;margin:7px 0 4px;overflow-wrap:anywhere}.resource a{color:#a99eff;text-decoration:none;overflow-wrap:anywhere;font-size:13px}.resource a:hover{text-decoration:underline}.meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.tag{font-size:11px;color:#c4c9df;background:#ffffff0b;border:1px solid #ffffff14;border-radius:99px;padding:3px 8px}.empty{padding:35px 15px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:14px}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.formgrid .full{grid-column:1/-1}.hint{font-size:12px;color:var(--muted);margin:8px 0 0}.hidden{display:none!important}.resource-actions{display:flex;gap:7px;margin-top:12px}.resource-actions button{padding:7px 10px;font-size:12px}.status{min-height:22px;color:var(--cyan);font-size:13px;margin-top:8px}@media(max-width:600px){main{width:min(100% - 20px,1100px);margin-top:18px}.panel{padding:14px}.stats{grid-template-columns:1fr 1fr}.formgrid{grid-template-columns:1fr}.formgrid .full{grid-column:auto}.top .toolbar{width:100%}}
+</style>
+</head>
+<body>
+<main>
+<header class="top">
+ <div class="brand"><img class="logo" src="/assets/images/principia-logo-round.svg" alt="PRINCIPIA"><div><div class="eyebrow">PHYSICS OLYMPIAD • ARCHIVE</div><h1>Resource Vault</h1><div class="muted">Kho lưu trữ tài nguyên học tập</div></div></div>
+ <div class="toolbar"><a class="button soft" href="/">← Về PRINCIPIA</a><button id="exportBtn">↓ Sao lưu JSON</button><label class="button soft" for="importFile">↑ Nhập backup</label><input id="importFile" class="hidden" type="file" accept=".json,application/json"></div>
+</header>
+<section class="panel">
+ <div class="stats"><div class="stat"><strong id="totalCount">0</strong><span class="muted">Tài nguyên</span></div><div class="stat"><strong id="categoryCount">0</strong><span class="muted">Loại tài nguyên</span></div><div class="stat"><strong id="lessonCount">0</strong><span class="muted">Bài học liên quan</span></div></div>
+ <p class="hint">Kho chỉ lưu đường dẫn và thông tin mô tả, không tải bản sao video/PDF nên rất nhẹ. Hãy xuất JSON định kỳ để có bản sao ngoại tuyến.</p>
+</section>
+<section class="panel">
+ <h2>＋ Thêm tài nguyên</h2>
+ <form id="addForm" class="formgrid">
+  <input id="title" class="full" required maxlength="160" placeholder="Tên tài nguyên (ví dụ: Bài giảng Newton)">
+  <input id="url" class="full" required type="url" placeholder="https://...">
+  <input id="subject" placeholder="Môn học (Vật lý...)">
+  <input id="lesson" placeholder="Chương / bài học">
+  <select id="kind"><option value="Video">Video</option><option value="PDF / Tài liệu">PDF / Tài liệu</option><option value="Slide">Slide</option><option value="Hình ảnh">Hình ảnh</option><option value="Mô phỏng PhET">Mô phỏng PhET</option><option value="Đề thi / Quiz">Đề thi / Quiz</option><option value="Transcript / OCR">Transcript / OCR</option><option value="Website học tập">Website học tập</option><option value="Khác">Khác</option></select>
+  <input id="note" placeholder="Ghi chú (không bắt buộc)">
+  <button class="primary full" type="submit">Lưu vào kho</button>
+ </form>
+ <div id="status" class="status" role="status"></div>
+</section>
+<section class="panel">
+ <div class="toolbar">
+  <input id="search" class="grow" placeholder="Tìm theo tên, môn, bài học hoặc URL...">
+  <select id="filter"><option value="">Tất cả loại</option><option>Video</option><option>PDF / Tài liệu</option><option>Slide</option><option>Hình ảnh</option><option>Mô phỏng PhET</option><option>Đề thi / Quiz</option><option>Transcript / OCR</option><option>Website học tập</option><option>Khác</option></select>
+  <button id="scanBtn" class="soft">↻ Quét tài nguyên trong dữ liệu PRINCIPIA</button>
+ </div>
+ <div id="resources" class="resource-list"></div>
+ <div id="empty" class="empty hidden">Chưa có tài nguyên. Nhập backup từ PRINCIPIA hoặc thêm đường dẫn ở trên.</div>
+</section>
+<footer class="muted" style="text-align:center;font-size:12px">PRINCIPIA Resource Vault · Lưu cục bộ trên trình duyệt này · Có thể xuất/nhập JSON</footer>
+</main>
+<script>
+(function(){
+'use strict';
+const KEY='principia_resource_vault_v1';
+const $=id=>document.getElementById(id);
+const read=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))??fallback}catch{return fallback}};
+let items=read(KEY,[]);
+if(!Array.isArray(items))items=[];
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const id=()=>((crypto&&crypto.randomUUID)?crypto.randomUUID():'r'+Date.now().toString(36)+Math.random().toString(36).slice(2));
+const save=()=>localStorage.setItem(KEY,JSON.stringify(items));
+const urlPattern=/https?:\/\/[^\s"'<>]+/gi;
+function infer(url){
+ const u=url.toLowerCase();
+ if(/\.pdf(?:$|[?#])/.test(u)||/drive\.google|docs\.google/.test(u))return 'PDF / Tài liệu';
+ if(/youtube\.com|youtu\.be|vimeo\.com/.test(u)||/\.(mp4|webm)(?:$|[?#])/.test(u))return 'Video';
+ if(/phet\.colorado\.edu/.test(u))return 'Mô phỏng PhET';
+ if(/\.(png|jpe?g|gif|webp|svg)(?:$|[?#])/.test(u))return 'Hình ảnh';
+ if(/quiz|kahoot|quizizz|forms\.gle/.test(u))return 'Đề thi / Quiz';
+ return 'Website học tập';
+}
+function add(item){
+ const clean=String(item.url||'').trim().replace(/[),.;]+$/,'');
+ try{const parsed=new URL(clean);if(!['http:','https:'].includes(parsed.protocol))return false}catch{return false}
+ const normalized=clean.replace(/\/+$/,'');
+ const existing=items.find(x=>x.url.replace(/\/+$/,'')===normalized);
+ if(existing){if(!existing.lesson&&item.lesson)existing.lesson=item.lesson;if(!existing.subject&&item.subject)existing.subject=item.subject;return false}
+ items.unshift({id:id(),title:String(item.title||clean).slice(0,160),url:clean,subject:String(item.subject||'Chưa phân loại'),lesson:String(item.lesson||''),kind:item.kind||infer(clean),note:String(item.note||''),createdAt:new Date().toISOString()});
+ return true;
+}
+function scanTree(root,subjectHint){
+ let added=0,seen=new Set();
+ function walk(node,context){
+  if(node==null)return;
+  if(Array.isArray(node)){node.forEach(x=>walk(x,context));return}
+  if(typeof node==='object'){
+   const ctx={subject:node.subject||node.course||context.subject||subjectHint||'Chưa phân loại',lesson:node.type==='lesson'?(node.name||node.title||context.lesson||''):context.lesson};
+   for(const [key,value] of Object.entries(node)){
+    if(typeof value==='string'){
+     const urls=value.match(urlPattern)||[];
+     urls.forEach(raw=>{
+      const clean=raw.replace(/[),.;]+$/,'');
+      if(seen.has(clean))return;seen.add(clean);
+      const kind=infer(clean);
+      if(add({title:node.name||node.title||key||clean,url:clean,subject:ctx.subject,lesson:ctx.lesson,kind,note:'Tự quét từ dữ liệu PRINCIPIA'}))added++;
+     });
+    }else if(value&&typeof value==='object')walk(value,ctx);
+   }
+  }
+ }
+ walk(root,{subject:subjectHint||'Chưa phân loại',lesson:''});
+ return added;
+}
+function render(){
+ const q=$('search').value.trim().toLowerCase(),filter=$('filter').value;
+ const filtered=items.filter(x=>(!filter||x.kind===filter)&&(!q||[x.title,x.url,x.subject,x.lesson,x.note].join(' ').toLowerCase().includes(q)));
+ $('totalCount').textContent=items.length;
+ $('categoryCount').textContent=new Set(items.map(x=>x.kind)).size;
+ $('lessonCount').textContent=new Set(items.map(x=>x.lesson).filter(Boolean)).size;
+ $('resources').innerHTML=filtered.map(x=>'<article class="resource"><div class="meta"><span class="tag">'+esc(x.kind)+'</span><span class="tag">'+esc(x.subject||'Chưa phân loại')+'</span></div><h3>'+esc(x.title)+'</h3><div class="muted" style="font-size:12px">'+esc(x.lesson||'Chưa gắn bài học')+'</div><p style="margin:8px 0"><a href="'+esc(x.url)+'" target="_blank" rel="noopener noreferrer">'+esc(x.url)+'</a></p>'+(x.note?'<div class="muted" style="font-size:12px">'+esc(x.note)+'</div>':'')+'<div class="resource-actions"><button class="soft" data-copy="'+esc(x.id)+'">Sao chép link</button><button class="soft" data-edit="'+esc(x.id)+'">Sửa</button><button class="danger" data-delete="'+esc(x.id)+'">Xóa</button></div></article>').join('');
+ $('empty').classList.toggle('hidden',filtered.length!==0);
+}
+$('addForm').addEventListener('submit',e=>{
+ e.preventDefault();
+ const ok=add({title:$('title').value,url:$('url').value,subject:$('subject').value,lesson:$('lesson').value,kind:$('kind').value,note:$('note').value});
+ save();render();$('status').textContent=ok?'Đã lưu tài nguyên.': 'Link đã có trong kho hoặc không hợp lệ.';
+ if(ok)$('addForm').reset();
+});
+$('search').addEventListener('input',render);$('filter').addEventListener('change',render);
+$('resources').addEventListener('click',e=>{
+ const b=e.target.closest('button');if(!b)return;
+ if(b.dataset.copy){const x=items.find(v=>v.id===b.dataset.copy);if(x)navigator.clipboard?.writeText(x.url).then(()=>$('status').textContent='Đã sao chép link.').catch(()=>{$('status').textContent='Không thể sao chép tự động.'});}
+ if(b.dataset.delete){items=items.filter(v=>v.id!==b.dataset.delete);save();render();}
+ if(b.dataset.edit){const x=items.find(v=>v.id===b.dataset.edit);if(!x)return;const title=prompt('Tên tài nguyên',x.title);if(title===null)return;const url=prompt('Đường dẫn',x.url);if(url===null)return;const lesson=prompt('Chương / bài học',x.lesson||'');if(lesson===null)return;try{new URL(url)}catch{$('status').textContent='Đường dẫn không hợp lệ.';return}Object.assign(x,{title,url,lesson});save();render();}
+});
+$('scanBtn').addEventListener('click',()=>{
+ let added=0;
+ ['halo_data','halo_quiz','halo_fun'].forEach(k=>{const data=read(k,null);if(data)added+=scanTree(data,k==='halo_quiz'?'Ngân hàng Quiz':k==='halo_fun'?'Đố vui':'Bài học');});
+ save();render();$('status').textContent=added?'Đã tìm và lưu '+added+' link từ dữ liệu hiện có.':'Chưa tìm thấy link mới trong dữ liệu trên trình duyệt này.';
+});
+$('importFile').addEventListener('change',e=>{
+ const file=e.target.files?.[0];if(!file)return;
+ const reader=new FileReader();reader.onload=()=>{
+  try{
+   const backup=JSON.parse(String(reader.result));let added=0;
+   if(Array.isArray(backup))backup.forEach(x=>{if(x&&x.url&&add(x))added++});
+   else{
+    ['data','quizData','funData','resources','items'].forEach(k=>{if(backup[k])added+=scanTree(backup[k],k==='quizData'?'Ngân hàng Quiz':k==='funData'?'Đố vui':'Bài học')});
+    if(backup.vault&&Array.isArray(backup.vault))backup.vault.forEach(x=>{if(x&&x.url&&add(x))added++});
+   }
+   save();render();$('status').textContent='Đã nhập backup; thêm '+added+' tài nguyên mới.';
+  }catch{$('status').textContent='File JSON không đúng định dạng backup PRINCIPIA.'}
+  e.target.value='';
+ };reader.readAsText(file);
+});
+$('exportBtn').addEventListener('click',()=>{
+ const blob=new Blob([JSON.stringify({app:'PRINCIPIA Resource Vault',version:1,exportedAt:new Date().toISOString(),resources:items},null,2)],{type:'application/json'});
+ const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='principia-resource-vault-backup.json';a.click();URL.revokeObjectURL(a.href);
+});
+render();
+})();
+</script>
+</body></html>
