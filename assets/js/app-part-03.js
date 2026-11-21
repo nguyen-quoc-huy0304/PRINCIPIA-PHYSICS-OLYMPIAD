@@ -68,6 +68,14 @@ function googleStatus(msg){const el=document.getElementById('googleAccountStatus
 function openGoogleAccount(){window.setPrincipiaAccountReturnPage(window.getPrincipiaPage()==='account'?window.getPrincipiaAccountReturnPage():window.getPrincipiaPage());window.setPrincipiaPage('account');window.resetPrincipiaStack();window.renderPrincipiaApp();renderGoogleAccount();}
 function closeGoogleAccount(){window.navigatePrincipiaPage(window.getPrincipiaAccountReturnPage()||'home');}
 function setAccountMode(mode){window.setPrincipiaAccountMode(mode);window.renderPrincipiaApp();renderGoogleAccount();}
+
+function togglePrincipiaPassword(){const input=document.getElementById("authPassword");if(!input)return;const showing=input.type==="password";input.type=showing?"text":"password";const button=input.parentElement?.querySelector("button");if(button){button.textContent=showing?"🙈":"👁";button.setAttribute("aria-label",showing?"Ẩn mật khẩu":"Hiện mật khẩu");button.title=showing?"Ẩn mật khẩu":"Hiện mật khẩu";}}
+async function sendPrincipiaPasswordReset(){
+ const email=document.getElementById("authEmail")?.value.trim();const status=document.getElementById("emailAuthStatus");
+ if(!email){if(status)status.textContent="Bạn hãy nhập email trước, rồi bấm Quên mật khẩu?.";document.getElementById("authEmail")?.focus();return;}
+ try{const auth=await ensureFirebase();if(status)status.textContent="Đang gửi email đặt lại mật khẩu…";await auth.sendPasswordResetEmail(email);if(status)status.textContent="Đã gửi email đặt lại mật khẩu. Hãy kiểm tra Hộp thư đến và cả thư rác.";}
+ catch(err){const messages={"auth/invalid-email":"Địa chỉ email không hợp lệ.","auth/user-not-found":"Không tìm thấy tài khoản với email này.","auth/too-many-requests":"Bạn thao tác quá nhiều lần. Hãy thử lại sau.","auth/unauthorized-continue-uri":"Cấu hình đường dẫn đặt lại mật khẩu trong Firebase chưa hợp lệ."};if(status)status.textContent=messages[err?.code]||authErrorMessage(err);}
+}
 async function submitEmailAuth(event){
  event.preventDefault();const status=document.getElementById('emailAuthStatus');const email=document.getElementById('authEmail')?.value.trim();const password=document.getElementById('authPassword')?.value||'';const name=document.getElementById('authName')?.value.trim();
  try{const auth=await ensureFirebase();if(status)status.textContent='Đang xác thực…';let cred;
