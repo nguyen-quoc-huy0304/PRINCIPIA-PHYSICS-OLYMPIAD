@@ -261,3 +261,17 @@ body.principia-focus-mode .topbar{border-color:rgba(153,133,255,.22)}
 .physics-result{display:grid;gap:8px;padding:12px;border-radius:11px;background:rgba(153,133,255,.08);color:#bfc3d9;font-size:12px}
 .physics-result b{color:#e6e0ff;font-variant-numeric:tabular-nums}
 @media(max-width:600px){.physics-grid{grid-template-columns:1fr}.physics-card{padding:14px}}
+
+
+.achievement-panel{grid-column:1/-1;padding:18px;border:1px solid rgba(255,255,255,.08);border-radius:14px;background:rgba(255,255,255,.025)}
+.achievement-panel h3{margin:0 0 12px;font-size:14px}
+.achievement-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.achievement-grid article{display:flex;align-items:center;gap:10px;padding:11px;border:1px solid rgba(255,255,255,.08);border-radius:11px;background:rgba(0,0,0,.1)}
+.achievement-grid article>span{font-size:22px;filter:grayscale(1);opacity:.55}
+.achievement-grid article.unlocked{border-color:rgba(153,133,255,.25);background:rgba(153,133,255,.07)}
+.achievement-grid article.unlocked>span{filter:none;opacity:1}
+.achievement-grid article>div{display:grid;gap:3px;min-width:0;flex:1}
+.achievement-grid b{font-size:11px;color:#e2def8}.achievement-grid small{font-size:10px;color:#969cb7}
+.achievement-grid em{font-size:9px;font-style:normal;color:#9298b4;white-space:nowrap}
+.achievement-grid .unlocked em{color:#a9e0c7}
+@media(max-width:560px){.achievement-grid{grid-template-columns:1fr}}
