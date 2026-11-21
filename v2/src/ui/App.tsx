@@ -12,7 +12,7 @@ type Section = 'home' | 'learn' | 'quiz' | 'progress' | 'legacy';
 type Mode = 'login' | 'signup';
 type Question = { q: string; a: string[]; correct: number };
 type LegacyNode = {
-  id: string; name: string; icon?: string; type?: string; content?: string;
+  id: string; name: string; icon?: string; type?: string; content?: string; note?: string; video?: string;
   children?: LegacyNode[]; questions?: Question[]; quiz?: Question[];
 };
 
@@ -272,7 +272,17 @@ export function App() {
           {activeLesson ? <section class="content-panel">
             <button class="back-link" onClick={() => setActiveLesson(null)}>← Quay lại danh sách</button>
             <h2>{activeLesson.icon || '📘'} {activeLesson.name}</h2>
-            <pre class="lesson-content">{activeLesson.content || 'Bài học chưa có nội dung.'}</pre>
+            {activeLesson.video && /^https?:\\/\\//i.test(activeLesson.video) && <div class="lesson-video">
+              <a href={activeLesson.video} target="_blank" rel="noreferrer">Mở video bài học ↗</a>
+              {(() => {
+                const match = activeLesson.video!.match(/(?:youtube\\.com\\/watch\\?v=|youtu\\.be\\/)([a-zA-Z0-9_-]{6,})/);
+                return match ? <iframe title="Video bài học" src={`https://www.youtube-nocookie.com/embed/${match[1]}`} allow="accelerometer; autoplay; encrypted-media; picture-in-picture" allowFullScreen /> : null;
+              })()}
+            </div>}
+            {activeLesson.content && <><h3>Nội dung bài học</h3><pre class="lesson-content">{activeLesson.content}</pre></>}
+            {activeLesson.note && <><h3>Ghi chú</h3><pre class="lesson-content">{activeLesson.note}</pre></>}
+            {!activeLesson.content && !activeLesson.note && !activeLesson.video && <p class="empty-state">Bài học chưa có nội dung.</p>}
+            {(activeLesson.quiz?.length || activeLesson.questions?.length) ? <button class="primary-button quiz-submit" onClick={() => openQuizNode(activeLesson)}>Làm câu hỏi bài học ({(activeLesson.quiz || activeLesson.questions || []).length})</button> : null}
           </section> : <section class="content-panel">
             <div class="section-toolbar">
               <button class="back-link" disabled={!lessonPath.length} onClick={() => setLessonPath(path => path.slice(0, -1))}>← Quay lại</button>
