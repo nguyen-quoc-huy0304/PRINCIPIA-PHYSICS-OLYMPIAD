@@ -302,3 +302,5 @@ body.principia-focus-mode .topbar{border-color:rgba(153,133,255,.22)}
 .download-platform-grid b{font-size:12px}.download-platform-grid small{font-size:10px;color:#aeb2c9;line-height:1.4}
 .download-platform-grid em{font-size:9px;font-style:normal;color:#b9a1a0;white-space:nowrap}
 @media(max-width:560px){.downloads-heading{align-items:flex-start;flex-direction:column}.download-platform-grid{grid-template-columns:1fr}}
+
+.download-chat-link{white-space:nowrap;align-self:flex-start}
