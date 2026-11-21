@@ -33,3 +33,18 @@ Some sites may still restrict sign-in, popups, media, or automated access. The a
 
 - The desktop shell is a separate Windows app; the Cloudflare Pages website remains available as before.
 - The desktop app currently loads the production PRINCIPIA URL configured in `desktop/main.cjs`.
+
+
+## V1 LAN test environment
+
+This branch is the isolated V1 test environment. It does not change the production `main` branch or V2.
+
+Run the zero-dependency local network server with Node.js installed:
+
+```bash
+npm run lan
+```
+
+Open `http://localhost:4173` on the host computer. The terminal also prints the LAN address for other devices on the same private network. Stop the server with Ctrl+C.
+
+Open the lightweight resource archive at `/resource-vault.html`. It stores link metadata in this browser's local storage and supports JSON import/export. To bring existing lesson resources into the LAN copy, export the PRINCIPIA data backup from the original browser and import that JSON in Resource Vault. Do not expose the LAN server on a public network.
