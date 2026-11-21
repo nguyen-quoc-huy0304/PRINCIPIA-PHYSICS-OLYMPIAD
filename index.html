@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>PRINCIPIA • PHYSICS OLYMPIAD — PRO</title>
-<link rel="stylesheet" href="/assets/css/principia-desktop.css?v=4">
+<link rel="stylesheet" href="/assets/css/principia-desktop.css?v=5">
 
 
 
@@ -215,11 +215,11 @@
 <div id="toast"></div>
 <!-- PRINCIPIA_STARTUP_DIAGNOSTICS_V1 -->
 <script src="/assets/js/app-part-01.js"></script>
-<script src="/assets/js/app-part-02.js?v=20261121-logo2"></script>
+<script src="/assets/js/app-part-02.js?v=20261121-welcome1"></script>
 
 <!-- Firebase SDK được nạp nền sau khi giao diện đã hiển thị; tránh chặn toàn bộ trang nếu CDN chậm. -->
 
-<script src="/assets/js/app-part-03.js"></script>
+<script src="/assets/js/app-part-03.js?v=20261121-welcome1"></script>
 
 
 
@@ -271,7 +271,7 @@
   if(window.principiaDesktop) return;
   const mobileCss=document.createElement('link');
   mobileCss.rel='stylesheet';
-  mobileCss.href='/assets/css/principia-mobile.css?v=4';
+  mobileCss.href='/assets/css/principia-mobile.css?v=5';
   document.head.appendChild(mobileCss);
   // Keep the desktop DOM/layout intact. Portal the nav only on phone/tablet widths.
   let busy=false,observer;
