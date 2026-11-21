@@ -187,7 +187,7 @@ export function App() {
   const formatFocusTime = (seconds: number) => String(Math.floor(seconds / 60)).padStart(2, '0') + ':' + String(seconds % 60).padStart(2, '0');
   const navigateMiniBrowser = (raw = browserAddress) => {
     try {
-      const url = new URL(/^https?:\\/\\//i.test(raw.trim()) ? raw.trim() : 'https://' + raw.trim());
+      const url = new URL(/^https?:\/\//i.test(raw.trim()) ? raw.trim() : 'https://' + raw.trim());
       if (!['http:', 'https:'].includes(url.protocol)) throw new Error();
       const next = [...browserHistory.slice(0, browserIndex + 1), url.href].slice(-30);
       setBrowserHistory(next); setBrowserIndex(next.length - 1); setBrowserUrl(url.href); setBrowserAddress(url.href); setBrowserNotice('');
