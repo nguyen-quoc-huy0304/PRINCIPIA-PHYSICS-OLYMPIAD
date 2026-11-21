@@ -6,12 +6,18 @@ export default defineConfig({
   base: './',
   build: {
     target: 'es2022',
+    minify: 'esbuild',
+    cssMinify: true,
     sourcemap: false,
     cssCodeSplit: true,
+    assetsInlineLimit: 1024,
+    reportCompressedSize: false,
+    chunkSizeWarningLimit: 700,
     rollupOptions: {
       output: {
-        manualChunks: {
-          firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore']
+        manualChunks(id) {
+          if (id.includes('node_modules/preact')) return 'ui-core';
+          if (id.includes('node_modules/firebase')) return 'firebase';
         }
       }
     }
