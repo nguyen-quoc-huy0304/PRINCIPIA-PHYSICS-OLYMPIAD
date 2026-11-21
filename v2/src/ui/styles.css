@@ -76,3 +76,11 @@
 .progress-panel span{font-size:11px;color:#9ea4bf}
 .progress-panel .empty-state{grid-column:1/-1}
 @media(max-width:600px){.progress-panel{grid-template-columns:1fr}.node-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.node-card{min-height:100px;padding:13px}.content-panel{padding:14px}}
+
+
+.legacy-workspace{display:grid;gap:12px;margin-top:18px}
+.legacy-banner{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 16px;border:1px solid rgba(255,255,255,.09);border-radius:14px;background:rgba(255,255,255,.035)}
+.legacy-banner strong{font-size:13px}.legacy-banner p{margin:5px 0 0;color:#9ea4bf;font-size:11px;line-height:1.5}
+.legacy-banner a{color:#c5b8ff;text-decoration:none;font-size:12px;white-space:nowrap}
+.legacy-frame{display:block;width:100%;height:calc(100vh - 245px);min-height:650px;border:1px solid rgba(255,255,255,.1);border-radius:16px;background:#0c0d16}
+@media(max-width:600px){.legacy-banner{align-items:flex-start;flex-direction:column}.legacy-frame{height:calc(100vh - 280px);min-height:600px;border-radius:12px}}
