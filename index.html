@@ -272,6 +272,8 @@
   const style=document.createElement('style');
   style.id='principia-web-ux-refresh';
   style.textContent=`
+    html,body{perspective:none!important;-webkit-perspective:none!important;transform:none!important;filter:none!important}
+    #app,.layout{perspective:none!important;-webkit-perspective:none!important}
     body>.sidebar[data-principia-web-nav]{
       position:fixed!important;inset:auto 0 0 0!important;z-index:2147483000!important;
       display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:flex-start!important;
