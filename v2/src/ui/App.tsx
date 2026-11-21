@@ -478,9 +478,9 @@ export function App() {
     setBusy(true); setStatus('Đang đồng bộ dữ liệu lên tài khoản PRINCIPIA…');
     try {
       const count = await syncLegacyDataToCloud(account!.user.uid);
-      const published = await publishLegacyContentToCloud(account!.user.uid);
+      const published = account!.isAdmin ? await publishLegacyContentToCloud(account!.user.uid) : 0;
       await syncProgressToCloud(account!.user.uid, localProgress);
-      setStatus(`Đã sao lưu ${count} mục dữ liệu cá nhân, xuất bản ${published} mục nội dung học tập và đồng bộ tiến độ.`);
+      setStatus(`Đã sao lưu ${count} mục dữ liệu cá nhân${account!.isAdmin ? `, xuất bản ${published} mục nội dung học tập` : ''} và đồng bộ tiến độ.`);
     } catch (error: any) {
       setStatus(error?.message || 'Đồng bộ thất bại. Hãy kiểm tra kết nối và Firestore Security Rules.');
     } finally { setBusy(false); }
@@ -736,11 +736,9 @@ export function App() {
             <div class="backup-actions">
               <button class="secondary-button" onClick={downloadLegacyBackup}>Tải bản sao lưu</button>
               <label class="secondary-button file-button">Khôi phục tệp<input type="file" accept="application/json,.json" onChange={handleRestore} /></label>
-              {account.isAdmin && <>
-                <button class="secondary-button" disabled={busy} onClick={() => void handleCloudSync()}>Đồng bộ cloud</button>
-                <button class="secondary-button" disabled={busy} onClick={() => void handleCloudRestore()}>Khôi phục cloud</button>
-              </>}
-              {!account.isAdmin && <p class="permission-note">Tài khoản học viên chỉ xem nội dung; quyền ghi và đồng bộ dữ liệu lên cloud dành cho quản trị viên.</p>}
+              <button class="secondary-button" disabled={busy} onClick={() => void handleCloudSync()}>Đồng bộ cloud cá nhân</button>
+              <button class="secondary-button" disabled={busy} onClick={() => void handleCloudRestore()}>Khôi phục cloud cá nhân</button>
+              {!account.isAdmin && <p class="permission-note">Bạn chỉ có thể sao lưu dữ liệu riêng và tiến độ của mình; nội dung khóa học chung vẫn do quản trị viên quản lý.</p>}
             </div>
           </section>
         </>}
