@@ -84,3 +84,11 @@
 .legacy-banner a{color:#c5b8ff;text-decoration:none;font-size:12px;white-space:nowrap}
 .legacy-frame{display:block;width:100%;height:calc(100vh - 245px);min-height:650px;border:1px solid rgba(255,255,255,.1);border-radius:16px;background:#0c0d16}
 @media(max-width:600px){.legacy-banner{align-items:flex-start;flex-direction:column}.legacy-frame{height:calc(100vh - 280px);min-height:600px;border-radius:12px}}
+
+
+/* Legacy lesson media port */
+.lesson-video{display:grid;gap:12px;margin:18px 0;padding:14px;border:1px solid var(--line,rgba(255,255,255,.12));border-radius:16px;background:rgba(255,255,255,.035)}
+.lesson-video a{width:max-content;color:var(--accent,#8ab4ff);font-weight:650;text-decoration:none}
+.lesson-video iframe{display:block;width:100%;aspect-ratio:16/9;min-height:220px;border:0;border-radius:12px;background:#080d18}
+.lesson-content{white-space:pre-wrap;overflow-wrap:anywhere}
+.permission-note{flex-basis:100%;margin:0;color:var(--muted,#9ba8bd);font-size:12px}
