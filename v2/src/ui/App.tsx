@@ -135,11 +135,11 @@ export function App() {
             if (mode === 'login') void runAuth(() => signInWithEmail(email, password));
             else void runAuth(() => createEmailAccount(email, password, displayName));
           }}>
-            {#if mode === 'signup'}
+            {mode === 'signup' && (
               <label> Tên hiển thị
                 <input value={displayName} onInput={event => setDisplayName(event.currentTarget.value)} placeholder="Tên của bạn" autocomplete="name" />
               </label>
-            {/if}
+            )}
             <label>Email
               <input type="email" required value={email} onInput={event => setEmail(event.currentTarget.value)} placeholder="you@example.com" autocomplete="email" />
             </label>
