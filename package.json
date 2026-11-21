@@ -16,7 +16,7 @@
   },
   "build": {
     "appId": "vn.principia.physicsolympiad",
-    "productName": "PRINCIPIA Physics Olympiad",
+    "productName": "PRO",
     "directories": {
       "output": "dist"
     },
