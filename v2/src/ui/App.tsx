@@ -444,7 +444,7 @@ export function App() {
   };
 
   const [localProgress, setLocalProgress] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('principia_v2_progress') || '{"completed":[],"attempts":[],"xp":0,"streak":0,"lastStudyDate":""}') as { completed: string[]; attempts: Array<{ title: string; score: number; total: number; at: string }>; xp: number; streak: number; lastStudyDate: string }; }
+    try { return JSON.parse(localStorage.getItem('principia_v2_progress:guest') || '{"completed":[],"attempts":[],"xp":0,"streak":0,"lastStudyDate":""}') as { completed: string[]; attempts: Array<{ title: string; score: number; total: number; at: string }>; xp: number; streak: number; lastStudyDate: string }; }
     catch { return { completed: [] as string[], attempts: [] as Array<{ title: string; score: number; total: number; at: string }>, xp: 0, streak: 0, lastStudyDate: '' }; }
   });
   const localProgressRef = useRef(localProgress);
