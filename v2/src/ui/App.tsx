@@ -156,9 +156,9 @@ export function App() {
   const musicEmbedUrl = (() => {
     try {
       const url = new URL(musicUrl);
-      if (musicSource === 'spotify' && url.hostname.endsWith('spotify.com')) return 'https://open.spotify.com/embed' + url.pathname.replace(/^\\/embed/, '') + url.search;
+      if (musicSource === 'spotify' && url.hostname.endsWith('spotify.com')) return 'https://open.spotify.com/embed' + url.pathname.replace(/^\/embed/, '') + url.search;
       if (musicSource === 'youtube') {
-        const id = url.hostname === 'youtu.be' ? url.pathname.slice(1) : url.searchParams.get('v') || (url.pathname.match(/\\/(?:shorts|live|embed)\\/([^/]+)/) || [])[1];
+        const id = url.hostname === 'youtu.be' ? url.pathname.slice(1) : url.searchParams.get('v') || (url.pathname.match(/\/(?:shorts|live|embed)\/([^/]+)/) || [])[1];
         return id ? 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(id) : '';
       }
       if (musicSource === 'soundcloud' && url.hostname.endsWith('soundcloud.com')) return 'https://w.soundcloud.com/player/?url=' + encodeURIComponent(url.href) + '&visual=true';
@@ -171,7 +171,7 @@ export function App() {
     const raw = prompt('Địa chỉ website (https://…):')?.trim();
     if (!raw) return;
     try {
-      const url = new URL(/^https?:\\/\\//i.test(raw) ? raw : 'https://' + raw);
+      const url = new URL(/^https?:\/\//i.test(raw) ? raw : 'https://' + raw);
       const next = [...musicCustomSources, { name: name.slice(0, 35), url: url.href }];
       setMusicCustomSources(next); setMusicSource('custom:' + (next.length - 1)); setMusicUrl(url.href);
     } catch { setLibraryNotice('Địa chỉ nền tảng không hợp lệ.'); }
