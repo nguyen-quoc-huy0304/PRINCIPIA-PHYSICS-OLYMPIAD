@@ -65,6 +65,7 @@ export function App() {
   const [backupVersion, setBackupVersion] = useState(0);
   const [lessonPath, setLessonPath] = useState<LegacyNode[]>([]);
   const [activeLesson, setActiveLesson] = useState<LegacyNode | null>(null);
+  const [lessonEditor, setLessonEditor] = useState<{ id?: string; name: string; icon: string; type: 'lesson' | 'folder'; content: string; note: string; video: string } | null>(null);
   const [quizPath, setQuizPath] = useState<LegacyNode[]>([]);
   const [activeQuiz, setActiveQuiz] = useState<LegacyNode | null>(null);
   const [answers, setAnswers] = useState<Record<number, number>>({});
@@ -379,6 +380,84 @@ export function App() {
     else setLessonPath(path => [...path, node]);
   }
 
+  function startLessonEditor(node?: LegacyNode) {
+    if (!account?.isAdmin) return;
+    setLessonEditor({
+      id: node?.id, name: node?.name || '', icon: node?.icon || '📘',
+      type: node?.type === 'folder' ? 'folder' : 'lesson',
+      content: node?.content || '', note: node?.note || '', video: node?.video || ''
+    });
+  }
+
+  function saveLessonEditor() {
+    if (!account?.isAdmin || !lessonEditor || !lessonEditor.name.trim()) return;
+    try {
+      const tree = JSON.parse(localStorage.getItem('halo_data') || '[]') as LegacyNode[];
+      const nextNode: LegacyNode = {
+        id: lessonEditor.id || (crypto.randomUUID?.() || `lesson-${Date.now()}-${Math.random().toString(36).slice(2,7)}`),
+        name: lessonEditor.name.trim(), icon: lessonEditor.icon.trim() || '📘',
+        type: lessonEditor.type,
+        ...(lessonEditor.type === 'lesson' ? {
+          content: lessonEditor.content, note: lessonEditor.note, video: lessonEditor.video,
+          quiz: lessonEditor.id ? undefined : []
+        } : { children: [] })
+      };
+      let saved = false;
+      if (lessonEditor.id) {
+        const update = (nodes: LegacyNode[]): boolean => {
+          for (const node of nodes) {
+            if (node.id === lessonEditor.id) {
+              Object.assign(node, nextNode);
+              if (lessonEditor.type === 'folder' && !node.children) node.children = [];
+              saved = true; return true;
+            }
+            if (node.children && update(node.children)) return true;
+          }
+          return false;
+        };
+        update(tree);
+      } else {
+        const parent = lessonPath.length ? lessonPath[lessonPath.length - 1] : null;
+        if (parent) {
+          const findParent = (nodes: LegacyNode[]): LegacyNode | null => {
+            for (const node of nodes) {
+              if (node.id === parent.id) return node;
+              const found = node.children ? findParent(node.children) : null;
+              if (found) return found;
+            }
+            return null;
+          };
+          const target = findParent(tree);
+          if (!target) throw new Error('Không tìm thấy thư mục hiện tại.');
+          target.children = [...(target.children || []), nextNode];
+        } else tree.push(nextNode);
+        saved = true;
+      }
+      if (!saved) throw new Error('Không tìm thấy mục cần chỉnh sửa.');
+      localStorage.setItem('halo_data', JSON.stringify(tree));
+      setBackupVersion(value => value + 1);
+      if (activeLesson && lessonEditor.id === activeLesson.id) setActiveLesson(nextNode);
+      setLessonEditor(null);
+      setStatus('Đã lưu nội dung vào kho bài học trên thiết bị. Hãy đồng bộ cloud để sao lưu bản quản trị.');
+    } catch (error: any) { setStatus(error?.message || 'Không thể lưu nội dung bài học.'); }
+  }
+
+  function deleteActiveLesson() {
+    if (!account?.isAdmin || !activeLesson || !confirm(`Xóa bài học “${activeLesson.name}” khỏi dữ liệu trên thiết bị này?`)) return;
+    try {
+      const tree = JSON.parse(localStorage.getItem('halo_data') || '[]') as LegacyNode[];
+      const remove = (nodes: LegacyNode[]): boolean => {
+        const index = nodes.findIndex(node => node.id === activeLesson.id);
+        if (index >= 0) { nodes.splice(index, 1); return true; }
+        return nodes.some(node => node.children ? remove(node.children) : false);
+      };
+      if (!remove(tree)) throw new Error('Không tìm thấy bài học cần xóa.');
+      localStorage.setItem('halo_data', JSON.stringify(tree));
+      setBackupVersion(value => value + 1); setActiveLesson(null);
+      setStatus('Đã xóa bài học khỏi dữ liệu cục bộ.');
+    } catch (error: any) { setStatus(error?.message || 'Không thể xóa bài học.'); }
+  }
+
   function openQuizNode(node: LegacyNode) {
     const items = node.questions || node.quiz || [];
     if (items.length) { setActiveQuiz(node); setAnswers({}); setQuizSubmitted(false); }
@@ -482,6 +561,19 @@ export function App() {
           {activeLesson ? <section class="content-panel">
             <button class="back-link" onClick={() => setActiveLesson(null)}>← Quay lại danh sách</button>
             <h2>{activeLesson.icon || '📘'} {activeLesson.name}</h2>
+            {account.isAdmin && <div class="admin-lesson-actions"><button class="secondary-button" type="button" onClick={() => startLessonEditor(activeLesson)}>Chỉnh sửa bài học</button><button class="quiet-button" type="button" onClick={deleteActiveLesson}>Xóa bài học</button></div>}
+            {lessonEditor && <section class="lesson-editor">
+              <h3>{lessonEditor.id ? 'Chỉnh sửa nội dung' : 'Tạo nội dung mới'}</h3>
+              <label>Tên mục<input value={lessonEditor.name} onInput={event => setLessonEditor(current => current ? { ...current, name: event.currentTarget.value } : current)} /></label>
+              <label>Biểu tượng<input value={lessonEditor.icon} onInput={event => setLessonEditor(current => current ? { ...current, icon: event.currentTarget.value } : current)} /></label>
+              <label>Loại mục<select value={lessonEditor.type} onChange={event => setLessonEditor(current => current ? { ...current, type: event.currentTarget.value as 'lesson' | 'folder' } : current)}><option value="lesson">Bài học</option><option value="folder">Thư mục</option></select></label>
+              {lessonEditor.type === 'lesson' && <>
+                <label>Nội dung bài học<textarea rows={8} value={lessonEditor.content} onInput={event => setLessonEditor(current => current ? { ...current, content: event.currentTarget.value } : current)} /></label>
+                <label>Ghi chú hiển thị<textarea rows={4} value={lessonEditor.note} onInput={event => setLessonEditor(current => current ? { ...current, note: event.currentTarget.value } : current)} /></label>
+                <label>Link video<input value={lessonEditor.video} onInput={event => setLessonEditor(current => current ? { ...current, video: event.currentTarget.value } : current)} placeholder="https://…" /></label>
+              </>}
+              <div class="chat-actions"><button class="primary-button" type="button" onClick={saveLessonEditor}>Lưu nội dung</button><button class="quiet-button" type="button" onClick={() => setLessonEditor(null)}>Hủy</button></div>
+            </section>}
             {activeLesson.video && /^https?:\/\//i.test(activeLesson.video) && <div class="lesson-video">
               <a href={activeLesson.video} target="_blank" rel="noreferrer">Mở video bài học ↗</a>
               {(() => {
@@ -548,6 +640,7 @@ export function App() {
             <div class="section-toolbar">
               <button class="back-link" disabled={!lessonPath.length} onClick={() => setLessonPath(path => path.slice(0, -1))}>← Quay lại</button>
               <span>{lessonPath.map(node => node.name).join(' / ') || 'Tất cả môn học'}</span>
+              {account.isAdmin && <div class="chat-actions"><button class="secondary-button" type="button" onClick={() => startLessonEditor()}>＋ Bài học</button><button class="secondary-button" type="button" onClick={() => startLessonEditor({ type: 'folder', name: '', icon: '📂' })}>＋ Thư mục</button></div>}
             </div>
             <div class="node-grid">
               {learningNodes.map(node => <button class="node-card" onClick={() => openLearningNode(node)}>
