@@ -14,6 +14,7 @@ type Section = 'home' | 'learn' | 'quiz' | 'library' | 'chat' | 'progress' | 'le
 type Mode = 'login' | 'signup';
 type Question = { q: string; a: string[]; correct: number; type?: 'true_false' | 'single_select' | 'multi_select' | 'short_answer' | 'long_answer'; correctValues?: string[]; expected?: string; rubric?: string; points?: number; explanation?: string };
 type QuizEditorState = { id?: string; name: string; questionsText: string };
+type CustomAIProvider = { id: string; name: string; url: string };
 type LegacyNode = {
   id: string; name: string; icon?: string; type?: string; content?: string; note?: string; video?: string;
   children?: LegacyNode[]; questions?: Question[]; quiz?: Question[];
@@ -65,6 +66,7 @@ export function App() {
   const [displayName, setDisplayName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [chatProvider, setChatProvider] = useState(() => localStorage.getItem('principia_v2_ai_selected') || 'chatgpt');
+  const [customAIProviders, setCustomAIProviders] = useState<CustomAIProvider[]>(() => { try { const data = JSON.parse(localStorage.getItem('principia_v2_ai_custom') || '[]'); return Array.isArray(data) ? data.filter((item: any) => item && typeof item.id === 'string' && typeof item.name === 'string' && typeof item.url === 'string') : []; } catch { return []; } });
   const [chatDraft, setChatDraft] = useState('');
   const [chatMessages, setChatMessages] = useState<Array<{ role: 'user'; text: string; at: string }>>([]);
   const [chatNotice, setChatNotice] = useState('');
@@ -409,6 +411,22 @@ export function App() {
   const xp = Number(legacy.entries['halo_xp'] || 0);
   const streak = Number(legacy.entries['halo_streak'] || 0);
   const completed = parseArray<string>(legacy.entries['halo_completed']);
+
+  function addCustomAIProvider() {
+    const name = prompt('Tên AI muốn thêm (ví dụ: Perplexity):')?.trim();
+    if (!name) return;
+    const raw = prompt('Địa chỉ trang AI (https://…):')?.trim();
+    if (!raw) return;
+    try {
+      const url = new URL(/^https?:\/\//i.test(raw) ? raw : 'https://' + raw);
+      if (!['http:', 'https:'].includes(url.protocol)) throw new Error();
+      const next = [...customAIProviders, { id: 'custom-' + Date.now(), name: name.slice(0, 40), url: url.href }];
+      setCustomAIProviders(next); localStorage.setItem('principia_v2_ai_custom', JSON.stringify(next));
+      setChatProvider(next[next.length - 1].id);
+      localStorage.setItem('principia_v2_ai_selected', next[next.length - 1].id);
+      setChatNotice('Đã thêm AI tùy chỉnh.');
+    } catch { setChatNotice('Địa chỉ AI không hợp lệ. Chỉ chấp nhận http hoặc https.'); }
+  }
 
   async function runAuth(action: () => Promise<AuthResult>) {
     setBusy(true); setStatus('');
@@ -882,9 +900,10 @@ export function App() {
         </section>}
         {section === 'chat' && <section class="content-panel chat-workspace">
           <div class="chat-heading"><div><h2>AI Study Assistant</h2><p>Soạn câu hỏi, lưu lịch sử và mở AI đã chọn trong trình duyệt.</p></div>
-            <select value={chatProvider} onChange={event => { localStorage.setItem('principia_v2_ai_selected', event.currentTarget.value); setChatProvider(event.currentTarget.value); }}>
+            <div class="chat-provider-controls"><select value={chatProvider} onChange={event => { localStorage.setItem('principia_v2_ai_selected', event.currentTarget.value); setChatProvider(event.currentTarget.value); }}>
               <option value="chatgpt">ChatGPT</option><option value="gemini">Google Gemini</option><option value="claude">Claude</option><option value="deepseek">DeepSeek</option><option value="copilot">Microsoft Copilot</option>
-            </select>
+              {customAIProviders.map(provider => <option value={provider.id}>{provider.name}</option>)}
+            </select><button class="secondary-button" type="button" onClick={addCustomAIProvider}>＋ Thêm AI</button></div>
           </div>
           <div class="chat-provider-note">PRINCIPIA lưu lịch sử lời nhắc trên thiết bị. Khi mở AI, bạn cần đăng nhập và gửi nội dung ở trang của nhà cung cấp; V2 chưa giả lập phản hồi AI hoặc tự gửi dữ liệu của bạn.</div>
           <div class="chat-history">
@@ -904,8 +923,9 @@ export function App() {
             <div class="chat-actions"><button class="secondary-button" type="submit" disabled={!chatDraft.trim()}>Lưu lời nhắc</button>
               <button class="primary-button" type="button" disabled={!chatDraft.trim()} onClick={() => {
                 const urls: Record<string, string> = { chatgpt: 'https://chatgpt.com/', gemini: 'https://gemini.google.com/app', claude: 'https://claude.ai/new', deepseek: 'https://chat.deepseek.com/', copilot: 'https://copilot.microsoft.com/' };
+                const targetUrl = customAIProviders.find(provider => provider.id === chatProvider)?.url || urls[chatProvider] || urls.chatgpt;
                 const text = chatDraft.trim();
-                const opened = window.open(urls[chatProvider] || urls.chatgpt, '_blank');
+                const opened = window.open(targetUrl, '_blank');
                 if (opened) {
                   void navigator.clipboard?.writeText(text).then(() => setChatNotice('Đã mở AI và sao chép câu hỏi. Dán vào khung chat của AI để gửi.'));
                   setChatNotice('Đã mở AI. Nếu chưa tự sao chép được, hãy dùng nút Sao chép câu hỏi.');
