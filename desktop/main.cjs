@@ -113,7 +113,7 @@ function createWindow() {
     minWidth: 960,
     minHeight: 650,
     backgroundColor: '#0b1020',
-    title: 'PRINCIPIA • PHYSICS OLYMPIAD',
+    title: 'PRO',
     icon: path.join(__dirname, 'icons', 'icon.ico'),
     autoHideMenuBar: true,
     webPreferences: {
