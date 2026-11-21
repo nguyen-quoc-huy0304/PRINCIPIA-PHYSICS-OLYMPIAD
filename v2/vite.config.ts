@@ -4,6 +4,7 @@ import preact from '@preact/preset-vite';
 export default defineConfig({
   plugins: [preact()],
   base: './',
+  publicDir: '../assets/images',
   build: {
     target: 'es2022',
     minify: 'esbuild',
