@@ -102,3 +102,35 @@ export async function restoreLegacyDataFromCloud(uid: string): Promise<number> {
     entries
   }));
 }
+
+export type PrincipiaProgress = {
+  completed: string[];
+  attempts: Array<{ title: string; score: number; total: number; at: string }>;
+  xp: number;
+};
+
+export async function syncProgressToCloud(uid: string, progress: PrincipiaProgress): Promise<void> {
+  if (!uid) throw new Error('Bạn cần đăng nhập trước khi đồng bộ tiến độ.');
+  const [app, firestore] = await Promise.all([getFirebaseApp(), import('firebase/firestore')]);
+  const db = firestore.getFirestore(app);
+  await firestore.setDoc(firestore.doc(db, 'principiaProgress', uid), {
+    completed: progress.completed,
+    attempts: progress.attempts.slice(0, 100),
+    xp: progress.xp,
+    updatedAt: firestore.serverTimestamp()
+  });
+}
+
+export async function restoreProgressFromCloud(uid: string): Promise<PrincipiaProgress | null> {
+  if (!uid) throw new Error('Bạn cần đăng nhập trước khi khôi phục tiến độ.');
+  const [app, firestore] = await Promise.all([getFirebaseApp(), import('firebase/firestore')]);
+  const db = firestore.getFirestore(app);
+  const snapshot = await firestore.getDoc(firestore.doc(db, 'principiaProgress', uid));
+  if (!snapshot.exists()) return null;
+  const data = snapshot.data();
+  return {
+    completed: Array.isArray(data.completed) ? data.completed.filter((value: unknown): value is string => typeof value === 'string') : [],
+    attempts: Array.isArray(data.attempts) ? data.attempts.filter((value: any) => value && typeof value.title === 'string' && typeof value.score === 'number' && typeof value.total === 'number' && typeof value.at === 'string').slice(0, 100) : [],
+    xp: Number.isFinite(data.xp) ? Math.max(0, data.xp) : 0
+  };
+}
