@@ -23,6 +23,7 @@ V2 is being developed on the isolated `rebuild-v2` branch. The production `main`
 - Custom game-platform hub with Chess.com, Lichess, Sudoku, GeoGuessr and user-added links.
 - Rust-backed kinematics, kinetic-energy and projectile calculators in the native Tauri app, with matching TypeScript browser fallbacks.
 - Account profile editor and local light/dark theme preference.
+- Multi-platform download center that clearly marks V2 packages as unreleased until signed builds exist.
 - Account-scoped offline document library with PDF/image/video/audio preview and download.
 - Learning completion, quiz history, EXP, daily streak and achievement badges; personal progress can sync to the signed-in user's Firestore document.
 - Private per-account backup/restore, admin publishing of shared lesson and quiz data, and automatic retrieval of published content for signed-in learners.
