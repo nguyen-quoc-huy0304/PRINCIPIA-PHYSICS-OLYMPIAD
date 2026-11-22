@@ -196,6 +196,8 @@
 
 | 139 | Lọc nhiệm vụ trong Kế hoạch học tập theo tất cả, chưa hoàn thành, đã hoàn thành và quá hạn; thống kê tổng vẫn giữ nguyên theo toàn bộ kế hoạch | Đã tích hợp bộ lọc trạng thái trong Kế hoạch học tập; cần nghiệm thu tương tác trên trình duyệt và thiết bị thật |
 
+| 140 | Tìm nhiệm vụ học tập theo tên, chủ đề hoặc ghi chú, kết hợp với bộ lọc trạng thái | Đã tích hợp tìm kiếm trong Kế hoạch học tập; cần nghiệm thu tương tác trên trình duyệt và thiết bị thật |
+
 ## Nguyên tắc nghiệm thu
 
 1. Không đánh dấu hoàn thành chỉ vì đã tạo file hoặc commit code.
