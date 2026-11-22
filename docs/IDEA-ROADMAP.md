@@ -178,6 +178,8 @@
 | 128 | Lưu thời gian làm bài thực tế vào lịch sử kết quả | Đã ghi durationSeconds trong lượt luyện Olympic |
 | 129 | Hiển thị thời lượng làm bài ở màn hình kết quả | Đã thêm thời gian phút/giây trong kết quả thi |
 | 130 | Giữ tiến độ câu hiện tại khi chuyển câu và khôi phục bản nháp | Đã lưu chỉ số câu hiện tại cùng bản nháp bài thi |
+| 131 | Hồ sơ tư duy & học tập: tổng hợp lịch sử luyện tập, phân bố chế độ, lỗi thường gặp và gợi ý ôn tập có giải thích | Đã tích hợp trong Learning Suite; chỉ mô tả dữ liệu học tập cục bộ, chưa thay thế đánh giá chuyên môn; cần nghiệm thu trình duyệt |
+
 ## Nguyên tắc nghiệm thu
 
 1. Không đánh dấu hoàn thành chỉ vì đã tạo file hoặc commit code.
