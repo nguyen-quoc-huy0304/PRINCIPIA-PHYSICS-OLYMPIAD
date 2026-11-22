@@ -104,7 +104,6 @@ mod tests {
         assert_eq!(response["value"]["points"], 100);
     }
     #[test]
-    #[test]
     fn dispatches_robot_arm_inverse_kinematics() {
         let response = dispatch(&json!({"id":12,"op":"robotArmIK","l1M":0.8,"l2M":0.6,"targetXM":0.7,"targetYM":0.5,"elbowBranch":1.0}));
         assert_eq!(response["ok"], true);
@@ -115,6 +114,7 @@ mod tests {
         let response = dispatch(&json!({"id":13,"op":"robotArmIK","l1M":0.8,"l2M":0.6,"targetXM":3.0,"targetYM":0.0,"elbowBranch":1.0}));
         assert_eq!(response["ok"], false);
     }
+    #[test]
     fn dispatches_rapier_rigid_body_drop() {
         let response = dispatch(&json!({
             "id": 11, "op": "rigidBodyDrop",
