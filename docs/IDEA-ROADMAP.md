@@ -110,7 +110,7 @@
 
 | 70 | Sao lưu/khôi phục tiến độ học tập và game trên thiết bị; không đưa token đăng nhập vào tệp | Có mã nguồn — 6/6 unit test chạy local đạt; chờ CI và nghiệm thu trình duyệt |
 | 71 | Khôi phục đầy đủ danh sách hơn 100 ý tưởng PRINCIPIA đã trao đổi, đối chiếu từng mục với backlog 70 mục hiện có để không bỏ sót | Đang rà soát lịch sử trao đổi; không tự bịa các mục chưa tìm thấy |
-| 72 | Theo dõi chuỗi ngày học liên tiếp, cấp độ XP và thành tựu theo tiến độ thực tế | Có mã nguồn core + tích hợp; 9 unit test được viết, CI và trình duyệt chưa xác nhận |
+| 72 | Theo dõi chuỗi ngày học liên tiếp, cấp độ XP và thành tựu theo tiến độ thực tế | Có mã nguồn core + tích hợp; 9/9 unit test chạy local đạt; GitHub Actions lần chạy gần nhất thất bại trước khi có step/log, trình duyệt chưa xác nhận |
 
 ## Nguyên tắc nghiệm thu
 
