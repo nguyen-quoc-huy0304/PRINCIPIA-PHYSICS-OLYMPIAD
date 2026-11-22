@@ -24,7 +24,42 @@
     };
   }
 
-  const api = { collide1D };
+  function resolveDiskCollision(a, b, restitution) {
+    if (!a || !b || ![a.x,a.y,a.vx,a.vy,a.mass,a.radius,b.x,b.y,b.vx,b.vy,b.mass,b.radius,restitution].every(Number.isFinite)) {
+      throw new TypeError('Bodies and restitution must contain finite numbers.');
+    }
+    if (a.mass <= 0 || b.mass <= 0 || a.radius <= 0 || b.radius <= 0) throw new RangeError('Masses and radii must be positive.');
+    if (restitution < 0 || restitution > 1) throw new RangeError('Restitution must be between 0 and 1.');
+    let dx = b.x - a.x, dy = b.y - a.y;
+    let distance = Math.hypot(dx, dy);
+    const minDistance = a.radius + b.radius;
+    if (distance >= minDistance) return { collided: false, impulse: 0 };
+    if (distance < 1e-12) { dx = 1; dy = 0; distance = 1; }
+    const nx = dx / distance, ny = dy / distance;
+    const invA = 1 / a.mass, invB = 1 / b.mass;
+    const relativeNormal = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
+    const penetration = minDistance - distance;
+    const correction = Math.max(penetration - 0.01, 0) * 0.8 / (invA + invB);
+    a.x -= nx * correction * invA; a.y -= ny * correction * invA;
+    b.x += nx * correction * invB; b.y += ny * correction * invB;
+    if (relativeNormal >= 0) return { collided: true, impulse: 0 };
+    const impulse = -(1 + restitution) * relativeNormal / (invA + invB);
+    a.vx -= impulse * invA * nx; a.vy -= impulse * invA * ny;
+    b.vx += impulse * invB * nx; b.vy += impulse * invB * ny;
+    return { collided: true, impulse };
+  }
+
+  function momentumAndEnergy2D(bodies) {
+    return bodies.reduce((sum, body) => {
+      if (!body || ![body.mass, body.vx, body.vy].every(Number.isFinite) || body.mass <= 0) throw new TypeError('Invalid body state.');
+      sum.px += body.mass * body.vx;
+      sum.py += body.mass * body.vy;
+      sum.kinetic += 0.5 * body.mass * (body.vx * body.vx + body.vy * body.vy);
+      return sum;
+    }, { px: 0, py: 0, kinetic: 0 });
+  }
+
+  const api = { collide1D, resolveDiskCollision, momentumAndEnergy2D };
   if (typeof window !== 'undefined') window.PrincipiaCollisionMath = api;
   if (typeof document === 'undefined') return;
 
@@ -68,6 +103,91 @@
       update();
     });
     update();
+    init2D(root);
+  }
+
+  function init2D(root) {
+    const canvas = root.querySelector('[data-collision2d="canvas"]');
+    if (!canvas || canvas.dataset.ready === '1') return;
+    canvas.dataset.ready = '1';
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const status = root.querySelector('[data-collision2d="status"]');
+    const energy = root.querySelector('[data-collision2d="energy"]');
+    const momentum = root.querySelector('[data-collision2d="momentum"]');
+    const start = root.querySelector('[data-collision2d="start"]');
+    const reset = root.querySelector('[data-collision2d="reset"]');
+    const restitutionInput = root.querySelector('[data-collision2d="e"]');
+    let bodies = [], running = false, frame = 0, last = 0, raf = 0;
+    const seed = () => [
+      { x: 65, y: 72, vx: 115, vy: 34, mass: 1, radius: 15, color: '#3b82f6' },
+      { x: 235, y: 105, vx: -70, vy: -18, mass: 2, radius: 21, color: '#f97316' },
+      { x: 130, y: 205, vx: 38, vy: -82, mass: 1.4, radius: 18, color: '#10b981' },
+      { x: 300, y: 205, vx: -42, vy: 62, mass: 0.8, radius: 13, color: '#a855f7' }
+    ];
+    function resize() {
+      const width = Math.max(280, canvas.clientWidth || 560);
+      const height = 280;
+      const ratio = Math.min(window.devicePixelRatio || 1, 1.5);
+      canvas.width = Math.round(width * ratio); canvas.height = Math.round(height * ratio);
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+      canvas.dataset.width = String(width); canvas.dataset.height = String(height);
+      bodies.forEach((b) => { b.x = Math.min(width - b.radius, Math.max(b.radius, b.x)); b.y = Math.min(height - b.radius, Math.max(b.radius, b.y)); });
+      draw();
+    }
+    function draw() {
+      const width = Number(canvas.dataset.width || 560), height = Number(canvas.dataset.height || 280);
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = '#0b1220'; ctx.fillRect(0, 0, width, height);
+      ctx.strokeStyle = 'rgba(255,255,255,.10)'; ctx.lineWidth = 1;
+      for (let x = 20; x < width; x += 40) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,height); ctx.stroke(); }
+      for (let y = 20; y < height; y += 40) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(width,y); ctx.stroke(); }
+      bodies.forEach((b) => {
+        ctx.beginPath(); ctx.arc(b.x,b.y,b.radius,0,Math.PI*2); ctx.fillStyle=b.color; ctx.fill();
+        ctx.strokeStyle='rgba(255,255,255,.85)'; ctx.lineWidth=1.5; ctx.stroke();
+        ctx.fillStyle='#fff'; ctx.font='12px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(b.mass+' kg',b.x,b.y);
+        const scale=0.16; ctx.beginPath(); ctx.moveTo(b.x,b.y); ctx.lineTo(b.x+b.vx*scale,b.y+b.vy*scale);
+        ctx.strokeStyle='#fff'; ctx.lineWidth=2; ctx.stroke();
+        const angle=Math.atan2(b.vy,b.vx); ctx.beginPath(); ctx.moveTo(b.x+b.vx*scale,b.y+b.vy*scale);
+        ctx.lineTo(b.x+b.vx*scale-6*Math.cos(angle-0.5),b.y+b.vy*scale-6*Math.sin(angle-0.5));
+        ctx.lineTo(b.x+b.vx*scale-6*Math.cos(angle+0.5),b.y+b.vy*scale-6*Math.sin(angle+0.5)); ctx.closePath(); ctx.fillStyle='#fff'; ctx.fill();
+      });
+      const totals=momentumAndEnergy2D(bodies);
+      energy.textContent=fmt(totals.kinetic)+' J (đơn vị mô phỏng)';
+      momentum.textContent='px '+fmt(totals.px)+' · py '+fmt(totals.py)+' kg·m/s';
+    }
+    function step(dt) {
+      const width=Number(canvas.dataset.width||560), height=Number(canvas.dataset.height||280);
+      bodies.forEach((b)=>{
+        b.x+=b.vx*dt; b.y+=b.vy*dt;
+        if(b.x-b.radius<0){b.x=b.radius;b.vx=Math.abs(b.vx);}
+        if(b.x+b.radius>width){b.x=width-b.radius;b.vx=-Math.abs(b.vx);}
+        if(b.y-b.radius<0){b.y=b.radius;b.vy=Math.abs(b.vy);}
+        if(b.y+b.radius>height){b.y=height-b.radius;b.vy=-Math.abs(b.vy);}
+      });
+      const e=Number(restitutionInput.value);
+      for(let i=0;i<bodies.length;i++) for(let j=i+1;j<bodies.length;j++) resolveDiskCollision(bodies[i],bodies[j],e);
+    }
+    function tick(time) {
+      if(!running) return;
+      if(!last) last=time;
+      const elapsed=Math.min((time-last)/1000,0.04); last=time;
+      const substeps=2, dt=elapsed/substeps;
+      for(let i=0;i<substeps;i++) step(dt);
+      draw(); raf=requestAnimationFrame(tick);
+    }
+    function stop() { running=false; last=0; if(raf) cancelAnimationFrame(raf); raf=0; start.textContent='▶ Chạy mô phỏng'; status.textContent='Đã tạm dừng.'; }
+    function resetWorld() { stop(); bodies=seed(); resize(); status.textContent='Đã đặt lại 4 vật.'; }
+    start.addEventListener('click',()=>{
+      if(running){stop();return;}
+      if(document.hidden){status.textContent='Mở lại tab để chạy mô phỏng.';return;}
+      running=true; start.textContent='Ⅱ Tạm dừng'; status.textContent='Đang mô phỏng va chạm 2D.'; last=0; raf=requestAnimationFrame(tick);
+    });
+    reset.addEventListener('click',resetWorld);
+    document.addEventListener('visibilitychange',()=>{if(document.hidden) stop();});
+    if(typeof ResizeObserver!=='undefined') new ResizeObserver(resize).observe(canvas);
+    else window.addEventListener('resize',resize);
+    bodies=seed(); resize(); status.textContent='Sẵn sàng: 4 vật, va chạm đĩa tròn 2D.';
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
