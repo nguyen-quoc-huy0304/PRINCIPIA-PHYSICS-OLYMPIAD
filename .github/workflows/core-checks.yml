@@ -45,30 +45,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Check changed application scripts
+      - name: Check every JavaScript source file
         run: |
-          node --check assets/js/core/performance.js
-          node --check assets/js/app-part-02.js
-          node --check assets/js/physics-engine.js
-          node --check assets/js/principia-external-labs.js
-          node --check assets/js/principia-robotics-lab.js
-          node --check assets/js/principia-data-lab.js
-          node --check assets/js/principia-physics-puzzles.js
-          node --check assets/js/principia-space-explorer.js
-          node --check assets/js/principia-robot-assembly.js
-          node --check assets/js/principia-collision-lab.js
-          node --check assets/js/principia-backup.js
-          node --check assets/js/principia-mystery-core.js
-          node --check assets/js/principia-progression-core.js
-          node --check assets/js/principia-season-core.js
-          node --check assets/js/principia-learning-suite.js
-          node --check assets/js/principia-level-studio-core.js
-          node --check assets/js/principia-level-studio.js
-          node --check assets/js/principia-research-core.js
-          node --check assets/js/principia-research.js
-          node --check assets/js/principia-season-core.js
-          node --check assets/js/principia-research.js
-          node --test tests/js/*.test.cjs
+          find assets/js -type f -name '*.js' -print0 | xargs -0 -r -n1 node --check
+      - name: Run JavaScript unit tests
+        run: npm test
+
   cpp:
     runs-on: ubuntu-latest
     steps:
