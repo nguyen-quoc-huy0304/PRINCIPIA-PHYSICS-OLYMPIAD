@@ -95,7 +95,7 @@ impl Experiment {
     }
 }
 fn csv_escape(s: &str) -> String {
-    if s.chars().any(|c| c==',' || c=='"' || c=='\\n') { format!("\"{}\"",s.replace('"',"\"\"")) } else { s.to_string() }
+    if s.chars().any(|c| c==',' || c=='"' || c=='\n') { format!("\"{}\"",s.replace('"',"\"\"")) } else { s.to_string() }
 }
 
 #[cfg(test)]
