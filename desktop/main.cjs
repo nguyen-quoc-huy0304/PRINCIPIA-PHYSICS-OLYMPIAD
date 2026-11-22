@@ -22,6 +22,7 @@ const corePending = new Map();
 function rejectCorePending(message) {
   for (const [id, pending] of corePending) {
     corePending.delete(id);
+    clearTimeout(pending.timer);
     pending.reject(new Error(message));
   }
 }
@@ -41,6 +42,7 @@ function startNativeCore() {
       const pending = corePending.get(response.id);
       if (!pending) return;
       corePending.delete(response.id);
+      clearTimeout(pending.timer);
       if (response.ok) pending.resolve(response.value);
       else pending.reject(new Error(response.error || 'Native core error'));
     });
@@ -64,10 +66,18 @@ function callNativeCore(operation, params) {
   }
   const id = coreNextId++;
   return new Promise((resolve, reject) => {
-    corePending.set(id, { resolve, reject });
+    const timer = setTimeout(() => {
+      corePending.delete(id);
+      reject(new Error('Rust core phản hồi quá thời gian cho phép.'));
+    }, 8000);
+    corePending.set(id, { resolve, reject, timer });
     coreProcess.stdin.write(JSON.stringify({ id, op: operation, ...params }) + '\n', error => {
       if (!error) return;
-      corePending.delete(id);
+      const pending = corePending.get(id);
+      if (pending) {
+        corePending.delete(id);
+        clearTimeout(pending.timer);
+      }
       reject(error);
     });
   });
