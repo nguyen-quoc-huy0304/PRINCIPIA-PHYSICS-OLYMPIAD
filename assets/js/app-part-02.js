@@ -801,14 +801,28 @@ function switchClLeftTab(t){
   // Heavy scientific/lab modules are fetched only when the learner opens this tab.
   if(t==='phet'){
     const panel=document.getElementById('clTab-phet');
-    if(panel&&!panel.dataset.principiaLabsLoading&&!panel.dataset.principiaLabsReady&&window.PrincipiaPerformance){
+    if(panel&&!panel.dataset.principiaLabsLoading&&!panel.dataset.principiaLabsReady){
       panel.dataset.principiaLabsLoading='1';
-      window.PrincipiaPerformance.loadScripts([
+      const labScripts=[
         '/assets/js/physics-engine.js?v=1.3.1',
         '/assets/js/principia-external-labs.js?v=1.0.1',
         '/assets/js/principia-robotics-lab.js?v=1.0.1',
         '/assets/js/principia-data-lab.js?v=1.0.1'
-      ]).then(()=>{
+      ];
+      // Keep the feature usable even if the optional performance helper failed to load.
+      const loadLabScripts=window.PrincipiaPerformance?.loadScripts
+        ? window.PrincipiaPerformance.loadScripts(labScripts)
+        : labScripts.reduce((chain,src)=>chain.then(()=>new Promise((resolve,reject)=>{
+            const existing=Array.from(document.scripts).find(s=>s.dataset.principiaLabSrc===src);
+            if(existing?.dataset.loaded==='true'){resolve(existing);return;}
+            const script=existing||document.createElement('script');
+            script.async=false;
+            script.dataset.principiaLabSrc=src;
+            script.onload=()=>{script.dataset.loaded='true';resolve(script);};
+            script.onerror=()=>{script.remove();reject(new Error('Không tải được mô-đun: '+src));};
+            if(!existing){script.src=src;document.head.appendChild(script);}
+          })),Promise.resolve());
+      loadLabScripts.then(()=>{
         panel.dataset.principiaLabsReady='1';
         const frame=document.getElementById('phetFrame');
         const pending=frame?.dataset.principiaPendingSrc;
