@@ -48,6 +48,7 @@
 | 28 | Thảo luận với AI và trợ giúp học tập | Có mã nguồn cầu nối; cần nghiệm thu nhà cung cấp, giới hạn và chất lượng |
 | 29 | AI chấm bài, giải thích từng bước và phản hồi theo rubric | Đang triển khai / cần thiết kế và kiểm chứng |
 | 30 | Hỗ trợ câu hỏi có ảnh, sơ đồ, đồ thị và hình minh họa | Có mã nguồn hiển thị media; ngân hàng câu hỏi cần bổ sung dữ liệu |
+| 30a | Báo cáo học tập 7 ngày từ lịch sử luyện tập, phiên tập trung, lỗi sai và kế hoạch | Có mã nguồn — đã thêm; chờ kiểm thử giao diện và dữ liệu thực tế |
 
 ## C. Phòng thí nghiệm và công cụ kỹ thuật
 
