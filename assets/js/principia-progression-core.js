@@ -12,13 +12,18 @@
   if(!Number.isFinite(d.getTime()))throw new Error('Ngày hoạt động không hợp lệ.');
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
  }
+ function validDateKey(value){
+  if(typeof value!=='string'||!/^\\d{4}-\\d{2}-\\d{2}$/.test(value))return false;
+  const parsed=new Date(value+'T12:00:00');
+  return Number.isFinite(parsed.getTime())&&dateKey(parsed)===value;
+ }
  function recordActivity(days,when=new Date()){
-  const key=dateKey(when),list=Array.isArray(days)?days.filter(x=>typeof x==='string'&&/^\\d{4}-\\d{2}-\\d{2}$/.test(x)):[],unique=[...new Set(list)].sort();
+  const key=dateKey(when),list=Array.isArray(days)?days.filter(validDateKey):[],unique=[...new Set(list)].sort();
   if(!unique.includes(key))unique.push(key);
   return unique.sort().slice(-3650);
  }
  function streak(days,today=new Date()){
-  const set=new Set(Array.isArray(days)?days:[]),key=dateKey(today),prev=new Date(today instanceof Date?today:today);
+  const set=new Set(Array.isArray(days)?days.filter(validDateKey):[]),key=dateKey(today),prev=new Date(today instanceof Date?today:today);
   const yesterday=new Date(prev);yesterday.setDate(yesterday.getDate()-1);
   let current=set.has(key)||set.has(dateKey(yesterday))?0:0;
   let cursor=new Date(set.has(key)?key+'T12:00:00':dateKey(yesterday)+'T12:00:00');
@@ -27,7 +32,7 @@
   return {current,longest:Math.max(current,longest(days)),activeToday:set.has(key)};
  }
  function longest(days){
-  const sorted=[...new Set(Array.isArray(days)?days:[])].filter(x=>/^\\d{4}-\\d{2}-\\d{2}$/.test(x)).sort();
+  const sorted=[...new Set(Array.isArray(days)?days.filter(validDateKey):[])].sort();
   let best=0,run=0,last=null;
   sorted.forEach(k=>{const d=new Date(k+'T12:00:00');if(last){const n=new Date(last);n.setDate(n.getDate()+1);run=dateKey(n)===k?run+1:1}else run=1;best=Math.max(best,run);last=d});
   return best;
