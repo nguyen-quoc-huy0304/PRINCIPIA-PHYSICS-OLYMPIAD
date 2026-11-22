@@ -14,7 +14,7 @@
     const next=path.concat(n.name||'');
     (n.questions||n.quiz||[]).forEach(q=>{
      if(q&&q.q&&Array.isArray(q.a)&&q.a.length>=2&&Number.isInteger(Number(q.correct))&&q.a[Number(q.correct)]!==undefined)
-      out.push({q:String(q.q),a:q.a.map(String),correct:Number(q.correct),topic:n.name||'Chủ đề',path:next.join(' › '),kind:kind});
+      out.push({q:String(q.q),a:q.a.map(String),correct:Number(q.correct),topic:n.name||'Chủ đề',path:next.join(' › '),kind:kind,image:q.image||q.imageUrl||q.diagram||null,graph:q.graph||null});
     });
     if(n.children)walk(n.children,kind,next);
    });
@@ -104,11 +104,30 @@
  function stopTimer(){if(examTimer){clearInterval(examTimer);examTimer=null}}
  function startTimer(){stopTimer();examTimer=setInterval(()=>{if(!exam)return;const left=Math.max(0,exam.end-Date.now());const el=document.getElementById('plsExamClock');if(el)el.textContent=clock(left);if(!left)submitExam(true)},1000)}
  function clock(ms){const s=Math.ceil(ms/1000);return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
+ function questionMedia(q){
+  let html='';
+  const image=q.image;
+  if(typeof image==='string'&&image.trim()&&(/^(https:\/\/|\/)/i).test(image.trim())){
+   html+='<figure style="margin:12px 0"><img src="'+esc(image.trim())+'" alt="Hình minh họa câu hỏi" loading="lazy" style="max-width:100%;max-height:360px;object-fit:contain;border-radius:12px;border:1px solid var(--line,#444)"></figure>';
+  }
+  const g=q.graph;
+  if(g&&Array.isArray(g.points)&&g.points.length>=2){
+   const pts=g.points.map(p=>Array.isArray(p)&&p.length>=2?[Number(p[0]),Number(p[1])]:null).filter(p=>p&&p.every(Number.isFinite));
+   if(pts.length>=2){
+    const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]),xmin=Math.min(...xs),xmax=Math.max(...xs),ymin=Math.min(...ys),ymax=Math.max(...ys);
+    const dx=xmax-xmin||1,dy=ymax-ymin||1,W=360,H=220,L=48,R=12,T=14,B=38;
+    const X=x=>L+(x-xmin)/dx*(W-L-R),Y=y=>T+(ymax-y)/dy*(H-T-B);
+    const path=pts.map((p,i)=>(i?'L':'M')+X(p[0]).toFixed(1)+' '+Y(p[1]).toFixed(1)).join(' ');
+    html+='<div style="margin:12px 0;padding:8px;border:1px solid var(--line,#444);border-radius:12px;overflow:auto"><svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Đồ thị dữ liệu câu hỏi" style="width:100%;max-width:520px"><line x1="'+L+'" y1="'+T+'" x2="'+L+'" y2="'+(H-B)+'" stroke="currentColor" opacity=".7"/><line x1="'+L+'" y1="'+(H-B)+'" x2="'+(W-R)+'" y2="'+(H-B)+'" stroke="currentColor" opacity=".7"/><path d="'+path+'" fill="none" stroke="#8b75ff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>'+pts.map(p=>'<circle cx="'+X(p[0])+'" cy="'+Y(p[1])+'" r="3.5" fill="#8b75ff"/>').join('')+'<text x="'+(W/2)+'" y="'+(H-6)+'" fill="currentColor" font-size="12" text-anchor="middle">'+esc(g.xLabel||'x')+'</text><text transform="translate(14 '+(H/2)+') rotate(-90)" fill="currentColor" font-size="12" text-anchor="middle">'+esc(g.yLabel||'y')+'</text><text x="'+L+'" y="'+(H-20)+'" fill="currentColor" font-size="11">'+xmin+'</text><text x="'+(W-R-25)+'" y="'+(H-20)+'" fill="currentColor" font-size="11">'+xmax+'</text><text x="24" y="'+(T+4)+'" fill="currentColor" font-size="11">'+ymax+'</text><text x="24" y="'+(H-B)+'" fill="currentColor" font-size="11">'+ymin+'</text></svg></div>';
+   }
+  }
+  return html;
+ }
  function renderExam(){
   const qs=exam.questions,answered=Object.keys(exam.answers).length;
   let html='<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><b>Đã trả lời '+answered+'/'+qs.length+'</b><b id="plsExamClock" style="font-size:22px;font-variant-numeric:tabular-nums">'+clock(exam.end-Date.now())+'</b></div>';
   html+='<div style="height:7px;background:var(--line,#444);border-radius:20px;margin:12px 0 18px"><div style="height:100%;width:'+answered/qs.length*100+'%;background:var(--purple,#9b87ff);border-radius:20px"></div></div>';
-  qs.forEach((q,i)=>{html+=panel('Câu '+(i+1)+' · '+esc(q.topic),'<p style="font-size:17px">'+esc(q.q)+'</p>'+q.a.map((a,j)=>'<label style="display:flex;gap:9px;align-items:flex-start;padding:9px;margin:5px 0;border:1px solid var(--line,#444);border-radius:10px"><input type="radio" name="plsQ'+i+'" '+(exam.answers[i]===j?'checked':'')+' onchange="principiaSuiteChoose('+i+','+j+')" style="margin-top:4px"><span>'+esc(a)+'</span></label>').join(''))});
+  qs.forEach((q,i)=>{html+=panel('Câu '+(i+1)+' · '+esc(q.topic),'<p style="font-size:17px">'+esc(q.q)+'</p>'+questionMedia(q)+'<div>'+q.a.map((a,j)=>'<label style="display:flex;gap:9px;align-items:flex-start;padding:9px;margin:5px 0;border:1px solid var(--line,#444);border-radius:10px"><input type="radio" name="plsQ'+i+'" '+(exam.answers[i]===j?'checked':'')+' onchange="principiaSuiteChoose('+i+','+j+')" style="margin-top:4px"><span>'+esc(a)+'</span></label>').join('')+'</div>')});
   html+=btn('Nộp bài','principiaSuiteSubmitExam(false)','primary')+btn('Thoát bài thi','principiaSuiteExitExam()');
   open('Phòng luyện Olympic',html);
  }
