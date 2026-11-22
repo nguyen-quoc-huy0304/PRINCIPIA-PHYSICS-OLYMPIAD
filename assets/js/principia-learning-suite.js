@@ -3,7 +3,7 @@
  'use strict';
  const KEY='principia_learning_suite_v1';
  const safe=(v)=>{try{return JSON.parse(localStorage.getItem(KEY)||'{}')}catch(_){return {}}};
- const state=Object.assign({attempts:[],notes:[],errors:[],notifications:false},safe());
+ const state=Object.assign({attempts:[],notes:[],errors:[],notifications:false,claimedQuests:[]},safe());
  const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){console.warn('[PRINCIPIA] Learning Suite storage:',e)}};
  const allLessons=()=>{try{return typeof lessons==='function'?lessons():[]}catch(_){return []}};
@@ -101,9 +101,19 @@
  }
  function quests(){
   let done=0,earned=0;try{done=completed.length;earned=xp}catch(_){}
-  const a=state.attempts||[],notes=state.notes||[],errors=state.errors||[];
-  const tasks=[['Hoàn thành 1 bài học',done>=1,done+'/1 bài', 'Mở bài học và nhấn Hoàn thành'],['Luyện 5 câu hỏi',a.reduce((s,x)=>s+x.total,0)>=5,a.reduce((s,x)=>s+x.total,0)+'/5 câu','Vào phòng luyện Olympic'],['Ghi 1 ghi chú',notes.length>=1,notes.length+'/1 ghi chú','Lưu một ý quan trọng'],['Ghi lại 1 lỗi sai',errors.length>=1,errors.length+'/1 lỗi','Thêm lỗi vào sổ lỗi sai'],['Đạt 100 XP',earned>=100,earned+'/100 XP','Học và luyện tập để nhận XP']];
-  open('Nhiệm vụ học tập',tasks.map(t=>panel((t[1]?'✓ ':'○ ')+t[0],'<p>'+t[2]+'</p><small class="muted">'+t[3]+'</small>')).join('')+btn('Về trung tâm','principiaSuiteHome()'));
+  const a=state.attempts||[],notes=state.notes||[],errors=state.errors||[],answered=a.reduce((s,x)=>s+x.total,0);
+  const tasks=[['lesson','Hoàn thành 1 bài học',done>=1,done+'/1 bài','Mở bài học và nhấn Hoàn thành'],['practice','Luyện 5 câu hỏi',answered>=5,answered+'/5 câu','Vào phòng luyện hoặc Quiz'],['note','Ghi 1 ghi chú',notes.length>=1,notes.length+'/1 ghi chú','Lưu một ý quan trọng'],['error','Ghi lại 1 lỗi sai',errors.length>=1,errors.length+'/1 lỗi','Thêm lỗi vào sổ lỗi sai'],['xp','Đạt 100 XP',earned>=100,earned+'/100 XP','Học và luyện tập để nhận XP']];
+  open('Nhiệm vụ học tập',tasks.map(t=>{const claimed=(state.claimedQuests||[]).includes(t[0]);const action=t[2]&&!claimed?' '+btn('Nhận +15 XP','principiaSuiteClaimQuest(\''+t[0]+'\')','primary'):(claimed?'<p class="small" style="color:#55b98a">Đã nhận thưởng</p>':'');return panel((t[2]?'✓ ':'○ ')+t[1],'<p>'+t[3]+'</p><small class="muted">'+t[4]+'</small>'+action)}).join('')+btn('Về trung tâm','principiaSuiteHome()'));
+ }
+ function claimQuest(id){
+  if((state.claimedQuests||[]).includes(id))return;
+  let done=0,earned=0;try{done=completed.length;earned=xp}catch(_){}
+  const a=state.attempts||[],notes=state.notes||[],errors=state.errors||[],answered=a.reduce((s,x)=>s+x.total,0);
+  const valid={lesson:done>=1,practice:answered>=5,note:notes.length>=1,error:errors.length>=1,xp:earned>=100};
+  if(!valid[id])return;
+  state.claimedQuests.push(id);save();
+  try{if(typeof xp!=='undefined'&&typeof saveAll==='function'){xp+=15;saveAll()}}catch(_){}
+  quests();
  }
  function notes(){
   const rows=(state.notes||[]).map((n,i)=>panel(esc(n.title||'Ghi chú '+(i+1)),'<p style="white-space:pre-wrap">'+esc(n.body)+'</p><small class="muted">'+new Date(n.date).toLocaleString('vi-VN')+'</small>'+btn('Xóa','principiaSuiteDeleteNote('+i+')','danger'))).join('');
@@ -143,18 +153,45 @@
  }
  async function enableNotifications(){if(!('Notification'in window)){alert('Trình duyệt này không hỗ trợ thông báo.');return}const p=await Notification.requestPermission();state.notifications=p==='granted';save();notifications()}
  function ai(){
-  const prompt='Hãy cùng tôi thảo luận và hướng dẫn từng bước như một gia sư PRINCIPIA. Hãy hỏi lại khi thiếu dữ kiện, giải thích bản chất, nêu công thức và kiểm tra hiểu bài. Chủ đề/câu hỏi tôi muốn trao đổi: ';
-  open('Thảo luận cùng AI','<p>Chọn cách chuyển ngữ cảnh sang trợ lý AI đang có. Hệ thống không giả vờ gọi API AI khi chưa có kết nối.</p>'+btn('Mở khung trợ lý PRINCIPIA','principiaSuiteOpenChat()','primary')+btn('Sao chép lời nhắc học tập','principiaSuiteCopyAI()')+btn('Về trung tâm','principiaSuiteHome()'));
+  let context='';
+  try{if(typeof activeLesson!=='undefined'&&activeLesson){const l=find(activeLesson,data);if(l)context='\\n\\nBài học: '+l.name+'\\n'+String(l.content||'').slice(0,5000)}}catch(_){}
+  const prompt='Hãy cùng tôi thảo luận và hướng dẫn từng bước như một gia sư PRINCIPIA. Hãy hỏi lại khi thiếu dữ kiện, giải thích bản chất, nêu công thức và kiểm tra hiểu bài.'+context+'\\n\\nCâu hỏi của tôi: ';
+  open('Thảo luận cùng AI','<p>Đưa nội dung bài học hiện tại sang trợ lý PRINCIPIA hoặc sao chép lời nhắc để dùng với AI đang chọn.</p><textarea id="plsAiQuestion" rows="4" placeholder="Bạn đang vướng ở bước nào?..." style="width:100%;padding:12px;margin:8px 0"></textarea>'+btn('Mở khung trợ lý PRINCIPIA','principiaSuiteOpenChat()','primary')+btn('Sao chép lời nhắc học tập','principiaSuiteCopyAI()')+btn('Về trung tâm','principiaSuiteHome()'));
   window.__principiaSuitePrompt=prompt;
  }
- function openChat(){const box=document.getElementById('chatBox'),input=document.getElementById('chatInput');if(box)box.style.display='block';if(input){input.value=window.__principiaSuitePrompt||'Hãy giúp tôi hiểu bài học này theo từng bước.';input.focus()}close()}
- async function copyAI(){try{await navigator.clipboard.writeText(window.__principiaSuitePrompt||'Hãy giải thích bài học từng bước.');alert('Đã sao chép lời nhắc. Hãy dán vào AI bạn chọn.')}catch(_){alert('Không thể truy cập clipboard. Hãy mở trợ lý PRINCIPIA để tiếp tục.')} }
+ function openChat(){const box=document.getElementById('chatBox'),input=document.getElementById('chatInput'),question=document.getElementById('plsAiQuestion')?.value||'';if(box)box.style.display='block';if(input){input.value=(window.__principiaSuitePrompt||'Hãy giúp tôi hiểu bài học này theo từng bước.')+question;input.focus()}close()}
+ async function copyAI(){const question=document.getElementById('plsAiQuestion')?.value||'';try{await navigator.clipboard.writeText((window.__principiaSuitePrompt||'Hãy giải thích bài học từng bước.')+question);alert('Đã sao chép lời nhắc. Hãy dán vào AI bạn chọn.')}catch(_){alert('Không thể truy cập clipboard. Hãy mở trợ lý PRINCIPIA để tiếp tục.')} }
+ function patchExistingQuizHistory(){
+  if(window.__principiaSuiteQuizPatched||typeof window.answerQuestion!=='function')return;
+  window.__principiaSuiteQuizPatched=true;window.__principiaSuiteQuizSignature='';
+  ['openQuiz','openFun'].forEach(name=>{const original=window[name];if(typeof original==='function')window[name]=function(){window.__principiaSuiteQuizSignature='';return original.apply(this,arguments)}});
+  const original=window.answerQuestion;
+  window.answerQuestion=function(){
+   const result=original.apply(this,arguments);
+   try{
+    const active=typeof activeQuiz!=='undefined'?activeQuiz:null;
+    if(!active||active.kind==='fun'&&typeof funData==='undefined')return result;
+    const node=active.kind==='quiz'?find(active.id,quizData):find(active.id,funData);
+    const qs=node?.questions||[],ans=typeof answers!=='undefined'?answers:[];
+    if(qs.length&&ans.length>=qs.length){
+     const signature=active.kind+':'+active.id+':'+ans.join(',');
+     if(signature!==window.__principiaSuiteQuizSignature){
+      window.__principiaSuiteQuizSignature=signature;
+      const score=qs.reduce((sum,q,i)=>sum+(ans[i]===q.correct?1:0),0);
+      state.attempts.push({date:new Date().toISOString(),score:score,total:qs.length,percent:Math.round(score/qs.length*100),mode:'quiz'});
+      if(state.attempts.length>300)state.attempts=state.attempts.slice(-300);save();
+     }
+    }
+   }catch(e){console.warn('[PRINCIPIA] Quiz analytics skipped',e)}
+   return result;
+  };
+ }
  function install(){
   if(document.getElementById('principiaSuiteTrigger'))return;
   const b=document.createElement('button');b.id='principiaSuiteTrigger';b.type='button';b.textContent='✦';b.title='Trung tâm học tập PRINCIPIA';b.setAttribute('aria-label','Trung tâm học tập PRINCIPIA');
   b.style.cssText='position:fixed;left:18px;bottom:calc(82px + env(safe-area-inset-bottom,0px));z-index:1201;width:46px;height:46px;border-radius:15px;border:1px solid var(--line,#777);background:var(--card,#171526);color:var(--text,#fff);font-size:24px;box-shadow:0 8px 28px #0004;cursor:pointer';
   b.addEventListener('click',home);document.body.appendChild(b);
  }
- window.principiaSuiteHome=home;window.principiaSuiteExamSetup=examSetup;window.principiaSuiteStartExam=startExam;window.principiaSuiteChoose=choose;window.principiaSuiteSubmitExam=submitExam;window.principiaSuiteExitExam=exitExam;window.principiaSuiteAnalytics=analytics;window.principiaSuiteQuests=quests;window.principiaSuiteNotes=notes;window.principiaSuiteAddNote=addNote;window.principiaSuiteDeleteNote=deleteNote;window.principiaSuiteFormulas=formulas;window.principiaSuiteFlashcards=flashcards;window.principiaSuiteFlip=()=>{flashSide=!flashSide;renderFlash()};window.principiaSuiteFlashPrev=()=>{flashIndex=Math.max(0,flashIndex-1);renderFlash()};window.principiaSuiteFlashNext=()=>{flashIndex++;renderFlash()};window.principiaSuiteErrors=errors;window.principiaSuiteAddError=addError;window.principiaSuiteDeleteError=deleteError;window.principiaSuiteBadges=badges;window.principiaSuiteNotifications=notifications;window.principiaSuiteEnableNotifications=enableNotifications;window.principiaSuiteDisableNotifications=()=>{state.notifications=false;save();notifications()};window.principiaSuiteAI=ai;window.principiaSuiteOpenChat=openChat;window.principiaSuiteCopyAI=copyAI;
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
+ window.principiaSuiteHome=home;window.principiaSuiteExamSetup=examSetup;window.principiaSuiteStartExam=startExam;window.principiaSuiteChoose=choose;window.principiaSuiteSubmitExam=submitExam;window.principiaSuiteExitExam=exitExam;window.principiaSuiteAnalytics=analytics;window.principiaSuiteQuests=quests;window.principiaSuiteClaimQuest=claimQuest;window.principiaSuiteNotes=notes;window.principiaSuiteAddNote=addNote;window.principiaSuiteDeleteNote=deleteNote;window.principiaSuiteFormulas=formulas;window.principiaSuiteFlashcards=flashcards;window.principiaSuiteFlip=()=>{flashSide=!flashSide;renderFlash()};window.principiaSuiteFlashPrev=()=>{flashIndex=Math.max(0,flashIndex-1);renderFlash()};window.principiaSuiteFlashNext=()=>{flashIndex++;renderFlash()};window.principiaSuiteErrors=errors;window.principiaSuiteAddError=addError;window.principiaSuiteDeleteError=deleteError;window.principiaSuiteBadges=badges;window.principiaSuiteNotifications=notifications;window.principiaSuiteEnableNotifications=enableNotifications;window.principiaSuiteDisableNotifications=()=>{state.notifications=false;save();notifications()};window.principiaSuiteAI=ai;window.principiaSuiteOpenChat=openChat;window.principiaSuiteCopyAI=copyAI;
+ patchExistingQuizHistory();\n if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();
