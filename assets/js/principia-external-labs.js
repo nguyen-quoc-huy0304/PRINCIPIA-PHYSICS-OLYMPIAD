@@ -19,7 +19,8 @@ const groups=[
 ['geometric-optics','Quang học hình học']]],
 ['Nhiệt học – Khí',[
 ['gas-properties','Tính chất chất khí'],
-['states-of-matter-basics','Các trạng thái vật chất']]]
+['states-of-matter-basics','Các trạng thái vật chất']]],
+['Điện tử – Mạch điện',[[ 'external:circuitjs','CircuitJS – Mô phỏng mạch điện (2D)' ]]]
 ];
 const base='https://phet.colorado.edu/sims/html/';
 const circuitUrl='https://www.falstad.com/circuit/circuitjs.html';
