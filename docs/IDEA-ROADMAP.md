@@ -257,3 +257,7 @@
 | 167 | Desktop Release: không tự tạo lại tag/release cố định sau mỗi lần push code | Đã tách phát hành thành tùy chọn manual dispatch; push chỉ build và upload artifacts, cần xác nhận bằng GitHub Actions |
 
 | 168 | Sổ nghiên cứu: thống nhất tải CSV/JSON qua helper an toàn, trì hoãn thu hồi Blob URL và cho phép nhập lại cùng một tệp liên tiếp | Đã sửa luồng tải CSV/JSON, kiểm tra kích thước tệp trước khi đọc và reset input sau nhập; kiểm tra cú pháp cần xác nhận tiếp |
+
+
+| 168 | Sổ nghiên cứu: tải CSV/JSON ổn định, nhập lại tệp có kiểm tra giới hạn | Có mã nguồn — chờ nghiệm thu trình duyệt |
+| 169 | Thư viện 100 phương pháp học tập dựa trên bằng chứng, tìm kiếm, lọc, lưu và theo dõi đã thử | Đã thêm module và lối vào Learning Suite; cần nghiệm thu giao diện, dữ liệu và khả năng sử dụng |
