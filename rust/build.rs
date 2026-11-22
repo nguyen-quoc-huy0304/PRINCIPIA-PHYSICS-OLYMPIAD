@@ -1,5 +1,6 @@
 fn main() {
     println!("cargo:rerun-if-changed=../src/physics/engine.cpp");
+    println!("cargo:rerun-if-changed=../src/physics/engine.h");
     println!("cargo:rerun-if-changed=../src/physics/engine_test.cpp");
 
     // The web build uses the pure-Rust physics/game modules; do not invoke
