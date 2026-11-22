@@ -264,3 +264,7 @@
 
 | 170 | AI cục bộ tùy chọn bằng WebLLM, tải mô hình theo yêu cầu, streaming chat và giải phóng GPU | Đã tích hợp mã; chờ kiểm tra trình duyệt có WebGPU và thiết bị thật |
 | 171 | Mở AI cục bộ từ trợ lý học tập, truyền ngữ cảnh bài học/câu hỏi | Đã nối giao diện; chờ nghiệm thu trên web và app desktop/mobile |
+
+## Danh mục mở rộng
+
+- 1.000 ý tưởng tính năng mới được lưu tại [`docs/IDEA-CATALOG-1000-NEW.md`](./IDEA-CATALOG-1000-NEW.md). Đây là backlog đề xuất, chưa phải tính năng đã code. Khi chọn triển khai, cần đối chiếu với roadmap hiện tại để tránh trùng và cập nhật trạng thái/kiểm thử/commit tương ứng.
