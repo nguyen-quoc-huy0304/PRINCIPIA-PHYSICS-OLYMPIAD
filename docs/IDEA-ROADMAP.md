@@ -116,6 +116,8 @@
 | 75 | Tìm kiếm công thức theo biểu thức hoặc tên bài học; lịch ôn dùng ngày địa phương nhất quán | Có mã nguồn tìm kiếm trực tiếp trong thư viện công thức; đã sửa mốc ngày ôn tập khỏi lệch UTC; cần kiểm thử trình duyệt và CI |
 | 76 | Cho phép chỉnh sửa ghi chú học tập đã lưu mà không phải xóa và tạo lại | Có nút sửa, form nạp nội dung hiện tại, lưu cập nhật và giữ ngày tạo; ghi thêm thời điểm cập nhật; cần nghiệm thu trình duyệt |
 
+| 77 | Ngân hàng câu hỏi có tìm kiếm theo nội dung câu hỏi, đáp án, chủ đề và đường dẫn bài học | Có mã nguồn giao diện trong Learning Suite; cần nghiệm thu trên trình duyệt và thiết bị thực tế |
+
 ## Nguyên tắc nghiệm thu
 
 1. Không đánh dấu hoàn thành chỉ vì đã tạo file hoặc commit code.
