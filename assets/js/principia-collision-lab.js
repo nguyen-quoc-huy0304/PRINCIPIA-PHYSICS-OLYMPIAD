@@ -123,7 +123,7 @@
     const restitutionInput = root.querySelector('[data-collision2d="e"]');
     const restitutionLabel = root.querySelector('[data-collision2d="e-label"]');
     restitutionInput.addEventListener('input', () => { restitutionLabel.textContent = Number(restitutionInput.value).toLocaleString('vi-VN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); });
-    let bodies = [], running = false, last = 0, raf = 0, selectedBody = 0;
+    let bodies = [], running = false, last = 0, raf = 0, selectedBody = 0, dragging = false;
     const seed = () => [
       { x: 65, y: 72, vx: 115, vy: 34, mass: 1, radius: 15, color: '#3b82f6' },
       { x: 235, y: 105, vx: -70, vy: -18, mass: 2, radius: 21, color: '#f97316' },
@@ -196,8 +196,26 @@
       const y=(event.clientY-rect.top)*(Number(canvas.dataset.height||280)/rect.height);
       let best=-1,dist=Infinity;
       bodies.forEach((b,index)=>{const d=Math.hypot(b.x-x,b.y-y);if(d<=b.radius+12&&d<dist){best=index;dist=d;}});
-      if(best>=0){selectedBody=best;syncEditor();draw();status.textContent='Đã chọn vật '+(best+1)+'.';}
+      if(best>=0){
+        if(running) stop();
+        selectedBody=best; dragging=true;
+        if(canvas.setPointerCapture) canvas.setPointerCapture(event.pointerId);
+        syncEditor(); draw(); status.textContent='Đã chọn vật '+(best+1)+'. Kéo để đổi vị trí ban đầu.';
+      }
     });
+    canvas.addEventListener('pointermove',(event)=>{
+      if(!dragging) return;
+      const rect=canvas.getBoundingClientRect(), b=bodies[selectedBody];
+      if(!b || !rect.width || !rect.height) return;
+      const x=(event.clientX-rect.left)*(Number(canvas.dataset.width||560)/rect.width);
+      const y=(event.clientY-rect.top)*(Number(canvas.dataset.height||280)/rect.height);
+      b.x=Math.max(b.radius,Math.min(Number(canvas.dataset.width||560)-b.radius,x));
+      b.y=Math.max(b.radius,Math.min(Number(canvas.dataset.height||280)-b.radius,y));
+      draw();
+    });
+    const releaseDrag=()=>{dragging=false;};
+    canvas.addEventListener('pointerup',releaseDrag);
+    canvas.addEventListener('pointercancel',releaseDrag);
 
     function step(dt) {
       const width=Number(canvas.dataset.width||560), height=Number(canvas.dataset.height||280);
