@@ -120,6 +120,8 @@
     const reset = root.querySelector('[data-collision2d="reset"]');
     const add = root.querySelector('[data-collision2d="add"]');
     const remove = root.querySelector('[data-collision2d="remove"]');
+    const presetSelect = root.querySelector('[data-collision2d="preset"]');
+    const applyPresetButton = root.querySelector('[data-collision2d="apply-preset"]');
     const restitutionInput = root.querySelector('[data-collision2d="e"]');
     const restitutionLabel = root.querySelector('[data-collision2d="e-label"]');
     restitutionInput.addEventListener('input', () => { restitutionLabel.textContent = Number(restitutionInput.value).toLocaleString('vi-VN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); });
@@ -190,6 +192,7 @@
         resize(); syncEditor(); status.textContent='Đã cập nhật vật '+(selectedBody+1)+'.';
       });
     });
+    canvas.style.touchAction = 'none';
     canvas.addEventListener('pointerdown',(event)=>{
       const rect=canvas.getBoundingClientRect();
       const x=(event.clientX-rect.left)*(Number(canvas.dataset.width||560)/rect.width);
@@ -239,6 +242,40 @@
     }
     function stop() { running=false; last=0; if(raf) cancelAnimationFrame(raf); raf=0; start.textContent='▶ Chạy mô phỏng'; status.textContent='Đã tạm dừng.'; }
     function resetWorld() { stop(); bodies=seed(); selectedBody=0; resize(); syncEditor(); status.textContent='Đã đặt lại 4 vật.'; }
+
+    function applyPreset() {
+      const width=Number(canvas.dataset.width||560), height=Number(canvas.dataset.height||280);
+      const scaleX=width/560, scaleY=height/280;
+      const presets = {
+        headon: { label:'Hai vật đối đầu', e:1, bodies:[
+          {x:120,y:140,vx:105,vy:0,mass:1,radius:18,color:'#3b82f6'},
+          {x:440,y:140,vx:-55,vy:0,mass:1.5,radius:21,color:'#f97316'}]},
+        oblique: { label:'Va chạm xiên', e:0.85, bodies:[
+          {x:150,y:105,vx:105,vy:38,mass:1.2,radius:17,color:'#3b82f6'},
+          {x:330,y:170,vx:-28,vy:-8,mass:1.8,radius:22,color:'#f97316'}]},
+        chain: { label:'Va chạm dây chuyền 3 vật', e:1, bodies:[
+          {x:75,y:140,vx:125,vy:0,mass:1,radius:15,color:'#3b82f6'},
+          {x:270,y:140,vx:0,vy:0,mass:1,radius:18,color:'#10b981'},
+          {x:465,y:140,vx:0,vy:0,mass:1,radius:18,color:'#f97316'}]},
+        cluster: { label:'Cụm 6 vật', e:0.92, bodies:[
+          {x:100,y:80,vx:82,vy:52,mass:1,radius:14,color:'#3b82f6'},
+          {x:280,y:75,vx:-48,vy:62,mass:1.3,radius:17,color:'#f97316'},
+          {x:460,y:90,vx:-76,vy:25,mass:0.9,radius:13,color:'#10b981'},
+          {x:130,y:220,vx:65,vy:-54,mass:1.5,radius:19,color:'#a855f7'},
+          {x:310,y:215,vx:-30,vy:-70,mass:0.8,radius:12,color:'#eab308'},
+          {x:470,y:220,vx:-65,vy:-35,mass:1.1,radius:16,color:'#ec4899'}]}
+      };
+      const preset=presets[presetSelect && presetSelect.value];
+      if(!preset) return;
+      stop();
+      restitutionInput.value=String(preset.e);
+      restitutionLabel.textContent=preset.e.toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2});
+      bodies=preset.bodies.map(b=>({...b,x:b.x*scaleX,y:b.y*scaleY}));
+      selectedBody=0;
+      resize(); syncEditor();
+      status.textContent='Đã nạp kịch bản: '+preset.label+'. Có thể kéo vật hoặc chỉnh thông số.';
+    }
+
     function addBody() {
       if (bodies.length >= 12) { status.textContent='Đã đạt giới hạn 12 vật để giữ mô phỏng nhẹ.'; return; }
       const width=Number(canvas.dataset.width||560), height=Number(canvas.dataset.height||280);
@@ -265,6 +302,7 @@
     reset.addEventListener('click',resetWorld);
     if(add) add.addEventListener('click',addBody);
     if(remove) remove.addEventListener('click',removeBody);
+    if(applyPresetButton) applyPresetButton.addEventListener('click',applyPreset);
     document.addEventListener('visibilitychange',()=>{if(document.hidden) stop();});
     if(typeof ResizeObserver!=='undefined') new ResizeObserver(resize).observe(canvas);
     let onScreen=true;
