@@ -122,6 +122,16 @@
 
 | 79 | Tìm kiếm sổ tay kiến thức theo tiêu đề và nội dung | Đã tích hợp bộ lọc trực tiếp, giữ nguyên sửa/xóa ghi chú |
 | 80 | Sao chép nhanh công thức trong thư viện công thức | Đã thêm thao tác sao chép với phương án dự phòng cho trình duyệt hạn chế Clipboard API |
+| 81 | Lọc phân tích học tập theo 7 ngày, 30 ngày hoặc toàn bộ lịch sử | Đã tích hợp bộ lọc trong Learning Suite; chờ CI và nghiệm thu trình duyệt |
+| 82 | Xuất lịch sử luyện tập và độ chính xác ra CSV | Đã tích hợp xuất CSV; chờ kiểm tra tệp thực tế và CI |
+| 83 | Tìm kiếm sổ lỗi sai theo câu hỏi và nội dung sửa lỗi | Đã tích hợp tìm kiếm trực tiếp; chờ nghiệm thu giao diện |
+| 84 | Xuất sổ lỗi sai ra CSV để lưu trữ và phân tích | Đã tích hợp xuất CSV; chờ kiểm tra dữ liệu thực tế |
+| 85 | Xuất toàn bộ sổ tay kiến thức thành Markdown | Đã tích hợp tải tệp Markdown; chờ kiểm tra trên thiết bị |
+| 86 | Đếm ký tự ghi chú và giới hạn nội dung mỗi ghi chú | Đã tích hợp bộ đếm 10.000 ký tự |
+| 87 | Lưu ghi chú nhanh bằng Ctrl+Enter hoặc Cmd+Enter | Đã tích hợp phím tắt trong ô soạn ghi chú |
+| 88 | Ôn flashcard chỉ từ các câu hỏi yêu thích | Đã tích hợp chế độ flashcard yêu thích |
+| 89 | Tạo lượt luyện Olympic riêng từ tối đa 10 câu yêu thích | Đã tích hợp chế độ luyện câu yêu thích |
+| 90 | Lưu lịch sử 30 thử thách mỗi ngày gần nhất | Đã tích hợp lưu kết quả và màn hình lịch sử trên thiết bị |
 
 ## Nguyên tắc nghiệm thu
 
