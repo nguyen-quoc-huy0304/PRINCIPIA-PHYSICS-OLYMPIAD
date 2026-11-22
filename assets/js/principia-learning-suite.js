@@ -55,7 +55,7 @@
    card('Sổ lỗi sai',(state.errors||[]).length+' lỗi đã ghi lại','principiaSuiteErrors()','🧠')+card('Ôn lại lỗi sai','Biến lỗi đã ghi thành thẻ ôn tập','principiaSuiteReviewErrors()','🔁')+
    card('Huy hiệu','Thành tích dựa trên dữ liệu thật','principiaSuiteBadges()','🏆')+card('Cấp độ & chuỗi ngày','Theo dõi XP, cấp độ và thành tích dài hạn','principiaSuiteProgression()','📈')+
    card('Thông báo học tập',state.notifications?'Đã bật quyền thông báo':'Cài đặt nhắc học trên thiết bị','principiaSuiteNotifications()','🔔')+
-   card('Thảo luận cùng AI','Đưa câu hỏi và ngữ cảnh sang trợ lý PRINCIPIA','principiaSuiteAI()','✨')+card('Level Studio','Tự tạo màn chơi vật lý, chơi thử và chia sẻ','principiaSuiteLevels()','🧩')+card('Sổ nghiên cứu','Ghi thí nghiệm, thống kê số liệu và lưu kết quả','principiaSuiteResearch()','🔬')+card('Sao lưu tiến độ','Xuất hoặc khôi phục dữ liệu học tập trên thiết bị','principiaSuiteBackup()','💾')+
+   card('Thảo luận cùng AI','Đưa câu hỏi và ngữ cảnh sang trợ lý PRINCIPIA','principiaSuiteAI()','✨')+card('Level Studio','Tự tạo màn chơi vật lý, chơi thử và chia sẻ','principiaSuiteLevels()','🧩')+card('Sổ nghiên cứu','Ghi thí nghiệm, thống kê số liệu và lưu kết quả','principiaSuiteResearch()','🔬')+card('Góc tập trung','Bộ đếm học tập, mục tiêu ngày và thống kê thời gian','principiaSuiteFocus()','⏱️')+card('Sao lưu tiến độ','Xuất hoặc khôi phục dữ liệu học tập trên thiết bị','principiaSuiteBackup()','💾')+
    '</div><p class="small muted" style="margin-top:14px">Ngân hàng hiện có: '+q.length+' câu hỏi. Nếu nội dung chưa có câu hỏi, phòng Olympic sẽ báo rõ thay vì tự tạo đề.</p>');
  }
  let questionBankQuery='',questionBankTopic='all',questionBankFavoritesOnly=false,questionBankMatches=[];
@@ -425,6 +425,95 @@
    }catch(error){alert(error.message||'Tệp sao lưu không hợp lệ.')}
   },{once:true});input.click();
  }
+
+ let focusInterval=null,focusRemaining=0,focusDuration=25,focusStartedAt=0,focusElapsedBefore=0,focusQuery='';
+ const focusSessions=()=>Array.isArray(state.focusSessions)?state.focusSessions:[];
+ const focusFormat=seconds=>{const n=Math.max(0,Math.floor(seconds));return String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0')};
+ const focusElapsed=()=>focusElapsedBefore+(focusStartedAt?Math.max(0,Math.floor((Date.now()-focusStartedAt)/1000)):0);
+ function focusTotals(){
+  const rows=focusSessions(),today=localDateKey(),now=new Date(),weekStart=new Date(now);weekStart.setHours(0,0,0,0);weekStart.setDate(weekStart.getDate()-6);
+  const todaySeconds=rows.filter(x=>x.date===today).reduce((s,x)=>s+x.seconds,0);
+  const weekSeconds=rows.filter(x=>new Date(x.timestamp)>=weekStart).reduce((s,x)=>s+x.seconds,0);
+  const days=new Set(rows.filter(x=>x.seconds>=60).map(x=>x.date));let streak=0,d=new Date();
+  while(days.has(localDateKey(d))){streak++;d.setDate(d.getDate()-1)}
+  return {todaySeconds,weekSeconds,streak};
+ }
+ function focusPlanner(){
+  const totals=focusTotals(),goal=Math.max(5,Math.min(600,Number(state.focusGoalMinutes)||30)),pct=Math.min(100,Math.round(totals.todaySeconds/(goal*60)*100));
+  const active=!!focusInterval,remaining=active?Math.max(0,focusRemaining-Math.floor((Date.now()-focusStartedAt)/1000)):focusRemaining;
+  open('Góc tập trung PRINCIPIA',panel('Phiên tập trung',
+   '<p class="muted small">Chọn thời lượng, bắt đầu và tạm dừng bất cứ lúc nào. Bộ đếm tiếp tục chạy khi bạn đóng bảng này.</p>'+
+   '<div style="display:flex;gap:8px;flex-wrap:wrap">'+[15,25,45,60].map(n=>'<button type="button" onclick="principiaSuiteFocusPreset('+n+')" '+(focusDuration===n?'aria-pressed="true"':'')+'>'+n+' phút</button>').join('')+'</div>'+
+   '<label class="small" for="plsFocusCustom">Thời lượng tùy chỉnh (5–120 phút)</label><div style="display:flex;gap:8px"><input id="plsFocusCustom" type="number" min="5" max="120" value="'+focusDuration+'" style="width:120px;padding:9px"><button type="button" onclick="principiaSuiteFocusCustom()">Áp dụng</button></div>'+
+   '<div id="plsFocusClock" role="timer" aria-live="off" style="font-size:clamp(42px,10vw,68px);font-weight:800;text-align:center;padding:18px 0;font-variant-numeric:tabular-nums">'+focusFormat(remaining||focusDuration*60)+'</div>'+
+   '<p id="plsFocusStatus" class="small muted" style="text-align:center">'+(active?'Đang tập trung':focusStartedAt||focusElapsedBefore?'Đã tạm dừng':'Sẵn sàng bắt đầu')+'</p>'+
+   '<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">'+(active?'<button type="button" onclick="principiaSuiteFocusPause()">Tạm dừng</button>':'<button type="button" class="primary" onclick="principiaSuiteFocusStart()">▶ Bắt đầu / tiếp tục</button>')+'<button type="button" onclick="principiaSuiteFocusStop()">Kết thúc phiên</button></div>')+
+   panel('Mục tiêu hôm nay',
+    '<label for="plsFocusGoal" class="small">Mục tiêu tập trung mỗi ngày (phút)</label><div style="display:flex;gap:8px"><input id="plsFocusGoal" type="number" min="5" max="600" value="'+goal+'" style="width:120px;padding:9px"><button type="button" onclick="principiaSuiteFocusGoal()">Lưu mục tiêu</button></div>'+
+    '<p><b>'+Math.floor(totals.todaySeconds/60)+' / '+goal+' phút</b> · '+pct+'%</p><div style="height:9px;border-radius:10px;background:var(--line,#444);overflow:hidden"><div style="height:100%;width:'+pct+'%;background:var(--purple,#9b87ff)"></div></div>'+
+    '<p class="small muted">7 ngày: '+Math.floor(totals.weekSeconds/60)+' phút · Chuỗi ngày tập trung: '+totals.streak+'</p>')+
+   panel('Lịch sử phiên tập trung','<p id="plsFocusHistoryCount" class="small muted"></p><input type="search" maxlength="100" placeholder="Tìm theo ngày..." value="'+esc(focusQuery)+'" oninput="principiaSuiteFocusSearch(this.value)" style="width:100%;box-sizing:border-box;padding:10px;margin:6px 0"><div id="plsFocusHistoryRows"></div>'+btn('Xuất lịch sử CSV','principiaSuiteFocusExport()'))+
+   btn('Về trung tâm','principiaSuiteHome()'));
+  renderFocusHistory();
+  if(active)updateFocusClock();
+ }
+ function updateFocusClock(){
+  const node=document.getElementById('plsFocusClock');if(!node||!focusInterval)return;
+  const remaining=Math.max(0,focusRemaining-Math.floor((Date.now()-focusStartedAt)/1000));node.textContent=focusFormat(remaining);
+ }
+ function focusPreset(minutes){if(focusInterval)return;focusDuration=Math.max(5,Math.min(120,Number(minutes)||25));focusRemaining=focusDuration*60;focusElapsedBefore=0;focusStartedAt=0;focusPlanner()}
+ function focusCustom(){const el=document.getElementById('plsFocusCustom'),n=Number(el&&el.value);if(!Number.isInteger(n)||n<5||n>120){alert('Thời lượng phải từ 5 đến 120 phút.');return}focusPreset(n)}
+ function focusStart(){
+  if(focusInterval)return;
+  if(!focusRemaining)focusRemaining=focusDuration*60;
+  focusStartedAt=Date.now();
+  focusInterval=setInterval(()=>{
+   const remaining=Math.max(0,focusRemaining-Math.floor((Date.now()-focusStartedAt)/1000));
+   updateFocusClock();
+   if(remaining<=0)focusFinish();
+  },500);
+  focusPlanner();
+ }
+ function focusPause(){
+  if(!focusInterval)return;
+  focusRemaining=Math.max(0,focusRemaining-Math.floor((Date.now()-focusStartedAt)/1000));
+  focusElapsedBefore+=Math.floor((Date.now()-focusStartedAt)/1000);
+  clearInterval(focusInterval);focusInterval=null;focusStartedAt=0;focusPlanner();
+ }
+ function focusSaveSession(seconds,completed){
+  const mins=Math.max(0,Math.floor(seconds));if(mins<60)return;
+  const now=new Date();state.focusSessions=focusSessions();state.focusSessions.unshift({timestamp:now.toISOString(),date:localDateKey(now),seconds:mins,plannedMinutes:focusDuration,completed:!!completed});
+  state.focusSessions=state.focusSessions.slice(0,500);markStudyDay();save();
+ }
+ function focusReset(){clearInterval(focusInterval);focusInterval=null;focusRemaining=0;focusStartedAt=0;focusElapsedBefore=0}
+ function focusFinish(){
+  const elapsed=focusElapsed();focusSaveSession(elapsed,true);focusReset();focusPlanner();
+  if('Notification'in window&&Notification.permission==='granted')try{new Notification('PRINCIPIA · Hoàn thành phiên tập trung',{body:'Bạn đã tập trung '+Math.floor(elapsed/60)+' phút. Nghỉ ngắn nhé!'})}catch(_){}
+ }
+ function focusStop(){
+  if(!focusInterval&&!focusElapsedBefore&&!focusRemaining)return;
+  const elapsed=focusElapsed();
+  if(elapsed>=60&&!confirm('Lưu phiên tập trung '+Math.floor(elapsed/60)+' phút và kết thúc?'))return;
+  if(elapsed>=60)focusSaveSession(elapsed,false);
+  focusReset();focusPlanner();
+ }
+ function focusGoal(){
+  const el=document.getElementById('plsFocusGoal'),n=Number(el&&el.value);if(!Number.isInteger(n)||n<5||n>600){alert('Mục tiêu phải từ 5 đến 600 phút.');return}
+  state.focusGoalMinutes=n;save();focusPlanner();
+ }
+ function renderFocusHistory(){
+  const host=document.getElementById('plsFocusHistoryRows'),count=document.getElementById('plsFocusHistoryCount');if(!host||!count)return;
+  const all=focusSessions(),rows=all.filter(x=>!focusQuery||String(x.date||'').includes(focusQuery));
+  count.textContent=rows.length+'/'+all.length+' phiên đã lưu';
+  host.innerHTML=rows.slice(0,50).map(x=>'<div style="display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--line,#444)"><span>'+esc(x.date)+' · '+(x.completed?'Hoàn thành':'Kết thúc sớm')+'</span><b>'+Math.floor(x.seconds/60)+' phút</b></div>').join('')||'<p class="muted">Chưa có phiên tập trung phù hợp.</p>';
+ }
+ function focusSearch(value){focusQuery=String(value||'').slice(0,100);renderFocusHistory()}
+ function focusExport(){
+  const quote=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
+  const rows=focusSessions().map(x=>[x.date,x.timestamp,Math.floor(x.seconds/60),x.plannedMinutes,x.completed?'Hoàn thành':'Kết thúc sớm']);
+  downloadText('\uFEFF'+[['Ngày','Thời điểm','Phút thực tế','Phút dự kiến','Trạng thái'],...rows].map(r=>r.map(quote).join(',')).join('\r\n'),'principia-focus-sessions.csv','text/csv;charset=utf-8');
+ }
+
  function patchExistingQuizHistory(){
   if(window.__principiaSuiteQuizPatched||typeof window.answerQuestion!=='function')return;
   window.__principiaSuiteQuizPatched=true;window.__principiaSuiteQuizSignature='';
@@ -458,7 +547,7 @@
   b.style.cssText='position:fixed;left:18px;bottom:calc(82px + env(safe-area-inset-bottom,0px));z-index:1201;width:46px;height:46px;border-radius:15px;border:1px solid var(--line,#777);background:var(--card,#171526);color:var(--text,#fff);font-size:24px;box-shadow:0 8px 28px #0004;cursor:pointer';
   b.addEventListener('click',home);document.body.appendChild(b);
  }
- window.principiaSuiteHome=home;window.principiaSuiteQuestionBank=questionBank;window.principiaSuiteQuestionSearch=renderQuestionBankResults;window.principiaSuiteQuestionTopic=setQuestionTopic;window.principiaSuiteQuestionFavorites=toggleQuestionFavorites;window.principiaSuiteToggleQuestionFavorite=toggleQuestionFavorite;window.principiaSuiteQuestionExport=exportQuestionBank;window.principiaSuiteOpenGames=()=>{close();if(typeof setPage==='function')setPage('entertainment')};window.principiaSuiteExamSetup=examSetup;window.principiaSuiteDaily=dailyChallenge;window.principiaSuiteDailyAnswer=dailyAnswer;window.principiaSuiteDailyHistory=dailyHistory;window.principiaSuiteStartExam=startExam;window.principiaSuiteChoose=choose;window.principiaSuiteSubmitExam=submitExam;window.principiaSuiteExitExam=exitExam;window.principiaSuiteAttemptHistory=attemptHistory;window.principiaSuiteAttemptSearch=setAttemptQuery;window.principiaSuiteAttemptMode=setAttemptMode;window.principiaSuiteExportAttempts=exportAttempts;window.principiaSuiteDailyHistorySearch=setDailyHistoryQuery;window.principiaSuiteDailyHistoryFilter=setDailyHistoryFilter;window.principiaSuiteExportDailyHistory=exportDailyHistory;window.principiaSuiteMasteredFlashcards=masteredFlashcards;window.principiaSuiteToggleMastered=toggleMastered;window.principiaSuiteShuffleFlashcards=shuffleFlashcards;window.principiaSuiteAnalytics=analytics;window.principiaSuiteAnalyticsRange=setAnalyticsRange;window.principiaSuiteExportAnalytics=exportAnalytics;window.principiaSuiteFilterErrors=errors;window.principiaSuiteExportErrors=exportErrors;window.principiaSuiteExportNotes=exportNotes;window.principiaSuiteNoteCount=noteCount;window.principiaSuiteFavoriteFlashcards=()=>flashcards(true);window.principiaSuiteFavoritePractice=startFavoritePractice;window.principiaSuiteQuests=quests;window.principiaSuiteSeason=seasonMissions;window.principiaSuiteClaimSeason=claimSeason;window.principiaSuiteClaimQuest=claimQuest;window.principiaSuiteNotes=notes;window.principiaSuiteFilterNotes=renderNotes;window.principiaSuiteAddNote=addNote;window.principiaSuiteEditNote=editNote;window.principiaSuiteSaveNoteEdit=saveNoteEdit;window.principiaSuiteDeleteNote=deleteNote;window.principiaSuiteFormulas=formulas;window.principiaSuiteFilterFormulas=renderFormulaResults;window.principiaSuiteCopyFormula=copyFormula;window.principiaSuiteFlashcards=flashcards;window.principiaSuiteReviewErrors=reviewErrors;window.principiaSuiteSpacedReview=spacedReview;window.principiaSuiteStartReview=startReview;window.principiaSuiteFlipReview=()=>{reviewSide=true;reviewCard()};window.principiaSuiteRateReview=rateReview;window.principiaSuiteSkipReview=skipReview;window.principiaSuiteFlip=()=>{flashSide=!flashSide;renderFlash()};window.principiaSuiteFlashPrev=()=>{flashIndex=Math.max(0,flashIndex-1);renderFlash()};window.principiaSuiteFlashNext=()=>{flashIndex++;renderFlash()};window.principiaSuiteErrors=errors;window.principiaSuiteAddError=addError;window.principiaSuiteDeleteError=deleteError;window.principiaSuiteBadges=badges;window.principiaSuiteProgression=progression;window.principiaSuiteNotifications=notifications;window.principiaSuiteEnableNotifications=enableNotifications;window.principiaSuiteDisableNotifications=()=>{state.notifications=false;save();notifications()};window.principiaSuiteAI=ai;window.principiaSuiteResearch=()=>{close();if(window.principiaResearchNotebook)window.principiaResearchNotebook.open()};window.principiaSuiteLevels=()=>{close();if(window.principiaLevelStudio)window.principiaLevelStudio.open()};window.principiaSuiteStartMystery=startMystery;window.principiaSuiteMysteryAnswer=answerMystery;window.principiaSuiteBackup=backupTool;window.principiaSuiteExportBackup=exportBackup;window.principiaSuiteImportBackup=importBackup;window.principiaSuiteOpenChat=openChat;window.principiaSuiteCopyAI=copyAI;
+ window.principiaSuiteHome=home;window.principiaSuiteQuestionBank=questionBank;window.principiaSuiteQuestionSearch=renderQuestionBankResults;window.principiaSuiteQuestionTopic=setQuestionTopic;window.principiaSuiteQuestionFavorites=toggleQuestionFavorites;window.principiaSuiteToggleQuestionFavorite=toggleQuestionFavorite;window.principiaSuiteQuestionExport=exportQuestionBank;window.principiaSuiteOpenGames=()=>{close();if(typeof setPage==='function')setPage('entertainment')};window.principiaSuiteExamSetup=examSetup;window.principiaSuiteDaily=dailyChallenge;window.principiaSuiteDailyAnswer=dailyAnswer;window.principiaSuiteDailyHistory=dailyHistory;window.principiaSuiteStartExam=startExam;window.principiaSuiteChoose=choose;window.principiaSuiteSubmitExam=submitExam;window.principiaSuiteExitExam=exitExam;window.principiaSuiteAttemptHistory=attemptHistory;window.principiaSuiteAttemptSearch=setAttemptQuery;window.principiaSuiteAttemptMode=setAttemptMode;window.principiaSuiteExportAttempts=exportAttempts;window.principiaSuiteDailyHistorySearch=setDailyHistoryQuery;window.principiaSuiteDailyHistoryFilter=setDailyHistoryFilter;window.principiaSuiteExportDailyHistory=exportDailyHistory;window.principiaSuiteMasteredFlashcards=masteredFlashcards;window.principiaSuiteToggleMastered=toggleMastered;window.principiaSuiteShuffleFlashcards=shuffleFlashcards;window.principiaSuiteAnalytics=analytics;window.principiaSuiteAnalyticsRange=setAnalyticsRange;window.principiaSuiteExportAnalytics=exportAnalytics;window.principiaSuiteFilterErrors=errors;window.principiaSuiteExportErrors=exportErrors;window.principiaSuiteExportNotes=exportNotes;window.principiaSuiteNoteCount=noteCount;window.principiaSuiteFavoriteFlashcards=()=>flashcards(true);window.principiaSuiteFavoritePractice=startFavoritePractice;window.principiaSuiteQuests=quests;window.principiaSuiteSeason=seasonMissions;window.principiaSuiteClaimSeason=claimSeason;window.principiaSuiteClaimQuest=claimQuest;window.principiaSuiteNotes=notes;window.principiaSuiteFilterNotes=renderNotes;window.principiaSuiteAddNote=addNote;window.principiaSuiteEditNote=editNote;window.principiaSuiteSaveNoteEdit=saveNoteEdit;window.principiaSuiteDeleteNote=deleteNote;window.principiaSuiteFormulas=formulas;window.principiaSuiteFilterFormulas=renderFormulaResults;window.principiaSuiteCopyFormula=copyFormula;window.principiaSuiteFlashcards=flashcards;window.principiaSuiteReviewErrors=reviewErrors;window.principiaSuiteSpacedReview=spacedReview;window.principiaSuiteStartReview=startReview;window.principiaSuiteFlipReview=()=>{reviewSide=true;reviewCard()};window.principiaSuiteRateReview=rateReview;window.principiaSuiteSkipReview=skipReview;window.principiaSuiteFlip=()=>{flashSide=!flashSide;renderFlash()};window.principiaSuiteFlashPrev=()=>{flashIndex=Math.max(0,flashIndex-1);renderFlash()};window.principiaSuiteFlashNext=()=>{flashIndex++;renderFlash()};window.principiaSuiteErrors=errors;window.principiaSuiteAddError=addError;window.principiaSuiteDeleteError=deleteError;window.principiaSuiteBadges=badges;window.principiaSuiteProgression=progression;window.principiaSuiteNotifications=notifications;window.principiaSuiteEnableNotifications=enableNotifications;window.principiaSuiteDisableNotifications=()=>{state.notifications=false;save();notifications()};window.principiaSuiteAI=ai;window.principiaSuiteResearch=()=>{close();if(window.principiaResearchNotebook)window.principiaResearchNotebook.open()};window.principiaSuiteLevels=()=>{close();if(window.principiaLevelStudio)window.principiaLevelStudio.open()};window.principiaSuiteStartMystery=startMystery;window.principiaSuiteMysteryAnswer=answerMystery;window.principiaSuiteBackup=backupTool;window.principiaSuiteExportBackup=exportBackup;window.principiaSuiteImportBackup=importBackup;window.principiaSuiteOpenChat=openChat;window.principiaSuiteCopyAI=copyAI;window.principiaSuiteFocus=focusPlanner;window.principiaSuiteFocusPreset=focusPreset;window.principiaSuiteFocusCustom=focusCustom;window.principiaSuiteFocusStart=focusStart;window.principiaSuiteFocusPause=focusPause;window.principiaSuiteFocusStop=focusStop;window.principiaSuiteFocusGoal=focusGoal;window.principiaSuiteFocusSearch=focusSearch;window.principiaSuiteFocusExport=focusExport;
  patchExistingQuizHistory();
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();
