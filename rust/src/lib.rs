@@ -8,6 +8,7 @@ pub mod session;
 pub mod assessment;
 pub mod features;
 pub mod physics;
+pub mod game;
 pub mod virtual_lab;
 pub mod progress;
 pub mod store;
