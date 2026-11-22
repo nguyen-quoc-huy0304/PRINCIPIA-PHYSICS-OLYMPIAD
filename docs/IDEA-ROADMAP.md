@@ -118,6 +118,8 @@
 
 | 77 | Ngân hàng câu hỏi có tìm kiếm theo nội dung câu hỏi, đáp án, chủ đề và đường dẫn bài học | Có mã nguồn giao diện trong Learning Suite; cần nghiệm thu trên trình duyệt và thiết bị thực tế |
 
+| 78 | Ngân hàng câu hỏi nâng cao: lọc theo chủ đề, lưu câu yêu thích bền vững và xuất CSV theo bộ lọc hiện tại | Đã tích hợp trong Learning Suite; cần kiểm tra tương tác thực tế trên trình duyệt |
+
 ## Nguyên tắc nghiệm thu
 
 1. Không đánh dấu hoàn thành chỉ vì đã tạo file hoặc commit code.
