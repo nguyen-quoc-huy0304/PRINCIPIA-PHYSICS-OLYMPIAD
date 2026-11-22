@@ -1,4 +1,4 @@
-name: PRINCIPIA - Web Build
+name: PRINCIPIA - Web and Rust Core Build
 
 on:
   push:
@@ -22,3 +22,17 @@ jobs:
         run: npm install
       - name: TypeScript and Vite production build
         run: npm run build
+
+  rust-core:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - name: Test native Rust physics core
+        run: cargo test --manifest-path crates/physics-core/Cargo.toml --release
+      - name: Compile Rust physics core to WebAssembly
+        run: cargo check --manifest-path crates/physics-core/Cargo.toml --target wasm32-unknown-unknown --release

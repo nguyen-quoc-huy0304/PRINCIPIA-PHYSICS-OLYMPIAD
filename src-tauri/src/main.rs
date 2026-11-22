@@ -1,6 +1,6 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-mod physics;
+use principia_physics_core as physics;
 
 #[tauri::command]
 fn physics_motion(u: f64, a: f64, t: f64) -> Result<physics::MotionResult, String> {
@@ -14,7 +14,7 @@ fn physics_kinetic_energy(mass: f64, speed: f64) -> Result<f64, String> {
 
 #[tauri::command]
 fn physics_projectile(speed: f64, angle_deg: f64, gravity: Option<f64>) -> Result<physics::ProjectileResult, String> {
-    physics::projectile(speed, angle_deg, gravity.unwrap_or(9.80665))
+    physics::projectile(speed, angle_deg, gravity.unwrap_or(physics::STANDARD_GRAVITY))
 }
 
 fn main() {

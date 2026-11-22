@@ -12,10 +12,11 @@ tauri-build = { version = "2", features = [] }
 tauri = { version = "2", features = [] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+principia-physics-core = { path = "../crates/physics-core" }
 
 [profile.release]
 opt-level = 3
-lto = "thin"
+lto = true
 codegen-units = 1
 strip = true
 panic = "abort"
