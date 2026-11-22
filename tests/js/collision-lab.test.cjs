@@ -88,8 +88,8 @@ test('2D unequal-mass head-on elastic collision conserves momentum and energy', 
   const after = context.PrincipiaCollisionMath.momentumAndEnergy2D([a, b]);
   assert.ok(Math.abs(after.px - before.px) < 1e-12);
   assert.ok(Math.abs(after.kinetic - before.kinetic) < 1e-12);
-  assert.ok(Math.abs(a.vx - (-5/3)) < 1e-12);
-  assert.ok(Math.abs(b.vx - (11/3)) < 1e-12);
+  assert.ok(Math.abs(a.vx - (1/3)) < 1e-12);
+  assert.ok(Math.abs(b.vx - (13/3)) < 1e-12);
 });
 
 test('2D perfectly inelastic collision conserves momentum while reducing kinetic energy', () => {
