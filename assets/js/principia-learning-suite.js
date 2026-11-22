@@ -42,7 +42,7 @@
   const q=pool(),attempts=state.attempts||[],total=attempts.reduce((s,a)=>s+(a.total||0),0),correct=attempts.reduce((s,a)=>s+(a.score||0),0);
   const pct=total?Math.round(correct/total*100):0;
   open('Trung tâm học tập', '<p style="opacity:.75">Các công cụ học tập mở rộng, dùng dữ liệu bài học và Quiz đang có trong PRINCIPIA.</p><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px">'+
-   card('Phòng luyện Olympic',q.length+' câu hỏi có sẵn · bài thi có thời gian','principiaSuiteExamSetup()','🏅')+
+   card('Phòng luyện Olympic',q.length+' câu hỏi có sẵn · bài thi có thời gian','principiaSuiteExamSetup()','🏅')+card('Thử thách mỗi ngày','1 câu hỏi ngẫu nhiên · +10 XP khi đúng','principiaSuiteDaily()','⚡')+
    card('Science Arcade','Mở game vật lý và thử thách quỹ đạo hiện có','principiaSuiteOpenGames()','🎮')+
    card('Phân tích học tập',attempts.length+' lượt luyện · độ chính xác '+pct+'%','principiaSuiteAnalytics()','📊')+
    card('Nhiệm vụ & hành trình','Mục tiêu lấy từ hoạt động thực tế','principiaSuiteQuests()','🧭')+
@@ -54,6 +54,21 @@
    card('Thông báo học tập',state.notifications?'Đã bật quyền thông báo':'Cài đặt nhắc học trên thiết bị','principiaSuiteNotifications()','🔔')+
    card('Thảo luận cùng AI','Đưa câu hỏi và ngữ cảnh sang trợ lý PRINCIPIA','principiaSuiteAI()','✨')+
    '</div><p class="small muted" style="margin-top:14px">Ngân hàng hiện có: '+q.length+' câu hỏi. Nếu nội dung chưa có câu hỏi, phòng Olympic sẽ báo rõ thay vì tự tạo đề.</p>');
+ }
+ function dailyChallenge(){
+  const today=new Date().toLocaleDateString('en-CA');
+  const bank=pool();
+  if(!bank.length){open('Thử thách mỗi ngày','<p>Chưa có câu hỏi hợp lệ để tạo thử thách. Hãy bổ sung câu hỏi vào Quiz hoặc bài học.</p>'+btn('Về trung tâm','principiaSuiteHome()'));return}
+  if(!state.daily||state.daily.date!==today){const q=bank[Math.floor(Math.random()*bank.length)];state.daily={date:today,q:q.q,a:q.a,correct:q.correct,topic:q.topic,path:q.path,answered:false,choice:null};save()}
+  const d=state.daily;
+  let html='<p>1 câu hỏi mới mỗi ngày · dữ liệu từ ngân hàng bài học/Quiz thật.</p>'+panel('Thử thách '+today,'<b>'+esc(d.topic)+'</b><p>'+esc(d.q)+'</p><div style="display:grid;gap:8px">'+d.a.map((a,i)=>'<button '+(d.answered?'disabled':'')+' onclick="principiaSuiteDailyAnswer('+i+')" style="text-align:left;padding:12px;border:1px solid var(--line,#555);border-radius:12px;background:var(--card,#171a2a);color:inherit">'+String.fromCharCode(65+i)+'. '+esc(a)+'</button>').join('')+'</div>'+ (d.answered?'<p><b>'+(d.choice===d.correct?'✅ Chính xác!':'❌ Chưa đúng')+'</b><br>Đáp án: '+esc(d.a[d.correct])+'</p>':'') )+btn('Về trung tâm','principiaSuiteHome()');
+  open('Thử thách mỗi ngày',html)
+ }
+ function dailyAnswer(i){
+  const d=state.daily;if(!d||d.answered||!Number.isInteger(i))return;
+  d.choice=i;d.answered=true;if(i===d.correct){state.xp=(state.xp||0)+10;try{if(typeof xp!=='undefined'){xp+=10;if(typeof saveAll==='function')saveAll()}}catch(_){}}
+  else state.errors.unshift({title:d.q,body:'Bạn chọn: '+d.a[i]+'\\nĐáp án đúng: '+d.a[d.correct]+'\\nChủ đề: '+d.topic,date:new Date().toISOString()});
+  save();dailyChallenge();
  }
  function examSetup(){
   const n=pool().length;
@@ -204,7 +219,7 @@
   b.style.cssText='position:fixed;left:18px;bottom:calc(82px + env(safe-area-inset-bottom,0px));z-index:1201;width:46px;height:46px;border-radius:15px;border:1px solid var(--line,#777);background:var(--card,#171526);color:var(--text,#fff);font-size:24px;box-shadow:0 8px 28px #0004;cursor:pointer';
   b.addEventListener('click',home);document.body.appendChild(b);
  }
- window.principiaSuiteHome=home;window.principiaSuiteOpenGames=()=>{close();if(typeof setPage==='function')setPage('entertainment')};window.principiaSuiteExamSetup=examSetup;window.principiaSuiteStartExam=startExam;window.principiaSuiteChoose=choose;window.principiaSuiteSubmitExam=submitExam;window.principiaSuiteExitExam=exitExam;window.principiaSuiteAnalytics=analytics;window.principiaSuiteQuests=quests;window.principiaSuiteClaimQuest=claimQuest;window.principiaSuiteNotes=notes;window.principiaSuiteAddNote=addNote;window.principiaSuiteDeleteNote=deleteNote;window.principiaSuiteFormulas=formulas;window.principiaSuiteFlashcards=flashcards;window.principiaSuiteReviewErrors=reviewErrors;window.principiaSuiteFlip=()=>{flashSide=!flashSide;renderFlash()};window.principiaSuiteFlashPrev=()=>{flashIndex=Math.max(0,flashIndex-1);renderFlash()};window.principiaSuiteFlashNext=()=>{flashIndex++;renderFlash()};window.principiaSuiteErrors=errors;window.principiaSuiteAddError=addError;window.principiaSuiteDeleteError=deleteError;window.principiaSuiteBadges=badges;window.principiaSuiteNotifications=notifications;window.principiaSuiteEnableNotifications=enableNotifications;window.principiaSuiteDisableNotifications=()=>{state.notifications=false;save();notifications()};window.principiaSuiteAI=ai;window.principiaSuiteOpenChat=openChat;window.principiaSuiteCopyAI=copyAI;
+ window.principiaSuiteHome=home;window.principiaSuiteOpenGames=()=>{close();if(typeof setPage==='function')setPage('entertainment')};window.principiaSuiteExamSetup=examSetup;window.principiaSuiteDaily=dailyChallenge;window.principiaSuiteDailyAnswer=dailyAnswer;window.principiaSuiteStartExam=startExam;window.principiaSuiteChoose=choose;window.principiaSuiteSubmitExam=submitExam;window.principiaSuiteExitExam=exitExam;window.principiaSuiteAnalytics=analytics;window.principiaSuiteQuests=quests;window.principiaSuiteClaimQuest=claimQuest;window.principiaSuiteNotes=notes;window.principiaSuiteAddNote=addNote;window.principiaSuiteDeleteNote=deleteNote;window.principiaSuiteFormulas=formulas;window.principiaSuiteFlashcards=flashcards;window.principiaSuiteReviewErrors=reviewErrors;window.principiaSuiteFlip=()=>{flashSide=!flashSide;renderFlash()};window.principiaSuiteFlashPrev=()=>{flashIndex=Math.max(0,flashIndex-1);renderFlash()};window.principiaSuiteFlashNext=()=>{flashIndex++;renderFlash()};window.principiaSuiteErrors=errors;window.principiaSuiteAddError=addError;window.principiaSuiteDeleteError=deleteError;window.principiaSuiteBadges=badges;window.principiaSuiteNotifications=notifications;window.principiaSuiteEnableNotifications=enableNotifications;window.principiaSuiteDisableNotifications=()=>{state.notifications=false;save();notifications()};window.principiaSuiteAI=ai;window.principiaSuiteOpenChat=openChat;window.principiaSuiteCopyAI=copyAI;
  patchExistingQuizHistory();
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();
