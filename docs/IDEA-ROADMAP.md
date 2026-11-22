@@ -192,6 +192,8 @@
 
 | 137 | Trung tâm trợ năng: cỡ chữ 100–130%, chế độ tương phản cao, giảm chuyển động và gạch chân liên kết; lưu tùy chọn cục bộ, có đặt lại mặc định | Đã tích hợp trong Learning Suite; cần nghiệm thu giao diện trên trình duyệt và thiết bị thật |
 
+| 138 | Xuất kế hoạch học tập ra CSV: gồm tên nhiệm vụ, chủ đề, hạn, thời lượng, trạng thái, ghi chú và mốc thời gian | Đã tích hợp nút xuất CSV trong Kế hoạch học tập; cần nghiệm thu tải tệp trên trình duyệt và thiết bị thật |
+
 ## Nguyên tắc nghiệm thu
 
 1. Không đánh dấu hoàn thành chỉ vì đã tạo file hoặc commit code.
