@@ -13,6 +13,7 @@
   const lowMemory = memory > 0 && memory <= 2;
   const constrained = lowMemory || (cores > 0 && cores <= 2) || !!(connection && connection.saveData);
   const idleQueue = [];
+  const lazyScripts = new Map();
   let idleScheduled = false;
   let observer = null;
 
@@ -83,10 +84,34 @@
     start();
   }
 
+  function loadScript(src) {
+    const key = String(src || '');
+    if (!key) return Promise.reject(new TypeError('A script URL is required.'));
+    if (lazyScripts.has(key)) return lazyScripts.get(key);
+    const existing = Array.from(document.scripts).find(s => s.dataset && s.dataset.principiaLazySrc === key);
+    if (existing && existing.dataset.loaded === 'true') return Promise.resolve(existing);
+    const promise = new Promise((resolve, reject) => {
+      const script = existing || document.createElement('script');
+      script.async = false;
+      script.dataset.principiaLazySrc = key;
+      script.onload = () => { script.dataset.loaded = 'true'; resolve(script); };
+      script.onerror = () => { lazyScripts.delete(key); reject(new Error('Không tải được mô-đun: ' + key)); };
+      if (!existing) { script.src = key; document.head.appendChild(script); }
+    });
+    lazyScripts.set(key, promise);
+    return promise;
+  }
+
+  function loadScripts(sources) {
+    return (sources || []).reduce((chain, src) => chain.then(() => loadScript(src)), Promise.resolve());
+  }
+
   window.PrincipiaPerformance = Object.freeze({
     tier: lowMemory ? 'low-memory' : constrained ? 'constrained' : 'standard',
     lowMemory,
     schedule,
+    loadScript,
+    loadScripts,
     getProfile() {
       const memoryInfo = performance && performance.memory ? {
         usedJSHeapSize: performance.memory.usedJSHeapSize,
