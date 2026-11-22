@@ -206,6 +206,10 @@
 
 | 144 | Cân bằng lực: lưu 20 lượt giải gần nhất, lịch sử vector F₃, sai số và điểm; hiển thị 5 lượt gần nhất trong game | Đã code lưu lịch sử cục bộ; cần nghiệm thu trình duyệt |
 
+
+| 145 | Physics Arcade: cho phép xuất lịch sử 20 lượt chơi ra JSON và xóa riêng lịch sử sau xác nhận, không xóa điểm/kỷ lục | Đã code; kiểm tra cú pháp và sự hiện diện của nút/handler; cần kiểm thử thao tác tải file trên trình duyệt |
+| 146 | Cân bằng lực: xuất lịch sử 20 lượt giải ra JSON và xóa riêng lịch sử sau xác nhận, giữ điểm/kỷ lục | Đã code; kiểm tra cú pháp và sự hiện diện của nút/handler; cần kiểm thử thao tác tải file trên trình duyệt |
+
 ## Nguyên tắc nghiệm thu
 
 1. Không đánh dấu hoàn thành chỉ vì đã tạo file hoặc commit code.
