@@ -239,3 +239,5 @@
 
 
 | 157 | Tổ chức thư viện nội dung: kéo thả/sắp xếp tab, bài học và chuyển tài liệu giữa các bài; hỗ trợ đổi thứ tự tài liệu | Đã có sẵn kéo thả node giữa tab và sắp xếp trong cây; bổ sung chuyển tài liệu giữa bài và kéo thả/nút lên xuống để đổi thứ tự; cần nghiệm thu trình duyệt, quyền admin và IndexedDB |
+
+| 158 | Sửa xác thực khóa ngày lịch trong lõi streak để chấp nhận ngày hợp lệ và loại chuỗi sai định dạng | Đã sửa regex và thêm regression test; chưa chạy toàn bộ `npm test`/CI |
