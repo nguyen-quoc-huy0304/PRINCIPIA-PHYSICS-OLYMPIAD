@@ -13,17 +13,6 @@ on:
         required: true
         type: string
         default: "desktop-v1.0.4"
-  push:
-    paths:
-      - 'desktop/**'
-      - 'rust/**'
-      - 'package.json'
-      - 'assets/js/**'
-      - 'assets/css/**'
-      - 'assets/images/**'
-      - 'src/physics/**'
-      - 'index.html'
-      - '.github/workflows/build-windows-app.yml'
 
 permissions:
   contents: write
