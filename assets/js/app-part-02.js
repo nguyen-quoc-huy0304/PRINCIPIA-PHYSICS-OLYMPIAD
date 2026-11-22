@@ -262,7 +262,7 @@ function funHome(){
 function principiaQuestionMedia(item){
  let html='';
  const image=item?.image||item?.imageUrl||item?.diagram;
- if(typeof image==='string'&&image.trim()&&(/^(https:\\/\\/|\\/)/i).test(image.trim())) html+='<figure style="margin:12px 0"><img src="'+esc(image.trim())+'" alt="Hình minh họa câu hỏi" loading="lazy" style="max-width:100%;max-height:360px;width:auto;object-fit:contain;border-radius:12px;border:1px solid var(--line,#444)"></figure>';
+ if(typeof image==='string'&&image.trim()&&(/^(https:\/\/|\/)/i).test(image.trim())) html+='<figure style="margin:12px 0"><img src="'+esc(image.trim())+'" alt="Hình minh họa câu hỏi" loading="lazy" style="max-width:100%;max-height:360px;width:auto;object-fit:contain;border-radius:12px;border:1px solid var(--line,#444)"></figure>';
  const g=item?.graph;
  if(g&&Array.isArray(g.points)&&g.points.length>=2){
   const pts=g.points.map(p=>Array.isArray(p)&&p.length>=2?[Number(p[0]),Number(p[1])]:null).filter(p=>p&&p.every(Number.isFinite));
