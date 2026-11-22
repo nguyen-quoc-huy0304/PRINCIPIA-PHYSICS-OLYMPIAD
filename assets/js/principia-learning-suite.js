@@ -66,7 +66,7 @@
   const sessions=focusSessions().filter(x=>{const t=Date.parse(x.timestamp);return Number.isFinite(t)&&t>=since&&t<=now&&Number.isFinite(Number(x.seconds))&&x.seconds>0});
   const focusSeconds=sessions.reduce((n,x)=>n+Math.floor(Number(x.seconds)),0),activeDays=new Set(sessions.map(x=>x.date)).size;
   const errors=(Array.isArray(state.errors)?state.errors:[]),topics={};
-  errors.forEach(e=>{const t=Date.parse(e.date);if(!Number.isFinite(t)||t<since||t>now)return;let source=String(e.path||'');if(!source){const m=String(e.body||'').match(/Nguồn:\\s*([^\\n]+)/i);if(m)source=m[1].trim()}const key=(source||'Chưa phân loại').split(/ › | \/ | > /)[0].trim();topics[key]=(topics[key]||0)+1});
+  errors.forEach(e=>{const t=Date.parse(e.date);if(!Number.isFinite(t)||t<since||t>now)return;let source=String(e.path||'');if(!source){const m=String(e.body||'').match(/Nguồn:\s*([^\n]+)/i);if(m)source=m[1].trim()}const key=(source||'Chưa phân loại').split(/ › | \/ | > /)[0].trim();topics[key]=(topics[key]||0)+1});
   const weak=Object.entries(topics).sort((a,b)=>b[1]-a[1]).slice(0,5),plans=Array.isArray(state.studyPlan)?state.studyPlan:[],today=localDateKey(),openTasks=plans.filter(x=>!x.done).length,overdue=plans.filter(x=>!x.done&&x.due&&x.due<today).length;
   const advice=[];
   if(!attempts.length)advice.push('Làm một bài luyện ngắn để PRINCIPIA có dữ liệu đánh giá tiến bộ.');
