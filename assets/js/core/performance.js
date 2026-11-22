@@ -49,14 +49,14 @@
 
     for (const el of nodes) {
       if (el.tagName === 'IMG') {
-        if (!el.loading && !el.hasAttribute('data-principia-eager')) el.loading = 'lazy';
+        if (!el.hasAttribute('loading') && !el.hasAttribute('data-principia-eager')) el.loading = 'lazy';
         if (!el.decoding) el.decoding = 'async';
       } else if (el.tagName === 'VIDEO') {
         if (!el.hasAttribute('preload') && !el.autoplay) el.preload = 'none';
       } else if (el.tagName === 'AUDIO') {
         if (!el.hasAttribute('preload') && !el.autoplay) el.preload = 'none';
       } else if (el.tagName === 'IFRAME') {
-        if (!el.loading) el.loading = 'lazy';
+        if (!el.hasAttribute('loading')) el.loading = 'lazy';
       }
     }
   }
