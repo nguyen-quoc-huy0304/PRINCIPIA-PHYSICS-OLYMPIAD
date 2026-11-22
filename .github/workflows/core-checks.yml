@@ -24,16 +24,16 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.24'
+          go-version: '1.25.x'
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '10.0.x'
       - name: Build native Rust + C++ core
         run: cargo build --manifest-path rust/Cargo.toml --release --bin principia-core-server
       - name: Verify JSON-line protocol with Go
         env:
           PRINCIPIA_CORE_BIN: ${{ github.workspace }}/rust/target/release/principia-core-server
-        run: go test -v ./tests/go/...
+        run: cd tests/go && go test -v ./...
       - name: Cross-check scientific outputs with C# oracle
         env:
           PRINCIPIA_CORE_BIN: ${{ github.workspace }}/rust/target/release/principia-core-server
