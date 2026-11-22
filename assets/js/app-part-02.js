@@ -254,6 +254,19 @@ function quizHome(){
 function funHome(){
  return `<div class="eyebrow">DAILY CHALLENGE</div><h1>Đố vui</h1><p class="muted">Thử thách trí tuệ, giải câu đố và nhận XP.</p><div class="sectionhead"><h2>Chủ đề đố vui</h2><button class="primary" onclick="addNode('tab')">＋ Tab mới</button></div><div class="breadcrumb">${crumb()}</div><div class="toolbar" style="margin-bottom:14px"><button class="secondary" onclick="addNode('fun')">＋ Bài đố vui</button></div><div class="grid">${currentNodes().length?currentNodes().map(card).join(''):'<div class="empty">Chưa có chủ đề. Hãy tạo tab hoặc bài đố vui mới.</div>'}</div>`;
 }
+function principiaQuestionMedia(item){
+ let html='';
+ const image=item?.image||item?.imageUrl||item?.diagram;
+ if(typeof image==='string'&&image.trim()&&(/^(https:\\/\\/|\\/)/i).test(image.trim())) html+='<figure style="margin:12px 0"><img src="'+esc(image.trim())+'" alt="Hình minh họa câu hỏi" loading="lazy" style="max-width:100%;max-height:360px;width:auto;object-fit:contain;border-radius:12px;border:1px solid var(--line,#444)"></figure>';
+ const g=item?.graph;
+ if(g&&Array.isArray(g.points)&&g.points.length>=2){
+  const pts=g.points.map(p=>Array.isArray(p)&&p.length>=2?[Number(p[0]),Number(p[1])]:null).filter(p=>p&&p.every(Number.isFinite));
+  if(pts.length>=2){const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]),xmin=Math.min(...xs),xmax=Math.max(...xs),ymin=Math.min(...ys),ymax=Math.max(...ys),W=360,H=220,L=48,R=12,T=14,B=38,dx=xmax-xmin||1,dy=ymax-ymin||1,X=x=>L+(x-xmin)/dx*(W-L-R),Y=y=>T+(ymax-y)/dy*(H-T-B),path=pts.map((p,i)=>(i?'L':'M')+X(p[0]).toFixed(1)+' '+Y(p[1]).toFixed(1)).join(' ');
+   html+='<div style="margin:12px 0;padding:8px;border:1px solid var(--line,#444);border-radius:12px;overflow:auto"><svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Đồ thị câu hỏi" style="width:100%;max-width:520px"><line x1="'+L+'" y1="'+T+'" x2="'+L+'" y2="'+(H-B)+'" stroke="currentColor" opacity=".65"/><line x1="'+L+'" y1="'+(H-B)+'" x2="'+(W-R)+'" y2="'+(H-B)+'" stroke="currentColor" opacity=".65"/><path d="'+path+'" fill="none" stroke="#8b7bff" stroke-width="2.5"/>'+pts.map(p=>'<circle cx="'+X(p[0])+'" cy="'+Y(p[1])+'" r="3" fill="#8b7bff"/>').join('')+'<text x="'+(W/2)+'" y="'+(H-8)+'" fill="currentColor" font-size="11" text-anchor="middle">'+esc(g.xLabel||'x')+'</text><text x="18" y="'+(H/2)+'" fill="currentColor" font-size="11" text-anchor="middle" transform="rotate(-90 18 '+(H/2)+')">'+esc(g.yLabel||'y')+'</text></svg></div>';
+  }
+ }
+ return html;
+}
 function playPage(){
  let q=activeQuiz?.kind==='quiz'?find(activeQuiz.id,quizData):find(activeQuiz.id,funData);
  if(!q)return '<div class="empty">Không tìm thấy bài kiểm tra</div>';
@@ -265,7 +278,7 @@ function playPage(){
   return `<div class="panel"><div class="eyebrow">COMPLETED</div><div class="tileicon">🏆</div><h1>${score}/${questions.length}</h1><h2>${score===questions.length?'Xuất sắc!':'Hoàn thành thử thách!'}</h2><p class="muted">Bạn trả lời đúng ${score} câu.</p><button class="primary" onclick="answers=[];render()">Làm lại</button> <button class="secondary" onclick="setPage('${activeQuiz.kind==='fun'?'fun':'quiz'}')">Quay lại</button></div>`;
  }
  let item=questions[i];
- return `<div class="breadcrumb"><button onclick="setPage('${activeQuiz.kind==='fun'?'fun':'quiz'}')">Quay lại</button> / ${esc(q.name)}</div><div class="panel"><div class="muted small">CÂU ${i+1}/${questions.length}</div><div class="progress"><div style="width:${i/questions.length*100}%"></div></div><h2 style="margin-top:25px">${esc(item.q)}</h2>${item.a.map((a,j)=>`<label class="choice"><input type="radio" name="ans" value="${j}">${esc(a)}</label>`).join('')}<button class="primary" onclick="answerQuestion()">Xác nhận →</button></div>`;
+ return `<div class="breadcrumb"><button onclick="setPage('${activeQuiz.kind==='fun'?'fun':'quiz'}')">Quay lại</button> / ${esc(q.name)}</div><div class="panel"><div class="muted small">CÂU ${i+1}/${questions.length}</div><div class="progress"><div style="width:${i/questions.length*100}%"></div></div><h2 style="margin-top:25px">${esc(item.q)}</h2>${principiaQuestionMedia(item)}${item.a.map((a,j)=>`<label class="choice"><input type="radio" name="ans" value="${j}">${esc(a)}</label>`).join('')}<button class="primary" onclick="answerQuestion()">Xác nhận →</button></div>`;
 }
 function lessonPlayPage(){
  let l=find(activeQuiz?.id,data);
