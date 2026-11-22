@@ -23,11 +23,15 @@
   if(points.length<2||points.length>MAX_POINTS||points.some(p=>!Number.isFinite(p.x)||!Number.isFinite(p.y)))throw new Error('Dữ liệu đo không hợp lệ.');
   return {id,title,question:text(record.question,1000),method:text(record.method,3000),xUnit:text(record.xUnit,30),yUnit:text(record.yUnit,30),points,summary:summarize(points),createdAt:text(record.createdAt,40)||new Date().toISOString()};
  }
+ function toCSV(record){
+  const item=validate(record),quote=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
+  return '\uFEFF'+[['X ('+item.xUnit+')','Y ('+item.yUnit+')'],...item.points.map(p=>[p.x,p.y])].map(row=>row.map(quote).join(',')).join('\r\n');
+ }
  function createStore(storage){
   const io=storage||{getItem:k=>root.localStorage.getItem(k),setItem:(k,v)=>root.localStorage.setItem(k,v)};
   function all(){try{const raw=JSON.parse(io.getItem(KEY)||'[]');return Array.isArray(raw)?raw.map(validate):[]}catch(_){return []}}
   function write(items){if(items.length>MAX_RECORDS)throw new Error('Tối đa 500 thí nghiệm.');io.setItem(KEY,JSON.stringify(items))}
   return {all,save(r){const item=validate(r),items=all(),i=items.findIndex(x=>x.id===item.id);if(i<0&&items.length>=MAX_RECORDS)throw new Error('Đã đạt giới hạn 500 thí nghiệm.');if(i<0)items.unshift(item);else items[i]=item;write(items);return item},remove(id){write(all().filter(x=>x.id!==id))},export(){return JSON.stringify({schema:'principia-research-notebook',version:VERSION,experiments:all()},null,2)},import(raw){if(typeof raw!=='string'||raw.length>5*1024*1024)throw new Error('Tệp vượt giới hạn 5 MB.');const pack=JSON.parse(raw);if(!pack||pack.schema!=='principia-research-notebook'||pack.version!==VERSION||!Array.isArray(pack.experiments)||pack.experiments.length>MAX_RECORDS)throw new Error('Tệp không đúng định dạng sổ nghiên cứu PRINCIPIA.');const incoming=pack.experiments.map(validate),map=new Map(all().map(x=>[x.id,x]));incoming.forEach(x=>map.set(x.id,x));write([...map.values()]);return incoming.length}};
  }
- const api={parsePoints,summarize,validate,createStore,KEY,VERSION};if(typeof module!=='undefined'&&module.exports)module.exports=api;root.PrincipiaResearchCore=api;
+ const api={parsePoints,summarize,validate,toCSV,createStore,KEY,VERSION};if(typeof module!=='undefined'&&module.exports)module.exports=api;root.PrincipiaResearchCore=api;
 })(typeof globalThis!=='undefined'?globalThis:this);
