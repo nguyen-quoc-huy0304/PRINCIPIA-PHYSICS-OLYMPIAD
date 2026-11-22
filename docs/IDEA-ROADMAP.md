@@ -210,6 +210,9 @@
 | 145 | Physics Arcade: cho phép xuất lịch sử 20 lượt chơi ra JSON và xóa riêng lịch sử sau xác nhận, không xóa điểm/kỷ lục | Đã code; kiểm tra cú pháp và sự hiện diện của nút/handler; cần kiểm thử thao tác tải file trên trình duyệt |
 | 146 | Cân bằng lực: xuất lịch sử 20 lượt giải ra JSON và xóa riêng lịch sử sau xác nhận, giữ điểm/kỷ lục | Đã code; kiểm tra cú pháp và sự hiện diện của nút/handler; cần kiểm thử thao tác tải file trên trình duyệt |
 
+
+| 147 | Cân bằng lực: bổ sung ba mức độ Dễ/Thường/Khó với phạm vi lực khác nhau, giữ điểm và lịch sử khi đổi độ khó | Đã code bộ sinh bài và điều khiển độ khó; kiểm tra cú pháp; cần kiểm thử UI thực tế |
+
 ## Nguyên tắc nghiệm thu
 
 1. Không đánh dấu hoàn thành chỉ vì đã tạo file hoặc commit code.
