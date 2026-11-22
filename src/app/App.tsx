@@ -942,6 +942,8 @@ export function App() {
         {section === 'learn' && <>
           {activeLesson ? <section class="content-panel">
             <button class="back-link" onClick={() => setActiveLesson(null)}>← Quay lại danh sách</button>
+            <div class="lesson-content-layout">
+              <div class="lesson-main-pane">
             <h2>{activeLesson.icon || '📘'} {activeLesson.name}</h2>
             {account.isAdmin && <div class="admin-lesson-actions"><button class="secondary-button" type="button" onClick={() => startLessonEditor(activeLesson)}>Chỉnh sửa bài học</button><button class="quiet-button" type="button" onClick={deleteActiveLesson}>Xóa bài học</button></div>}
             {lessonEditor && <section class="lesson-editor">
@@ -965,7 +967,8 @@ export function App() {
             </div>}
             {activeLesson.content && <><h3>Nội dung bài học</h3><pre class="lesson-content">{activeLesson.content}</pre></>}
             {activeLesson.note && <><h3>Ghi chú</h3><pre class="lesson-content">{activeLesson.note}</pre></>}
-            <div class="lesson-tools">
+              </div>
+              <div class="lesson-tools">
               <div class="lesson-tool-tabs" role="tablist" aria-label="Công cụ bài học">
                 <button type="button" class={lessonTool === 'note' ? 'active' : ''} onClick={() => setLessonTool('note')}>✎ Ghi chép</button>
                 <button type="button" class={lessonTool === 'files' ? 'active' : ''} onClick={() => setLessonTool('files')}>▧ Tài liệu</button>
@@ -1020,6 +1023,7 @@ export function App() {
               </div>}
               {workspaceNotice && <p class="workspace-notice" role="status">{workspaceNotice}</p>}
             </div>
+              </div>
             <div class="lesson-completion"><span>{localProgress.completed.includes(lessonKey(activeLesson)) ? '✓ Đã hoàn thành' : 'Hoàn thành bài học để lưu tiến độ'}</span><button class="secondary-button" disabled={localProgress.completed.includes(lessonKey(activeLesson))} onClick={() => markLessonComplete(activeLesson)}>{localProgress.completed.includes(lessonKey(activeLesson)) ? 'Đã ghi nhận' : 'Đánh dấu hoàn thành · +10 EXP'}</button></div>
             {!activeLesson.content && !activeLesson.note && !activeLesson.video && <p class="empty-state">Bài học chưa có nội dung.</p>}
             {(activeLesson.quiz?.length || activeLesson.questions?.length) ? <button class="primary-button quiz-submit" onClick={() => openQuizNode(activeLesson)}>Làm câu hỏi bài học ({(activeLesson.quiz || activeLesson.questions || []).length})</button> : null}
