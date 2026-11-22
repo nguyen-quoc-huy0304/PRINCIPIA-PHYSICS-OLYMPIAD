@@ -198,6 +198,8 @@
 
 | 140 | Tìm nhiệm vụ học tập theo tên, chủ đề hoặc ghi chú, kết hợp với bộ lọc trạng thái | Đã tích hợp tìm kiếm trong Kế hoạch học tập; cần nghiệm thu tương tác trên trình duyệt và thiết bị thật |
 
+| 141 | Kế hoạch học tập: thống kê nhiệm vụ có hạn hôm nay và trong 7 ngày tới; cho phép dọn hàng loạt nhiệm vụ đã hoàn thành sau xác nhận | Đã tích hợp thống kê hạn hôm nay/7 ngày và thao tác dọn nhiệm vụ hoàn tất có xác nhận; cần nghiệm thu trình duyệt |
+
 ## Nguyên tắc nghiệm thu
 
 1. Không đánh dấu hoàn thành chỉ vì đã tạo file hoặc commit code.
