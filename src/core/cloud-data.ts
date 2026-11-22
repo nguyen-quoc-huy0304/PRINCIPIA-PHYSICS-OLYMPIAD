@@ -154,3 +154,58 @@ export async function restoreProgressFromCloud(uid: string): Promise<PrincipiaPr
     lastStudyDate: typeof data.lastStudyDate === 'string' ? data.lastStudyDate : ''
   };
 }
+
+
+export type GameLeaderboardEntry = {
+  uid: string;
+  name: string;
+  gamePoints: number;
+  matches: number;
+  wins: number;
+  week: string;
+  updatedAt?: unknown;
+};
+
+export async function publishGameLeaderboardScore(
+  uid: string,
+  entry: Omit<GameLeaderboardEntry, 'uid' | 'updatedAt'>
+): Promise<void> {
+  if (!uid) throw new Error('Bạn cần đăng nhập để cập nhật bảng xếp hạng.');
+  const [app, firestore] = await Promise.all([getFirebaseApp(), import('firebase/firestore')]);
+  const db = firestore.getFirestore(app);
+  await firestore.setDoc(firestore.doc(db, 'principiaLeaderboard', uid), {
+    uid,
+    name: String(entry.name || 'Học sinh').slice(0, 60),
+    gamePoints: Math.max(0, Math.floor(entry.gamePoints)),
+    matches: Math.max(0, Math.floor(entry.matches)),
+    wins: Math.max(0, Math.floor(entry.wins)),
+    week: entry.week,
+    updatedAt: firestore.serverTimestamp()
+  }, { merge: true });
+}
+
+export async function subscribeGameLeaderboard(
+  onRows: (rows: GameLeaderboardEntry[]) => void,
+  onError: (error: Error) => void
+): Promise<() => void> {
+  const [app, firestore] = await Promise.all([getFirebaseApp(), import('firebase/firestore')]);
+  const db = firestore.getFirestore(app);
+  const ranked = firestore.query(
+    firestore.collection(db, 'principiaLeaderboard'),
+    firestore.orderBy('gamePoints', 'desc'),
+    firestore.limit(50)
+  );
+  return firestore.onSnapshot(ranked, snapshot => {
+    onRows(snapshot.docs.map(document => {
+      const data = document.data();
+      return {
+        uid: String(data.uid || document.id),
+        name: String(data.name || 'Học sinh'),
+        gamePoints: Math.max(0, Number(data.gamePoints) || 0),
+        matches: Math.max(0, Number(data.matches) || 0),
+        wins: Math.max(0, Number(data.wins) || 0),
+        week: String(data.week || '')
+      };
+    }));
+  }, error => onError(error));
+}
