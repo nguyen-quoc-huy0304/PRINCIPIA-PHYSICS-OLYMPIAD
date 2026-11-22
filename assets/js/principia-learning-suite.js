@@ -461,7 +461,7 @@
   const node=document.getElementById('plsFocusClock');if(!node||!focusInterval)return;
   const remaining=Math.max(0,focusRemaining-Math.floor((Date.now()-focusStartedAt)/1000));node.textContent=focusFormat(remaining);
  }
- function focusPreset(minutes){if(focusInterval)return;focusDuration=Math.max(5,Math.min(120,Number(minutes)||25));focusRemaining=focusDuration*60;focusElapsedBefore=0;focusStartedAt=0;focusPlanner()}
+ function focusPreset(minutes){if(focusInterval)return;if(focusElapsedBefore>0&&!confirm('Bỏ thời gian đã tập trung trong phiên tạm dừng để đổi thời lượng?'))return;focusDuration=Math.max(5,Math.min(120,Number(minutes)||25));focusRemaining=focusDuration*60;focusElapsedBefore=0;focusStartedAt=0;focusPlanner()}
  function focusCustom(){const el=document.getElementById('plsFocusCustom'),n=Number(el&&el.value);if(!Number.isInteger(n)||n<5||n>120){alert('Thời lượng phải từ 5 đến 120 phút.');return}focusPreset(n)}
  function focusStart(){
   if(focusInterval)return;
