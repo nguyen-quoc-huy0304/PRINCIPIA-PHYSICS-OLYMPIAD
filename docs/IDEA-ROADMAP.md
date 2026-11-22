@@ -43,7 +43,7 @@
 | 23 | Sổ tay học tập và ghi chú cá nhân | Có mã nguồn nền tảng — cần kiểm thử |
 | 24 | Thư viện công thức khoa học | Có mã nguồn nền tảng — cần kiểm thử độ chính xác |
 | 25 | Tìm kiếm toàn cục trong nội dung học tập | Có mã nguồn — cần nghiệm thu |
-| 26 | Huy hiệu, thành tích, nhiệm vụ và XP | Có mã nguồn nền tảng — cần kiểm thử |
+| 26 | Huy hiệu, thành tích, nhiệm vụ và XP | Có mã nguồn; bổ sung 8 thành tựu có tiến độ và điều kiện thực tế — chờ CI/nghiệm thu |
 | 27 | Thông báo và nhắc học trong ứng dụng | Có mã nguồn nền tảng — cần kiểm thử |
 | 28 | Thảo luận với AI và trợ giúp học tập | Có mã nguồn cầu nối; cần nghiệm thu nhà cung cấp, giới hạn và chất lượng |
 | 29 | AI chấm bài, giải thích từng bước và phản hồi theo rubric | Đang triển khai / cần thiết kế và kiểm chứng |
@@ -76,11 +76,11 @@
 | 46 | Chế độ chơi nhiều người | Chưa làm |
 | 47 | Bảng xếp hạng | Chưa nghiệm thu |
 | 48 | Nhiệm vụ ngày và mùa giải | Đang triển khai một phần |
-| 49 | Hệ thống XP, cấp độ và phần thưởng | Có mã nguồn nền tảng — cần kiểm thử |
+| 49 | Hệ thống XP, cấp độ và phần thưởng | Có 11 cấp XP, tiến độ lên cấp; phần thưởng nâng cao còn triển khai |
 | 50 | Quiz thời gian thực | Chưa làm |
 | 51 | Thế giới khoa học mở để tự do khám phá | Chưa làm |
 | 52 | Người dùng tự tạo màn chơi/thử thách và chia sẻ | Chưa làm |
-| 53 | Thành tựu và bộ sưu tập tiến trình chơi | Có mã nguồn nền tảng — cần kiểm thử |
+| 53 | Thành tựu và bộ sưu tập tiến trình chơi | Có mã nguồn thành tựu học tập và bộ sưu tập — chờ CI/nghiệm thu |
 
 ## E. Nhân vật, giao diện và trải nghiệm
 
@@ -108,7 +108,11 @@
 | 68 | Rà soát giấy phép, dependency, attribution và nghĩa vụ công bố mã nguồn trước khi tái sử dụng | Đang áp dụng theo từng thư viện |
 | 69 | Video học tập dùng liên kết YouTube; không tải lại video trái phép | Đang áp dụng — ràng buộc nội dung |
 
-| 70 | Sao lưu/khôi phục tiến độ học tập và game trên thiết bị; không đưa token đăng nhập vào tệp | Có mã nguồn — 6/6 unit test chạy local đạt; chờ CI và nghiệm thu trình duyệt |\n\n| 71 | Khôi phục đầy đủ danh sách hơn 100 ý tưởng PRINCIPIA đã trao đổi, đối chiếu từng mục với backlog 70 mục hiện có để không bỏ sót | Đang rà soát lịch sử trao đổi; không tự bịa các mục chưa tìm thấy |\n\n## Nguyên tắc nghiệm thu
+| 70 | Sao lưu/khôi phục tiến độ học tập và game trên thiết bị; không đưa token đăng nhập vào tệp | Có mã nguồn — 6/6 unit test chạy local đạt; chờ CI và nghiệm thu trình duyệt |
+| 71 | Khôi phục đầy đủ danh sách hơn 100 ý tưởng PRINCIPIA đã trao đổi, đối chiếu từng mục với backlog 70 mục hiện có để không bỏ sót | Đang rà soát lịch sử trao đổi; không tự bịa các mục chưa tìm thấy |
+| 72 | Theo dõi chuỗi ngày học liên tiếp, cấp độ XP và thành tựu theo tiến độ thực tế | Có mã nguồn core + tích hợp; 9 unit test được viết, CI và trình duyệt chưa xác nhận |
+
+## Nguyên tắc nghiệm thu
 
 1. Không đánh dấu hoàn thành chỉ vì đã tạo file hoặc commit code.
 2. Mỗi tính năng cần kiểm tra giao diện, luồng thao tác, dữ liệu đầu vào/đầu ra và lỗi biên.
