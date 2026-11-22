@@ -11,6 +11,24 @@ fn dispatch(request: &Value) -> Value {
     let id = request.get("id").cloned().unwrap_or(Value::Null);
     let result: Result<Value, String> = (|| {
         let op = request.get("op").and_then(Value::as_str).ok_or("Missing operation")?;
+        if op == "rigidBodyDrop" {
+            let steps_value = number(request, "steps")?;
+            if steps_value < 0.0 || steps_value > 60000.0 || steps_value.fract() != 0.0 {
+                return Err("steps must be an integer between 0 and 60000".to_string());
+            }
+            let mut lab = principia_core::rigid_body::RigidBodyLab::new(
+                number(request, "initialHeightM")? as f32,
+                number(request, "gravityMps2")? as f32,
+                number(request, "radiusM")? as f32,
+                number(request, "restitution")? as f32,
+            ).map_err(|error| format!("Invalid rigid-body parameters: {error:?}"))?;
+            lab.step(steps_value as u32);
+            return Ok(json!({
+                "positionM": lab.position_m(),
+                "velocityMps": lab.velocity_mps(),
+                "steps": lab.elapsed_steps()
+            }));
+        }
         if op == "gameProjectileScore" {
             let shot = principia_core::game::score_projectile(
                 number(request,"speed")?, number(request,"angleDeg")?,
@@ -68,6 +86,18 @@ mod tests {
         assert_eq!(response["ok"], true);
         assert_eq!(response["value"]["points"], 100);
     }
+    #[test]
+    fn dispatches_rapier_rigid_body_drop() {
+        let response = dispatch(&json!({
+            "id": 11, "op": "rigidBodyDrop",
+            "initialHeightM": 10.0, "gravityMps2": 9.81,
+            "radiusM": 0.5, "restitution": 0.7, "steps": 30
+        }));
+        assert_eq!(response["ok"], true);
+        assert_eq!(response["value"]["steps"], 30);
+        assert!(response["value"]["positionM"][1].as_f64().unwrap() < 10.0);
+    }
+
     #[test]
     fn rejects_unsupported_operations() {
         let response = dispatch(&json!({"id":8,"op":"deleteEverything"}));
