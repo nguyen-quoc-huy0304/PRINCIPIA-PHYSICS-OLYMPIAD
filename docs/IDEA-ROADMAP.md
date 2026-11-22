@@ -75,7 +75,7 @@
 | 45 | Thử thách khoa học do AI hỗ trợ | Đang triển khai / cần kiểm soát chất lượng |
 | 46 | Chế độ chơi nhiều người | Chưa làm |
 | 47 | Bảng xếp hạng | Chưa nghiệm thu |
-| 48 | Nhiệm vụ ngày và mùa giải | Đang triển khai một phần |
+| 48 | Nhiệm vụ ngày và mùa giải | Có nhiệm vụ tuần với 3 mục tiêu thực tế, tiến độ và nhận XP một lần mỗi tuần; cần CI và nghiệm thu giao diện |
 | 49 | Hệ thống XP, cấp độ và phần thưởng | Có 11 cấp XP, tiến độ lên cấp; phần thưởng nâng cao còn triển khai |
 | 50 | Quiz thời gian thực | Chưa làm |
 | 51 | Thế giới khoa học mở để tự do khám phá | Chưa làm |
@@ -111,6 +111,7 @@
 | 70 | Sao lưu/khôi phục tiến độ học tập và game trên thiết bị; không đưa token đăng nhập vào tệp | Có mã nguồn — 6/6 unit test chạy local đạt; chờ CI và nghiệm thu trình duyệt |
 | 71 | Khôi phục đầy đủ danh sách hơn 100 ý tưởng PRINCIPIA đã trao đổi, đối chiếu từng mục với backlog 70 mục hiện có để không bỏ sót | Đang rà soát lịch sử trao đổi; không tự bịa các mục chưa tìm thấy |
 | 72 | Theo dõi chuỗi ngày học liên tiếp, cấp độ XP và thành tựu theo tiến độ thực tế | Có mã nguồn core + tích hợp; 9/9 unit test chạy local đạt; GitHub Actions lần chạy gần nhất thất bại trước khi có step/log, trình duyệt chưa xác nhận |
+| 73 | Mùa giải tuần với nhiệm vụ theo lượt luyện, số câu và ghi chú; phần thưởng XP không nhận trùng | Có mã nguồn core + giao diện; 5 unit test đã viết, chưa chạy local; chờ CI và nghiệm thu trình duyệt |
 
 ## Nguyên tắc nghiệm thu
 
