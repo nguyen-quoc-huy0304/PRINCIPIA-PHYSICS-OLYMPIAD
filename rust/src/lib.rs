@@ -1,6 +1,7 @@
 //! PRINCIPIA — Rust-first application core.
 //! The existing web/Electron clients are adapters; domain rules live here.
 
+pub mod cpp_physics;
 pub mod access;
 pub mod content;
 pub mod session;

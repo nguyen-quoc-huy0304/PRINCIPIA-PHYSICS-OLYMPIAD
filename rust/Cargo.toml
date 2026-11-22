@@ -2,8 +2,9 @@
 name = "principia-core"
 version = "0.1.0"
 edition = "2021"
-description = "PRINCIPIA primary Rust application core"
+description = "PRINCIPIA primary Rust application core with native C++ physics kernels"
 license = "UNLICENSED"
+build = "build.rs"
 
 [lib]
 name = "principia_core"
