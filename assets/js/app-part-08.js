@@ -1,1 +1,0 @@
-document.addEventListener('DOMContentLoaded',()=>{if(typeof startPrincipiaLiveClock==='function')startPrincipiaLiveClock();if(typeof toggleTopbarStudyClock==='function'&&!principiaClock.running)toggleTopbarStudyClock()});

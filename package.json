@@ -1,65 +1,28 @@
 {
-  "name": "principia-physics-olympiad-desktop",
-  "version": "1.0.4",
+  "name": "principia",
   "private": true,
-  "description": "PRINCIPIA Physics Olympiad desktop app with a hybrid embedded browser",
-  "main": "desktop/main.cjs",
+  "version": "2.0.0",
+  "type": "module",
   "scripts": {
-    "start": "electron .",
-    "dist:win": "electron-builder --win nsis --x64 --publish never",
-    "dist:linux": "electron-builder --linux AppImage --x64 --publish never",
-    "dist:mac": "electron-builder --mac dmg zip --x64 --publish never",
-    "build:physics": "tsc -p tsconfig.physics.json"
-  },
-  "devDependencies": {
-    "electron": "^35.2.1",
-    "electron-builder": "^26.0.12",
-    "typescript": "^5.8.3"
-  },
-  "build": {
-    "appId": "vn.principia.physicsolympiad",
-    "productName": "PRO",
-    "directories": {
-      "output": "dist"
-    },
-    "files": [
-      "desktop/**/*",
-      "package.json"
-    ],
-    "win": {
-      "icon": "desktop/icons/icon.ico",
-      "target": [
-        "nsis"
-      ],
-      "artifactName": "PRINCIPIA-Setup.${ext}"
-    },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true
-    },
-    "publish": {
-      "provider": "github",
-      "owner": "nguyen-quoc-huy0304",
-      "repo": "PRINCIPIA-PHYSICS-OLYMPIAD.ghithub.io"
-    },
-    "linux": {
-      "target": [
-        "AppImage",
-        "deb"
-      ],
-      "artifactName": "PRINCIPIA-linux-${arch}.${ext}"
-    },
-    "mac": {
-      "target": [
-        "dmg",
-        "zip"
-      ],
-      "artifactName": "PRINCIPIA-mac-${arch}.${ext}"
-    }
+    "dev": "vite --host 0.0.0.0",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "tauri": "tauri",
+    "tauri:android:init": "tauri android init",
+    "tauri:android:build": "tauri android build --apk",
+    "tauri:ios:init": "tauri ios init",
+    "tauri:ios:build": "tauri ios build",
+    "tauri:build": "tauri build"
   },
   "dependencies": {
-    "electron-updater": "^6.6.2"
+    "firebase": "^12.6.0",
+    "preact": "^10.27.2",
+    "@tauri-apps/api": "^2.9.1"
+  },
+  "devDependencies": {
+    "@preact/preset-vite": "^2.10.2",
+    "@tauri-apps/cli": "^2.9.4",
+    "typescript": "^5.9.3",
+    "vite": "^7.2.2"
   }
 }

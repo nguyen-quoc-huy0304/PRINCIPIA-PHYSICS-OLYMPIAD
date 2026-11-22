@@ -1,35 +1,39 @@
 # PRINCIPIA • PHYSICS OLYMPIAD
 
-## PRINCIPIA Desktop (Windows)
+PRINCIPIA is being rebuilt in this repository as one application using Preact, TypeScript, Vite, Tauri 2, Rust, and Firebase.
 
-The existing Cloudflare Pages website remains the web version. The Electron desktop shell loads that same site and adds a local Chromium view for AI websites that are known to refuse iframe embedding.
-
-### Run locally
+## Development
 
 ```bash
 npm install
-npm start
+npm run dev
 ```
 
-### Build the Windows installer
+## Web production build
 
 ```bash
-npm install
-npm run dist:win
+npm run build
+npm run preview
 ```
 
-The installer is written to `dist/`.
+## Desktop application
 
-### Hybrid browser behavior
+Install the platform prerequisites for Tauri 2, then run:
 
-- Normal sites continue to use the existing in-page iframe.
-- Known iframe-blocking AI sites (ChatGPT, Claude, Gemini, and Microsoft Copilot) open in an Electron-managed Chromium view positioned over the mini-browser content area.
-- The desktop browser uses its own persistent app session (`persist:principia-ai-browser`); it does not reuse Chrome/Edge cookies.
-- Closing or leaving the mini-browser view removes the embedded browser view.
+```bash
+npm run tauri dev
+npm run tauri:build
+```
 
-Some sites may still restrict sign-in, popups, media, or automated access. The app does not bypass those site restrictions.
+## Android and iOS
 
-### Notes
+Initialize the platform project and build with:
 
-- The desktop shell is a separate Windows app; the Cloudflare Pages website remains available as before.
-- The desktop app currently loads the production PRINCIPIA URL configured in `desktop/main.cjs`.
+```bash
+npm run tauri:android:init
+npm run tauri:android:build
+npm run tauri:ios:init
+npm run tauri:ios:build
+```
+
+The former Electron runtime and legacy V1 JavaScript/CSS application are being retired as their functionality is reimplemented in the new application. The original PRINCIPIA logo and character assets are retained.
