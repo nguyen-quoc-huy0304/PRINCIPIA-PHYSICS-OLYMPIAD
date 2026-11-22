@@ -21,6 +21,33 @@ import { sections } from './navigation';
 import { parseArray, countNodes, hasNode, countQuestions } from './tree-utils';
 import type { Section, AuthMode as Mode, QuizEditorState, CustomAIProvider, LearningNode } from './types';
 
+type GameLeagueState = { week: string; points: number; matches: number; wins: number };
+function gameWeekKey(date = new Date()): string {
+  const value = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const day = value.getUTCDay() || 7;
+  value.setUTCDate(value.getUTCDate() + 4 - day);
+  const year = value.getUTCFullYear();
+  const first = new Date(Date.UTC(year, 0, 1));
+  return year + '-W' + String(Math.ceil((((value.getTime() - first.getTime()) / 86400000) + 1) / 7)).padStart(2, '0');
+}
+function gameLeagueRank(points: number) {
+  return points >= 900 ? { name: 'Đại kiện tướng', icon: '👑' }
+    : points >= 600 ? { name: 'Cao thủ', icon: '💎' }
+    : points >= 350 ? { name: 'Chiến binh', icon: '🥇' }
+    : points >= 150 ? { name: 'Kỳ thủ', icon: '🥈' }
+    : { name: 'Tân binh', icon: '🌱' };
+}
+function gameLeagueBots(week: string) {
+  const names = ['NewtonBot', 'Einstein AI', 'Gauss.exe', 'CurieBot', 'Feynman AI', 'TeslaMind', 'NoetherBot'];
+  const icons = ['🤖', '🧠', '🦾', '👾', '⚙️', '🛰️', '🔬'];
+  let seed = 0;
+  for (const character of week) seed = (seed * 31 + character.charCodeAt(0)) >>> 0;
+  return names.map((name, index) => {
+    seed = (seed * 1664525 + 1013904223) >>> 0;
+    return { name, points: 150 + seed % 650, icon: icons[index] };
+  }).sort((a, b) => b.points - a.points);
+}
+
 export function App() {
   const [account, setAccount] = useState<AuthResult | null>(null);
   const [section, setSection] = useState<Section>('home');
@@ -65,6 +92,14 @@ export function App() {
     try { const saved = JSON.parse(localStorage.getItem('principia_game_platforms') || 'null'); return Array.isArray(saved) ? saved : defaults; } catch { return defaults; }
   });
   const [activeGameId, setActiveGameId] = useState(() => localStorage.getItem('principia_active_game_tab') || 'chesscom');
+  const [gameLeague, setGameLeague] = useState<GameLeagueState>(() => {
+    const week = gameWeekKey();
+    try {
+      const saved = JSON.parse(localStorage.getItem('principia_fun_league') || 'null');
+      return saved?.week === week ? { week, points: Math.max(0, Number(saved.points) || 0), matches: Math.max(0, Number(saved.matches) || 0), wins: Math.max(0, Number(saved.wins) || 0) } : { week, points: 0, matches: 0, wins: 0 };
+    } catch { return { week, points: 0, matches: 0, wins: 0 }; }
+  });
+  useEffect(() => { try { localStorage.setItem('principia_fun_league', JSON.stringify(gameLeague)); } catch {} }, [gameLeague]);
 
 
 
@@ -187,6 +222,19 @@ export function App() {
     try { setProjectileResult(await calculateProjectile(Number(projectileInput.speed), Number(projectileInput.angle), Number(projectileInput.gravity))); }
     catch (error: any) { setPhysicsNotice(error?.message || 'Không tính được chuyển động ném xiên.'); }
     finally { setPhysicsBusy(false); }
+  };
+  const simulateGameMatch = () => {
+    const week = gameWeekKey();
+    const current = gameLeague.week === week ? gameLeague : { week, points: 0, matches: 0, wins: 0 };
+    const bots = gameLeagueBots(week);
+    const opponent = bots[Math.floor(Math.random() * bots.length)];
+    const won = Math.random() < 0.62;
+    const gain = won ? 30 : 12;
+    const next = { week, points: current.points + gain, matches: current.matches + 1, wins: current.wins + (won ? 1 : 0) };
+    setGameLeague(next);
+    const before = gameLeagueRank(current.points);
+    const after = gameLeagueRank(next.points);
+    setBrowserNotice((won ? '🏆 Thắng ' : '🤝 Kết thúc trận với ') + opponent.name + ' · +' + gain + ' điểm' + (before.name !== after.name ? ' · Lên hạng ' + after.name + '!' : ''));
   };
   const addGamePlatform = () => {
     const name = prompt('Tên nền tảng (ví dụ: Cờ vua):')?.trim();
@@ -1097,6 +1145,19 @@ export function App() {
           <div class="game-tabs">{gamePlatforms.map(game => <button type="button" class={activeGameId === game.id ? 'active' : ''} onClick={() => setActiveGameId(game.id)}><span>{game.icon}</span>{game.name}{game.custom && <i onClick={event => { event.stopPropagation(); removeGamePlatform(game.id); }}>×</i>}</button>)}</div>
           {(() => { const game = gamePlatforms.find(item => item.id === activeGameId); return game ? <><div class="games-frame-toolbar"><b>{game.name}</b><button class="secondary-button" type="button" onClick={() => window.open(game.url,'_blank')}>Mở trang gốc ↗</button></div><iframe class="games-frame" title={game.name} src={game.url} loading="lazy" sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox" /></> : <p class="empty-state">Chưa có nền tảng trò chơi.</p>; })()}
           <p class="empty-state">Một số website không cho phép nhúng hoặc yêu cầu đăng nhập riêng. Khi đó hãy dùng nút Mở trang gốc.</p>
+          <section class="game-league-panel">
+            <div class="games-heading"><div><h3>🏆 Giải đấu tư duy tuần này</h3><p>Điểm và thứ hạng mô phỏng được lưu trên thiết bị này, không phải bảng xếp hạng trực tuyến.</p></div><span class="release-status">{gameLeagueRank(gameLeague.points).icon} {gameLeagueRank(gameLeague.points).name}</span></div>
+            <div class="stats-grid">
+              <article><strong>{gameLeague.points}</strong><span>Điểm tuần</span></article>
+              <article><strong>{gameLeague.matches}</strong><span>Trận mô phỏng</span></article>
+              <article><strong>{gameLeague.wins}</strong><span>Trận thắng</span></article>
+            </div>
+            <div class="game-league-ranking">
+              {[...gameLeagueBots(gameLeague.week), { name: account?.user.displayName || 'Bạn', points: gameLeague.points, icon: '🙂', you: true }].sort((a, b) => b.points - a.points).map((player, index) => <article class={('you' in player && player.you) ? 'is-you' : ''}><b>{index + 1}</b><span>{player.icon}</span><strong>{player.name}</strong><em>{player.points} điểm</em></article>)}
+            </div>
+            <button class="primary-button" type="button" onClick={simulateGameMatch}>Đấu mô phỏng với AI · Nhận điểm</button>
+            {browserNotice && <p class="workspace-notice" role="status">{browserNotice}</p>}
+          </section>
         </section>}
         {section === 'browser' && <section class="content-panel browser-workspace">
           <div class="browser-heading"><div><h2>Trình duyệt mini</h2><p>Mở website trong PRINCIPIA nếu trang đó cho phép nhúng.</p></div><button class="secondary-button" type="button" disabled={!browserUrl} onClick={() => window.open(browserUrl, '_blank')}>Mở tab ngoài ↗</button></div>
