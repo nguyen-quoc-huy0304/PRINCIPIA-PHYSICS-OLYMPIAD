@@ -165,6 +165,19 @@
 | 119 | Lọc riêng các câu sai trong màn hình kết quả | Đã tích hợp chế độ xem toàn bộ hoặc chỉ câu sai |
 | 120 | Tạo lượt luyện mới chỉ từ các câu trả lời sai | Đã tích hợp nút luyện lại câu sai từ kết quả vừa nộp |
 
+
+| # | Ý tưởng / yêu cầu | Trạng thái |
+|---:|---|---|
+| 121 | Phím tắt 1–9 để chọn đáp án và phím mũi tên để chuyển câu | Đã tích hợp trong phòng thi; cần nghiệm thu bàn phím trên desktop và Android |
+| 122 | Điều hướng câu trước / câu tiếp ngay trong bài thi | Đã thêm nút chuyển câu và giữ vị trí câu hiện tại |
+| 123 | Bỏ chọn đáp án đã chọn khi phát hiện bấm nhầm | Đã thêm thao tác xóa lựa chọn cho câu hiện tại |
+| 124 | Tự lưu bản nháp bài thi khi trả lời hoặc đánh dấu câu | Đã lưu cục bộ sau mỗi thay đổi; không đồng bộ máy chủ |
+| 125 | Khôi phục bài thi đang làm sau khi tải lại trang | Đã thêm tiếp tục bản nháp nếu thời hạn thi chưa hết |
+| 126 | Xóa bản nháp bài thi theo xác nhận của người dùng | Đã thêm thao tác xóa riêng, không tự xóa khi đóng cửa sổ |
+| 127 | Cảnh báo trực quan khi còn 5 phút và 1 phút | Đã thêm thông báo trong phòng thi và đổi màu đồng hồ |
+| 128 | Lưu thời gian làm bài thực tế vào lịch sử kết quả | Đã ghi durationSeconds trong lượt luyện Olympic |
+| 129 | Hiển thị thời lượng làm bài ở màn hình kết quả | Đã thêm thời gian phút/giây trong kết quả thi |
+| 130 | Giữ tiến độ câu hiện tại khi chuyển câu và khôi phục bản nháp | Đã lưu chỉ số câu hiện tại cùng bản nháp bài thi |
 ## Nguyên tắc nghiệm thu
 
 1. Không đánh dấu hoàn thành chỉ vì đã tạo file hoặc commit code.
