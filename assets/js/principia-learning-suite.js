@@ -86,8 +86,8 @@
   html+=btn('Bỏ qua','principiaSuiteSkipReview()')+btn('Về trung tâm','principiaSuiteHome()');open('Ôn tập thông minh',html);
  }
  function rateReview(r){
-  const q=reviewQueue[reviewIndex];if(!q)return;const days=[1,2,4,7][r],next=new Date();next.setDate(next.getDate()+days);
-  state.review=state.review||{};state.review[q.path+'|'+q.q]={interval:days,due:next.toISOString().slice(0,10),last:new Date().toISOString(),rating:r};save();reviewIndex++;reviewSide=false;reviewCard();
+  const q=reviewQueue[reviewIndex];if(!q||!Number.isInteger(r)||r<0||r>3)return;const previous=Number((state.review||{})[q.path+'|'+q.q]?.interval)||0;const days=[1,Math.max(2,previous||2),Math.max(4,(previous||2)*2),Math.max(7,(previous||2)*3)][r],interval=Math.min(60,days),next=new Date();next.setDate(next.getDate()+interval);
+  state.review=state.review||{};state.review[q.path+'|'+q.q]={interval:interval,due:localDateKey(next),last:new Date().toISOString(),rating:r};save();reviewIndex++;reviewSide=false;reviewCard();
  }
  function skipReview(){reviewIndex++;reviewSide=false;reviewCard()}
  function examSetup(){
