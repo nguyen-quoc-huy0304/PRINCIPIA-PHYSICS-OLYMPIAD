@@ -31,7 +31,13 @@
       "target": [
         "nsis"
       ],
-      "artifactName": "PRINCIPIA-Setup.${ext}"
+      "artifactName": "PRINCIPIA-Setup.${ext}",
+      "extraResources": [
+        {
+          "from": "rust/target/release/principia-core-server.exe",
+          "to": "bin/principia-core-server.exe"
+        }
+      ]
     },
     "nsis": {
       "oneClick": false,
@@ -49,14 +55,26 @@
         "AppImage",
         "deb"
       ],
-      "artifactName": "PRINCIPIA-linux-${arch}.${ext}"
+      "artifactName": "PRINCIPIA-linux-${arch}.${ext}",
+      "extraResources": [
+        {
+          "from": "rust/target/release/principia-core-server",
+          "to": "bin/principia-core-server"
+        }
+      ]
     },
     "mac": {
       "target": [
         "dmg",
         "zip"
       ],
-      "artifactName": "PRINCIPIA-mac-${arch}.${ext}"
+      "artifactName": "PRINCIPIA-mac-${arch}.${ext}",
+      "extraResources": [
+        {
+          "from": "rust/target/release/principia-core-server",
+          "to": "bin/principia-core-server"
+        }
+      ]
     }
   },
   "dependencies": {

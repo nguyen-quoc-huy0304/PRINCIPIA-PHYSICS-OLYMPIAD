@@ -1,6 +1,7 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('principiaDesktop', {
+  computePhysics: (operation, params) => ipcRenderer.invoke('principia-core:physics', operation, params),
   isBlockedHost: (url) => ipcRenderer.invoke('principia-browser:is-blocked', url),
   openBlockedBrowser: (url, bounds) => ipcRenderer.invoke('principia-browser:open', url, bounds),
   updateBrowserBounds: (bounds) => ipcRenderer.invoke('principia-browser:bounds', bounds),

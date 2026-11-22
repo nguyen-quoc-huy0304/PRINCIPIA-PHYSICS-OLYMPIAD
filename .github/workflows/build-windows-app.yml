@@ -45,6 +45,8 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
       - name: Test native Rust and C++ core on this platform
         run: cargo test --manifest-path rust/Cargo.toml --all-targets
+      - name: Build Rust core sidecar for packaging
+        run: cargo build --release --manifest-path rust/Cargo.toml --bin principia-core-server
       - run: npm install
       - name: Regenerate Windows icon from the cropped circular logo with alpha transparency
         if: matrix.platform == 'windows'

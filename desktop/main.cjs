@@ -1,5 +1,7 @@
 const { app, BrowserWindow, WebContentsView, ipcMain, shell, net } = require('electron');
 const path = require('node:path');
+const { spawn } = require('node:child_process');
+const readline = require('node:readline');
 
 const APP_URL = 'https://principia-physics-olympiad-pro.pages.dev/';
 const BLOCKED_HOSTS = [
@@ -13,6 +15,63 @@ let mainWindow;
 let browserView;
 let browserSession;
 let currentBrowserUrl = '';
+let coreProcess = null;
+let coreNextId = 1;
+const corePending = new Map();
+
+function rejectCorePending(message) {
+  for (const [id, pending] of corePending) {
+    corePending.delete(id);
+    pending.reject(new Error(message));
+  }
+}
+
+function startNativeCore() {
+  const executable = `principia-core-server${process.platform === 'win32' ? '.exe' : ''}`;
+  const corePath = app.isPackaged
+    ? path.join(process.resourcesPath, 'bin', executable)
+    : path.join(__dirname, '..', 'rust', 'target', 'release', executable);
+  try {
+    const child = spawn(corePath, [], { stdio: ['pipe', 'pipe', 'ignore'], windowsHide: true });
+    coreProcess = child;
+    const output = readline.createInterface({ input: child.stdout });
+    output.on('line', line => {
+      let response;
+      try { response = JSON.parse(line); } catch { return; }
+      const pending = corePending.get(response.id);
+      if (!pending) return;
+      corePending.delete(response.id);
+      if (response.ok) pending.resolve(response.value);
+      else pending.reject(new Error(response.error || 'Native core error'));
+    });
+    child.on('error', error => {
+      if (coreProcess === child) coreProcess = null;
+      rejectCorePending(`Không thể khởi động Rust core: ${error.message}`);
+    });
+    child.on('exit', code => {
+      if (coreProcess === child) coreProcess = null;
+      rejectCorePending(`Rust core đã dừng (mã ${code ?? 'không rõ'}).`);
+    });
+  } catch (error) {
+    coreProcess = null;
+    rejectCorePending(error.message);
+  }
+}
+
+function callNativeCore(operation, params) {
+  if (!coreProcess || coreProcess.killed || !coreProcess.stdin.writable) {
+    throw new Error('Rust core chưa sẵn sàng trên bản cài đặt này.');
+  }
+  const id = coreNextId++;
+  return new Promise((resolve, reject) => {
+    corePending.set(id, { resolve, reject });
+    coreProcess.stdin.write(JSON.stringify({ id, op: operation, ...params }) + '\\n', error => {
+      if (!error) return;
+      corePending.delete(id);
+      reject(error);
+    });
+  });
+}
 
 function isAllowedWebUrl(value) {
   try {
@@ -141,6 +200,14 @@ function createWindow() {
 app.whenReady().then(() => {
   browserSession = require('electron').session.fromPartition('persist:principia-ai-browser');
   browserSession.setPermissionRequestHandler((_webContents, _permission, callback) => callback(false));
+  startNativeCore();
+  ipcMain.handle('principia-core:physics', (_event, operation, params) => {
+    const allowed = new Set(['velocity', 'displacement', 'kineticEnergy', 'projectileRange', 'projectileMaxHeight']);
+    if (!allowed.has(operation) || !params || typeof params !== 'object' || Array.isArray(params)) {
+      throw new Error('Yêu cầu tính toán không hợp lệ.');
+    }
+    return callNativeCore(operation, params);
+  });
   ipcMain.handle('principia-browser:is-blocked', (_event, url) => isFrameBlocked(url));
   ipcMain.handle('principia-browser:open', async (_event, url, bounds) => {
     if (!isAllowedWebUrl(url)) {
@@ -172,6 +239,10 @@ app.whenReady().then(() => {
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
+});
+
+app.on('before-quit', () => {
+  if (coreProcess && !coreProcess.killed) coreProcess.kill();
 });
 
 app.on('window-all-closed', () => {
