@@ -45,7 +45,7 @@ async function computeProjectile(speed,angleDeg,gravity){
   return{range,maxHeight,flightTime:2*vy/params.gravity,vx,vy,impactSpeed:finite(speed,'speed')};
 }
 const api={
-  version:'1.1.0',
+  version:'1.2.0',
   constants:Object.freeze({standardGravity:G}),
   velocity,displacement,kineticEnergy,projectile,state,
   compute,computeProjectile,
