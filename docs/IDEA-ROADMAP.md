@@ -230,3 +230,5 @@
 | 152 | CI kiểm tra cú pháp mọi file JavaScript thay vì danh sách chọn lọc | Đã đổi job sang quét toàn bộ `assets/js/**/*.js` bằng Node 22 và chạy `npm test`; chờ GitHub Actions xác nhận |
 
 | 153 | Bổ sung regression test cho tìm kiếm toàn cục: escape HTML, cấu trúc phân cấp bài học và dữ liệu node lỗi | Đã thêm bộ test Node.js; chờ chạy `npm test` và CI |
+
+| 154 | Lọc ngày lịch không tồn tại khỏi lịch sử streak để không tính sai chuỗi ngày học | Đã sửa lõi progression, thêm 3 regression tests; chờ CI chạy |
