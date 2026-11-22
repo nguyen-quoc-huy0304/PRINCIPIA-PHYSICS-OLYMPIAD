@@ -232,3 +232,7 @@
 | 153 | Bổ sung regression test cho tìm kiếm toàn cục: escape HTML, cấu trúc phân cấp bài học và dữ liệu node lỗi | Đã thêm bộ test Node.js; chờ chạy `npm test` và CI |
 
 | 154 | Lọc ngày lịch không tồn tại khỏi lịch sử streak để không tính sai chuỗi ngày học | Đã sửa lõi progression, thêm 3 regression tests; chờ CI chạy |
+
+| 155 | Sửa regression test xuất CSV của Sổ nghiên cứu dùng nhầm biến chưa khai báo | Đã sửa tham chiếu `api` thành `C`; cần chạy `npm test` để xác nhận |
+
+| 156 | Kiểm tra mã định danh màn chơi tự tạo trước khi đưa vào inline UI handler | Đã giới hạn ID theo chữ/số/gạch ngang/gạch dưới và thêm test; cần chạy `npm test` và kiểm thử trình duyệt |
