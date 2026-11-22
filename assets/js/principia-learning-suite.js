@@ -71,8 +71,8 @@
   save();dailyChallenge();
  }
  function spacedReview(){
-  const today=localDateKey(),review=state.review||{},due=pool().filter(q=>{const rec=review[q.path+'|'+q.q];return !rec||!rec.due||rec.due<=today});
-  open('Ôn tập thông minh','<p><b>'+due.length+'</b> thẻ đến hạn hôm nay.</p>'+btn('Bắt đầu ôn','principiaSuiteStartReview()','primary')+btn('Về trung tâm','principiaSuiteHome()'));
+  const today=localDateKey(),review=state.review||{},bank=pool(),due=bank.filter(q=>{const rec=review[q.path+'|'+q.q];return !rec||!rec.due||rec.due<=today}),scheduled=bank.filter(q=>{const rec=review[q.path+'|'+q.q];return rec&&rec.due&&rec.due>today}).length,newCards=bank.filter(q=>!review[q.path+'|'+q.q]).length;
+  open('Ôn tập thông minh','<p><b>'+due.length+'</b> thẻ đến hạn hôm nay.</p><p class="muted">Tổng '+bank.length+' thẻ · '+newCards+' thẻ mới · '+scheduled+' thẻ đang lên lịch</p>'+btn('Bắt đầu ôn','principiaSuiteStartReview()','primary')+btn('Về trung tâm','principiaSuiteHome()'));
  }
  function startReview(){
   const today=new Date().toISOString().slice(0,10),review=state.review||{};
