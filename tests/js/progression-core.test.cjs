@@ -10,3 +10,7 @@ test('XP level boundaries are stable',()=>{assert.equal(P.level(99).level,1);ass
 test('level progress is bounded and reports XP to next',()=>{const x=P.level(175);assert.equal(x.progress,50);assert.equal(x.xpToNext,75)});
 test('achievement progress uses actual metrics',()=>{const a=P.achievements({sessions:2,questions:45,streak:7});assert.equal(a.find(x=>x.id==='first-session').unlocked,true);assert.equal(a.find(x=>x.id==='streak-seven').unlocked,true);assert.equal(a.find(x=>x.id==='century-questions').percent,45)});
 test('achievement output has stable unique ids',()=>{const a=P.achievements();assert.equal(new Set(a.map(x=>x.id)).size,a.length)});
+
+test('ignores impossible calendar dates in stored activity',()=>{const d=new Date(2026,10,22);assert.deepEqual(P.recordActivity(['2026-02-30','2026-13-01','not-a-date'],d),['2026-11-22'])});
+test('invalid stored dates cannot extend the current streak',()=>{const d=new Date(2026,10,22);assert.equal(P.streak(['2026-11-21','2026-02-30'],d).current,2)});
+test('invalid stored dates cannot inflate the longest streak',()=>{assert.equal(P.streak(['2026-11-18','2026-11-19','2026-02-30'],new Date(2026,10,22)).longest,2)});
