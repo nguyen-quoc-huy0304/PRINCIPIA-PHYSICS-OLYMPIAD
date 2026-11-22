@@ -241,3 +241,6 @@
 | 157 | Tổ chức thư viện nội dung: kéo thả/sắp xếp tab, bài học và chuyển tài liệu giữa các bài; hỗ trợ đổi thứ tự tài liệu | Đã có sẵn kéo thả node giữa tab và sắp xếp trong cây; bổ sung chuyển tài liệu giữa bài và kéo thả/nút lên xuống để đổi thứ tự; cần nghiệm thu trình duyệt, quyền admin và IndexedDB |
 
 | 158 | Sửa xác thực khóa ngày lịch trong lõi streak để chấp nhận ngày hợp lệ và loại chuỗi sai định dạng | Đã sửa regex và thêm regression test; chưa chạy toàn bộ `npm test`/CI |
+
+| 159 | Nhập lại bản thiết kế thí nghiệm từ JSON, kiểm tra schema, giới hạn kích thước/số lượng và whitelist thiết bị | Đã thêm nhập JSON và gộp theo ID, giới hạn 2 MB/100 bản/30 thiết bị; kiểm tra cú pháp đạt, chưa có kiểm thử trình duyệt |
+| 160 | Sửa regex xác thực ngày hoạt động trong lõi tiến độ và kiểm thử khóa ngày đúng định dạng | Đã sửa và thêm regression test; chưa chạy toàn bộ test suite |
