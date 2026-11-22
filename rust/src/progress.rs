@@ -13,11 +13,12 @@ impl Default for Progress {
 }
 impl Progress {
     pub fn record(&mut self, activity: Activity, day: &str) -> Result<(), &'static str> {
-        if day.len()!=10 || day.as_bytes().get(4)!=Some(&b'-') || day.as_bytes().get(7)!=Some(&b'-') {
-            return Err("day must use YYYY-MM-DD");
-        }
+        let current=day_number(day).ok_or("day must be a valid YYYY-MM-DD date")?;
         if self.last_activity_day.as_deref()!=Some(day) {
-            self.study_streak_days=if self.last_activity_day.is_none() {1} else {self.study_streak_days.saturating_add(1)};
+            self.study_streak_days=match self.last_activity_day.as_deref().and_then(day_number) {
+                None=>1, Some(previous) if current==previous+1=>self.study_streak_days.saturating_add(1),
+                Some(_) => 1,
+            };
             self.last_activity_day=Some(day.to_string());
         }
         self.experience=self.experience.saturating_add(match activity {
@@ -30,6 +31,19 @@ impl Progress {
     pub fn level(&self) -> u64 { self.experience / 100 + 1 }
     pub fn experience_into_level(&self) -> u64 { self.experience % 100 }
 }
+fn day_number(day: &str) -> Option<i64> {
+    let parts: Vec<i64> = day.split('-').map(str::parse).collect::<Result<_,_>>().ok()?;
+    if parts.len()!=3 { return None; }
+    let (mut y,m,d)=(parts[0],parts[1],parts[2]);
+    if !(1..=12).contains(&m) || !(1..=31).contains(&d) { return None; }
+    y -= i64::from(m <= 2);
+    let era=if y>=0 {y} else {y-399}/400;
+    let yoe=y-era*400;
+    let mp=m+if m>2 {-3} else {9};
+    let doy=(153*mp+2)/5+d-1;
+    let doe=yoe*365+yoe/4-yoe/100+doy;
+    Some(era*146097+doe)
+}
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -38,5 +52,9 @@ mod tests {
         p.record(Activity::LessonCompleted,"2026-11-22").unwrap();
         assert_eq!(p.experience,50); assert_eq!(p.completed_lessons,1);
         assert_eq!(p.study_streak_days,1);
+        p.record(Activity::QuizSubmitted,"2026-11-24").unwrap();
+        assert_eq!(p.study_streak_days,1);
+        p.record(Activity::LessonCompleted,"2026-11-25").unwrap();
+        assert_eq!(p.study_streak_days,2);
     }
 }
