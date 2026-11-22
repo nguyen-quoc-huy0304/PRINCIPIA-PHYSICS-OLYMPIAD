@@ -26,7 +26,7 @@ static JsonDocument InvokeCore(string request)
     return JsonDocument.Parse(output);
 }
 
-static double Number(JsonElement root, string property) => root.GetProperty("value").GetDouble();
+static double Number(JsonElement root) => root.GetProperty("value").GetDouble();
 static void Near(string label, double actual, double expected, double tolerance)
 {
     if (!double.IsFinite(actual) || Math.Abs(actual - expected) > tolerance)
@@ -38,18 +38,18 @@ static void Near(string label, double actual, double expected, double tolerance)
 using (var result = InvokeCore("""{"id":"cs-velocity","op":"velocity","initial":3,"acceleration":2,"seconds":4}"""))
 {
     var expected = 3.0 + 2.0 * 4.0;
-    Near("velocity", Number(result.RootElement, "value"), expected, 1e-12);
+    Near("velocity", Number(result.RootElement), expected, 1e-12);
 }
 using (var result = InvokeCore("""{"id":"cs-energy","op":"kineticEnergy","massKg":2,"speedMps":3}"""))
 {
     var expected = 0.5 * 2.0 * 3.0 * 3.0;
-    Near("kinetic energy", Number(result.RootElement, "value"), expected, 1e-12);
+    Near("kinetic energy", Number(result.RootElement), expected, 1e-12);
 }
 using (var result = InvokeCore("""{"id":"cs-projectile","op":"projectileRange","speed":10,"angleDeg":45,"gravity":9.81}"""))
 {
     var radians = 45.0 * Math.PI / 180.0;
     var expected = 10.0 * Math.Cos(radians) * (2.0 * 10.0 * Math.Sin(radians) / 9.81);
-    Near("projectile range", Number(result.RootElement, "value"), expected, 1e-10);
+    Near("projectile range", Number(result.RootElement), expected, 1e-10);
 }
 using (var result = InvokeCore("""{"id":"cs-invalid","op":"kineticEnergy","massKg":-1,"speedMps":3}"""))
 {
