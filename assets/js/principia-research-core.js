@@ -18,10 +18,10 @@
  }
  function validate(record){
   if(!record||typeof record!=='object')throw new Error('Bản ghi thí nghiệm không hợp lệ.');
-  const title=text(record.title,120);if(!title)throw new Error('Hãy đặt tên thí nghiệm.');
+  const title=text(record.title,120);if(!title)throw new Error('Hãy đặt tên thí nghiệm.');const id=text(record.id,80)||'exp-'+Date.now().toString(36);if(!/^[a-zA-Z0-9_-]{1,80}$/.test(id))throw new Error('Mã thí nghiệm chỉ được chứa chữ, số, dấu gạch ngang và gạch dưới.');
   const points=Array.isArray(record.points)?record.points.map(p=>({x:Number(p.x),y:Number(p.y)})):parsePoints(record.rawPoints);
   if(points.length<2||points.length>MAX_POINTS||points.some(p=>!Number.isFinite(p.x)||!Number.isFinite(p.y)))throw new Error('Dữ liệu đo không hợp lệ.');
-  return {id:text(record.id,80)||'exp-'+Date.now().toString(36),title,question:text(record.question,1000),method:text(record.method,3000),xUnit:text(record.xUnit,30),yUnit:text(record.yUnit,30),points,summary:summarize(points),createdAt:text(record.createdAt,40)||new Date().toISOString()};
+  return {id,title,question:text(record.question,1000),method:text(record.method,3000),xUnit:text(record.xUnit,30),yUnit:text(record.yUnit,30),points,summary:summarize(points),createdAt:text(record.createdAt,40)||new Date().toISOString()};
  }
  function createStore(storage){
   const io=storage||{getItem:k=>root.localStorage.getItem(k),setItem:(k,v)=>root.localStorage.setItem(k,v)};
