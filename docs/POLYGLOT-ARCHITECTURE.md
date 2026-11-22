@@ -1,27 +1,44 @@
-# PRINCIPIA — Polyglot architecture
+# PRINCIPIA — Polyglot architecture and language policy
 
-The languages are deliberately assigned different jobs. They are not interchangeable implementations of the same application logic.
+This policy applies to future development. It does not require rewriting the existing application or replacing working code just to change languages.
 
-| Language | Responsibility | Runtime or test-only |
+## Language selection
+
+| Language | Preferred use | Policy |
 |---|---|---|
-| C | Stable, documented ABI declarations at the native boundary | Interop contract |
-| C++17 | Small performance-sensitive scientific kernels and simulation primitives | Native/WASM kernel |
-| Rust | Main domain/core logic, validation, permissions, data analysis, robotics, JSON-lines sidecar | Primary application core |
-| Go | Cross-process integration tests for the sidecar protocol, malformed requests and API compatibility | Test-only |
-| C#/.NET 10 | Independent reference calculations and end-to-end contract checks against the native core | Test-only |
+| C | Stable ABI and FFI declarations | Small boundary layer; no duplicate business logic |
+| C++17/20 | Performance-sensitive native kernels, simulation, reusable WASM code | Use only where profiling justifies it |
+| Rust | Default for new core logic, safe concurrency, validation, native services | Keep existing modules; do not rewrite working code |
+| Go | Small network services, concurrency-heavy tools, integration/contract tests | Prefer when simpler deployment and fast iteration matter |
+| C#/.NET | Desktop/system integration, independent numerical test oracles, tooling | Do not add to end-user runtime unless needed |
+| Zig | Small native utilities, predictable low-level modules, C interop, WASM/native experiments | Evaluate with a prototype and benchmarks before adopting broadly |
+| Fortran | Numerical/scientific kernels where mature numerical libraries or array computation provide a clear advantage | Isolate behind C ABI; use only for measured scientific workloads |
+| Java | Existing integrations that already require it | Avoid introducing new Java runtime dependencies without a clear need |
+| Python | Offline research, data preparation, one-off tooling and reference experiments | Keep out of latency-sensitive app runtime; do not rewrite existing tools without evidence |
+| CSS | Existing web presentation layer | Keep for layout and visual styling; CSS is not a general-purpose runtime language and replacing it does not inherently improve performance |
 
-## Data flow
+## Architecture rules
 
-`UI (existing web/desktop shell) → JSON Lines → Rust sidecar → Rust domain modules → C ABI → C++ numerical kernel`
+1. Preserve the current PRINCIPIA website, UI, content, authentication and working features. No rewrite from scratch.
+2. Choose a language per module based on workload, safety, available libraries, deployment size and measured performance.
+3. Keep module boundaries explicit. Prefer a stable C ABI or documented JSON-lines protocol for cross-language calls.
+4. Avoid excessive FFI crossings and tiny calls across processes; batch work where possible.
+5. Rust remains the default safe core. C/C++/Zig/Fortran are specialized tools, not automatic replacements.
+6. Fortran and Zig must first pass a small prototype, correctness tests, dependency/license review and benchmark against the existing implementation before production adoption.
+7. Do not claim a language is faster without measuring the same workload on the target platform.
+8. Avoid adding Java/Python to the end-user runtime for performance-critical paths. Existing Java/Python code is not automatically deleted; replace only when profiling shows a real bottleneck and a safe migration path exists.
+9. CSS remains the normal browser styling technology. Optimize critical CSS, layout and rendering rather than replacing CSS with a systems language.
+10. Keep Go and C# test tools in CI only unless a product feature genuinely requires them.
+11. Tests run against the same source repository and production application code. Do not create extra websites, preview sites or parallel V1/V2 deployments.
+12. Scientific modules must document units, assumptions, numerical tolerances, edge cases and independent reference tests. No promise of absolute accuracy.
 
-Go and C# tests launch the same compiled Rust sidecar. They do not ship in the user's application and do not create a second website.
+## Adoption checklist for each new module
 
-## Rules that keep this maintainable
-
-1. Rust owns business rules and validation. Do not duplicate authorization, scoring or persistence logic in Go/C#.
-2. C is an ABI boundary, not a second physics implementation. The declarations live in `src/physics/engine.h`.
-3. C++ is limited to kernels where native performance or WASM reuse is justified. Every exported function documents SI units and invalid-input behavior.
-4. Go checks process/protocol behavior. C# independently checks selected numerical results against simple reference formulas.
-5. A test pass is not a proof of absolute scientific accuracy. Use analytical reference cases, tolerances, boundary cases and documented model assumptions.
-6. Go and .NET are CI dependencies only; they are not runtime requirements for end users.
-7. Keep one PRINCIPIA website. Run CI and local tests against the same source tree; do not create test/preview sites.
+- Define its workload and expected performance requirement.
+- Prototype against the existing Rust/C++ baseline.
+- Test correctness, invalid inputs, numerical stability and portability.
+- Benchmark on target devices, including low-memory devices.
+- Measure binary size, memory use, startup time and FFI/process overhead.
+- Review licenses and dependency maintenance.
+- Adopt only if the result is measurably better or materially easier to maintain.
+- Document the interface and keep a tested fallback where practical.
