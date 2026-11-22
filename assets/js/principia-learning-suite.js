@@ -135,8 +135,15 @@
   flashIndex=(flashIndex+qs.length)%qs.length;flashSide=false;renderFlash();
  }
  function renderFlash(){
-  const qs=pool(),q=qs[flashIndex%qs.length];const answer='Đáp án: '+q.a[q.correct]+'\n'+q.a.map((a,i)=>String.fromCharCode(65+i)+'. '+a).join('\n');
-  open('Flashcard ôn tập','<p class="muted">Thẻ '+(flashIndex+1)+' / '+qs.length+' · '+esc(q.topic)+'</p><button type="button" onclick="principiaSuiteFlip()" style="width:100%;min-height:230px;padding:25px;border:1px solid var(--line,#444);border-radius:20px;background:var(--card,#171a2a);color:inherit;font-size:20px;white-space:pre-wrap">'+esc(flashSide?answer:q.q)+'<div class="small muted" style="margin-top:20px">Chạm để '+(flashSide?'xem câu hỏi':'lật thẻ')+'</div></button><div style="display:flex;justify-content:space-between;margin-top:12px">'+btn('← Trước','principiaSuiteFlashPrev()')+btn('Lật thẻ','principiaSuiteFlip()','primary')+btn('Tiếp →','principiaSuiteFlashNext()')+'</div>'+btn('Về trung tâm','principiaSuiteHome()'));
+  const qs=flashMode==='errors'?(state.errors||[]):pool();
+  if(!qs.length){open('Flashcard ôn tập','<p>Chưa có dữ liệu ôn tập.</p>'+btn('Về trung tâm','principiaSuiteHome()'));return}
+  const q=qs[flashIndex%qs.length],front=flashMode==='errors'?q.title:q.q;
+  const answer=flashMode==='errors'?q.body:'Đáp án: '+q.a[q.correct]+'\\n'+q.a.map((a,i)=>String.fromCharCode(65+i)+'. '+a).join('\\n');
+  open(flashMode==='errors'?'Ôn lại lỗi sai':'Flashcard ôn tập','<p class="muted">Thẻ '+(flashIndex+1)+' / '+qs.length+'</p><button type="button" onclick="principiaSuiteFlip()" style="width:100%;min-height:230px;padding:25px;border:1px solid var(--line,#444);border-radius:20px;background:var(--card,#171a2a);color:inherit;font-size:20px;white-space:pre-wrap">'+esc(flashSide?answer:front)+'<div class="small muted" style="margin-top:20px">Chạm để '+(flashSide?'xem mặt trước':'lật thẻ')+'</div></button><div style="display:flex;justify-content:space-between;margin-top:12px">'+btn('← Trước','principiaSuiteFlashPrev()')+btn('Lật thẻ','principiaSuiteFlip()','primary')+btn('Tiếp →','principiaSuiteFlashNext()')+'</div>'+btn('Về trung tâm','principiaSuiteHome()'));
+ }
+ function reviewErrors(){
+  if(!(state.errors||[]).length){open('Ôn lại lỗi sai','<p>Chưa có lỗi sai nào được lưu. Làm bài luyện tập để hệ thống ghi nhận câu trả lời sai.</p>'+btn('Về trung tâm','principiaSuiteHome()'));return}
+  flashMode='errors';flashIndex=0;flashSide=false;renderFlash();
  }
  function errors(){
   const rows=(state.errors||[]).map((x,i)=>panel(esc(x.title),' <p style="white-space:pre-wrap">'+esc(x.body)+'</p><small class="muted">'+new Date(x.date).toLocaleString('vi-VN')+'</small>'+btn('Đã khắc phục · xóa','principiaSuiteDeleteError('+i+')','secondary'))).join('');
