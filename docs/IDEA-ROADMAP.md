@@ -221,3 +221,4 @@
 4. Chỉ triển khai trên website PRINCIPIA hiện tại và các gói ứng dụng chính thức; không tạo thêm website.
 5. Giữ các tính năng đang có; chỉ xóa khi người dùng yêu cầu rõ ràng.
 6. Cập nhật trạng thái trong bảng này sau mỗi đợt code và ghi rõ commit/build/test.
+| 148 | CI JavaScript: khai báo rõ Node.js 22 cho job kiểm tra cú pháp và unit test, tránh phụ thuộc Node cài sẵn trên runner | Đã cập nhật workflow; cần xác nhận bằng lần chạy GitHub Actions tiếp theo |
