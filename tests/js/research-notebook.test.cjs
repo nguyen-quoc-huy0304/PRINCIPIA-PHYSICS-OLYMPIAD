@@ -13,3 +13,7 @@ test('rejects malformed import and oversized file without data loss',()=>{const 
 test('caps point count',()=>assert.throws(()=>C.parsePoints(Array(10001).fill('1,2').join('\n'))));
 
 test('CSV export escapes units and exports all measurements',()=>{const item=C.validate({title:'CSV',xUnit:'s, "time"',yUnit:'m',rawPoints:'0,1\n1,2'});const csv=C.toCSV(item);assert.match(csv,/X \(s, ""time""\)/);assert.match(csv,/"0","1"/);assert.match(csv,/"1","2"/);});
+
+test('exports one experiment as an independently importable JSON pack',()=>{const a=C.createStore(mem());a.save(record);a.save({...record,id:'e2',title:'Điện trở'});const pack=JSON.parse(a.exportOne('e1'));assert.equal(pack.schema,'principia-research-notebook');assert.equal(pack.experiments.length,1);assert.equal(pack.experiments[0].id,'e1');const b=C.createStore(mem());assert.equal(b.import(JSON.stringify(pack)),1);assert.equal(b.all()[0].title,record.title)});
+test('single-experiment export rejects unknown IDs',()=>{const s=C.createStore(mem());assert.throws(()=>s.exportOne('missing'))});
+test('failed import over merged record cap preserves all saved experiments',()=>{const s=C.createStore(mem());for(let i=0;i<500;i++)s.save({...record,id:'r'+i,title:'Thí nghiệm '+i});const before=s.all().map(x=>x.id);assert.throws(()=>s.import(JSON.stringify({schema:'principia-research-notebook',version:1,experiments:[{...record,id:'overflow'}]})));assert.deepEqual(s.all().map(x=>x.id),before)});
