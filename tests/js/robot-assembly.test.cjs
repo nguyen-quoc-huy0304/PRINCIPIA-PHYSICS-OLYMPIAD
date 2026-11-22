@@ -36,3 +36,9 @@ test('assembly checker requires all five compatible components', () => {
   assert.equal(math.evaluateAssembly({ ...good, tool: 'hook' }).ready, false);
   assert.equal(math.evaluateAssembly(good).correct, 5);
 });
+
+test('elbow position follows the first link angle', () => {
+  const p = math.elbowPosition(100, 90);
+  assert.ok(Math.abs(p.x) < 1e-10);
+  assert.ok(Math.abs(p.y - 100) < 1e-10);
+});
