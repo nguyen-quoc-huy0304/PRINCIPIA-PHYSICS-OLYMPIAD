@@ -234,6 +234,35 @@
  }
  function openChat(){const box=document.getElementById('chatBox'),input=document.getElementById('chatInput'),question=document.getElementById('plsAiQuestion')?.value||'';if(box){box.classList.add('open');if(typeof renderPrincipiaAIChoices==='function')renderPrincipiaAIChoices()}if(input){input.value=(window.__principiaSuitePrompt||'Hãy giúp tôi hiểu bài học này theo từng bước.')+question;input.focus()}close()}
  async function copyAI(){const question=document.getElementById('plsAiQuestion')?.value||'';try{await navigator.clipboard.writeText((window.__principiaSuitePrompt||'Hãy giải thích bài học từng bước.')+question);alert('Đã sao chép lời nhắc. Hãy dán vào AI bạn chọn.')}catch(_){alert('Không thể truy cập clipboard. Hãy mở trợ lý PRINCIPIA để tiếp tục.')} }
+
+ function backupTool(){
+  const api=window.PrincipiaProgressBackup;
+  if(!api){open('Sao lưu tiến độ','<p>Chức năng sao lưu chưa tải được. Hãy tải lại trang.</p>'+btn('Về trung tâm','principiaSuiteHome()'));return}
+  open('Sao lưu tiến độ','<p>Sao lưu ghi chú, lịch sử luyện tập, lỗi sai, lịch ôn và tiến độ Science Arcade trên thiết bị này.</p><p class="small muted">Không bao gồm mật khẩu, token đăng nhập hoặc dữ liệu xác thực. Tệp sao lưu được lưu trên thiết bị của bạn.</p>'+btn('⬇ Xuất tệp sao lưu','principiaSuiteExportBackup()','primary')+btn('⬆ Khôi phục từ tệp','principiaSuiteImportBackup()')+btn('Về trung tâm','principiaSuiteHome()'));
+ }
+ function exportBackup(){
+  try{
+   const api=window.PrincipiaProgressBackup,json=api.create(localStorage);
+   const blob=new Blob([json],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+   a.href=url;a.download='principia-progress-backup-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();
+   setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }catch(error){alert(error.message||'Không thể tạo tệp sao lưu.')}
+ }
+ function importBackup(){
+  const input=document.createElement('input');input.type='file';input.accept='application/json,.json';
+  input.addEventListener('change',async()=>{
+   const file=input.files&&input.files[0];if(!file)return;
+   if(file.size>window.PrincipiaProgressBackup.MAX_BYTES){alert('Tệp sao lưu vượt quá giới hạn 2 MB.');return;}
+   try{
+    const payload=JSON.parse(await file.text()),check=window.PrincipiaProgressBackup.validate(payload);
+    if(!check.ok)throw new Error(check.error);
+    if(!confirm('Khôi phục '+check.keys.length+' nhóm dữ liệu PRINCIPIA? Dữ liệu học tập và game hiện tại trên thiết bị sẽ được thay thế.'))return;
+    window.PrincipiaProgressBackup.restore(localStorage,payload);
+    alert('Đã khôi phục dữ liệu. Trang sẽ tải lại để cập nhật giao diện.');
+    location.reload();
+   }catch(error){alert(error.message||'Tệp sao lưu không hợp lệ.')}
+  },{once:true});input.click();
+ }
  function patchExistingQuizHistory(){
   if(window.__principiaSuiteQuizPatched||typeof window.answerQuestion!=='function')return;
   window.__principiaSuiteQuizPatched=true;window.__principiaSuiteQuizSignature='';
