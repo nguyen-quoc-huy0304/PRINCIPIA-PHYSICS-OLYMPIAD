@@ -14,7 +14,7 @@ fn main() {
     let ar = env::var("AR").unwrap_or_else(|_| "ar".into());
 
     run(Command::new(cxx)
-        .arg("-std=c++17").arg("-O2").arg("-fPIC")
+        .arg("-std=c++17").arg("-O3").arg("-DNDEBUG").arg("-fPIC").arg("-fvisibility=hidden")
         .arg("-I../src/physics").arg("-c").arg("../src/physics/engine.cpp")
         .arg("-o").arg(&object), "C++ physics compilation");
     run(Command::new(ar).arg("crus").arg(&archive).arg(&object), "C++ static archive");

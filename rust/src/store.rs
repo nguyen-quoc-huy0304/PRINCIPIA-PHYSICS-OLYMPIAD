@@ -1,5 +1,5 @@
 //! Versioned persistence contract and deterministic in-memory adapter for tests.
-use std::collections::BTreeMap;
+use std::collections::HashMap;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Record {
@@ -32,10 +32,11 @@ pub enum MemoryStoreError {
 /// must provide a durable adapter and must not treat this as cloud sync.
 #[derive(Debug, Default, Clone)]
 pub struct MemoryStore {
-    records: BTreeMap<String, Record>,
+    records: HashMap<String, Record>,
 }
 
 impl MemoryStore {
+    pub fn with_capacity(capacity: usize) -> Self { Self { records: HashMap::with_capacity(capacity) } }
     pub fn len(&self) -> usize { self.records.len() }
     pub fn is_empty(&self) -> bool { self.records.is_empty() }
 }
