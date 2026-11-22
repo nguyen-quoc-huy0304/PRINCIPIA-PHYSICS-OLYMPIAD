@@ -60,6 +60,8 @@ jobs:
           node --check assets/js/principia-backup.js
           node --check assets/js/principia-mystery-core.js
           node --check assets/js/principia-learning-suite.js
+          node --check assets/js/principia-level-studio-core.js
+          node --check assets/js/principia-level-studio.js
           node --test tests/js/*.test.cjs
   cpp:
     runs-on: ubuntu-latest
