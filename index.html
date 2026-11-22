@@ -212,6 +212,25 @@
               <p data-collision="status" class="small" aria-live="polite" style="margin:12px 0 4px;font-weight:600"></p>
               <p data-collision="error-note" class="small muted" style="margin:0"></p>
               <p class="small muted" style="margin:10px 0 0">Mô hình một chiều, hai vật cô lập, không xét lực ngoài hay biến dạng chi tiết. Hệ số e nằm trong [0,1]. Bảo toàn động lượng; động năng chỉ bảo toàn khi e = 1.</p>
+              <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--line)">
+                <h3 style="margin:0">🔵 Mô phỏng va chạm nhiều vật 2D</h3>
+                <p class="small muted" style="margin:5px 0 10px">Bốn đĩa tròn chuyển động trong hộp kín; mũi tên biểu diễn vận tốc. Thử thay đổi hệ số đàn hồi.</p>
+                <label class="small">Hệ số đàn hồi 2D
+                  <input class="inp" data-collision2d="e" type="range" min="0" max="1" step="0.05" value="1" style="width:100%;max-width:320px;display:block;margin-top:5px">
+                  <span data-collision2d="e-label">1,00</span>
+                </label>
+                <canvas data-collision2d="canvas" aria-label="Mô phỏng bốn vật va chạm trong mặt phẳng hai chiều" style="display:block;width:100%;height:280px;margin-top:10px;border-radius:10px;border:1px solid var(--line);touch-action:pan-y"></canvas>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+                  <button type="button" class="oli-btn primary" data-collision2d="start">▶ Chạy mô phỏng</button>
+                  <button type="button" class="oli-btn" data-collision2d="reset">Đặt lại 2D</button>
+                </div>
+                <div class="small" data-collision2d="status" aria-live="polite" style="margin-top:8px">Đang chuẩn bị…</div>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin-top:8px">
+                  <div style="padding:9px;border-radius:9px;background:var(--bg)"><span class="small muted">Tổng động năng</span><div data-collision2d="energy" style="font-weight:700">—</div></div>
+                  <div style="padding:9px;border-radius:9px;background:var(--bg)"><span class="small muted">Tổng động lượng</span><div data-collision2d="momentum" style="font-weight:700">—</div></div>
+                </div>
+                <p class="small muted" style="margin:9px 0 0">Lưu ý: thành hộp tác dụng lực ngoài nên tổng động lượng của các vật không nhất thiết bảo toàn khi chúng bật khỏi tường. Mô hình dùng va chạm đĩa cứng, không mô phỏng biến dạng, ma sát hay xoáy.</p>
+              </div>
             </section>
           </div>
         </div>
@@ -303,7 +322,7 @@
 <script defer src="/assets/js/principia-space-explorer.js?v=1.0.1"></script>
  <script defer src="/assets/js/principia-robot-assembly.js?v=1.0.2"></script>
 <script defer src="/assets/js/principia-pendulum-lab.js?v=1.0.1"></script>
-<script defer src="/assets/js/principia-collision-lab.js?v=1.0.0"></script>
+<script defer src="/assets/js/principia-collision-lab.js?v=1.1.0"></script>
 <script defer src="/assets/js/download-center.js"></script>
 <script>
 (function(){
