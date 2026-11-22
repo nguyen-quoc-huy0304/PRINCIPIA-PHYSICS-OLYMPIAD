@@ -1,7 +1,7 @@
 name: PRINCIPIA Native Core Checks
 on:
   push:
-    paths: ["rust/**", "src/physics/**", "tests/**", ".github/workflows/core-checks.yml"]
+    paths: ["rust/**", "src/physics/**", "tests/**", "assets/js/**", "index.html", ".github/workflows/core-checks.yml"]
   pull_request:
     paths: ["rust/**", "src/physics/**", "tests/**", ".github/workflows/core-checks.yml"]
   workflow_dispatch:
@@ -38,6 +38,21 @@ jobs:
         env:
           PRINCIPIA_CORE_BIN: ${{ github.workspace }}/rust/target/release/principia-core-server
         run: dotnet run --project tests/dotnet/Principia.ContractTests.csproj --configuration Release
+  javascript-syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check changed application scripts
+        run: |
+          node --check assets/js/core/performance.js
+          node --check assets/js/app-part-02.js
+          node --check assets/js/physics-engine.js
+          node --check assets/js/principia-external-labs.js
+          node --check assets/js/principia-robotics-lab.js
+          node --check assets/js/principia-data-lab.js
   cpp:
     runs-on: ubuntu-latest
     steps:
