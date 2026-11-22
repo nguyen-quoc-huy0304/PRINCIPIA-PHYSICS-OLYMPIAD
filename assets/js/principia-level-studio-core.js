@@ -34,6 +34,7 @@
    save(level){const item=validateLevel(level),items=all(),i=items.findIndex(x=>x.id===item.id);if(i<0&&items.length>=MAX_LEVELS)throw new Error('Đã đạt giới hạn 100 màn chơi.');if(i<0)items.unshift(item);else items[i]=item;write(items);return item},
    remove(id){write(all().filter(x=>x.id!==id))},
    export(){return JSON.stringify({schema:'principia-level-pack',version:VERSION,levels:all()},null,2)},
+   exportOne(id){const level=all().find(x=>x.id===id);if(!level)throw new Error('Không tìm thấy màn chơi cần chia sẻ.');return JSON.stringify({schema:'principia-level-pack',version:VERSION,levels:[level]},null,2)},
    import(text){if(typeof text!=='string'||text.length>2*1024*1024)throw new Error('Tệp vượt quá giới hạn 2 MB.');const incoming=validatePack(JSON.parse(text)),current=all(),map=new Map(current.map(x=>[x.id,x]));incoming.forEach(x=>map.set(x.id,x));const merged=[...map.values()];write(merged);return incoming.length}
   };
  }
