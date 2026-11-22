@@ -143,6 +143,17 @@
 | 99 | Bộ flashcard riêng cho các câu đã thuộc | Đã tích hợp chế độ flashcard thành thạo |
 | 100 | Xem lịch ôn tập dự kiến trong 7 ngày tới | Đã tích hợp thống kê số thẻ đến hạn từng ngày |
 
+| 101 | Bộ đếm phiên tập trung với các mốc 15 / 25 / 45 / 60 phút | Có mã nguồn — chờ kiểm thử giao diện |
+| 102 | Tùy chỉnh thời lượng tập trung từ 5 đến 120 phút | Có mã nguồn — chờ kiểm thử biên |
+| 103 | Tạm dừng và tiếp tục phiên học mà không mất thời gian đã tích lũy | Có mã nguồn — chờ kiểm thử thao tác |
+| 104 | Kết thúc sớm và lưu thời gian thực tế của phiên | Có mã nguồn — chờ kiểm thử |
+| 105 | Lưu lịch sử các phiên tập trung trên thiết bị | Có mã nguồn — lưu LocalStorage |
+| 106 | Đặt mục tiêu học tập theo phút mỗi ngày | Có mã nguồn — chờ kiểm thử |
+| 107 | Theo dõi tiến độ mục tiêu tập trung trong ngày | Có mã nguồn — chờ kiểm thử |
+| 108 | Tổng hợp thời gian tập trung trong 7 ngày gần nhất | Có mã nguồn — chờ kiểm thử |
+| 109 | Theo dõi chuỗi ngày có hoạt động tập trung | Có mã nguồn — chờ kiểm thử |
+| 110 | Tìm kiếm lịch sử và xuất phiên tập trung ra CSV | Có mã nguồn — chờ kiểm thử |
+
 ## Nguyên tắc nghiệm thu
 
 1. Không đánh dấu hoàn thành chỉ vì đã tạo file hoặc commit code.
