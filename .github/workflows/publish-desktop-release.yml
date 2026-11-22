@@ -24,8 +24,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Build native PRINCIPIA core required by electron-builder
+        run: cargo build --release --manifest-path rust/Cargo.toml --bin principia-core-server
       - run: npm install
+      - name: Run JavaScript regression tests
+        run: npm test
       - name: Build and publish release assets
         run: npx electron-builder ${{ matrix.args }} --publish always
         env:
