@@ -251,7 +251,12 @@
   }
   const q=mysteryCase.questions[mysteryCase.index];
   const progress=mysteryCase.index+1;
-  open('Giải mã bí ẩn · Manh mối '+progress+'/'+mysteryCase.questions.length,panel('Hồ sơ điều tra','<p class="small muted">Mỗi manh mối là một câu hỏi lấy từ ngân hàng bài học/Quiz thật.</p><b>'+esc(q.topic)+'</b><p style="font-size:18px">'+esc(q.q)+'</p>'+questionMedia(q)+'<div style="display:grid;gap:8px">'+q.a.map((a,i)=>'<button type="button" onclick="principiaSuiteMysteryAnswer('+i+')" style="text-align:left;padding:12px;border:1px solid var(--line,#555);border-radius:12px;background:var(--card,#171a2a);color:inherit">'+String.fromCharCode(65+i)+'. '+esc(a)+'</button>').join('')+'</div>')+'<p class="small muted">Đã giải mã '+mysteryCase.score+' manh mối chính xác.</p>'+btn('Bỏ vụ án','principiaSuiteHome()'));
+  open('Giải mã bí ẩn · Manh mối '+progress+'/'+mysteryCase.questions.length,
+   panel('Hồ sơ điều tra',
+    (message?'<p role="status" style="padding:9px;border-radius:9px;background:var(--bg)">'+esc(message)+'</p>':'')+
+    '<p class="small muted">Mỗi manh mối là một câu hỏi lấy từ ngân hàng bài học/Quiz thật.</p><b>'+esc(q.topic)+'</b><p style="font-size:18px">'+esc(q.q)+'</p>'+
+    questionMedia(q)+'<div style="display:grid;gap:8px">'+q.a.map((a,i)=>'<button type="button" onclick="principiaSuiteMysteryAnswer('+i+')" style="text-align:left;padding:12px;border:1px solid var(--line,#555);border-radius:12px;background:var(--card,#171a2a);color:inherit">'+String.fromCharCode(65+i)+'. '+esc(a)+'</button>').join('')+'</div>'
+   )+'<p class="small muted">Đã giải mã '+mysteryCase.score+' manh mối chính xác.</p>'+btn('Bỏ vụ án','principiaSuiteHome()'));
  }
  function startMystery(){
   const api=window.PrincipiaMysteryCore;
