@@ -58,6 +58,8 @@ jobs:
           node --check assets/js/principia-robot-assembly.js
           node --check assets/js/principia-collision-lab.js
           node --check assets/js/principia-backup.js
+          node --check assets/js/principia-mystery-core.js
+          node --check assets/js/principia-learning-suite.js
           node --check assets/js/principia-learning-suite.js
           node --test tests/js/*.test.cjs
   cpp:
