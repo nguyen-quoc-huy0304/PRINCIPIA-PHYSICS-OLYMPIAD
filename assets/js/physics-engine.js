@@ -59,6 +59,24 @@ const api={
     lastBackend='rapier3d-rust';
     return result;
   },
+  async solveRobotArm(params){
+    const p=params||{},l1=finite(p.l1M,'l1M'),l2=finite(p.l2M,'l2M');
+    const x=finite(p.targetXM,'targetXM'),y=finite(p.targetYM,'targetYM'),branch=Number(p.elbowBranch===undefined?1:p.elbowBranch);
+    if(l1<=0||l2<=0)throw new RangeError('Chiều dài hai khâu phải lớn hơn 0.');
+    if(branch!==1&&branch!==-1)throw new RangeError('Nhánh khuỷu tay phải là +1 hoặc -1.');
+    if(root.principiaDesktop&&typeof root.principiaDesktop.computePhysics==='function'){
+      const r=await root.principiaDesktop.computePhysics('robotArmIK',{l1M:l1,l2M:l2,targetXM:x,targetYM:y,elbowBranch:branch});
+      if(!r||!Number.isFinite(Number(r.shoulderDeg))||!Number.isFinite(Number(r.elbowDeg)))throw new Error('Native robotics core returned an invalid solution');
+      lastBackend='rust-robotics';return r;
+    }
+    const r2=x*x+y*y,r=Math.sqrt(r2),tol=1e-12*Math.max(l1+l2,1);
+    if(r>l1+l2+tol||r<Math.abs(l1-l2)-tol)throw new RangeError('Điểm đích nằm ngoài vùng với tới của robot.');
+    const c=Math.max(-1,Math.min(1,(r2-l1*l1-l2*l2)/(2*l1*l2)));
+    const elbow=branch*Math.acos(c),shoulder=Math.atan2(y,x)-Math.atan2(l2*Math.sin(elbow),l1+l2*Math.cos(elbow));
+    const ex=l1*Math.cos(shoulder)+l2*Math.cos(shoulder+elbow),ey=l1*Math.sin(shoulder)+l2*Math.sin(shoulder+elbow);
+    lastBackend='javascript-analytical-fallback';
+    return {shoulderRad:shoulder,elbowRad:elbow,shoulderDeg:shoulder*180/Math.PI,elbowDeg:elbow*180/Math.PI,endXM:ex,endYM:ey,targetErrorM:Math.hypot(ex-x,ey-y),singular:Math.abs(Math.sin(elbow))<1e-10};
+  },
   get backend(){return lastBackend}
 };
 root.PrincipiaPhysics=Object.freeze(api);
