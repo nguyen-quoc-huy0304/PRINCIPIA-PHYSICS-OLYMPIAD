@@ -194,6 +194,8 @@
 
 | 138 | Xuất kế hoạch học tập ra CSV: gồm tên nhiệm vụ, chủ đề, hạn, thời lượng, trạng thái, ghi chú và mốc thời gian | Đã tích hợp nút xuất CSV trong Kế hoạch học tập; cần nghiệm thu tải tệp trên trình duyệt và thiết bị thật |
 
+| 139 | Lọc nhiệm vụ trong Kế hoạch học tập theo tất cả, chưa hoàn thành, đã hoàn thành và quá hạn; thống kê tổng vẫn giữ nguyên theo toàn bộ kế hoạch | Đã tích hợp bộ lọc trạng thái trong Kế hoạch học tập; cần nghiệm thu tương tác trên trình duyệt và thiết bị thật |
+
 ## Nguyên tắc nghiệm thu
 
 1. Không đánh dấu hoàn thành chỉ vì đã tạo file hoặc commit code.
