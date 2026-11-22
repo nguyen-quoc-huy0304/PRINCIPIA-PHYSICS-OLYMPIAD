@@ -108,7 +108,7 @@
 | 68 | Rà soát giấy phép, dependency, attribution và nghĩa vụ công bố mã nguồn trước khi tái sử dụng | Đang áp dụng theo từng thư viện |
 | 69 | Video học tập dùng liên kết YouTube; không tải lại video trái phép | Đang áp dụng — ràng buộc nội dung |
 
-| 70 | Sao lưu/khôi phục tiến độ học tập và game trên thiết bị; không đưa token đăng nhập vào tệp | Có mã nguồn — cần kiểm thử trình duyệt và khôi phục thực tế |\n\n## Nguyên tắc nghiệm thu
+| 70 | Sao lưu/khôi phục tiến độ học tập và game trên thiết bị; không đưa token đăng nhập vào tệp | Có mã nguồn — 6/6 unit test chạy local đạt; chờ CI và nghiệm thu trình duyệt |\n\n| 71 | Khôi phục đầy đủ danh sách hơn 100 ý tưởng PRINCIPIA đã trao đổi, đối chiếu từng mục với backlog 70 mục hiện có để không bỏ sót | Đang rà soát lịch sử trao đổi; không tự bịa các mục chưa tìm thấy |\n\n## Nguyên tắc nghiệm thu
 
 1. Không đánh dấu hoàn thành chỉ vì đã tạo file hoặc commit code.
 2. Mỗi tính năng cần kiểm tra giao diện, luồng thao tác, dữ liệu đầu vào/đầu ra và lỗi biên.
