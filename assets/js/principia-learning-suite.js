@@ -81,7 +81,7 @@
  }
  function reviewCard(){
   if(reviewIndex>=reviewQueue.length){open('Hoàn thành ôn tập','<p>Đã ôn xong các thẻ đến hạn.</p>'+btn('Về trung tâm','principiaSuiteHome()'));return}
-  const q=reviewQueue[reviewIndex];let html=panel('Thẻ '+(reviewIndex+1)+'/'+reviewQueue.length,'<b>'+esc(q.topic)+'</b><p>'+esc(q.q)+'</p>'+(reviewSide?'<p>Đáp án: '+esc(q.a[q.correct])+'</p>':''));
+  const q=reviewQueue[reviewIndex];let html=panel('Thẻ '+(reviewIndex+1)+'/'+reviewQueue.length,'<b>'+esc(q.topic)+'</b><p>'+esc(q.q)+'</p>'+questionMedia(q)+(reviewSide?'<p>Đáp án: '+esc(q.a[q.correct])+'</p>':''));
   html+=reviewSide?btn('Quên · 1 ngày','principiaSuiteRateReview(0)')+btn('Khó · 2 ngày','principiaSuiteRateReview(1)')+btn('Nhớ · 4 ngày','principiaSuiteRateReview(2)')+btn('Dễ · 7 ngày','principiaSuiteRateReview(3)'):btn('Xem đáp án','principiaSuiteFlipReview()','primary');
   html+=btn('Bỏ qua','principiaSuiteSkipReview()')+btn('Về trung tâm','principiaSuiteHome()');open('Ôn tập thông minh',html);
  }
@@ -193,7 +193,7 @@
   if(!qs.length){open('Flashcard ôn tập','<p>Chưa có dữ liệu ôn tập.</p>'+btn('Về trung tâm','principiaSuiteHome()'));return}
   const q=qs[flashIndex%qs.length],front=flashMode==='errors'?q.title:q.q;
   const answer=flashMode==='errors'?q.body:'Đáp án: '+q.a[q.correct]+'\\n'+q.a.map((a,i)=>String.fromCharCode(65+i)+'. '+a).join('\\n');
-  open(flashMode==='errors'?'Ôn lại lỗi sai':'Flashcard ôn tập','<p class="muted">Thẻ '+(flashIndex+1)+' / '+qs.length+'</p><button type="button" onclick="principiaSuiteFlip()" style="width:100%;min-height:230px;padding:25px;border:1px solid var(--line,#444);border-radius:20px;background:var(--card,#171a2a);color:inherit;font-size:20px;white-space:pre-wrap">'+esc(flashSide?answer:front)+'<div class="small muted" style="margin-top:20px">Chạm để '+(flashSide?'xem mặt trước':'lật thẻ')+'</div></button><div style="display:flex;justify-content:space-between;margin-top:12px">'+btn('← Trước','principiaSuiteFlashPrev()')+btn('Lật thẻ','principiaSuiteFlip()','primary')+btn('Tiếp →','principiaSuiteFlashNext()')+'</div>'+btn('Về trung tâm','principiaSuiteHome()'));
+  open(flashMode==='errors'?'Ôn lại lỗi sai':'Flashcard ôn tập','<p class="muted">Thẻ '+(flashIndex+1)+' / '+qs.length+'</p>'+(flashMode==='errors'?'':questionMedia(q))+'<button type="button" onclick="principiaSuiteFlip()" style="width:100%;min-height:230px;padding:25px;border:1px solid var(--line,#444);border-radius:20px;background:var(--card,#171a2a);color:inherit;font-size:20px;white-space:pre-wrap">'+esc(flashSide?answer:front)+'<div class="small muted" style="margin-top:20px">Chạm để '+(flashSide?'xem mặt trước':'lật thẻ')+'</div></button><div style="display:flex;justify-content:space-between;margin-top:12px">'+btn('← Trước','principiaSuiteFlashPrev()')+btn('Lật thẻ','principiaSuiteFlip()','primary')+btn('Tiếp →','principiaSuiteFlashNext()')+'</div>'+btn('Về trung tâm','principiaSuiteHome()'));
  }
  function reviewErrors(){
   if(!(state.errors||[]).length){open('Ôn lại lỗi sai','<p>Chưa có lỗi sai nào được lưu. Làm bài luyện tập để hệ thống ghi nhận câu trả lời sai.</p>'+btn('Về trung tâm','principiaSuiteHome()'));return}
