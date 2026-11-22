@@ -745,7 +745,7 @@ async function removeDoc(id,lesson){
  let d=await db();await new Promise(res=>{let tx=d.transaction('files','readwrite');tx.objectStore('files').delete(id);tx.oncomplete=res});loadFiles(lesson);
 }
 
-let curSubId = null, curTabId = null, curLessonId = null;
+let curSubId = null, curTabId = null, curLessonId = null, principiaDocDragId = null;
 let clFiles = []; // files loaded for the currently selected lesson only
 let chatImgData = null;
 let lastAiCheploiText = 'AI Chép lời sẵn sàng hỗ trợ soạn lời giải, công thức hoặc dàn ý để bạn chép vào bài.';
