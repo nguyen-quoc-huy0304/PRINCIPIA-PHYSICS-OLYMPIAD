@@ -399,3 +399,16 @@ body.principia-focus-mode .topbar{border-color:rgba(153,133,255,.22)}
 .lesson-tools{position:sticky;top:88px;margin:0;max-height:calc(100dvh - 112px);overflow:auto;overscroll-behavior:contain}
 .lesson-main-pane>.lesson-content{max-width:100%}
 @media(max-width:900px){.lesson-content-layout{grid-template-columns:minmax(0,1fr);gap:14px}.lesson-tools{position:static;max-height:none;overflow:visible}.lesson-tool-tabs{flex-wrap:nowrap;overflow-x:auto;padding-bottom:12px}.lesson-tool-tabs button{flex:0 0 auto;white-space:nowrap}}
+
+
+.game-league-panel{display:grid;gap:14px;margin-top:22px;padding:18px;border:1px solid var(--line);border-radius:20px;background:var(--card)}
+.game-league-panel .games-heading{align-items:center}
+.game-league-panel .games-heading h3{margin:0 0 5px}
+.game-league-panel .games-heading p{margin:0;color:var(--muted);font-size:13px}
+.game-league-ranking{display:grid;gap:7px}
+.game-league-ranking article{display:grid;grid-template-columns:30px 34px minmax(0,1fr) auto;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--card2)}
+.game-league-ranking article>span{font-size:22px;text-align:center}
+.game-league-ranking article>strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.game-league-ranking article>em{font-size:12px;color:var(--muted);font-style:normal;font-variant-numeric:tabular-nums}
+.game-league-ranking article.is-you{border-color:var(--accent,#9b8cff);background:color-mix(in srgb,var(--accent,#9b8cff) 12%,var(--card2))}
+@media(max-width:520px){.game-league-panel{padding:13px}.game-league-ranking article{grid-template-columns:24px 28px minmax(0,1fr);gap:7px}.game-league-ranking article>em{grid-column:3;justify-self:start}}
