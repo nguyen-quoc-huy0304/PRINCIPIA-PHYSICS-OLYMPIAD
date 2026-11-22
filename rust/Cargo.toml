@@ -17,3 +17,8 @@ codegen-units = 1
 panic = "abort"
 strip = true
 incremental = false
+
+[[bench]]
+name = "physics"
+path = "benches/physics.rs"
+harness = false
