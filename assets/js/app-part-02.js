@@ -290,7 +290,7 @@ function lessonPlayPage(){
   return `<div class="panel"><div class="eyebrow">LESSON QUIZ COMPLETED</div><div class="tileicon">🏆</div><h1>${score}/${questions.length}</h1><p class="muted">Bạn trả lời đúng ${score} câu.</p><button class="primary" onclick="answers=[];render()">Làm lại</button> <button class="secondary" onclick="setPage('lesson')">Quay lại bài học</button></div>`;
  }
  let q=questions[i];
- return `<div class="breadcrumb"><button onclick="setPage('lesson')">← Quay lại bài học</button></div><div class="panel"><div class="muted small">CÂU ${i+1}/${questions.length}</div><div class="progress"><div style="width:${i/questions.length*100}%"></div></div><h2 style="margin-top:25px">${esc(q.q)}</h2>${(q.a||[]).map((a,j)=>`<label class="choice"><input type="radio" name="ans" value="${j}">${esc(a)}</label>`).join('')}<button class="primary" onclick="answerQuestion()">Xác nhận →</button></div>`;
+ return `<div class="breadcrumb"><button onclick="setPage('lesson')">← Quay lại bài học</button></div><div class="panel"><div class="muted small">CÂU ${i+1}/${questions.length}</div><div class="progress"><div style="width:${i/questions.length*100}%"></div></div><h2 style="margin-top:25px">${esc(q.q)}</h2>${principiaQuestionMedia(q)}${(q.a||[]).map((a,j)=>`<label class="choice"><input type="radio" name="ans" value="${j}">${esc(a)}</label>`).join('')}<button class="primary" onclick="answerQuestion()">Xác nhận →</button></div>`;
 }
 
 function entertainmentWeekKey(d=new Date()){const x=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));const day=x.getUTCDay()||7;x.setUTCDate(x.getUTCDate()+4-day);const year=x.getUTCFullYear();const first=new Date(Date.UTC(year,0,1));return year+'-W'+String(Math.ceil((((x-first)/86400000)+1)/7)).padStart(2,'0')}
