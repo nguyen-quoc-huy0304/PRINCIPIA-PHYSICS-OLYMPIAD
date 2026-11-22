@@ -11,3 +11,12 @@
 - PRINCIPIA's adapter is separate from Rapier's upstream source. The analytical formula solvers in `rust/src/physics.rs` remain the reference for closed-form textbook problems; Rapier is used for collisions and time-stepped rigid-body dynamics.
 
 The full upstream Apache-2.0 license text is preserved in `third_party/licenses/RAPIER-APACHE-2.0.txt`.
+
+## CircuitJS1 (embedded service)
+
+- Component: CircuitJS1 browser circuit simulator by Paul Falstad and Iain Sharp.
+- License: GNU GPL version 2 or (at your option) any later version (GPL-2.0-or-later).
+- Upstream source: https://github.com/pfalstad/circuitjs1
+- Hosted simulator: https://www.falstad.com/circuit/
+- PRINCIPIA currently embeds the upstream hosted simulator in an iframe; it does not redistribute or modify the CircuitJS1 source.
+- Educational-use caution: the upstream project notes that some component models are idealized and does not recommend using the simulator as the sole basis for real-circuit design.
