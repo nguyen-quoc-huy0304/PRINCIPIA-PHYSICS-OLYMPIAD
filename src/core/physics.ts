@@ -27,10 +27,16 @@ const finite = (...values: number[]) => {
 let wasmReady: Promise<void> | undefined;
 
 function loadWasm(): Promise<void> {
-  wasmReady ??= initPhysicsWasm().catch((error: unknown) => {
-    wasmReady = undefined;
-    throw error;
-  });
+  if (!wasmReady) {
+    // wasm-bindgen's generated declaration can expose the default initializer
+    // as a module namespace under strict Bundler resolution. Runtime export is
+    // still the initializer function produced by wasm-pack.
+    const initialize = initPhysicsWasm as unknown as () => Promise<unknown>;
+    wasmReady = initialize().then(() => undefined).catch((error: unknown) => {
+      wasmReady = undefined;
+      throw error;
+    });
+  }
   return wasmReady;
 }
 
