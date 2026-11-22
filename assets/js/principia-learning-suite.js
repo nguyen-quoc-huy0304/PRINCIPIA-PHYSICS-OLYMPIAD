@@ -112,7 +112,7 @@
  function addNote(){const title=document.getElementById('plsNoteTitle').value.trim(),body=document.getElementById('plsNoteBody').value.trim();if(!body){alert('Nhập nội dung ghi chú trước nhé.');return}state.notes.unshift({title:title||'Ghi chú mới',body:body,date:new Date().toISOString()});save();notes()}
  function deleteNote(i){if(!confirm('Xóa ghi chú này?'))return;state.notes.splice(i,1);save();notes()}
  function formulas(){
-  const found=[];const re=/(?:[A-Za-zρΔαβθωμΩεσφ²³₀₁₂₃₄₅₆₇₈₉]+\\s*[=≈≤≥]\\s*[^\\n.;]{1,90})/g;
+  const found=[];const re=/(?:[A-Za-zρΔαβθωμΩεσφ²³₀₁₂₃₄₅₆₇₈₉]+\s*[=≈≤≥]\s*[^\n.;]{1,90})/g;
   allLessons().forEach(l=>{const text=String(l.content||'');let m;while((m=re.exec(text))!==null){const v=m[0].trim();if(v.length>2&&!found.some(x=>x.value===v))found.push({value:v,lesson:l.name})}re.lastIndex=0});
   const html=found.map(x=>'<div style="padding:12px;border-bottom:1px solid var(--line,#444)"><b style="font-size:18px">'+esc(x.value)+'</b><div class="small muted">'+esc(x.lesson)+'</div></div>').join('');
   open('Thư viện công thức',(html||'<p class="muted">Chưa tìm thấy biểu thức trong nội dung bài học. Thêm công thức vào bài học để thư viện tự nhận diện.</p>')+btn('Về trung tâm','principiaSuiteHome()'));
@@ -122,7 +122,7 @@
   flashIndex=(flashIndex+qs.length)%qs.length;flashSide=false;renderFlash();
  }
  function renderFlash(){
-  const qs=pool(),q=qs[flashIndex%qs.length];const answer='Đáp án: '+q.a[q.correct]+'\\n'+q.a.map((a,i)=>String.fromCharCode(65+i)+'. '+a).join('\\n');
+  const qs=pool(),q=qs[flashIndex%qs.length];const answer='Đáp án: '+q.a[q.correct]+'\n'+q.a.map((a,i)=>String.fromCharCode(65+i)+'. '+a).join('\n');
   open('Flashcard ôn tập','<p class="muted">Thẻ '+(flashIndex+1)+' / '+qs.length+' · '+esc(q.topic)+'</p><button type="button" onclick="principiaSuiteFlip()" style="width:100%;min-height:230px;padding:25px;border:1px solid var(--line,#444);border-radius:20px;background:var(--card,#171a2a);color:inherit;font-size:20px;white-space:pre-wrap">'+esc(flashSide?answer:q.q)+'<div class="small muted" style="margin-top:20px">Chạm để '+(flashSide?'xem câu hỏi':'lật thẻ')+'</div></button><div style="display:flex;justify-content:space-between;margin-top:12px">'+btn('← Trước','principiaSuiteFlashPrev()')+btn('Lật thẻ','principiaSuiteFlip()','primary')+btn('Tiếp →','principiaSuiteFlashNext()')+'</div>'+btn('Về trung tâm','principiaSuiteHome()'));
  }
  function errors(){
