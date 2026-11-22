@@ -184,6 +184,8 @@
 
 | 133 | Bản đồ tri thức tương tác: nhóm câu hỏi theo chủ đề, theo dõi thẻ đã thuộc, câu đến hạn, yêu thích và lỗi sai; mở thẳng ngân hàng câu hỏi theo chủ đề | Đã tích hợp; dữ liệu dựa trên ngân hàng hiện có và tiến độ cục bộ; cần nghiệm thu trình duyệt |
 
+| 134 | Xưởng thiết kế thí nghiệm: chọn/lắp thiết bị, đặt câu hỏi và giả thuyết, xác định biến, ghi quy trình/kết quả, lưu và xuất bản thiết kế JSON | Đã tích hợp vào khu vực PhET/Lab; lưu cục bộ; cần nghiệm thu trình duyệt và thiết bị |
+
 ## Nguyên tắc nghiệm thu
 
 1. Không đánh dấu hoàn thành chỉ vì đã tạo file hoặc commit code.
