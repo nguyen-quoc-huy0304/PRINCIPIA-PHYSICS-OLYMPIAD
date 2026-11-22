@@ -28,7 +28,7 @@ function init(){
  picker.dataset.principiaLabs='1';frame.loading='lazy';frame.title='Mô phỏng khoa học PhET';
  groups.forEach(([group,items])=>{
   const og=document.createElement('optgroup');og.label=group;
-  items.forEach(([slug,label])=>{const o=document.createElement('option');o.value=base+slug+'/latest/'+slug+'_vi.html';o.textContent=label;og.appendChild(o);});
+  items.forEach(([slug,label])=>{const o=document.createElement('option');o.value=base+slug+'/latest/'+slug+'_all.html';o.textContent=label;og.appendChild(o);});
   picker.appendChild(og);
  });
  const note=document.createElement('div');note.id='principiaPhetAttribution';
