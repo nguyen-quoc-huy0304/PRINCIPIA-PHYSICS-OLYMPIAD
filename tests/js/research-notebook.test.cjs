@@ -11,3 +11,5 @@ test('persists, updates and removes experiment records',()=>{const s=C.createSto
 test('exports and imports a validated archive',()=>{const a=C.createStore(mem()),b=C.createStore(mem());a.save(record);assert.equal(b.import(a.export()),1);assert.equal(b.all()[0].title,record.title)});
 test('rejects malformed import and oversized file without data loss',()=>{const s=C.createStore(mem());s.save(record);assert.throws(()=>s.import('x'.repeat(5*1024*1024+1)));assert.throws(()=>s.import('{"schema":"bad","version":1,"experiments":[]}'));assert.equal(s.all().length,1)});
 test('caps point count',()=>assert.throws(()=>C.parsePoints(Array(10001).fill('1,2').join('\n'))));
+
+test('CSV export escapes units and exports all measurements',()=>{const item=api.validate({title:'CSV',xUnit:'s, "time"',yUnit:'m',rawPoints:'0,1\n1,2'});const csv=api.toCSV(item);assert.match(csv,/X \(s, ""time""\)/);assert.match(csv,/0,1/);assert.match(csv,/1,2/);});
