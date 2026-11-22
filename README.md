@@ -33,3 +33,11 @@ Some sites may still restrict sign-in, popups, media, or automated access. The a
 
 - The desktop shell is a separate Windows app; the Cloudflare Pages website remains available as before.
 - The desktop app currently loads the production PRINCIPIA URL configured in `desktop/main.cjs`.
+
+## Run automated JavaScript tests
+
+```bash
+npm test
+```
+
+This runs the local Node.js test suite in `tests/js/`. The same suite is also run by the GitHub Actions core-checks workflow.
