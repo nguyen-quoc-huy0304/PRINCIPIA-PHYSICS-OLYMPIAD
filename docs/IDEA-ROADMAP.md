@@ -186,6 +186,8 @@
 
 | 134 | Xưởng thiết kế thí nghiệm: chọn/lắp thiết bị, đặt câu hỏi và giả thuyết, xác định biến, ghi quy trình/kết quả, lưu và xuất bản thiết kế JSON | Đã tích hợp vào khu vực PhET/Lab; lưu cục bộ; cần nghiệm thu trình duyệt và thiết bị |
 
+| 135 | Kế hoạch học tập cá nhân: tạo nhiệm vụ theo chủ đề, đặt hạn và thời lượng, ghi chú, đánh dấu hoàn thành, theo dõi tiến độ và cảnh báo quá hạn không phạt | Đã tích hợp trong Learning Suite; lưu cục bộ tối đa 200 nhiệm vụ; cần nghiệm thu trình duyệt |
+
 ## Nguyên tắc nghiệm thu
 
 1. Không đánh dấu hoàn thành chỉ vì đã tạo file hoặc commit code.
