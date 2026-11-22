@@ -752,11 +752,16 @@ function openInnerLessonWorkspace(lessonId){
   const transcriptEl=document.getElementById('ytTranscript'); if(transcriptEl) transcriptEl.value=l.transcript||''; const translatedTranscriptEl=document.getElementById('ytTranslatedTranscript');if(translatedTranscriptEl)translatedTranscriptEl.value=l.translatedTranscript||'';const ocrEl=document.getElementById('ytOcrText');if(ocrEl)ocrEl.value=l.videoOcr||'';const dubLangEl=document.getElementById('ytDubLang');if(dubLangEl)dubLangEl.value=l.dubLang||'vi';
   const summaryEl=document.getElementById('ytSummaryOutput'); if(summaryEl) summaryEl.textContent=l.summary||'Tóm tắt sẽ hiển thị ở đây sau khi bạn thêm transcript.';
   document.getElementById('clVideoUrlInput').value = l.video || '';
-  document.getElementById('phetFrame').src = (ch[0]?.id === 'math')
-    ? 'https://phet.colorado.edu/vi/simulations/filter?subjects=math&type=html'
-    : (ch[0]?.id === 'chem')
-    ? 'https://phet.colorado.edu/vi/simulations/filter?subjects=chemistry&type=html'
-    : 'https://phet.colorado.edu/vi/simulations/filter?subjects=physics&type=html';
+  const phetFrame = document.getElementById('phetFrame');
+  if (phetFrame) {
+    // Keep the subject URL pending; do not start the third-party iframe until its tab is opened.
+    phetFrame.dataset.principiaPendingSrc = (ch[0]?.id === 'math')
+      ? 'https://phet.colorado.edu/vi/simulations/filter?subjects=math&type=html'
+      : (ch[0]?.id === 'chem')
+      ? 'https://phet.colorado.edu/vi/simulations/filter?subjects=chemistry&type=html'
+      : 'https://phet.colorado.edu/vi/simulations/filter?subjects=physics&type=html';
+    phetFrame.removeAttribute('src');
+  }
 
   const sibs = parentOf(l.id, data)?.children?.filter(x => x.type === 'lesson') || [l];
   const steps = document.getElementById('clStepNumbers');
@@ -805,12 +810,19 @@ function switchClLeftTab(t){
         '/assets/js/principia-data-lab.js?v=1.0.1'
       ]).then(()=>{
         panel.dataset.principiaLabsReady='1';
-        if(typeof window.changePhetSrc==='function')window.changePhetSrc();
+        const frame=document.getElementById('phetFrame');
+        const pending=frame?.dataset.principiaPendingSrc;
+        if(frame&&pending){frame.src=pending;delete frame.dataset.principiaPendingSrc;}
+        else if(typeof window.changePhetSrc==='function')window.changePhetSrc();
       }).catch(error=>{
         delete panel.dataset.principiaLabsLoading;
         console.error('[PRINCIPIA] Không tải được phòng thí nghiệm:',error);
         if(typeof notify==='function')notify('Không tải được mô-đun phòng thí nghiệm. Hãy thử mở lại tab.');
       }).finally(()=>{delete panel.dataset.principiaLabsLoading;});
+    } else if(panel?.dataset.principiaLabsReady==='1') {
+      const frame=document.getElementById('phetFrame');
+      const pending=frame?.dataset.principiaPendingSrc;
+      if(frame&&pending){frame.src=pending;delete frame.dataset.principiaPendingSrc;}
     }
   }
 }
