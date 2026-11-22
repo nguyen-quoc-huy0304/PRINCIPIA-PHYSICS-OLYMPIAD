@@ -148,11 +148,20 @@
  function analytics(){
   const a=state.attempts||[],total=a.reduce((s,x)=>s+x.total,0),right=a.reduce((s,x)=>s+x.score,0),pct=total?Math.round(right/total*100):0;
   const recent=a.slice(-10).reverse();
+  const weakMap={};
+  (state.errors||[]).forEach(e=>{
+   let source=String(e.path||'');
+   if(!source){const match=String(e.body||'').match(/Nguồn:\s*([^\\n]+)/i);if(match)source=match[1].trim();}
+   const topic=(source||'Chưa phân loại').split(/ › | \/ | > /)[0].trim()||'Chưa phân loại';
+   weakMap[topic]=(weakMap[topic]||0)+1;
+  });
+  const weakRows=Object.entries(weakMap).sort((x,y)=>y[1]-x[1]).slice(0,8);
+  const weakHtml=weakRows.length?weakRows.map(([topic,count])=>'<div style="display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line,#444)"><span>'+esc(topic)+'</span><b>'+count+' lỗi</b></div>').join('')+'<p class="small muted">Thống kê từ sổ lỗi sai đã lưu; chủ đề có nhiều lỗi hơn được ưu tiên ôn trước.</p>'+btn('Ôn các câu sai','principiaSuiteReviewErrors()'):'<p class="muted">Chưa có lỗi sai được lưu để phân tích chủ đề. Hãy làm bài luyện tập để bắt đầu theo dõi.</p>';
   const bars=recent.map(x=>'<div style="display:flex;gap:10px;align-items:center;margin:8px 0"><span style="width:90px;font-size:12px">'+new Date(x.date).toLocaleDateString('vi-VN')+'</span><div style="flex:1;height:10px;background:var(--line,#444);border-radius:20px"><div style="height:100%;width:'+x.percent+'%;background:var(--purple,#9b87ff);border-radius:20px"></div></div><b>'+x.percent+'%</b></div>').join('')||'<p class="muted">Chưa có lượt thi nào được ghi nhận.</p>';
   let done=0;try{done=typeof completed!=='undefined'?completed.length:0}catch(_){}
   let earned=0;try{earned=typeof xp!=='undefined'?xp:0}catch(_){}
   open('Phân tích học tập', '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:9px">'+
-   panel('Độ chính xác','<h2>'+pct+'%</h2>')+panel('Lượt luyện','<h2>'+a.length+'</h2>')+panel('Câu đã làm','<h2>'+total+'</h2>')+panel('Bài học hoàn thành','<h2>'+done+'</h2>')+panel('XP hiện có','<h2>'+earned+'</h2>')+'</div>'+panel('10 lượt gần nhất',bars)+panel('Lịch sử',a.slice(-20).reverse().map(x=>'<div style="padding:8px 0;border-bottom:1px solid var(--line,#444)">'+new Date(x.date).toLocaleString('vi-VN')+' · <b>'+x.score+'/'+x.total+'</b> ('+x.percent+'%)</div>').join('')||'<p>Chưa có dữ liệu.</p>')+btn('Quay lại','principiaSuiteHome()'));
+   panel('Độ chính xác','<h2>'+pct+'%</h2>')+panel('Lượt luyện','<h2>'+a.length+'</h2>')+panel('Câu đã làm','<h2>'+total+'</h2>')+panel('Bài học hoàn thành','<h2>'+done+'</h2>')+panel('XP hiện có','<h2>'+earned+'</h2>')+'</div>'+panel('10 lượt gần nhất',bars)+panel('Chủ đề cần củng cố',weakHtml)+panel('Lịch sử',a.slice(-20).reverse().map(x=>'<div style="padding:8px 0;border-bottom:1px solid var(--line,#444)">'+new Date(x.date).toLocaleString('vi-VN')+' · <b>'+x.score+'/'+x.total+'</b> ('+x.percent+'%)</div>').join('')||'<p>Chưa có dữ liệu.</p>')+btn('Quay lại','principiaSuiteHome()'));
  }
  function quests(){
   let done=0,earned=0;try{done=completed.length;earned=xp}catch(_){}
