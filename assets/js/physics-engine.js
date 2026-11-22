@@ -49,6 +49,16 @@ const api={
   constants:Object.freeze({standardGravity:G}),
   velocity,displacement,kineticEnergy,projectile,state,
   compute,computeProjectile,
+  async simulateRigidBodyDrop(params){
+    if(!root.principiaDesktop||typeof root.principiaDesktop.computePhysics!=='function')throw new Error('Mô phỏng vật rắn 3D Rapier hiện cần bản desktop native.');
+    const p=params||{};
+    const payload={initialHeightM:finite(p.initialHeightM,'initialHeightM'),gravityMps2:finite(p.gravityMps2,'gravityMps2'),radiusM:finite(p.radiusM,'radiusM'),restitution:finite(p.restitution,'restitution'),steps:finite(p.steps,'steps')};
+    if(!Number.isInteger(payload.steps)||payload.steps<0||payload.steps>60000)throw new RangeError('steps must be an integer from 0 to 60000');
+    const result=await root.principiaDesktop.computePhysics('rigidBodyDrop',payload);
+    if(!result||!Array.isArray(result.positionM)||!Array.isArray(result.velocityMps))throw new Error('Rapier returned an invalid state');
+    lastBackend='rapier3d-rust';
+    return result;
+  },
   get backend(){return lastBackend}
 };
 root.PrincipiaPhysics=Object.freeze(api);
