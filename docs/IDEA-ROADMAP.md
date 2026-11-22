@@ -249,3 +249,5 @@
 | 162 | Bảo đảm gói desktop luôn build lõi Rust sidecar trước khi đóng gói và chạy regression tests trước khi phát hành | Đã bổ sung bước build Rust + npm test vào workflow desktop Windows và đa nền tảng; GitHub Actions hiện báo thất bại trước bước chạy, chưa xác minh build |
 
 | 163 | Chia sẻ riêng từng màn chơi tự tạo bằng tệp JSON độc lập; nhập lại an toàn và kiểm tra giới hạn sau khi gộp | Đã thêm xuất JSON cho từng màn và 3 regression tests cho chia sẻ độc lập, ID không tồn tại và giới hạn 100 màn; kiểm tra cú pháp đạt, chưa chạy npm test trên runner |
+
+| 164 | Chia sẻ riêng từng thí nghiệm trong Sổ nghiên cứu bằng JSON độc lập; nhập lại an toàn và không làm mất dữ liệu khi vượt giới hạn | Đã thêm nút xuất JSON riêng từng thí nghiệm, API lõi và 3 regression tests; kiểm tra cú pháp đạt, chưa chạy toàn bộ npm test/CI |
