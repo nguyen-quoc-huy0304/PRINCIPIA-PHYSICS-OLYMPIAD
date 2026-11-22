@@ -46,3 +46,35 @@ fn main() {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn dispatches_native_velocity_calculation() {
+        let response = dispatch(&json!({
+            "id": 7, "op": "velocity",
+            "initial": 3.0, "acceleration": 2.0, "seconds": 4.0
+        }));
+        assert_eq!(response["id"], 7);
+        assert_eq!(response["ok"], true);
+        assert_eq!(response["value"], 11.0);
+    }
+
+    #[test]
+    fn rejects_unsupported_operations() {
+        let response = dispatch(&json!({"id": 8, "op": "deleteEverything"}));
+        assert_eq!(response["ok"], false);
+        assert!(response["error"].as_str().unwrap().contains("Unsupported operation"));
+    }
+
+    #[test]
+    fn rejects_invalid_physics_domain() {
+        let response = dispatch(&json!({
+            "id": 9, "op": "kineticEnergy",
+            "massKg": -1.0, "speedMps": 3.0
+        }));
+        assert_eq!(response["ok"], false);
+    }
+}
