@@ -202,6 +202,8 @@
 
 | 142 | Science World: bản đồ khám phá khoa học cục bộ gồm 5 khu vực Cơ học, Điện–Từ, Sóng–Quang học, Nhiệt học và Thiên văn; ghi nhớ khu vực đã khám phá, mở kiến thức ngắn và liên kết luyện câu hỏi | Đã code trên website chính; lưu tiến độ localStorage; cần nghiệm thu trình duyệt và kiểm chứng nội dung khoa học |
 
+| 143 | Physics Arcade: lưu lịch sử 20 lượt bắn gần nhất, ghi thông số góc/trọng lực/kết quả/engine; thêm thành tựu chơi cục bộ (bắn lần đầu, 90+, 10 lượt, Mặt Trăng, 100 điểm) | Đã code lưu lịch sử và thành tựu trong trò Quỹ đạo chính xác; cần nghiệm thu trình duyệt |
+
 ## Nguyên tắc nghiệm thu
 
 1. Không đánh dấu hoàn thành chỉ vì đã tạo file hoặc commit code.
