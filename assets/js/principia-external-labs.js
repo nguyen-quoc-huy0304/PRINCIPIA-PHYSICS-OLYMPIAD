@@ -7,7 +7,7 @@ const groups=[
 ['Cơ học',[
 ['projectile-motion','Ném xiên – Chuyển động của vật'],
 ['forces-and-motion-basics','Lực và chuyển động cơ bản'],
-['the-ramp','Mặt phẳng nghiêng'],
+['friction','Ma sát và lực cản'],
 ['energy-skate-park-basics','Công viên năng lượng']]],
 ['Điện – Từ',[
 ['circuit-construction-kit-dc','Lắp mạch điện một chiều'],
