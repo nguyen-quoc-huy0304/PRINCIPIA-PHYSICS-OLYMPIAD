@@ -79,3 +79,27 @@ test('2D collision rejects invalid body values', () => {
   const b = { x: 1, y: 0, vx: 0, vy: 0, mass: 1, radius: 1 };
   assert.throws(() => context.PrincipiaCollisionMath.resolveDiskCollision(a, b, 1), RangeError);
 });
+
+test('2D unequal-mass head-on elastic collision conserves momentum and energy', () => {
+  const a = { x: 0, y: 0, vx: 3, vy: 0, mass: 2, radius: 1 };
+  const b = { x: 1.5, y: 0, vx: -1, vy: 0, mass: 1, radius: 1 };
+  const before = context.PrincipiaCollisionMath.momentumAndEnergy2D([a, b]);
+  context.PrincipiaCollisionMath.resolveDiskCollision(a, b, 1);
+  const after = context.PrincipiaCollisionMath.momentumAndEnergy2D([a, b]);
+  assert.ok(Math.abs(after.px - before.px) < 1e-12);
+  assert.ok(Math.abs(after.kinetic - before.kinetic) < 1e-12);
+  assert.ok(Math.abs(a.vx - (-5/3)) < 1e-12);
+  assert.ok(Math.abs(b.vx - (11/3)) < 1e-12);
+});
+
+test('2D perfectly inelastic collision conserves momentum while reducing kinetic energy', () => {
+  const a = { x: 0, y: 0, vx: 2, vy: 0, mass: 1, radius: 1 };
+  const b = { x: 1.5, y: 0, vx: -1, vy: 0, mass: 1, radius: 1 };
+  const before = context.PrincipiaCollisionMath.momentumAndEnergy2D([a, b]);
+  context.PrincipiaCollisionMath.resolveDiskCollision(a, b, 0);
+  const after = context.PrincipiaCollisionMath.momentumAndEnergy2D([a, b]);
+  assert.ok(Math.abs(after.px - before.px) < 1e-12);
+  assert.ok(after.kinetic < before.kinetic);
+  assert.ok(Math.abs(a.vx - 0.5) < 1e-12);
+  assert.ok(Math.abs(b.vx - 0.5) < 1e-12);
+});
