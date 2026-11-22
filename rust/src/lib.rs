@@ -4,6 +4,8 @@
 pub mod access;
 pub mod features;
 pub mod physics;
+pub mod virtual_lab;
+pub mod progress;
 pub mod store;
 
 pub const APP_NAME: &str = "PRINCIPIA";
