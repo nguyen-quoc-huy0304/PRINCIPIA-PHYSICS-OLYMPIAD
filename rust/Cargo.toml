@@ -22,3 +22,6 @@ incremental = false
 name = "physics"
 path = "benches/physics.rs"
 harness = false
+
+[build-dependencies]
+cc = "1"

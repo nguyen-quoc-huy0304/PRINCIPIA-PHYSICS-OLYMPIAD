@@ -41,6 +41,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Install stable Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+      - name: Test native Rust and C++ core on this platform
+        run: cargo test --manifest-path rust/Cargo.toml --all-targets
       - run: npm install
       - name: Regenerate Windows icon from the cropped circular logo with alpha transparency
         if: matrix.platform == 'windows'
