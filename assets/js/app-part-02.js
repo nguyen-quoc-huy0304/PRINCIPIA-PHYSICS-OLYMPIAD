@@ -812,8 +812,9 @@ function switchClLeftTab(t){
         panel.dataset.principiaLabsReady='1';
         const frame=document.getElementById('phetFrame');
         const pending=frame?.dataset.principiaPendingSrc;
-        if(frame&&pending){frame.src=pending;delete frame.dataset.principiaPendingSrc;}
-        else if(typeof window.changePhetSrc==='function')window.changePhetSrc();
+        // The learner may have left the lab tab while scripts were downloading.
+        if(!panel.hidden&&frame&&pending){frame.src=pending;delete frame.dataset.principiaPendingSrc;}
+        else if(!panel.hidden&&typeof window.changePhetSrc==='function')window.changePhetSrc();
       }).catch(error=>{
         delete panel.dataset.principiaLabsLoading;
         console.error('[PRINCIPIA] Không tải được phòng thí nghiệm:',error);
