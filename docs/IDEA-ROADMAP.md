@@ -69,7 +69,7 @@
 | # | Ý tưởng / yêu cầu | Trạng thái |
 |---:|---|---|
 | 41 | Câu đố vật lý tương tác | Có mã nguồn câu đố cân bằng lực vector; cần nghiệm thu giao diện và gameplay |
-| 42 | Khám phá không gian và thiên văn | Chưa làm đầy đủ |
+| 42 | Khám phá không gian và thiên văn | Có mã nguồn Space Explorer tính quỹ đạo tròn Trái Đất/Mặt Trăng/Sao Hỏa; cần nghiệm thu giao diện và mô hình |
 | 43 | Lắp ráp robot, máy móc và hệ thống kỹ thuật | Chưa làm đầy đủ |
 | 44 | Giải mã bí ẩn khoa học | Chưa làm đầy đủ |
 | 45 | Thử thách khoa học do AI hỗ trợ | Đang triển khai / cần kiểm soát chất lượng |
