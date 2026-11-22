@@ -1,5 +1,5 @@
 import { invoke, isTauri } from '@tauri-apps/api/core';
-import initPhysicsWasm, {
+import {
   motion_wasm,
   kinetic_energy_wasm,
   projectile_wasm
@@ -24,20 +24,11 @@ const finite = (...values: number[]) => {
   if (!values.every(Number.isFinite)) throw new TypeError('Các giá trị phải là số hữu hạn.');
 };
 
-let wasmReady: Promise<void> | undefined;
-
+// wasm-pack's "bundler" target statically imports and initializes the
+// WebAssembly module; it exports the Rust functions directly, with no default
+// async initializer. Vite's wasm plugin handles the generated ESM/WASM import.
 function loadWasm(): Promise<void> {
-  if (!wasmReady) {
-    // wasm-bindgen's generated declaration can expose the default initializer
-    // as a module namespace under strict Bundler resolution. Runtime export is
-    // still the initializer function produced by wasm-pack.
-    const initialize = initPhysicsWasm as unknown as () => Promise<unknown>;
-    wasmReady = initialize().then(() => undefined).catch((error: unknown) => {
-      wasmReady = undefined;
-      throw error;
-    });
-  }
-  return wasmReady;
+  return Promise.resolve();
 }
 
 async function browserWasm<T>(run: () => T, fallback: () => T): Promise<T> {
