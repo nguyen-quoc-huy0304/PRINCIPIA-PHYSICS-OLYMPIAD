@@ -12,7 +12,7 @@ function targetFor(a,b){return {x:-(a.x+b.x),y:-(a.y+b.y)};}
 function scoreFor(x,y,target){const error=Math.hypot(x-target.x,y-target.y);return {error,points:Math.max(0,Math.round(100-error*8))};}
 function fresh(difficulty='normal'){let a,b,t;const lim=difficulty==='easy'?5:difficulty==='hard'?15:9;do{a={x:rand(-lim,lim),y:rand(-lim,lim)};b={x:rand(-lim,lim),y:rand(-lim,lim)};t=targetFor(a,b);}while(Math.abs(t.x)>20||Math.abs(t.y)>20||Math.hypot(t.x,t.y)<3);return {a,b,target:t,x:0,y:0,score:0,best:0,attempts:0,last:'',history:[],difficulty};}
 function read(){try{const v=JSON.parse(localStorage.getItem(KEY)||'null');if(v&&v.a&&v.b&&v.target&&Number.isFinite(v.x)&&Number.isFinite(v.y))return {...fresh(v.difficulty||'normal'),...v,difficulty:['easy','normal','hard'].includes(v.difficulty)?v.difficulty:'normal',history:Array.isArray(v.history)?v.history.slice(-20):[]};}catch(_){}return fresh();}
-window.PrincipiaForcePuzzleMath=Object.freeze({targetFor,scoreFor,fresh});
+window.PrincipiaForcePuzzleMath=Object.freeze({targetFor,scoreFor,fresh,escapeHTML});
 let state=read();
 function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(_){}}
 function vector(x,y,color,dash){const ex=150+x*5,ey=150-y*5;return '<line x1="150" y1="150" x2="'+ex+'" y2="'+ey+'" stroke="'+color+'" stroke-width="4" stroke-linecap="round" '+(dash?'stroke-dasharray="7 5" ':'')+'/><circle cx="'+ex+'" cy="'+ey+'" r="4.5" fill="'+color+'"/>';}
