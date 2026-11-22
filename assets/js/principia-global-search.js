@@ -20,6 +20,7 @@
   try{if(typeof funData!=='undefined')flatten(funData,all,'fun')}catch(_){}
   const seen=new Set();return all.filter(x=>x.id&&!seen.has(x.kind+':'+x.id)&&seen.add(x.kind+':'+x.id));
  }
+ window.PrincipiaGlobalSearchCore=Object.freeze({escapeHTML:escHTML,flatten});
  let overlay=null,items=[],active=0,selectedKind='all',lastQuery='';
  const readRecent=()=>{try{const v=JSON.parse(localStorage.getItem('principia_global_search_recent_v1')||'[]');return Array.isArray(v)?v.filter(x=>typeof x==='string').slice(0,6):[]}catch(_){return[]}};
  const saveRecent=q=>{const v=String(q||'').trim();if(v.length<2)return;try{localStorage.setItem('principia_global_search_recent_v1',JSON.stringify([v,...readRecent().filter(x=>x.toLocaleLowerCase('vi')!==v.toLocaleLowerCase('vi'))].slice(0,6)))}catch(_){}};
