@@ -26,7 +26,7 @@
   try{if(typeof data!=='undefined')walk(data,'lesson',[])}catch(_){}
   const seen=new Set();return out.filter(x=>{const k=x.path+'|'+x.q;if(seen.has(k))return false;seen.add(k);return true});
  }
- let root=null,exam=null,examTimer=null,lastExamReview=null,examView='all',examCurrentIndex=0,flashIndex=0,flashSide=false,flashMode='bank',reviewQueue=[],reviewIndex=0,reviewSide=false,mysteryCase=null;
+ let root=null,exam=null,examTimer=null,lastExamReview=null,lastExamDurationSeconds=null,examView='all',examCurrentIndex=0,flashIndex=0,flashSide=false,flashMode='bank',reviewQueue=[],reviewIndex=0,reviewSide=false,mysteryCase=null;
  function ensure(){
   if(root)return root;
   root=document.createElement('div');root.id='principiaLearningSuite';
@@ -214,12 +214,13 @@
   const attempt={date:new Date(finishedAt).toISOString(),score:score,total:qs.length,percent:Math.round(score/qs.length*100),mode:'olympic',durationSeconds};
   state.attempts.push(attempt);qs.forEach((q,i)=>{if(exam.answers[i]!==q.correct){state.errors.unshift({title:q.q,body:'Bạn chọn: '+(q.a[exam.answers[i]]||'Chưa trả lời')+'\\nĐáp án đúng: '+q.a[q.correct]+'\\nNguồn: '+q.path,date:new Date().toISOString()})}});if(state.errors.length>300)state.errors=state.errors.slice(0,300);if(state.attempts.length>300)state.attempts=state.attempts.slice(-300);save();
   try{if(typeof xp!=='undefined'&&typeof saveAll==='function'){xp+=Math.max(5,score*5);saveAll()}}catch(_){}
-  lastExamReview=qs.map((q,i)=>({q,choice:exam.answers[i],correct:exam.answers[i]===q.correct,index:i}));clearExamDraft();exam=null;renderExamResult(false,score,qs.length,auto,durationSeconds);
+  lastExamReview=qs.map((q,i)=>({q,choice:exam.answers[i],correct:exam.answers[i]===q.correct,index:i}));lastExamDurationSeconds=durationSeconds;clearExamDraft();exam=null;renderExamResult(false,score,qs.length,auto,durationSeconds);
   try{if(state.notifications&&'Notification'in window&&Notification.permission==='granted')new Notification('PRINCIPIA · Kết quả luyện tập',{body:'Bạn đạt '+score+'/'+qs.length+' câu.'})}catch(_){}
  }
  function exitExam(){if(exam&&!confirm('Thoát bài thi? Bản nháp sẽ được lưu để bạn có thể tiếp tục sau.'))return;saveExamDraft();exam=null;stopTimer();home()}
  function renderExamResult(onlyWrong,knownScore,total,auto,durationSeconds){
   if(!lastExamReview)return;
+  if(!Number.isFinite(durationSeconds))durationSeconds=lastExamDurationSeconds;
   const rows=lastExamReview.filter(x=>!onlyWrong||!x.correct),score=knownScore===undefined?lastExamReview.filter(x=>x.correct).length:knownScore,n=total===undefined?lastExamReview.length:total;
   let html='<div style="text-align:center;padding:18px"><div style="font-size:42px">🏅</div><h1>'+score+'/'+n+'</h1><h2>'+Math.round(score/n*100)+'% chính xác</h2><p>'+(auto?'Đã tự động nộp khi hết giờ.':'Đã ghi nhận kết quả bài thi.')+'</p>'+(Number.isFinite(durationSeconds)?'<p class="small muted">Thời gian làm bài: '+Math.floor(durationSeconds/60)+' phút '+(durationSeconds%60)+' giây</p>':'')+'</div>';
   html+='<div style="display:flex;gap:8px;flex-wrap:wrap">'+btn('Tất cả câu ('+lastExamReview.length+')','principiaSuiteExamResultFilter(false)')+btn('Chỉ câu sai ('+lastExamReview.filter(x=>!x.correct).length+')','principiaSuiteExamResultFilter(true)')+'</div>';
