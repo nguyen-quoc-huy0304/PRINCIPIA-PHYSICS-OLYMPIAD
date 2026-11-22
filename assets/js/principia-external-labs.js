@@ -21,7 +21,8 @@ const groups=[
 ['gas-properties','Tính chất chất khí'],
 ['states-of-matter-basics','Các trạng thái vật chất']]]
 ];
-const base='https://phet.colorado.edu/sims/html/';\nconst circuitUrl='https://www.falstad.com/circuit/circuitjs.html';
+const base='https://phet.colorado.edu/sims/html/';
+const circuitUrl='https://www.falstad.com/circuit/circuitjs.html';
 function init(){
  const picker=document.getElementById('phetSubjectPicker'),frame=document.getElementById('phetFrame');
  if(!picker||!frame||picker.dataset.principiaLabs)return;
@@ -33,10 +34,13 @@ function init(){
  });
  const note=document.createElement('div');note.id='principiaPhetAttribution';
  note.style.cssText='margin-top:9px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font-size:12px;line-height:1.55;color:var(--muted)';
- function attribution(url){if(url===circuitUrl)return '<strong>CircuitJS – mô phỏng điện tử</strong><br>Simulator by Paul Falstad and Iain Sharp · <a href="https://github.com/pfalstad/circuitjs1" target="_blank" rel="noopener noreferrer">mã nguồn gốc</a> · GPL-2.0-or-later. Mô hình linh kiện có thể được lý tưởng hóa; chỉ dùng cho học tập/thử nghiệm, không thay thế phần mềm thiết kế và kiểm định mạch thực tế.';return '<strong>Thư viện mô phỏng chính thức</strong><br>Simulation by PhET Interactive Simulations, University of Colorado Boulder · <a href="https://phet.colorado.edu" target="_blank" rel="noopener noreferrer">phet.colorado.edu</a> · CC BY-NC 4.0. Giữ nguyên logo và ghi công của PhET.';}\n note.innerHTML=attribution(picker.value);
+ function attribution(url){if(url===circuitUrl)return '<strong>CircuitJS – mô phỏng điện tử</strong><br>Simulator by Paul Falstad and Iain Sharp · <a href="https://github.com/pfalstad/circuitjs1" target="_blank" rel="noopener noreferrer">mã nguồn gốc</a> · GPL-2.0-or-later. Mô hình linh kiện có thể được lý tưởng hóa; chỉ dùng cho học tập/thử nghiệm, không thay thế phần mềm thiết kế và kiểm định mạch thực tế.';return '<strong>Thư viện mô phỏng chính thức</strong><br>Simulation by PhET Interactive Simulations, University of Colorado Boulder · <a href="https://phet.colorado.edu" target="_blank" rel="noopener noreferrer">phet.colorado.edu</a> · CC BY-NC 4.0. Giữ nguyên logo và ghi công của PhET.';}
+ note.innerHTML=attribution(picker.value);
  const link=document.createElement('a');link.href='https://phet.colorado.edu/vi/simulations';link.target='_blank';link.rel='noopener noreferrer';link.textContent='Mở toàn bộ thư viện PhET ↗';link.style.cssText='display:inline-block;margin-top:7px';
  note.appendChild(document.createElement('br'));note.appendChild(link);frame.insertAdjacentElement('afterend',note);
- function applySelection(){const url=picker.value;if(!url.startsWith(base)&&url!==circuitUrl)return;frame.src=url;frame.title=picker.options[picker.selectedIndex].textContent;note.innerHTML=attribution(url);}\n window.changePhetSrc=applySelection;\n picker.addEventListener('change',applySelection);
+ function applySelection(){const url=picker.value;if(!url.startsWith(base)&&url!==circuitUrl)return;frame.src=url;frame.title=picker.options[picker.selectedIndex].textContent;note.innerHTML=attribution(url);}
+ window.changePhetSrc=applySelection;
+ picker.addEventListener('change',applySelection);
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
