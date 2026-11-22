@@ -11,6 +11,22 @@ fn dispatch(request: &Value) -> Value {
     let id = request.get("id").cloned().unwrap_or(Value::Null);
     let result: Result<Value, String> = (|| {
         let op = request.get("op").and_then(Value::as_str).ok_or("Missing operation")?;
+        if op == "linearRegression" {
+            let values = request.get("points").and_then(Value::as_array)
+                .ok_or("points must be an array of [x, y] pairs")?;
+            if values.len() > 10000 { return Err("at most 10000 data points are supported".to_string()); }
+            let mut points = Vec::with_capacity(values.len());
+            for pair in values {
+                let pair = pair.as_array().filter(|p| p.len() == 2)
+                    .ok_or("each point must contain exactly [x, y]")?;
+                let x = pair[0].as_f64().filter(|v| v.is_finite()).ok_or("point x must be finite")?;
+                let y = pair[1].as_f64().filter(|v| v.is_finite()).ok_or("point y must be finite")?;
+                points.push((x, y));
+            }
+            let fit = principia_core::data_analysis::linear_regression(&points)
+                .map_err(|error| format!("Regression rejected: {error:?}"))?;
+            return Ok(json!({"slope":fit.slope,"intercept":fit.intercept,"rSquared":fit.r_squared,"rmse":fit.rmse,"count":fit.count}));
+        }
         if op == "robotArmIK" {
             let branch_value = number(request, "elbowBranch")?;
             if branch_value.fract() != 0.0 || (branch_value != 1.0 && branch_value != -1.0) {
@@ -102,6 +118,18 @@ mod tests {
         let response = dispatch(&json!({"id":10,"op":"gameProjectileScore","speed":20.0,"angleDeg":45.0,"targetM":target,"gravity":9.80665}));
         assert_eq!(response["ok"], true);
         assert_eq!(response["value"]["points"], 100);
+    }
+    #[test]
+    fn dispatches_linear_regression() {
+        let response = dispatch(&json!({"id":14,"op":"linearRegression","points":[[0.0,1.0],[1.0,3.0],[2.0,5.0]]}));
+        assert_eq!(response["ok"], true);
+        assert!((response["value"]["slope"].as_f64().unwrap()-2.0).abs()<1e-12);
+        assert!((response["value"]["intercept"].as_f64().unwrap()-1.0).abs()<1e-12);
+    }
+    #[test]
+    fn rejects_regression_with_constant_x() {
+        let response = dispatch(&json!({"id":15,"op":"linearRegression","points":[[2.0,1.0],[2.0,4.0]]}));
+        assert_eq!(response["ok"], false);
     }
     #[test]
     fn dispatches_robot_arm_inverse_kinematics() {
