@@ -255,3 +255,5 @@
 | 165 | Sổ nghiên cứu: hiển thị đồ thị phân tán X–Y và đường hồi quy tuyến tính trong phân tích từng thí nghiệm | Đã thêm đồ thị SVG co giãn theo dữ liệu, nhãn đơn vị và đường hồi quy; kiểm tra cú pháp đạt, cần nghiệm thu hiển thị trên mobile/desktop |
 | 166 | Sổ nghiên cứu: từ chối số liệu hữu hạn nhưng làm tràn phép tính thống kê (Infinity/NaN) | Đã bổ sung kiểm tra thống kê sau tính toán và 2 regression tests cho dữ liệu cực lớn; kiểm tra logic thủ công đạt, cần chạy npm test |
 | 167 | Desktop Release: không tự tạo lại tag/release cố định sau mỗi lần push code | Đã tách phát hành thành tùy chọn manual dispatch; push chỉ build và upload artifacts, cần xác nhận bằng GitHub Actions |
+
+| 168 | Sổ nghiên cứu: thống nhất tải CSV/JSON qua helper an toàn, trì hoãn thu hồi Blob URL và cho phép nhập lại cùng một tệp liên tiếp | Đã sửa luồng tải CSV/JSON, kiểm tra kích thước tệp trước khi đọc và reset input sau nhập; kiểm tra cú pháp cần xác nhận tiếp |
