@@ -123,7 +123,7 @@
     const restitutionInput = root.querySelector('[data-collision2d="e"]');
     const restitutionLabel = root.querySelector('[data-collision2d="e-label"]');
     restitutionInput.addEventListener('input', () => { restitutionLabel.textContent = Number(restitutionInput.value).toLocaleString('vi-VN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); });
-    let bodies = [], running = false, frame = 0, last = 0, raf = 0;
+    let bodies = [], running = false, last = 0, raf = 0, selectedBody = 0;
     const seed = () => [
       { x: 65, y: 72, vx: 115, vy: 34, mass: 1, radius: 15, color: '#3b82f6' },
       { x: 235, y: 105, vx: -70, vy: -18, mass: 2, radius: 21, color: '#f97316' },
@@ -147,8 +147,9 @@
       ctx.strokeStyle = 'rgba(255,255,255,.10)'; ctx.lineWidth = 1;
       for (let x = 20; x < width; x += 40) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,height); ctx.stroke(); }
       for (let y = 20; y < height; y += 40) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(width,y); ctx.stroke(); }
-      bodies.forEach((b) => {
+      bodies.forEach((b,index) => {
         ctx.beginPath(); ctx.arc(b.x,b.y,b.radius,0,Math.PI*2); ctx.fillStyle=b.color; ctx.fill();
+        if(index===selectedBody){ctx.beginPath();ctx.arc(b.x,b.y,b.radius+4,0,Math.PI*2);ctx.strokeStyle='#facc15';ctx.lineWidth=2.5;ctx.stroke();}
         ctx.strokeStyle='rgba(255,255,255,.85)'; ctx.lineWidth=1.5; ctx.stroke();
         ctx.fillStyle='#fff'; ctx.font='12px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(b.mass+' kg',b.x,b.y);
         const scale=0.16; ctx.beginPath(); ctx.moveTo(b.x,b.y); ctx.lineTo(b.x+b.vx*scale,b.y+b.vy*scale);
@@ -161,6 +162,43 @@
       energy.textContent=fmt2D(totals.kinetic)+' J (đơn vị mô phỏng)';
       momentum.textContent='px '+fmt2D(totals.px)+' · py '+fmt2D(totals.py)+' kg·m/s';
     }
+    
+    const editor = {
+      mass: root.querySelector('[data-collision2d-edit="mass"]'),
+      radius: root.querySelector('[data-collision2d-edit="radius"]'),
+      vx: root.querySelector('[data-collision2d-edit="vx"]'),
+      vy: root.querySelector('[data-collision2d-edit="vy"]'),
+      selected: root.querySelector('[data-collision2d-edit="selected"]')
+    };
+    function syncEditor() {
+      const b=bodies[selectedBody]; if(!b) return;
+      if(editor.mass) editor.mass.value=b.mass;
+      if(editor.radius) editor.radius.value=b.radius;
+      if(editor.vx) editor.vx.value=Math.round(b.vx*10)/10;
+      if(editor.vy) editor.vy.value=Math.round(b.vy*10)/10;
+      if(editor.selected) editor.selected.textContent='Đang chọn vật '+(selectedBody+1)+'/'+bodies.length;
+    }
+    ['mass','radius','vx','vy'].forEach((key)=>{
+      const input=editor[key]; if(!input) return;
+      input.addEventListener('change',()=>{
+        const b=bodies[selectedBody], value=Number(input.value);
+        if(!b || !Number.isFinite(value) || ((key==='mass'||key==='radius')&&value<=0)){syncEditor();status.textContent='Giá trị không hợp lệ.';return;}
+        if(key==='mass') b.mass=Math.min(1000,value);
+        if(key==='radius') b.radius=Math.min(45,Math.max(6,value));
+        if(key==='vx') b.vx=Math.max(-500,Math.min(500,value));
+        if(key==='vy') b.vy=Math.max(-500,Math.min(500,value));
+        resize(); syncEditor(); status.textContent='Đã cập nhật vật '+(selectedBody+1)+'.';
+      });
+    });
+    canvas.addEventListener('pointerdown',(event)=>{
+      const rect=canvas.getBoundingClientRect();
+      const x=(event.clientX-rect.left)*(Number(canvas.dataset.width||560)/rect.width);
+      const y=(event.clientY-rect.top)*(Number(canvas.dataset.height||280)/rect.height);
+      let best=-1,dist=Infinity;
+      bodies.forEach((b,index)=>{const d=Math.hypot(b.x-x,b.y-y);if(d<=b.radius+12&&d<dist){best=index;dist=d;}});
+      if(best>=0){selectedBody=best;syncEditor();draw();status.textContent='Đã chọn vật '+(best+1)+'.';}
+    });
+
     function step(dt) {
       const width=Number(canvas.dataset.width||560), height=Number(canvas.dataset.height||280);
       bodies.forEach((b)=>{
@@ -182,7 +220,7 @@
       draw(); raf=requestAnimationFrame(tick);
     }
     function stop() { running=false; last=0; if(raf) cancelAnimationFrame(raf); raf=0; start.textContent='▶ Chạy mô phỏng'; status.textContent='Đã tạm dừng.'; }
-    function resetWorld() { stop(); bodies=seed(); resize(); status.textContent='Đã đặt lại 4 vật.'; }
+    function resetWorld() { stop(); bodies=seed(); selectedBody=0; resize(); syncEditor(); status.textContent='Đã đặt lại 4 vật.'; }
     function addBody() {
       if (bodies.length >= 12) { status.textContent='Đã đạt giới hạn 12 vật để giữ mô phỏng nhẹ.'; return; }
       const width=Number(canvas.dataset.width||560), height=Number(canvas.dataset.height||280);
@@ -195,11 +233,11 @@
       const point=candidates[Math.floor(Math.random()*candidates.length)];
       const colors=['#38bdf8','#fb7185','#facc15','#c084fc','#34d399'];
       bodies.push({x:point.x,y:point.y,vx:(Math.random()-.5)*150,vy:(Math.random()-.5)*150,mass:0.7+(bodies.length%4)*0.45,radius,color:colors[bodies.length%colors.length]});
-      draw(); status.textContent='Đã thêm vật. Hiện có '+bodies.length+'/12 vật.';
+      selectedBody=bodies.length-1; syncEditor(); draw(); status.textContent='Đã thêm vật. Hiện có '+bodies.length+'/12 vật.';
     }
     function removeBody() {
       if(bodies.length<=2){status.textContent='Cần giữ ít nhất 2 vật để mô phỏng va chạm.';return;}
-      bodies.pop(); draw(); status.textContent='Đã bỏ vật cuối. Còn '+bodies.length+' vật.';
+      bodies.pop(); selectedBody=Math.min(selectedBody,bodies.length-1); syncEditor(); draw(); status.textContent='Đã bỏ vật cuối. Còn '+bodies.length+' vật.';
     }
     start.addEventListener('click',()=>{
       if(running){stop();return;}
@@ -220,7 +258,7 @@
       visibilityObserver.observe(root);
     }
     else window.addEventListener('resize',resize);
-    bodies=seed(); resize(); status.textContent='Sẵn sàng: 4 vật, va chạm đĩa tròn 2D.';
+    bodies=seed(); resize(); syncEditor(); status.textContent='Sẵn sàng: 4 vật, va chạm đĩa tròn 2D.';
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
