@@ -2,6 +2,8 @@
 //! The existing web/Electron clients are adapters; domain rules live here.
 
 pub mod access;
+pub mod content;
+pub mod session;
 pub mod assessment;
 pub mod features;
 pub mod physics;
