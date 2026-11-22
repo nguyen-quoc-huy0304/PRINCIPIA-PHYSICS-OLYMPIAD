@@ -22,6 +22,8 @@ The modules are loaded sequentially through `PrincipiaPerformance.loadScripts()`
 
 This reduces initial network requests, JavaScript parsing/evaluation and third-party iframe startup work. The exact savings must be measured in a browser on target devices; no numerical improvement is claimed yet.
 
+The lab loader also has a sequential fallback if the optional performance helper is unavailable, so an optimization helper failure does not make the lab feature inaccessible. The idle queue drains within the browser's idle budget; browsers without `requestIdleCallback` run one queued task per fallback turn to avoid draining a large queue in a single long task.
+
 ## Language selection
 
 - Rust remains the default safe core.
