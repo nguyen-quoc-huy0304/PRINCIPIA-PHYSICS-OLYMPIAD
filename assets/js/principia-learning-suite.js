@@ -5,7 +5,10 @@
  const safe=(v)=>{try{return JSON.parse(localStorage.getItem(KEY)||'{}')}catch(_){return {}}};
  const state=Object.assign({attempts:[],notes:[],errors:[],notifications:false,claimedQuests:[]},safe());
  const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
- const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){console.warn('[PRINCIPIA] Learning Suite storage:',e)}};\n const localDateKey=(date=new Date())=>{const y=date.getFullYear(),m=String(date.getMonth()+1).padStart(2,'0'),d=String(date.getDate()).padStart(2,'0');return y+'-'+m+'-'+d};
+ const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){console.warn('[PRINCIPIA] Learning Suite storage:',e)}};
+ const localDateKey=(date=new Date())=>{const y=date.getFullYear(),m=String(date.getMonth()+1).padStart(2,'0'),d=String(date.getDate()).padStart(2,'0');return y+'-'+m+'-'+d};
+ function markStudyDay(){const api=window.PrincipiaProgressionCore;if(!api)return;state.studyDays=api.recordActivity(state.studyDays||[],new Date());save()}
+ function currentXP(){try{return typeof xp!=='undefined'?Math.max(0,Number(xp)||0):Math.max(0,Number(state.xp)||0)}catch(_){return Math.max(0,Number(state.xp)||0)}}
  const allLessons=()=>{try{return typeof lessons==='function'?lessons():[]}catch(_){return []}};
  function pool(){
   const out=[];
@@ -50,7 +53,7 @@
    card('Thư viện công thức','Trích xuất từ nội dung bài học','principiaSuiteFormulas()','📐')+
    card('Flashcard ôn tập',q.length+' thẻ từ ngân hàng câu hỏi','principiaSuiteFlashcards()','🃏')+card('Ôn tập thông minh','Lịch ôn thẻ theo mức độ nhớ','principiaSuiteSpacedReview()','🧠')+
    card('Sổ lỗi sai',(state.errors||[]).length+' lỗi đã ghi lại','principiaSuiteErrors()','🧠')+card('Ôn lại lỗi sai','Biến lỗi đã ghi thành thẻ ôn tập','principiaSuiteReviewErrors()','🔁')+
-   card('Huy hiệu','Thành tích dựa trên dữ liệu thật','principiaSuiteBadges()','🏆')+
+   card('Huy hiệu','Thành tích dựa trên dữ liệu thật','principiaSuiteBadges()','🏆')+card('Cấp độ & chuỗi ngày','Theo dõi XP, cấp độ và thành tích dài hạn','principiaSuiteProgression()','📈')+
    card('Thông báo học tập',state.notifications?'Đã bật quyền thông báo':'Cài đặt nhắc học trên thiết bị','principiaSuiteNotifications()','🔔')+
    card('Thảo luận cùng AI','Đưa câu hỏi và ngữ cảnh sang trợ lý PRINCIPIA','principiaSuiteAI()','✨')+card('Level Studio','Tự tạo màn chơi vật lý, chơi thử và chia sẻ','principiaSuiteLevels()','🧩')+card('Sổ nghiên cứu','Ghi thí nghiệm, thống kê số liệu và lưu kết quả','principiaSuiteResearch()','🔬')+card('Sao lưu tiến độ','Xuất hoặc khôi phục dữ liệu học tập trên thiết bị','principiaSuiteBackup()','💾')+
    '</div><p class="small muted" style="margin-top:14px">Ngân hàng hiện có: '+q.length+' câu hỏi. Nếu nội dung chưa có câu hỏi, phòng Olympic sẽ báo rõ thay vì tự tạo đề.</p>');
@@ -66,7 +69,7 @@
  }
  function dailyAnswer(i){
   const d=state.daily;if(!d||d.answered||!Number.isInteger(i))return;
-  d.choice=i;d.answered=true;if(i===d.correct){state.xp=(state.xp||0)+10;try{if(typeof xp!=='undefined'){xp+=10;if(typeof saveAll==='function')saveAll()}}catch(_){}}
+  d.choice=i;d.answered=true;markStudyDay();if(i===d.correct){state.xp=(state.xp||0)+10;try{if(typeof xp!=='undefined'){xp+=10;if(typeof saveAll==='function')saveAll()}}catch(_){}}
   else state.errors.unshift({title:d.q,body:'Bạn chọn: '+d.a[i]+'\\nĐáp án đúng: '+d.a[d.correct]+'\\nChủ đề: '+d.topic,date:new Date().toISOString()});
   save();dailyChallenge();
  }
@@ -87,7 +90,7 @@
  }
  function rateReview(r){
   const q=reviewQueue[reviewIndex];if(!q||!Number.isInteger(r)||r<0||r>3)return;const previous=Number((state.review||{})[q.path+'|'+q.q]?.interval)||0;const days=[1,Math.max(2,previous||2),Math.max(4,(previous||2)*2),Math.max(7,(previous||2)*3)][r],interval=Math.min(60,days),next=new Date();next.setDate(next.getDate()+interval);
-  state.review=state.review||{};state.review[q.path+'|'+q.q]={interval:interval,due:localDateKey(next),last:new Date().toISOString(),rating:r};save();reviewIndex++;reviewSide=false;reviewCard();
+  markStudyDay();state.review=state.review||{};state.review[q.path+'|'+q.q]={interval:interval,due:localDateKey(next),last:new Date().toISOString(),rating:r};save();reviewIndex++;reviewSide=false;reviewCard();
  }
  function skipReview(){reviewIndex++;reviewSide=false;reviewCard()}
  function examSetup(){
@@ -135,7 +138,7 @@
  function submitExam(auto){
   if(!exam||exam.submitted)return;
   const qs=exam.questions,score=qs.reduce((s,q,i)=>s+(exam.answers[i]===q.correct?1:0),0);
-  exam.submitted=true;stopTimer();
+  exam.submitted=true;stopTimer();markStudyDay();
   const attempt={date:new Date().toISOString(),score:score,total:qs.length,percent:Math.round(score/qs.length*100),mode:'olympic'};
   state.attempts.push(attempt);qs.forEach((q,i)=>{if(exam.answers[i]!==q.correct){state.errors.unshift({title:q.q,body:'Bạn chọn: '+(q.a[exam.answers[i]]||'Chưa trả lời')+'\\nĐáp án đúng: '+q.a[q.correct]+'\\nNguồn: '+q.path,date:new Date().toISOString()})}});if(state.errors.length>300)state.errors=state.errors.slice(0,300);if(state.attempts.length>300)state.attempts=state.attempts.slice(-300);save();
   try{if(typeof xp!=='undefined'&&typeof saveAll==='function'){xp+=Math.max(5,score*5);saveAll()}}catch(_){}
@@ -214,6 +217,17 @@
  }
  function addError(){const title=document.getElementById('plsErrorTitle').value.trim(),body=document.getElementById('plsErrorBody').value.trim();if(!title||!body){alert('Hãy nhập câu hỏi và cách sửa.');return}state.errors.unshift({title:title,body:body,date:new Date().toISOString()});save();errors()}
  function deleteError(i){if(!confirm('Xóa mục lỗi sai này?'))return;state.errors.splice(i,1);save();errors()}
+ function progression(){
+  const api=window.PrincipiaProgressionCore;
+  if(!api){open('Tiến trình học tập','<p>Module tiến trình chưa tải được. Hãy tải lại trang.</p>'+btn('Về trung tâm','principiaSuiteHome()'));return}
+  const attempts=state.attempts||[],questions=attempts.reduce((s,x)=>s+(Number(x.total)||0),0),best=attempts.reduce((m,x)=>Math.max(m,Number(x.percent)||0),0);
+  let lessonsDone=0;try{lessonsDone=typeof completed!=='undefined'?completed.length:0}catch(_){}
+  let experiments=0,levels=0;try{experiments=JSON.parse(localStorage.getItem('principia_research_notebook_v1')||'[]').length}catch(_){}try{levels=JSON.parse(localStorage.getItem('principia_user_levels_v1')||'[]').length}catch(_){}
+  const st=api.streak(state.studyDays||[],new Date()),lv=api.level(currentXP());
+  const achievements=api.achievements({sessions:attempts.length,questions,bestPercent:best,lessons:lessonsDone,streak:st.current,experiments,levels});
+  const cards=achievements.map(a=>'<div class="panel" style="padding:12px;opacity:'+(a.unlocked?'1':'.72')+'"><div style="display:flex;justify-content:space-between;gap:8px"><b>'+esc(a.name)+'</b><b>'+(a.unlocked?'🏅':'🔒')+'</b></div><p class="small muted">'+esc(a.description)+'</p><div style="height:7px;border-radius:10px;background:var(--line,#444);overflow:hidden"><div style="height:100%;width:'+a.percent+'%;background:var(--purple,#9b87ff)"></div></div><small class="muted">'+Math.min(a.value,a.target)+'/'+a.target+' · '+a.percent+'%</small></div>').join('');
+  open('Cấp độ & chuỗi ngày','<div class="panel" style="padding:16px"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><div><small class="muted">CẤP ĐỘ '+lv.level+'</small><h2 style="margin:4px 0">'+esc(lv.title)+'</h2><b>'+lv.xp+' XP</b></div><div style="text-align:right"><div style="font-size:28px">🔥 '+st.current+'</div><small class="muted">ngày liên tiếp</small><p class="small muted">Kỷ lục: '+st.longest+' ngày</p></div></div><div style="height:9px;border-radius:12px;background:var(--line,#444);overflow:hidden;margin:12px 0 6px"><div style="height:100%;width:'+lv.progress+'%;background:var(--purple,#9b87ff)"></div></div><small class="muted">'+(lv.nextThreshold===null?'Đã đạt cấp tối đa':lv.xpToNext+' XP nữa để lên cấp '+(lv.level+1))+'</small><p class="small muted">'+(st.activeToday?'Hôm nay đã ghi nhận hoạt động học tập.':'Hoàn thành một hoạt động học tập để giữ chuỗi ngày.')+'</p></div><h3>Thành tựu ('+achievements.filter(a=>a.unlocked).length+'/'+achievements.length+')</h3><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:9px">'+cards+'</div>'+btn('Mở bộ sưu tập huy hiệu','principiaSuiteBadges()')+btn('Về trung tâm','principiaSuiteHome()'));
+ }
  function badges(){
   const a=state.attempts||[],total=a.reduce((s,x)=>s+x.total,0),best=a.reduce((m,x)=>Math.max(m,x.percent),0);let done=0;try{done=completed.length}catch(_){}
   const b=[['🌱','Bắt đầu hành trình',a.length>=1,'Hoàn thành lượt luyện đầu tiên'],['🎯','50 câu hỏi',total>=50,'Làm ít nhất 50 câu'],['🏅','Olympic 80%',best>=80,'Đạt từ 80% trong một lượt'],['🔥','Chăm chỉ',a.length>=5,'Hoàn thành 5 lượt luyện'],['📚','Người ham học',done>=10,'Hoàn thành 10 bài học'],['🧠','Sửa sai',state.errors.length>=3,'Ghi lại 3 lỗi sai']];
@@ -239,7 +253,7 @@
  function renderMystery(message){
   if(!mysteryCase)return;
   if(mysteryCase.complete){
-   const total=mysteryCase.questions.length,score=mysteryCase.score,percent=Math.round(score/total*100);
+   const total=mysteryCase.questions.length,score=mysteryCase.score,percent=Math.round(score/total*100);markStudyDay();
    state.attempts.push({date:new Date().toISOString(),score,total,percent,mode:'mystery'});
    mysteryCase.questions.forEach((q,i)=>{const a=mysteryCase.answers[i];if(!a.correct)state.errors.unshift({title:q.q,body:'Điều tra sai. Đáp án đúng: '+q.a[q.correct]+'\\nChủ đề: '+q.topic+'\\nNguồn: '+q.path,date:new Date().toISOString()})});
    if(state.errors.length>300)state.errors=state.errors.slice(0,300);
@@ -317,7 +331,7 @@
      const signature=active.kind+':'+active.id+':'+ans.join(',');
      if(signature!==window.__principiaSuiteQuizSignature){
       window.__principiaSuiteQuizSignature=signature;
-      const score=qs.reduce((sum,q,i)=>sum+(ans[i]===q.correct?1:0),0);
+      const score=qs.reduce((sum,q,i)=>sum+(ans[i]===q.correct?1:0),0);markStudyDay();
       state.attempts.push({date:new Date().toISOString(),score:score,total:qs.length,percent:Math.round(score/qs.length*100),mode:active.kind});
       qs.forEach((q,i)=>{if(ans[i]!==q.correct){state.errors.unshift({title:q.q,body:'Bạn chọn: '+(q.a[ans[i]]||'Chưa trả lời')+'\\nĐáp án đúng: '+q.a[q.correct]+'\\nNguồn: '+(node.name||active.id),date:new Date().toISOString()})}});
       if(state.errors.length>300)state.errors=state.errors.slice(0,300);if(state.attempts.length>300)state.attempts=state.attempts.slice(-300);save();
@@ -333,7 +347,7 @@
   b.style.cssText='position:fixed;left:18px;bottom:calc(82px + env(safe-area-inset-bottom,0px));z-index:1201;width:46px;height:46px;border-radius:15px;border:1px solid var(--line,#777);background:var(--card,#171526);color:var(--text,#fff);font-size:24px;box-shadow:0 8px 28px #0004;cursor:pointer';
   b.addEventListener('click',home);document.body.appendChild(b);
  }
- window.principiaSuiteHome=home;window.principiaSuiteOpenGames=()=>{close();if(typeof setPage==='function')setPage('entertainment')};window.principiaSuiteExamSetup=examSetup;window.principiaSuiteDaily=dailyChallenge;window.principiaSuiteDailyAnswer=dailyAnswer;window.principiaSuiteStartExam=startExam;window.principiaSuiteChoose=choose;window.principiaSuiteSubmitExam=submitExam;window.principiaSuiteExitExam=exitExam;window.principiaSuiteAnalytics=analytics;window.principiaSuiteQuests=quests;window.principiaSuiteClaimQuest=claimQuest;window.principiaSuiteNotes=notes;window.principiaSuiteAddNote=addNote;window.principiaSuiteDeleteNote=deleteNote;window.principiaSuiteFormulas=formulas;window.principiaSuiteFlashcards=flashcards;window.principiaSuiteReviewErrors=reviewErrors;window.principiaSuiteSpacedReview=spacedReview;window.principiaSuiteStartReview=startReview;window.principiaSuiteFlipReview=()=>{reviewSide=true;reviewCard()};window.principiaSuiteRateReview=rateReview;window.principiaSuiteSkipReview=skipReview;window.principiaSuiteFlip=()=>{flashSide=!flashSide;renderFlash()};window.principiaSuiteFlashPrev=()=>{flashIndex=Math.max(0,flashIndex-1);renderFlash()};window.principiaSuiteFlashNext=()=>{flashIndex++;renderFlash()};window.principiaSuiteErrors=errors;window.principiaSuiteAddError=addError;window.principiaSuiteDeleteError=deleteError;window.principiaSuiteBadges=badges;window.principiaSuiteNotifications=notifications;window.principiaSuiteEnableNotifications=enableNotifications;window.principiaSuiteDisableNotifications=()=>{state.notifications=false;save();notifications()};window.principiaSuiteAI=ai;window.principiaSuiteResearch=()=>{close();if(window.principiaResearchNotebook)window.principiaResearchNotebook.open()};window.principiaSuiteLevels=()=>{close();if(window.principiaLevelStudio)window.principiaLevelStudio.open()};window.principiaSuiteStartMystery=startMystery;window.principiaSuiteMysteryAnswer=answerMystery;window.principiaSuiteBackup=backupTool;window.principiaSuiteExportBackup=exportBackup;window.principiaSuiteImportBackup=importBackup;window.principiaSuiteOpenChat=openChat;window.principiaSuiteCopyAI=copyAI;
+ window.principiaSuiteHome=home;window.principiaSuiteOpenGames=()=>{close();if(typeof setPage==='function')setPage('entertainment')};window.principiaSuiteExamSetup=examSetup;window.principiaSuiteDaily=dailyChallenge;window.principiaSuiteDailyAnswer=dailyAnswer;window.principiaSuiteStartExam=startExam;window.principiaSuiteChoose=choose;window.principiaSuiteSubmitExam=submitExam;window.principiaSuiteExitExam=exitExam;window.principiaSuiteAnalytics=analytics;window.principiaSuiteQuests=quests;window.principiaSuiteClaimQuest=claimQuest;window.principiaSuiteNotes=notes;window.principiaSuiteAddNote=addNote;window.principiaSuiteDeleteNote=deleteNote;window.principiaSuiteFormulas=formulas;window.principiaSuiteFlashcards=flashcards;window.principiaSuiteReviewErrors=reviewErrors;window.principiaSuiteSpacedReview=spacedReview;window.principiaSuiteStartReview=startReview;window.principiaSuiteFlipReview=()=>{reviewSide=true;reviewCard()};window.principiaSuiteRateReview=rateReview;window.principiaSuiteSkipReview=skipReview;window.principiaSuiteFlip=()=>{flashSide=!flashSide;renderFlash()};window.principiaSuiteFlashPrev=()=>{flashIndex=Math.max(0,flashIndex-1);renderFlash()};window.principiaSuiteFlashNext=()=>{flashIndex++;renderFlash()};window.principiaSuiteErrors=errors;window.principiaSuiteAddError=addError;window.principiaSuiteDeleteError=deleteError;window.principiaSuiteBadges=badges;window.principiaSuiteProgression=progression;window.principiaSuiteNotifications=notifications;window.principiaSuiteEnableNotifications=enableNotifications;window.principiaSuiteDisableNotifications=()=>{state.notifications=false;save();notifications()};window.principiaSuiteAI=ai;window.principiaSuiteResearch=()=>{close();if(window.principiaResearchNotebook)window.principiaResearchNotebook.open()};window.principiaSuiteLevels=()=>{close();if(window.principiaLevelStudio)window.principiaLevelStudio.open()};window.principiaSuiteStartMystery=startMystery;window.principiaSuiteMysteryAnswer=answerMystery;window.principiaSuiteBackup=backupTool;window.principiaSuiteExportBackup=exportBackup;window.principiaSuiteImportBackup=importBackup;window.principiaSuiteOpenChat=openChat;window.principiaSuiteCopyAI=copyAI;
  patchExistingQuizHistory();
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();
