@@ -132,6 +132,16 @@
 | 88 | Ôn flashcard chỉ từ các câu hỏi yêu thích | Đã tích hợp chế độ flashcard yêu thích |
 | 89 | Tạo lượt luyện Olympic riêng từ tối đa 10 câu yêu thích | Đã tích hợp chế độ luyện câu yêu thích |
 | 90 | Lưu lịch sử 30 thử thách mỗi ngày gần nhất | Đã tích hợp lưu kết quả và màn hình lịch sử trên thiết bị |
+| 91 | Màn hình lịch sử luyện tập có lọc theo chế độ và tìm kiếm | Đã tích hợp danh sách và bộ lọc trong Learning Suite; chờ kiểm tra trình duyệt |
+| 92 | Xuất toàn bộ lịch sử luyện tập chi tiết ra CSV | Đã tích hợp xuất CSV có thời điểm, chế độ, số câu đúng và độ chính xác |
+| 93 | Biểu đồ xu hướng độ chính xác 10 lượt luyện gần nhất | Đã tích hợp biểu đồ cột gọn trong màn hình lịch sử |
+| 94 | Tìm lịch sử thử thách hằng ngày theo ngày hoặc chủ đề | Đã tích hợp tìm kiếm trực tiếp |
+| 95 | Lọc lịch sử thử thách theo đúng/sai | Đã tích hợp bộ lọc kết quả |
+| 96 | Xuất lịch sử thử thách hằng ngày ra CSV | Đã tích hợp tải CSV UTF-8 |
+| 97 | Xáo trộn thứ tự flashcard để luyện lại | Đã tích hợp thao tác xáo trộn |
+| 98 | Đánh dấu câu hỏi đã thuộc và lưu trên thiết bị | Đã tích hợp trạng thái thành thạo trong dữ liệu học tập |
+| 99 | Bộ flashcard riêng cho các câu đã thuộc | Đã tích hợp chế độ flashcard thành thạo |
+| 100 | Xem lịch ôn tập dự kiến trong 7 ngày tới | Đã tích hợp thống kê số thẻ đến hạn từng ngày |
 
 ## Nguyên tắc nghiệm thu
 
