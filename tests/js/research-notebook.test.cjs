@@ -1,0 +1,12 @@
+const test=require('node:test');const assert=require('node:assert/strict');const C=require('../../assets/js/principia-research-core.js');
+function mem(){const m=new Map();return {getItem:k=>m.get(k)||null,setItem:(k,v)=>m.set(k,v)}}
+const record={id:'e1',title:'Con lắc',question:'Chu kỳ phụ thuộc chiều dài?',method:'Đo 5 lần',xUnit:'s',yUnit:'cm',points:[{x:1,y:2},{x:2,y:4},{x:3,y:6}]};
+test('parses valid measurement pairs',()=>assert.deepEqual(C.parsePoints('1,2\n3,4'),[{x:1,y:2},{x:3,y:4}]));
+test('rejects malformed, nonfinite and undersized data',()=>{assert.throws(()=>C.parsePoints('1,2,3\n2,3'));assert.throws(()=>C.parsePoints('1,NaN\n2,3'));assert.throws(()=>C.parsePoints('1,2'))});
+test('computes sample statistics and linear fit',()=>{const s=C.summarize(record.points);assert.equal(s.mean,4);assert.equal(s.slope,2);assert.equal(s.intercept,0);assert.equal(s.standardDeviation,2)});
+test('handles constant X without dividing by zero',()=>assert.equal(C.summarize([{x:1,y:2},{x:1,y:4}]).slope,null));
+test('validates metadata and points',()=>{assert.equal(C.validate(record).summary.count,3);assert.throws(()=>C.validate({...record,title:''}))});
+test('persists, updates and removes experiment records',()=>{const s=C.createStore(mem());s.save(record);s.save({...record,title:'Đã cập nhật'});assert.equal(s.all().length,1);assert.equal(s.all()[0].title,'Đã cập nhật');s.remove('e1');assert.equal(s.all().length,0)});
+test('exports and imports a validated archive',()=>{const a=C.createStore(mem()),b=C.createStore(mem());a.save(record);assert.equal(b.import(a.export()),1);assert.equal(b.all()[0].title,record.title)});
+test('rejects malformed import and oversized file without data loss',()=>{const s=C.createStore(mem());s.save(record);assert.throws(()=>s.import('x'.repeat(5*1024*1024+1)));assert.throws(()=>s.import('{"schema":"bad","version":1,"experiments":[]}'));assert.equal(s.all().length,1)});
+test('caps point count',()=>assert.throws(()=>C.parsePoints(Array(10001).fill('1,2').join('\n'))));
