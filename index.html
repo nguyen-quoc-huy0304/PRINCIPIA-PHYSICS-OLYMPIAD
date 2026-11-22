@@ -1,15 +1,301 @@
-<!doctype html>
+
+<!DOCTYPE html>
 <html lang="vi">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#0b1020" />
-    <meta name="description" content="PRINCIPIA • PHYSICS OLYMPIAD" />
-    <link rel="icon" type="image/svg+xml" href="/assets/images/principia-logo-round.svg" />
-    <title>PRINCIPIA • PHYSICS OLYMPIAD</title>
-  </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PRINCIPIA • PHYSICS OLYMPIAD — PRO</title>
+<link rel="stylesheet" href="/assets/css/principia-desktop.css?v=6">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+<body>
+<div id="app"></div>
+<section class="cl-shell" id="codelearnWorkspace">
+    <div class="cl-topbar">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <button onclick="exitCodelearnWorkspace()" style="font-size:13px;padding:7px 11px;">Quay lại</button>
+        <strong id="clTitle" style="font-size:13.5px;">Bài học</strong>
+      </div>
+
+      <div class="cl-steps" id="clStepNumbers"></div>
+
+      <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+        <button class="oli-btn" style="background:rgba(255,255,255,0.12); color:#fff; border-color:transparent;" onclick="swapClPanes()">Đổi vị trí hai khung</button>
+        <button class="oli-btn" style="background:rgba(255,255,255,0.12); color:#fff; border-color:transparent;" onclick="toggleClPane('left')">Tắt/Mở trái</button>
+        <button class="oli-btn" style="background:rgba(255,255,255,0.12); color:#fff; border-color:transparent;" onclick="toggleClPane('right')">Tắt/Mở phải</button>
+        <button class="oli-btn" style="background:#2563eb; color:#fff; border-color:transparent;" onclick="markLessonDone()">Hoàn thành bài (+50 EXP)</button>
+      </div>
+    </div>
+
+    <div class="cl-body">
+      <div class="cl-iconbar" aria-label="Điều hướng bài học">
+        <button class="cl-ico-btn active" data-t="note" onclick="switchClLeftTab('note')">Ghi chép</button>
+        <button class="cl-ico-btn" data-t="list" onclick="switchClLeftTab('list')">Danh sách</button>
+        <button class="cl-ico-btn" data-t="files" onclick="switchClLeftTab('files')">Tài liệu</button>
+        <button class="cl-ico-btn" data-t="grade" onclick="switchClLeftTab('grade')">Nộp bài</button>
+        <button class="cl-ico-btn" data-t="phet" onclick="switchClLeftTab('phet')">Mô phỏng</button>
+      </div>
+      <div class="cl-split" id="clSplit">
+        <div class="cl-left-pane" id="clLeftPane">
+          <div id="clTab-note">
+            <h3 id="clLessonHeading" style="margin-bottom:10px;">Phần chép lời</h3>
+
+            <!-- Transcript: text spoken in the video; summary is separate below -->
+            <div class="ai-cheploi-box" style="margin-bottom:12px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+                <strong style="font-size:13.5px;">Lời video (Transcript)</strong>
+                <button class="oli-btn" style="padding:4px 9px;font-size:12px;" onclick="copyTranscriptToNote()">↓ Chép vào ghi chú</button>
+              </div>
+              <p class="small muted" style="margin:0 0 8px;">Dán transcript/captions hoặc chọn video từ máy để quét chữ xuất hiện trong hình. YouTube URL không tự trích được âm thanh nếu không có quyền/API.</p>
+              <textarea id="ytTranscript" class="inp" rows="7" placeholder="Transcript / lời nói trong video..." oninput="saveTranscript()" style="width:100%;resize:vertical;line-height:1.6;"></textarea>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin:9px 0">
+                <select id="ytSourceLang" class="inp" style="max-width:155px"><option value="en">Nguồn: English</option><option value="auto">Nguồn: Tự nhận diện</option><option value="vi">Nguồn: Tiếng Việt</option><option value="ja">Nguồn: 日本語</option><option value="ko">Nguồn: 한국어</option><option value="zh">Nguồn: 中文</option><option value="fr">Nguồn: Français</option></select>
+                <button class="oli-btn primary" onclick="translateVideoTranscript()">✦ Dịch lời thoại tự động</button>
+              </div>
+              <div class="ai-cheploi-box" style="margin:10px 0;padding:10px">
+                <strong>🖼️ Dịch chữ trong hình video (OCR)</strong>
+                <p class="small muted" style="margin:5px 0 8px">Chọn video trong máy. PRINCIPIA sẽ lấy mẫu khung hình và nhận diện chữ; không trích lời nói từ âm thanh.</p>
+                <input id="ytVideoFile" type="file" accept="video/*" class="inp" style="width:100%">
+                <video id="ytOcrVideo" controls playsinline style="display:none;width:100%;max-height:220px;margin-top:8px;border-radius:10px"></video>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button class="oli-btn primary" onclick="scanVideoFramesOCR()">Quét chữ trong video</button><span id="ytOcrStatus" class="small muted" style="align-self:center">Chưa chọn video</span></div>
+                <div style="display:flex;gap:14px;flex-wrap:wrap;margin:10px 0">
+                  <label class="small" style="display:flex;align-items:center;gap:7px"><input type="checkbox" id="ytLiveOcrToggle" checked onchange="toggleLiveVideoOcr(this.checked)"> 🖼️ Nhận diện hình ảnh trực tiếp</label>
+                  <label class="small" style="display:flex;align-items:center;gap:7px"><input type="checkbox" id="ytLiveImageTranslateToggle" checked onchange="toggleLiveImageTranslation(this.checked)"> 🌐 Tự dịch chữ nhận diện</label>
+                </div>
+                <div id="ytLiveImageStatus" class="small muted">OCR trực tiếp sẽ chạy khi phát video đã chọn</div>
+                <div id="ytLiveImageCaption" style="display:none;margin:8px 0;padding:10px;border-radius:10px;background:rgba(20,20,25,.82);color:white;font-size:15px;line-height:1.5;white-space:pre-wrap"></div>
+                <textarea id="ytOcrText" class="inp" rows="4" placeholder="Chữ nhận diện từ các khung hình sẽ xuất hiện ở đây..." style="width:100%;margin-top:8px" oninput="saveVideoOcr()"></textarea>
+                <button class="oli-btn" onclick="translateVideoOcr()">Dịch chữ trong hình</button>
+              </div>
+              <label class="small" style="display:block;margin-top:10px">Bản dịch lời thoại · ngôn ngữ đích</label>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin:6px 0"><select id="ytDubLang" class="inp" style="max-width:170px" onchange="saveVideoTranslation()"><option value="vi">Tiếng Việt</option><option value="en">English</option><option value="ja">日本語</option><option value="ko">한국어</option><option value="zh">中文</option><option value="fr">Français</option></select><button class="oli-btn" onclick="speakVideoText('original')">▶ Nghe lời gốc</button><button class="oli-btn primary" onclick="speakVideoText('translated')">▶ Đọc bản dịch</button><button class="oli-btn" onclick="speakVideoText('both')">▶ Nghe cả hai</button><button class="oli-btn" onclick="stopVideoSpeech()">■ Dừng</button></div>
+              <textarea id="ytTranslatedTranscript" class="inp" rows="6" placeholder="Dán/nhập bản dịch lời thoại tại đây. Bản dịch sẽ được lưu cùng bài học." oninput="saveVideoTranslation()" style="width:100%;resize:vertical;line-height:1.6;"></textarea>
+              <p class="small muted">Lồng tiếng thử bằng giọng đọc của trình duyệt (không phải giọng AI nhân bản và chưa khớp khẩu hình/từng câu với video). Có thể phát lời dịch khi xem video.</p>
+              <button class="oli-btn primary" onclick="startVideoVoiceover()">🎙️ Bắt đầu lồng tiếng bản dịch đã chép</button>
+              <div class="ai-cheploi-box" style="margin-top:12px;padding:12px">
+                <strong>🔴 Chép lời & lồng tiếng trực tiếp</strong>
+                <p class="small muted" style="margin:5px 0 8px">Phát video bằng loa và cho phép PRINCIPIA dùng micro để nghe. Hệ thống nhận diện lời nói, chép nguyên văn, dịch từng câu rồi đọc bản dịch. Có thể trễ vài giây; không phải thu âm trực tiếp từ tab.</p>
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                  <button class="oli-btn primary" id="ytLiveStart" onclick="startLiveVideoCaption()">● Bắt đầu nghe & dịch trực tiếp</button>
+                  <button class="oli-btn" id="ytLiveStop" onclick="stopLiveVideoCaption()" disabled>■ Dừng</button>
+                </div>
+                <div id="ytLiveStatus" class="small muted" style="margin:8px 0">Chưa bắt đầu</div>
+                <label class="small">Bản chép lời gốc (tự cập nhật)</label>
+                <textarea id="ytLiveOriginal" class="inp" rows="4" readonly style="width:100%;margin:5px 0"></textarea>
+                <label class="small">Bản dịch trực tiếp (tự cập nhật)</label>
+                <textarea id="ytLiveTranslated" class="inp" rows="4" readonly style="width:100%;margin:5px 0"></textarea>
+                <button class="oli-btn" onclick="copyLiveCaptionToTranscript()">Chép vào transcript bài học</button>
+              </div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+                <button class="oli-btn primary" onclick="summarizeTranscript()">AI tóm tắt transcript</button>
+                <button class="oli-btn" onclick="clearTranscript()">Xóa transcript</button>
+              </div>
+            </div>
+            <div class="ai-cheploi-box" style="margin-bottom:12px;">
+              <strong>🧠 Tóm tắt AI</strong>
+              <div id="ytSummaryOutput" style="margin-top:8px;padding:10px;border:1px solid var(--line);border-radius:9px;background:var(--bg);font-size:13px;line-height:1.6;min-height:64px;white-space:pre-wrap;">Tóm tắt sẽ hiển thị ở đây sau khi bạn thêm transcript.</div>
+            </div>
+            <p style="font-size:13px; color:var(--muted); margin-bottom:8px;">Ghi chép lời giải, công thức hoặc nội dung bài học tại đây:</p>
+            <textarea id="clNoteArea" style="width:100%; min-height:210px; padding:12px; border-radius:10px; border:1px solid var(--line); background:var(--bg-2); line-height:1.6;" oninput="saveClNote()"></textarea>
+
+            <!-- Nút Note ở dưới hiện ô như AI -->
+            <div style="margin-top:10px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              <button class="oli-btn primary" id="toggleNotePopBtn" onclick="toggleNotePopPanel()">Mở ghi chú nhanh</button>
+            </div>
+
+            <div class="note-pop-panel" id="notePopPanel">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <strong style="font-size:13px;">📝 Ô Note nhanh</strong>
+                <div style="display:flex; gap:6px;">
+                  <button class="oli-btn" style="padding:3px 8px; font-size:11.5px;" onclick="pushPopNoteToMain()">Đưa lên khung chính</button>
+                  <button onclick="toggleNotePopPanel(false)">Đóng ghi chú</button>
+                </div>
+              </div>
+              <textarea id="quickPopNoteArea" rows="4" class="inp" placeholder="Ghi chú nhanh tại ô Note..." oninput="saveQuickPopNote()"></textarea>
+            </div>
+          </div>
+
+            <!-- Nút ở dưới: AI đọc lý thuyết trong bài học & tạo Quiz ngay trong bài học -->
+            <div style="margin-top:14px; padding-top:12px; border-top:1px solid var(--line); display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              <button type="button" class="primary" id="aiReadTheoryQuizBtn" onclick="generateQuizFromLessonTheory()">✨ AI đọc lý thuyết & tạo Quiz</button>
+              <span class="muted small">Đọc trực tiếp lý thuyết bài học hiện tại và tạo câu hỏi Quiz ngay bên dưới.</span>
+            </div>
+            <div id="inlineLessonAiQuizBox" style="margin-top:12px;"></div>
+
+          <div id="clTab-list" style="display:none;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <h4>List bài học</h4>
+              <button class="oli-btn" onclick="addLessonInTab()">Thêm bài học</button>
+            </div>
+            <div id="clLessonListBox"></div>
+          </div>
+
+          <div id="clTab-files" style="display:none;">
+            <h4 style="margin-bottom:8px;">Các file tôi thêm vào</h4>
+            <input type="file" multiple class="inp" style="margin-bottom:10px;" onchange="addFilesToList(event)" />
+            <div id="clUserFilesBox"></div>
+          </div>
+
+          <div id="clTab-grade" style="display:none;">
+            <h4 style="margin-bottom:8px;">Gửi bài làm — AI chấm & chữa</h4>
+            <div class="fg">
+              <label class="lbl">Chọn AI chấm bài</label>
+              <select class="inp" id="gradeAiChoice">
+                <option>AI 1 (Chấm chi tiết & chữa lỗi)</option>
+                <option>AI 2 (Chấm nhanh & gợi ý)</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label class="lbl">Bài làm / Ảnh bài làm</label>
+              <textarea class="inp" rows="4" id="gradeTextInput" placeholder="Nhập bài làm..."></textarea>
+              <input type="file" id="gradeFiles" accept="image/*,.pdf,.doc,.docx,.txt" multiple class="inp" style="margin-top:8px;" onchange="previewGradeFiles(this.files)" /><div id="gradeFilesPreview" class="small muted" style="margin-top:8px;">Chưa đính kèm file. Có thể chọn ảnh bài làm, PDF hoặc tài liệu.</div>
+            </div>
+            <button class="oli-btn primary" onclick="runAiGrade()">Gửi bài để AI chấm (+30 EXP)</button>
+            <div id="gradeOutputBox" style="margin-top:12px;"></div>
+          </div>
+
+          <div id="clTab-phet" style="display:none;">
+            <div style="display:flex; gap:8px; align-items:center; margin-bottom:10px; flex-wrap:wrap;">
+              <strong>Mô phỏng PhET:</strong>
+              <select class="inp" id="phetSubjectPicker" style="width:auto; flex:1;" onchange="changePhetSrc()">
+                <option value="https://phet.colorado.edu/vi/simulations/filter?subjects=physics&type=html">Vật lý</option>
+                <option value="https://phet.colorado.edu/vi/simulations/filter?subjects=math&type=html">Toán và Thống kê</option>
+                <option value="https://phet.colorado.edu/vi/simulations/filter?subjects=chemistry&type=html">Hóa học</option>
+                <option value="https://phet.colorado.edu/vi/simulations/filter?subjects=earth-science&type=html">Trái đất và Không gian</option>
+                <option value="https://phet.colorado.edu/vi/simulations/filter?subjects=biology&type=html">Sinh học</option>
+              </select>
+            </div>
+            <iframe id="phetFrame" src="https://phet.colorado.edu/vi/simulations/filter?subjects=physics&type=html" style="width:100%; height:440px; border:1px solid var(--line); border-radius:10px;"></iframe>
+          </div>
+        </div>
+
+        <div class="cl-divider" id="clDivider"></div>
+
+        <div class="cl-right-pane" id="clRightPane">
+          <div id="clAdminVideoLinkControls" style="padding:8px 12px; background:#1e293b; display:flex; gap:8px; align-items:center;">
+            <span style="font-size:12.5px;">Video / Link:</span>
+            <input type="text" id="clVideoUrlInput" placeholder="Dán link YouTube để phát ngay trên trang..." style="flex:1; padding:6px 10px; border-radius:7px; border:1px solid rgba(255,255,255,0.2); background:#0f172a; color:#fff; font-size:13px;" />
+            <button class="oli-btn primary" onclick="playVideoInRightPane()">Phát</button>
+          </div>
+          <div id="clVideoStage" style="flex:1; display:flex; align-items:center; justify-content:center; padding:16px;">
+            <p style="color:#94a3b8; font-size:13.5px;">Dán link YouTube vào ô trên để xem trực tiếp ngay tại đây.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="xp-toast" id="xpToast"></div>
+
+  <button class="chat-bubble-btn" onclick="toggleChatBox()" title="Mở trợ lý AI">Trợ lý AI</button>
+  <div class="chat-box" id="chatBox">
+    <div class="ai-chat-head"><div><strong>Trợ lý AI</strong><div class="ai-chat-sub">Lịch sử riêng theo từng AI</div></div><div style="display:flex;gap:6px"><button class="iconbtn" onclick="clearPrincipiaChatHistory()" title="Xóa lịch sử">⌫</button><button class="iconbtn" onclick="toggleChatBox()" aria-label="Đóng">✕</button></div></div>
+    <div class="ai-picker-head"><label for="principiaAISelect"><strong>AI đang dùng</strong></label><div style="display:flex;gap:6px;align-items:center"><select id="principiaAISelect" class="ai-mini-select" onchange="selectPrincipiaAI(this.value)"></select><button class="ai-add-btn" onclick="addPrincipiaAI()" title="Thêm AI">＋</button></div></div>
+    <div id="chatMsgs" class="chat-msgs" aria-live="polite"></div>
+    <div class="ai-chat-compose"><div class="ai-chat-sub" style="margin-bottom:7px">Tin nhắn được lưu trong lịch sử trên thiết bị này. Gửi sẽ mở AI đã chọn ở mini trình duyệt PRINCIPIA và sao chép câu hỏi để bạn dán vào AI.</div><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap"><label class="secondary ai-attach" style="cursor:pointer;margin:0">＋ Ảnh<input type="file" accept="image/*" hidden onchange="attachChatImg(event)"></label><span id="chatImgName" class="ai-chat-sub"></span></div><div style="display:flex;gap:7px"><input type="text" id="chatInput" placeholder="Nhập câu hỏi..." onkeydown="if(event.key==='Enter') sendChat()"><button class="primary" onclick="sendChat()">Gửi ↗</button></div></div>
+  </div>
+
+<div id="modal"></div>
+<div id="toast"></div>
+<!-- PRINCIPIA_STARTUP_DIAGNOSTICS_V1 -->
+<script src="/assets/js/app-part-01.js"></script>
+<script src="/assets/js/app-part-02.js?v=20261121-authfix1"></script>
+
+<!-- Firebase SDK được nạp nền sau khi giao diện đã hiển thị; tránh chặn toàn bộ trang nếu CDN chậm. -->
+
+<script src="/assets/js/app-part-03.js?v=20261121-authfix1"></script>
+
+
+
+
+
+<div id="stickerStudio" onclick="if(event.target===this)closeStickerStudio()"><div class="sticker-card">
+ <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div><div class="eyebrow">PRINCIPIA COMPANION</div><h2 style="margin:5px 0">🎀 Nhân vật & Sticker</h2></div><button class="secondary" onclick="closeStickerStudio()">✕</button></div>
+ <p class="muted small">Chọn sticker xuất hiện ở góc màn hình. Lựa chọn và sticker tải lên được lưu trên thiết bị này.</p>
+ <div class="sticker-grid" id="stickerBuiltins"></div>
+ <div class="panel" style="padding:14px"><strong>Thêm sticker của bạn</strong><p class="muted small">Hỗ trợ PNG, JPG, WEBP và GIF. Ảnh được lưu trong trình duyệt hiện tại.</p><input id="stickerUpload" type="file" accept="image/png,image/jpeg,image/webp,image/gif" multiple onchange="addPersonalStickers(this.files)"></div>
+ <div id="personalStickerGrid" class="sticker-grid"></div>
+ <div class="panel" style="padding:14px"><strong>Lời nhắn khi học</strong><input id="stickerMessage" type="text" maxlength="100" placeholder="Ví dụ: Cố lên, cậu làm được mà!" style="margin-top:9px" onchange="saveStickerMessage(this.value)"><div class="sticker-actions" style="margin-top:12px"><button class="primary" onclick="randomizeSticker()">🎲 Chọn ngẫu nhiên</button><button class="secondary" onclick="toggleStickerCompanion()" id="stickerToggleBtn">Ẩn nhân vật</button><button class="danger" onclick="resetStickerSettings()">Đặt lại</button></div></div>
+ <div class="panel" style="padding:14px;margin-top:12px"><strong>⚡ Tự động xuất hiện theo sự kiện</strong><p class="muted small">Nhân vật và lời nhắn sẽ tự bật lên khi sự kiện xảy ra. Muốn chỉnh gì thì chỉnh tại đây.</p><label style="display:flex;gap:8px;align-items:center"><input id="companionAuto" type="checkbox" checked onchange="saveCompanionEventSettings()"> Bật tự động hiện nhân vật</label><label>Thời gian hiển thị (giây)</label><input id="companionDuration" type="number" min="1" max="15" value="4" onchange="saveCompanionEventSettings()"><div id="companionEventRows" style="display:grid;gap:9px;margin-top:10px"></div><button class="primary" style="margin-top:10px" onclick="saveCompanionEventSettings()">💾 Lưu cài đặt sự kiện</button></div>
+ <p class="muted small" id="stickerStatus" aria-live="polite"></p>
+ </div></div>
+<script src="/assets/js/app-part-04.js"></script>
+
+
+<script src="/assets/js/app-part-05.js"></script>
+<script src="/assets/js/app-part-07.js"></script>
+
+
+
+
+<script src="/assets/js/app-part-08.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script id="principia-music-island-script" src="/assets/js/app-part-09.js"></script>
+<script src="/assets/js/app-part-10.js"></script>
+<script defer src="/assets/js/physics-engine.js"></script>
+<script src="/assets/js/download-center.js"></script>
+<script>
+(function(){
+  // Website-only layout patch. Electron desktop app is deliberately untouched.
+  if(window.principiaDesktop) return;
+  const mobileCss=document.createElement('link');
+  mobileCss.rel='stylesheet';
+  mobileCss.href='/assets/css/principia-mobile.css?v=7';
+  document.head.appendChild(mobileCss);
+  // Keep the desktop DOM/layout intact. Portal the nav only on phone/tablet widths.
+  let busy=false,observer;
+  function moveNav(){
+    if(busy)return;
+    const layout=document.querySelector('#app .layout');
+    const nav=document.querySelector('#app .layout>.sidebar')||document.querySelector('body>.sidebar[data-principia-web-nav]');
+    if(!nav||!layout)return;
+    busy=true;
+    if(window.matchMedia('(max-width:900px)').matches){
+      if(nav.parentElement!==document.body){nav.dataset.principiaWebNav='1';document.body.appendChild(nav);}
+    }else if(nav.parentElement===document.body){
+      delete nav.dataset.principiaWebNav;
+      layout.insertBefore(nav,layout.firstChild);
+    }
+    busy=false;
+  }
+  function start(){
+    moveNav();
+    observer=new MutationObserver(moveNav);
+    observer.observe(document.getElementById('app')||document.body,{childList:true,subtree:true});
+    window.addEventListener('resize',moveNav,{passive:true});
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
+})();
+</script>
+
+</body>
 </html>
+
