@@ -59,9 +59,9 @@
   const today=localDateKey();
   const bank=pool();
   if(!bank.length){open('Thử thách mỗi ngày','<p>Chưa có câu hỏi hợp lệ để tạo thử thách. Hãy bổ sung câu hỏi vào Quiz hoặc bài học.</p>'+btn('Về trung tâm','principiaSuiteHome()'));return}
-  if(!state.daily||state.daily.date!==today){const q=bank[Math.floor(Math.random()*bank.length)];state.daily={date:today,q:q.q,a:q.a,correct:q.correct,topic:q.topic,path:q.path,answered:false,choice:null};save()}
+  if(!state.daily||state.daily.date!==today){const q=bank[Math.floor(Math.random()*bank.length)];state.daily={date:today,q:q.q,a:q.a,correct:q.correct,topic:q.topic,path:q.path,image:q.image||null,graph:q.graph||null,answered:false,choice:null};save()}
   const d=state.daily;
-  let html='<p>1 câu hỏi mới mỗi ngày · dữ liệu từ ngân hàng bài học/Quiz thật.</p>'+panel('Thử thách '+today,'<b>'+esc(d.topic)+'</b><p>'+esc(d.q)+'</p><div style="display:grid;gap:8px">'+d.a.map((a,i)=>'<button '+(d.answered?'disabled':'')+' onclick="principiaSuiteDailyAnswer('+i+')" style="text-align:left;padding:12px;border:1px solid var(--line,#555);border-radius:12px;background:var(--card,#171a2a);color:inherit">'+String.fromCharCode(65+i)+'. '+esc(a)+'</button>').join('')+'</div>'+ (d.answered?'<p><b>'+(d.choice===d.correct?'✅ Chính xác!':'❌ Chưa đúng')+'</b><br>Đáp án: '+esc(d.a[d.correct])+'</p>':'') )+btn('Về trung tâm','principiaSuiteHome()');
+  let html='<p>1 câu hỏi mới mỗi ngày · dữ liệu từ ngân hàng bài học/Quiz thật.</p>'+panel('Thử thách '+today,'<b>'+esc(d.topic)+'</b><p>'+esc(d.q)+'</p>'+questionMedia(d)+'<div style="display:grid;gap:8px">'+d.a.map((a,i)=>'<button '+(d.answered?'disabled':'')+' onclick="principiaSuiteDailyAnswer('+i+')" style="text-align:left;padding:12px;border:1px solid var(--line,#555);border-radius:12px;background:var(--card,#171a2a);color:inherit">'+String.fromCharCode(65+i)+'. '+esc(a)+'</button>').join('')+'</div>'+ (d.answered?'<p><b>'+(d.choice===d.correct?'✅ Chính xác!':'❌ Chưa đúng')+'</b><br>Đáp án: '+esc(d.a[d.correct])+'</p>':'') )+btn('Về trung tâm','principiaSuiteHome()');
   open('Thử thách mỗi ngày',html)
  }
  function dailyAnswer(i){
