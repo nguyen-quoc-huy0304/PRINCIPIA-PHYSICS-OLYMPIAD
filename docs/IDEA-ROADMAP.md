@@ -180,6 +180,8 @@
 | 130 | Giữ tiến độ câu hiện tại khi chuyển câu và khôi phục bản nháp | Đã lưu chỉ số câu hiện tại cùng bản nháp bài thi |
 | 131 | Hồ sơ tư duy & học tập: tổng hợp lịch sử luyện tập, phân bố chế độ, lỗi thường gặp và gợi ý ôn tập có giải thích | Đã tích hợp trong Learning Suite; chỉ mô tả dữ liệu học tập cục bộ, chưa thay thế đánh giá chuyên môn; cần nghiệm thu trình duyệt |
 
+| 132 | Hành trình học mỗi ngày: mục tiêu 5/10/15 phút, truy hồi chủ động, ôn tập giãn cách, ghi chú phản tư và thưởng XP tự nguyện | Đã tích hợp trong Learning Suite; tiến độ lưu cục bộ theo ngày; cần nghiệm thu trên trình duyệt và kiểm tra luồng XP |
+
 ## Nguyên tắc nghiệm thu
 
 1. Không đánh dấu hoàn thành chỉ vì đã tạo file hoặc commit code.
