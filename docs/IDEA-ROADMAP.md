@@ -58,7 +58,7 @@
 | 33 | Physics Arcade: môi trường trọng lực, tốc độ và cache | Có mã nguồn nền tảng — cần kiểm thử gameplay |
 | 34 | Phòng thí nghiệm cánh tay robot 2 khớp, động học thuận/nghịch | Có mã nguồn — chờ nghiệm thu build và giao diện |
 | 35 | Phân tích số liệu thí nghiệm, hồi quy tuyến tính, R², RMSE và đồ thị | Có mã nguồn — chờ nghiệm thu build và kết quả |
-| 36 | Thí nghiệm vật lý tương tác và đo đạc tham số | Đang triển khai |
+| 36 | Thí nghiệm vật lý tương tác và đo đạc tham số | Có mã nguồn phòng thí nghiệm con lắc đơn; cần nghiệm thu giao diện, mô hình và đo đạc |
 | 37 | Xây dựng phòng lab, lắp thiết bị và tạo thí nghiệm | Chưa làm đầy đủ |
 | 38 | Công cụ nghiên cứu khoa học và ghi nhận kết quả thí nghiệm | Đang triển khai / cần đặc tả |
 | 39 | Mô hình hóa vật lý nâng cao, kiểm tra sai số và đơn vị SI | Đang triển khai |
