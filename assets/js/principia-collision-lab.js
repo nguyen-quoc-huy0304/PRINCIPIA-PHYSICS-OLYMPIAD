@@ -119,6 +119,8 @@
     const start = root.querySelector('[data-collision2d="start"]');
     const reset = root.querySelector('[data-collision2d="reset"]');
     const restitutionInput = root.querySelector('[data-collision2d="e"]');
+    const restitutionLabel = root.querySelector('[data-collision2d="e-label"]');
+    restitutionInput.addEventListener('input', () => { restitutionLabel.textContent = Number(restitutionInput.value).toLocaleString('vi-VN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); });
     let bodies = [], running = false, frame = 0, last = 0, raf = 0;
     const seed = () => [
       { x: 65, y: 72, vx: 115, vy: 34, mass: 1, radius: 15, color: '#3b82f6' },
