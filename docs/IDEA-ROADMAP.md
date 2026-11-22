@@ -228,3 +228,5 @@
 | 150 | Bảo vệ màn hình Cân bằng lực khỏi HTML injection qua ngày tháng trong lịch sử LocalStorage | Đã escape dữ liệu lịch sử trước khi chèn vào HTML; đã kiểm tra cú pháp, cần chạy unit test và kiểm thử trình duyệt |
 | 151 | Bổ sung kiểm thử tự động cho ba mức độ bài Cân bằng lực và bộ escape nội dung lịch sử | Đã thêm ca kiểm tra giới hạn lực và HTML escaping; cần chạy `npm test` trên runner |
 | 152 | CI kiểm tra cú pháp mọi file JavaScript thay vì danh sách chọn lọc | Đã đổi job sang quét toàn bộ `assets/js/**/*.js` bằng Node 22 và chạy `npm test`; chờ GitHub Actions xác nhận |
+
+| 153 | Bổ sung regression test cho tìm kiếm toàn cục: escape HTML, cấu trúc phân cấp bài học và dữ liệu node lỗi | Đã thêm bộ test Node.js; chờ chạy `npm test` và CI |
