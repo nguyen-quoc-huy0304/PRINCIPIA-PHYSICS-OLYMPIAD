@@ -35,9 +35,12 @@ fn day_number(day: &str) -> Option<i64> {
     let parts: Vec<i64> = day.split('-').map(str::parse).collect::<Result<_,_>>().ok()?;
     if parts.len()!=3 { return None; }
     let (mut y,m,d)=(parts[0],parts[1],parts[2]);
-    if !(1..=12).contains(&m) || !(1..=31).contains(&d) { return None; }
+    if !(1..=12).contains(&m) { return None; }
+    let leap=(y%4==0 && y%100!=0) || y%400==0;
+    let month_days=match m {1|3|5|7|8|10|12=>31,4|6|9|11=>30,2=>if leap {29} else {28},_=>return None};
+    if d<1 || d>month_days { return None; }
     y -= i64::from(m <= 2);
-    let era=if y>=0 {y} else {y-399}/400;
+    let era=(if y>=0 {y} else {y-399})/400;
     let yoe=y-era*400;
     let mp=m+if m>2 {-3} else {9};
     let doy=(153*mp+2)/5+d-1;
