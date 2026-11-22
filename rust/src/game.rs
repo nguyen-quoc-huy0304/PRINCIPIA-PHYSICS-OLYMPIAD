@@ -14,6 +14,7 @@ pub fn score_projectile(speed: f64, angle_degrees: f64, target_m: f64, gravity: 
     }
     let flight = projectile(speed, angle_degrees, gravity)?;
     let error = (flight.range - target_m).abs();
+    if !error.is_finite() { return Err(PhysicsError::NonFinite); }
     let points = (100.0 - error * 5.0).round().max(0.0) as u32;
     Ok(ShotResult { range_m: flight.range, error_m: error, points })
 }
@@ -35,5 +36,9 @@ mod tests {
     #[test]
     fn rejects_invalid_target() {
         assert!(score_projectile(10.0, 45.0, f64::NAN, 9.81).is_err());
+    }
+    #[test]
+    fn rejects_overflow_in_target_error() {
+        assert_eq!(score_projectile(0.0, 45.0, f64::MAX, 9.81), Err(PhysicsError::NonFinite));
     }
 }
