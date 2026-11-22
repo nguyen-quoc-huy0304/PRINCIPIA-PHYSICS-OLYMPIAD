@@ -215,11 +215,11 @@
 <div id="toast"></div>
 <!-- PRINCIPIA_STARTUP_DIAGNOSTICS_V1 -->
 <script src="/assets/js/app-part-01.js"></script>
-<script src="/assets/js/app-part-02.js?v=20261121-authfix1"></script>
+<script defer src="/assets/js/app-part-02.js?v=20261121-authfix1"></script>
 
 <!-- Firebase SDK được nạp nền sau khi giao diện đã hiển thị; tránh chặn toàn bộ trang nếu CDN chậm. -->
 
-<script src="/assets/js/app-part-03.js?v=20261121-authfix1"></script>
+<script defer src="/assets/js/app-part-03.js?v=20261121-authfix1"></script>
 
 
 
@@ -235,19 +235,16 @@
  <div class="panel" style="padding:14px;margin-top:12px"><strong>⚡ Tự động xuất hiện theo sự kiện</strong><p class="muted small">Nhân vật và lời nhắn sẽ tự bật lên khi sự kiện xảy ra. Muốn chỉnh gì thì chỉnh tại đây.</p><label style="display:flex;gap:8px;align-items:center"><input id="companionAuto" type="checkbox" checked onchange="saveCompanionEventSettings()"> Bật tự động hiện nhân vật</label><label>Thời gian hiển thị (giây)</label><input id="companionDuration" type="number" min="1" max="15" value="4" onchange="saveCompanionEventSettings()"><div id="companionEventRows" style="display:grid;gap:9px;margin-top:10px"></div><button class="primary" style="margin-top:10px" onclick="saveCompanionEventSettings()">💾 Lưu cài đặt sự kiện</button></div>
  <p class="muted small" id="stickerStatus" aria-live="polite"></p>
  </div></div>
-<script src="/assets/js/app-part-04.js"></script>
+<script defer src="/assets/js/app-part-04.js"></script>
 
 
-<script src="/assets/js/app-part-05.js"></script>
-<script src="/assets/js/app-part-07.js"></script>
-
-
-
-
-<script src="/assets/js/app-part-08.js"></script>
+<script defer src="/assets/js/app-part-05.js"></script>
+<script defer src="/assets/js/app-part-07.js"></script>
 
 
 
+
+<script defer src="/assets/js/app-part-08.js"></script>
 
 
 
@@ -258,10 +255,13 @@
 
 
 
-<script id="principia-music-island-script" src="/assets/js/app-part-09.js"></script>
-<script src="/assets/js/app-part-10.js"></script>
+
+
+
+<script defer id="principia-music-island-script" src="/assets/js/app-part-09.js"></script>
+<script defer src="/assets/js/app-part-10.js"></script>
 <script defer src="/assets/js/physics-engine.js"></script>
-<script src="/assets/js/download-center.js"></script>
+<script defer src="/assets/js/download-center.js"></script>
 <script>
 (function(){
   // Website-only layout patch. Electron desktop app is deliberately untouched.
@@ -271,7 +271,7 @@
   mobileCss.href='/assets/css/principia-mobile.css?v=7';
   document.head.appendChild(mobileCss);
   // Keep the desktop DOM/layout intact. Portal the nav only on phone/tablet widths.
-  let busy=false,observer;
+  let busy=false,observer,framePending=false;
   function moveNav(){
     if(busy)return;
     const layout=document.querySelector('#app .layout');
@@ -286,11 +286,16 @@
     }
     busy=false;
   }
+  function scheduleMoveNav(){
+    if(framePending)return;
+    framePending=true;
+    requestAnimationFrame(()=>{framePending=false;moveNav();});
+  }
   function start(){
     moveNav();
-    observer=new MutationObserver(moveNav);
+    observer=new MutationObserver(scheduleMoveNav);
     observer.observe(document.getElementById('app')||document.body,{childList:true,subtree:true});
-    window.addEventListener('resize',moveNav,{passive:true});
+    window.addEventListener('resize',scheduleMoveNav,{passive:true});
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
