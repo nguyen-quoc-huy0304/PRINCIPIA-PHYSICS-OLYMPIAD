@@ -49,6 +49,8 @@ jobs:
       - name: Build Rust core sidecar for packaging
         run: cargo build --release --manifest-path rust/Cargo.toml --bin principia-core-server
       - run: npm install
+      - name: Run JavaScript regression tests before packaging
+        run: npm test
       - name: Regenerate Windows icon from the cropped circular logo with alpha transparency
         if: matrix.platform == 'windows'
         shell: pwsh
