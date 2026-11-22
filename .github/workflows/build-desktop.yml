@@ -24,8 +24,14 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Install stable Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+      - name: Build native PRINCIPIA core required by electron-builder
+        run: cargo build --release --manifest-path rust/Cargo.toml --bin principia-core-server
       - name: Install dependencies
         run: npm install
+      - name: Run JavaScript regression tests
+        run: npm test
       - name: Build Windows installer
         run: npm run dist:win
       - name: Upload installer artifact
