@@ -793,6 +793,26 @@ function switchClLeftTab(t){
   document.querySelectorAll('.cl-ico-btn').forEach(b=>b.classList.toggle('active',b.dataset.t===t));
   valid.forEach(id=>{const panel=document.getElementById('clTab-'+id);if(panel){panel.hidden=id!==t;panel.style.display=id===t?'block':'none';}});
   const pane=document.getElementById('clLeftPane');if(pane)pane.classList.remove('cl-pane-hidden');
+  // Heavy scientific/lab modules are fetched only when the learner opens this tab.
+  if(t==='phet'){
+    const panel=document.getElementById('clTab-phet');
+    if(panel&&!panel.dataset.principiaLabsLoading&&!panel.dataset.principiaLabsReady&&window.PrincipiaPerformance){
+      panel.dataset.principiaLabsLoading='1';
+      window.PrincipiaPerformance.loadScripts([
+        '/assets/js/physics-engine.js?v=1.3.1',
+        '/assets/js/principia-external-labs.js?v=1.0.1',
+        '/assets/js/principia-robotics-lab.js?v=1.0.1',
+        '/assets/js/principia-data-lab.js?v=1.0.1'
+      ]).then(()=>{
+        panel.dataset.principiaLabsReady='1';
+        if(typeof window.changePhetSrc==='function')window.changePhetSrc();
+      }).catch(error=>{
+        delete panel.dataset.principiaLabsLoading;
+        console.error('[PRINCIPIA] Không tải được phòng thí nghiệm:',error);
+        if(typeof notify==='function')notify('Không tải được mô-đun phòng thí nghiệm. Hãy thử mở lại tab.');
+      }).finally(()=>{delete panel.dataset.principiaLabsLoading;});
+    }
+  }
 }
 
 function saveTranscript(){
