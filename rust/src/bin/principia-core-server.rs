@@ -1,5 +1,5 @@
 use serde_json::{json, Value};
-use std::io::{self, BufRead};
+use std::io::{self, BufRead, Write};
 
 fn number<'a>(request: &'a Value, key: &str) -> Result<f64, String> {
     request.get(key).and_then(Value::as_f64)
@@ -38,7 +38,11 @@ fn main() {
             Err(_) => break,
         };
         if let Ok(encoded) = serde_json::to_string(&response) {
-            println!("{encoded}");
+            let stdout = io::stdout();
+            let mut output = stdout.lock();
+            if writeln!(output, "{encoded}").and_then(|_| output.flush()).is_err() {
+                break;
+            }
         }
     }
 }

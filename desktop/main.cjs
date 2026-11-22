@@ -65,7 +65,7 @@ function callNativeCore(operation, params) {
   const id = coreNextId++;
   return new Promise((resolve, reject) => {
     corePending.set(id, { resolve, reject });
-    coreProcess.stdin.write(JSON.stringify({ id, op: operation, ...params }) + '\\n', error => {
+    coreProcess.stdin.write(JSON.stringify({ id, op: operation, ...params }) + '\n', error => {
       if (!error) return;
       corePending.delete(id);
       reject(error);

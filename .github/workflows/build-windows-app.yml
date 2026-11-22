@@ -5,6 +5,7 @@ on:
   push:
     paths:
       - 'desktop/**'
+      - 'rust/**'
       - 'package.json'
       - 'assets/js/**'
       - 'assets/css/**'
