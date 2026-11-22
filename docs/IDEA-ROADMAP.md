@@ -120,6 +120,9 @@
 
 | 78 | Ngân hàng câu hỏi nâng cao: lọc theo chủ đề, lưu câu yêu thích bền vững và xuất CSV theo bộ lọc hiện tại | Đã tích hợp trong Learning Suite; cần kiểm tra tương tác thực tế trên trình duyệt |
 
+| 79 | Tìm kiếm sổ tay kiến thức theo tiêu đề và nội dung | Đã tích hợp bộ lọc trực tiếp, giữ nguyên sửa/xóa ghi chú |
+| 80 | Sao chép nhanh công thức trong thư viện công thức | Đã thêm thao tác sao chép với phương án dự phòng cho trình duyệt hạn chế Clipboard API |
+
 ## Nguyên tắc nghiệm thu
 
 1. Không đánh dấu hoàn thành chỉ vì đã tạo file hoặc commit code.
