@@ -1,0 +1,31 @@
+name: Build PRINCIPIA Rust Game WASM
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "rust/**"
+      - ".github/workflows/build-game-wasm.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-game-wasm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: jetli/wasm-pack-action@v0.4.0
+        with:
+          version: latest
+      - name: Build optimized Rust WebAssembly package
+        run: wasm-pack build rust --target web --release --out-dir ../assets/wasm/pkg --out-name principia_core
+      - name: Commit generated browser package
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Build optimized PRINCIPIA Rust game WASM"
+          file_pattern: assets/wasm/pkg/*
