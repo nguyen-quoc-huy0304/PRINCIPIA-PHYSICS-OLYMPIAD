@@ -219,8 +219,17 @@
                   <input class="inp" data-collision2d="e" type="range" min="0" max="1" step="0.05" value="1" style="width:100%;max-width:320px;display:block;margin-top:5px">
                   <span data-collision2d="e-label">1,00</span>
                 </label>
-                <canvas data-collision2d="canvas" aria-label="Mô phỏng bốn vật va chạm trong mặt phẳng hai chiều" style="display:block;width:100%;height:280px;margin-top:10px;border-radius:10px;border:1px solid var(--line);touch-action:pan-y"></canvas>
-                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+                <canvas data-collision2d="canvas" aria-label="Mô phỏng bốn vật va chạm trong mặt phẳng hai chiều" style="display:block;width:100%;height:280px;margin-top:10px;border-radius:10px;border:1px solid var(--line);touch-action:none"></canvas>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:end">
+                  <label class="small" style="flex:1;min-width:180px">Kịch bản mẫu
+                    <select class="inp" data-collision2d="preset" style="width:100%;margin-top:4px">
+                      <option value="headon">Hai vật đối đầu</option>
+                      <option value="oblique">Va chạm xiên</option>
+                      <option value="chain">Dây chuyền 3 vật</option>
+                      <option value="cluster">Cụm 6 vật</option>
+                    </select>
+                  </label>
+                  <button type="button" class="oli-btn" data-collision2d="apply-preset">Nạp kịch bản</button>
                   <button type="button" class="oli-btn primary" data-collision2d="start">▶ Chạy mô phỏng</button>
                   <button type="button" class="oli-btn" data-collision2d="reset">Đặt lại 2D</button>
                   <button type="button" class="oli-btn" data-collision2d="add">＋ Thêm vật</button>
@@ -334,7 +343,7 @@
 <script defer src="/assets/js/principia-space-explorer.js?v=1.0.1"></script>
  <script defer src="/assets/js/principia-robot-assembly.js?v=1.0.2"></script>
 <script defer src="/assets/js/principia-pendulum-lab.js?v=1.0.1"></script>
-<script defer src="/assets/js/principia-collision-lab.js?v=1.4.0"></script>
+<script defer src="/assets/js/principia-collision-lab.js?v=1.5.0"></script>
 <script defer src="/assets/js/download-center.js"></script>
 <script>
 (function(){
