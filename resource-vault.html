@@ -118,7 +118,7 @@ $('resources').addEventListener('click',e=>{
  const b=e.target.closest('button');if(!b)return;
  if(b.dataset.copy){const x=items.find(v=>v.id===b.dataset.copy);if(x)navigator.clipboard?.writeText(x.url).then(()=>$('status').textContent='Đã sao chép link.').catch(()=>{$('status').textContent='Không thể sao chép tự động.'});}
  if(b.dataset.delete){items=items.filter(v=>v.id!==b.dataset.delete);save();render();}
- if(b.dataset.edit){const x=items.find(v=>v.id===b.dataset.edit);if(!x)return;const title=prompt('Tên tài nguyên',x.title);if(title===null)return;const url=prompt('Đường dẫn',x.url);if(url===null)return;const lesson=prompt('Chương / bài học',x.lesson||'');if(lesson===null)return;try{new URL(url)}catch{$('status').textContent='Đường dẫn không hợp lệ.';return}Object.assign(x,{title,url,lesson});save();render();}
+ if(b.dataset.edit){const x=items.find(v=>v.id===b.dataset.edit);if(!x)return;const title=prompt('Tên tài nguyên',x.title);if(title===null)return;const url=prompt('Đường dẫn',x.url);if(url===null)return;const lesson=prompt('Chương / bài học',x.lesson||'');if(lesson===null)return;try{const parsed=new URL(url);if(!['http:','https:'].includes(parsed.protocol))throw new Error('protocol')}catch{$('status').textContent='Chỉ chấp nhận link HTTP/HTTPS hợp lệ.';return}Object.assign(x,{title:String(title).slice(0,160),url:url.trim(),lesson:String(lesson).slice(0,160)});save();render();}
 });
 $('scanBtn').addEventListener('click',()=>{
  let added=0;
@@ -132,8 +132,10 @@ $('importFile').addEventListener('change',e=>{
    const backup=JSON.parse(String(reader.result));let added=0;
    if(Array.isArray(backup))backup.forEach(x=>{if(x&&x.url&&add(x))added++});
    else{
-    ['data','quizData','funData','resources','items'].forEach(k=>{if(backup[k])added+=scanTree(backup[k],k==='quizData'?'Ngân hàng Quiz':k==='funData'?'Đố vui':'Bài học')});
-    if(backup.vault&&Array.isArray(backup.vault))backup.vault.forEach(x=>{if(x&&x.url&&add(x))added++});
+    // Restore the exact format produced by Export before attempting generic PRINCIPIA scans.
+    const direct=backup.resources||backup.items||backup.vault;
+    if(Array.isArray(direct))direct.forEach(x=>{if(x&&x.url&&add(x))added++});
+    ['data','quizData','funData'].forEach(k=>{if(backup[k])added+=scanTree(backup[k],k==='quizData'?'Ngân hàng Quiz':k==='funData'?'Đố vui':'Bài học')});
    }
    save();render();$('status').textContent='Đã nhập backup; thêm '+added+' tài nguyên mới.';
   }catch{$('status').textContent='File JSON không đúng định dạng backup PRINCIPIA.'}
