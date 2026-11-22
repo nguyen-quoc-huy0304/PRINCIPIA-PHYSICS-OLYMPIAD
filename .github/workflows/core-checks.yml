@@ -56,6 +56,7 @@ jobs:
           node --check assets/js/principia-physics-puzzles.js
           node --check assets/js/principia-space-explorer.js
           node --check assets/js/principia-robot-assembly.js
+          node --check assets/js/principia-collision-lab.js
           node --test tests/js/*.test.cjs
   cpp:
     runs-on: ubuntu-latest
