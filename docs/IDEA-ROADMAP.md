@@ -261,3 +261,6 @@
 
 | 168 | Sổ nghiên cứu: tải CSV/JSON ổn định, nhập lại tệp có kiểm tra giới hạn | Có mã nguồn — chờ nghiệm thu trình duyệt |
 | 169 | Thư viện 100 phương pháp học tập dựa trên bằng chứng, tìm kiếm, lọc, lưu và theo dõi đã thử | Đã thêm module và lối vào Learning Suite; cần nghiệm thu giao diện, dữ liệu và khả năng sử dụng |
+
+| 170 | AI cục bộ tùy chọn bằng WebLLM, tải mô hình theo yêu cầu, streaming chat và giải phóng GPU | Đã tích hợp mã; chờ kiểm tra trình duyệt có WebGPU và thiết bị thật |
+| 171 | Mở AI cục bộ từ trợ lý học tập, truyền ngữ cảnh bài học/câu hỏi | Đã nối giao diện; chờ nghiệm thu trên web và app desktop/mobile |
