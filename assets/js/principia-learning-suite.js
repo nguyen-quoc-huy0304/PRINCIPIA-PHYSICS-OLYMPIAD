@@ -170,6 +170,7 @@
   ['openQuiz','openFun','lessonQuiz'].forEach(name=>{const original=window[name];if(typeof original==='function')window[name]=function(){window.__principiaSuiteQuizSignature='';return original.apply(this,arguments)}});
   const original=window.answerQuestion;
   window.answerQuestion=function(){
+   try{if(typeof answers!=='undefined'&&answers.length===0)window.__principiaSuiteQuizSignature=''}catch(_){}
    const result=original.apply(this,arguments);
    try{
     const active=typeof activeQuiz!=='undefined'?activeQuiz:null;
