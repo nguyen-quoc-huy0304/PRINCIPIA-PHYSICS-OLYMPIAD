@@ -113,6 +113,7 @@
 | 72 | Theo dõi chuỗi ngày học liên tiếp, cấp độ XP và thành tựu theo tiến độ thực tế | Có mã nguồn core + tích hợp; 9/9 unit test chạy local đạt; GitHub Actions lần chạy gần nhất thất bại trước khi có step/log, trình duyệt chưa xác nhận |
 | 73 | Mùa giải tuần với nhiệm vụ theo lượt luyện, số câu và ghi chú; phần thưởng XP không nhận trùng | Có mã nguồn core + giao diện; 5 unit test đã viết, chưa chạy local; chờ CI và nghiệm thu trình duyệt |
 | 74 | Xuất dữ liệu đo trong Sổ nghiên cứu ra CSV có đơn vị và hỗ trợ dấu phẩy/ngoặc kép an toàn | Có mã nguồn core + nút xuất theo từng thí nghiệm; đã thêm unit test, chưa chạy local; chờ CI và nghiệm thu trình duyệt |
+| 75 | Tìm kiếm công thức theo biểu thức hoặc tên bài học; lịch ôn dùng ngày địa phương nhất quán | Có mã nguồn tìm kiếm trực tiếp trong thư viện công thức; đã sửa mốc ngày ôn tập khỏi lệch UTC; cần kiểm thử trình duyệt và CI |
 
 ## Nguyên tắc nghiệm thu
 
