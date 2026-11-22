@@ -246,7 +246,7 @@
   document.body.classList.toggle('principia-a11y-underline',p.underline);
   let style=document.getElementById('principiaA11yStyles');
   if(!style){style=document.createElement('style');style.id='principiaA11yStyles';document.head.appendChild(style)}
-  style.textContent='.principia-a11y-contrast{filter:contrast(1.16)}.principia-a11y-reduced-motion *, .principia-a11y-reduced-motion *::before, .principia-a11y-reduced-motion *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}.principia-a11y-underline a,.principia-a11y-underline button.linklike{text-decoration:underline!important;text-underline-offset:3px!important}';
+  style.textContent='.principia-a11y-contrast{--text:#fff;--bg:#000;--card:#000;--line:#fff;--muted:#eee;color:#fff;background:#000}.principia-a11y-contrast :is(button,input,select,textarea,a){border:2px solid currentColor!important}.principia-a11y-contrast :is(p,small,label){color:#fff!important}.principia-a11y-reduced-motion *, .principia-a11y-reduced-motion *::before, .principia-a11y-reduced-motion *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}.principia-a11y-underline a,.principia-a11y-underline button.linklike{text-decoration:underline!important;text-underline-offset:3px!important}';
  }
  function accessibilitySettings(){
   const p=readA11y();
