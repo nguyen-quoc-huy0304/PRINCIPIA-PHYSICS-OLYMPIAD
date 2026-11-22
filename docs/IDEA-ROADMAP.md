@@ -114,6 +114,7 @@
 | 73 | Mùa giải tuần với nhiệm vụ theo lượt luyện, số câu và ghi chú; phần thưởng XP không nhận trùng | Có mã nguồn core + giao diện; 5 unit test đã viết, chưa chạy local; chờ CI và nghiệm thu trình duyệt |
 | 74 | Xuất dữ liệu đo trong Sổ nghiên cứu ra CSV có đơn vị và hỗ trợ dấu phẩy/ngoặc kép an toàn | Có mã nguồn core + nút xuất theo từng thí nghiệm; đã thêm unit test, chưa chạy local; chờ CI và nghiệm thu trình duyệt |
 | 75 | Tìm kiếm công thức theo biểu thức hoặc tên bài học; lịch ôn dùng ngày địa phương nhất quán | Có mã nguồn tìm kiếm trực tiếp trong thư viện công thức; đã sửa mốc ngày ôn tập khỏi lệch UTC; cần kiểm thử trình duyệt và CI |
+| 76 | Cho phép chỉnh sửa ghi chú học tập đã lưu mà không phải xóa và tạo lại | Có nút sửa, form nạp nội dung hiện tại, lưu cập nhật và giữ ngày tạo; ghi thêm thời điểm cập nhật; cần nghiệm thu trình duyệt |
 
 ## Nguyên tắc nghiệm thu
 
