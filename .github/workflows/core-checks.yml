@@ -66,6 +66,8 @@ jobs:
           node --check assets/js/principia-level-studio.js
           node --check assets/js/principia-research-core.js
           node --check assets/js/principia-research.js
+          node --check assets/js/principia-season-core.js
+          node --check assets/js/principia-research.js
           node --test tests/js/*.test.cjs
   cpp:
     runs-on: ubuntu-latest
