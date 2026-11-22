@@ -8,20 +8,24 @@ fn finite(values: &[f64]) -> Result<(), PhysicsError> {
     if values.iter().all(|v| v.is_finite()) { Ok(()) } else { Err(PhysicsError::NonFinite) }
 }
 
+fn finite_result(value: f64) -> Result<f64, PhysicsError> {
+    if value.is_finite() { Ok(value) } else { Err(PhysicsError::NonFinite) }
+}
+
 pub fn velocity(u: f64, acceleration: f64, time: f64) -> Result<f64, PhysicsError> {
     finite(&[u, acceleration, time])?;
-    Ok(u + acceleration * time)
+    finite_result(u + acceleration * time)
 }
 
 pub fn displacement(u: f64, acceleration: f64, time: f64) -> Result<f64, PhysicsError> {
     finite(&[u, acceleration, time])?;
-    Ok(u * time + 0.5 * acceleration * time * time)
+    finite_result(u * time + 0.5 * acceleration * time * time)
 }
 
 pub fn kinetic_energy(mass: f64, speed: f64) -> Result<f64, PhysicsError> {
     finite(&[mass, speed])?;
     if mass < 0.0 { return Err(PhysicsError::NegativeMass); }
-    Ok(0.5 * mass * speed * speed)
+    finite_result(0.5 * mass * speed * speed)
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -38,13 +42,16 @@ pub fn projectile(speed: f64, angle_degrees: f64, gravity: f64) -> Result<Projec
     let vx = speed * angle.cos();
     let vy = speed * angle.sin();
     let time = 2.0 * vy / gravity;
-    Ok(Projectile {
+    let result = Projectile {
         range: vx * time,
         flight_time: time,
         max_height: vy * vy / (2.0 * gravity),
         horizontal_velocity: vx,
         vertical_velocity: vy,
-    })
+    };
+    finite(&[result.range, result.flight_time, result.max_height,
+        result.horizontal_velocity, result.vertical_velocity])?;
+    Ok(result)
 }
 
 #[cfg(test)]
@@ -56,5 +63,10 @@ mod tests {
     }
     #[test] fn rejects_invalid_gravity() {
         assert_eq!(projectile(10.0, 45.0, 0.0), Err(PhysicsError::InvalidGravity));
+    }
+    #[test] fn rejects_overflow_in_derived_values() {
+        assert_eq!(velocity(f64::MAX, f64::MAX, 2.0), Err(PhysicsError::NonFinite));
+        assert_eq!(kinetic_energy(f64::MAX, f64::MAX), Err(PhysicsError::NonFinite));
+        assert_eq!(projectile(f64::MAX, 45.0, 9.81), Err(PhysicsError::NonFinite));
     }
 }
