@@ -1,7 +1,7 @@
 name: PRINCIPIA Native Core Checks
 on:
   push:
-    paths: ["rust/**", "src/physics/**", ".github/workflows/core-checks.yml"]
+    paths: ["rust/**", "src/physics/**", "tests/**", ".github/workflows/core-checks.yml"]
   pull_request:
     paths: ["rust/**", "src/physics/**", ".github/workflows/core-checks.yml"]
   workflow_dispatch:
