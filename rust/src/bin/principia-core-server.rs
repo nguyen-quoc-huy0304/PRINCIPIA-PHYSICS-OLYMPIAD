@@ -11,6 +11,23 @@ fn dispatch(request: &Value) -> Value {
     let id = request.get("id").cloned().unwrap_or(Value::Null);
     let result: Result<Value, String> = (|| {
         let op = request.get("op").and_then(Value::as_str).ok_or("Missing operation")?;
+        if op == "robotArmIK" {
+            let branch_value = number(request, "elbowBranch")?;
+            if branch_value.fract() != 0.0 || (branch_value != 1.0 && branch_value != -1.0) {
+                return Err("elbowBranch must be +1 or -1".to_string());
+            }
+            let solution = principia_core::robotics::inverse_kinematics(
+                number(request, "l1M")?, number(request, "l2M")?,
+                number(request, "targetXM")?, number(request, "targetYM")?,
+                branch_value as i32,
+            ).map_err(|error| format!("Robot arm target rejected: {error:?}"))?;
+            return Ok(json!({
+                "shoulderRad": solution.shoulder_rad, "elbowRad": solution.elbow_rad,
+                "shoulderDeg": solution.shoulder_deg, "elbowDeg": solution.elbow_deg,
+                "endXM": solution.end_x_m, "endYM": solution.end_y_m,
+                "targetErrorM": solution.target_error_m, "singular": solution.singular
+            }));
+        }
         if op == "rigidBodyDrop" {
             let steps_value = number(request, "steps")?;
             if steps_value < 0.0 || steps_value > 60000.0 || steps_value.fract() != 0.0 {
@@ -87,6 +104,17 @@ mod tests {
         assert_eq!(response["value"]["points"], 100);
     }
     #[test]
+    #[test]
+    fn dispatches_robot_arm_inverse_kinematics() {
+        let response = dispatch(&json!({"id":12,"op":"robotArmIK","l1M":0.8,"l2M":0.6,"targetXM":0.7,"targetYM":0.5,"elbowBranch":1.0}));
+        assert_eq!(response["ok"], true);
+        assert!(response["value"]["targetErrorM"].as_f64().unwrap() < 1e-10);
+    }
+    #[test]
+    fn rejects_unreachable_robot_target() {
+        let response = dispatch(&json!({"id":13,"op":"robotArmIK","l1M":0.8,"l2M":0.6,"targetXM":3.0,"targetYM":0.0,"elbowBranch":1.0}));
+        assert_eq!(response["ok"], false);
+    }
     fn dispatches_rapier_rigid_body_drop() {
         let response = dispatch(&json!({
             "id": 11, "op": "rigidBodyDrop",
