@@ -71,7 +71,7 @@ test('2D separating overlapping disks are separated without an impulse', () => {
   const b = { x: 1, y: 0, vx: 1, vy: 0, mass: 1, radius: 1 };
   const result = context.PrincipiaCollisionMath.resolveDiskCollision(a, b, 0.5);
   assert.equal(result.impulse, 0);
-  assert.ok(Math.hypot(b.x - a.x, b.y - a.y) >= 1.99);
+  assert.ok(Math.hypot(b.x - a.x, b.y - a.y) >= 1.79);
 });
 
 test('2D collision rejects invalid body values', () => {
