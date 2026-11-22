@@ -10,7 +10,8 @@ import { deleteLibraryBlob, getLibraryBlob, listLibraryItems, saveLibraryFiles }
 import type { PrincipiaLibraryItem } from '../core/library';
 import { calculateMotion, calculateKineticEnergy, calculateProjectile } from '../core/physics';
 import type { MotionResult, ProjectileResult } from '../core/physics';
-import { restorePrincipiaDataFromCloud, syncPrincipiaDataToCloud, restoreProgressFromCloud, syncProgressToCloud, publishPrincipiaContentToCloud, restorePublishedPrincipiaContentFromCloud } from '../core/cloud-data';
+import { restorePrincipiaDataFromCloud, syncPrincipiaDataToCloud, restoreProgressFromCloud, syncProgressToCloud, publishPrincipiaContentToCloud, restorePublishedPrincipiaContentFromCloud, publishGameLeaderboardScore, subscribeGameLeaderboard } from '../core/cloud-data';
+import type { GameLeaderboardEntry } from '../core/cloud-data';
 import { getCorrectOptionIndexes, isQuestionCorrect, validateQuizQuestions, gradeQuiz } from '../core/quiz';
 import type { QuizQuestion as Question } from '../core/quiz';
 import { LearningSuite } from '../features/learning/LearningSuite';
@@ -101,7 +102,34 @@ export function App() {
       return saved?.week === week ? { week, points: Math.max(0, Number(saved.points) || 0), matches: Math.max(0, Number(saved.matches) || 0), wins: Math.max(0, Number(saved.wins) || 0) } : { week, points: 0, matches: 0, wins: 0 };
     } catch { return { week, points: 0, matches: 0, wins: 0 }; }
   });
+  const [gameLeaderboardRows, setGameLeaderboardRows] = useState<GameLeaderboardEntry[]>([]);
+  const [gameLeaderboardStatus, setGameLeaderboardStatus] = useState('Đang kết nối bảng xếp hạng…');
   useEffect(() => { try { localStorage.setItem('principia_fun_league', JSON.stringify(gameLeague)); } catch {} }, [gameLeague]);
+
+  useEffect(() => {
+    if (!account) { setGameLeaderboardRows([]); setGameLeaderboardStatus('Đăng nhập để xem bảng xếp hạng trực tuyến.'); return; }
+    let active = true;
+    let stop: (() => void) | undefined;
+    subscribeGameLeaderboard(rows => {
+      if (active) { setGameLeaderboardRows(rows); setGameLeaderboardStatus('Bảng xếp hạng trực tuyến · tối đa 50 tài khoản.'); }
+    }, error => {
+      if (active) setGameLeaderboardStatus(error.message || 'Không thể tải bảng xếp hạng. Kiểm tra quyền Firestore.');
+    }).then(unsubscribe => { if (active) stop = unsubscribe; else unsubscribe(); })
+      .catch(error => { if (active) setGameLeaderboardStatus(error?.message || 'Không thể kết nối bảng xếp hạng.'); });
+    return () => { active = false; stop?.(); };
+  }, [account?.user.uid]);
+
+  useEffect(() => {
+    if (!account) return;
+    publishGameLeaderboardScore(account.user.uid, {
+      name: account.user.displayName || account.user.email?.split('@')[0] || 'Học sinh',
+      gamePoints: gameLeague.week === gameWeekKey() ? gameLeague.points : 0,
+      matches: gameLeague.week === gameWeekKey() ? gameLeague.matches : 0,
+      wins: gameLeague.week === gameWeekKey() ? gameLeague.wins : 0,
+      week: gameWeekKey()
+    }).catch(error => setGameLeaderboardStatus(error?.message || 'Chưa thể đồng bộ điểm lên bảng xếp hạng.'));
+  }, [account?.user.uid, gameLeague]);
+
 
 
 
@@ -1153,14 +1181,14 @@ export function App() {
           {(() => { const game = gamePlatforms.find(item => item.id === activeGameId); return game ? <><div class="games-frame-toolbar"><b>{game.name}</b><button class="secondary-button" type="button" onClick={() => window.open(game.url,'_blank')}>Mở trang gốc ↗</button></div><iframe class="games-frame" title={game.name} src={game.url} loading="lazy" sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox" /></> : <p class="empty-state">Chưa có nền tảng trò chơi.</p>; })()}
           <p class="empty-state">Một số website không cho phép nhúng hoặc yêu cầu đăng nhập riêng. Khi đó hãy dùng nút Mở trang gốc.</p>
           <section class="game-league-panel">
-            <div class="games-heading"><div><h3>🏆 Giải đấu tư duy tuần này</h3><p>Điểm và thứ hạng mô phỏng được lưu trên thiết bị này, không phải bảng xếp hạng trực tuyến.</p></div><span class="release-status">{gameLeagueRank(gameLeague.points).icon} {gameLeagueRank(gameLeague.points).name}</span></div>
+            <div class="games-heading"><div><h3>🏆 Giải đấu tư duy tuần này</h3><p>{gameLeaderboardStatus}</p></div><span class="release-status">{gameLeagueRank(gameLeague.points).icon} {gameLeagueRank(gameLeague.points).name}</span></div>
             <div class="stats-grid">
               <article><strong>{gameLeague.points}</strong><span>Điểm tuần</span></article>
               <article><strong>{gameLeague.matches}</strong><span>Trận mô phỏng</span></article>
               <article><strong>{gameLeague.wins}</strong><span>Trận thắng</span></article>
             </div>
             <div class="game-league-ranking">
-              {[...gameLeagueBots(gameLeague.week), { name: account?.user.displayName || 'Bạn', points: gameLeague.points, icon: '🙂', you: true }].sort((a, b) => b.points - a.points).map((player, index) => <article class={('you' in player && player.you) ? 'is-you' : ''}><b>{index + 1}</b><span>{player.icon}</span><strong>{player.name}</strong><em>{player.points} điểm</em></article>)}
+              {gameLeaderboardRows.length ? gameLeaderboardRows.map((player, index) => <article class={player.uid === account?.user.uid ? 'is-you' : ''}><b>{index + 1}</b><span>{player.uid === account?.user.uid ? '🙂' : '🎓'}</span><strong>{player.name}{player.uid === account?.user.uid ? ' · Bạn' : ''}</strong><em>{player.week === gameWeekKey() ? player.gamePoints : 0} điểm</em></article>) : <p class="empty-state">{account ? 'Chưa có dữ liệu xếp hạng. Hãy chơi một trận để ghi điểm.' : 'Đăng nhập để tham gia bảng xếp hạng.'}</p>}
             </div>
             <button class="primary-button" type="button" onClick={simulateGameMatch}>Đấu mô phỏng với AI · Nhận điểm</button>
             {browserNotice && <p class="workspace-notice" role="status">{browserNotice}</p>}
