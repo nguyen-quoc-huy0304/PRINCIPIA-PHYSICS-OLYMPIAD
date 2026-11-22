@@ -1,6 +1,7 @@
 //! PRINCIPIA — Rust-first application core.
 //! The existing web/Electron clients are adapters; domain rules live here.
 
+#[cfg(not(target_arch = "wasm32"))]
 pub mod cpp_physics;
 pub mod access;
 pub mod content;
