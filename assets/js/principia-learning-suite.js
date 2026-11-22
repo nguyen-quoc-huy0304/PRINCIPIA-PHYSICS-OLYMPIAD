@@ -5,7 +5,7 @@
  const safe=(v)=>{try{return JSON.parse(localStorage.getItem(KEY)||'{}')}catch(_){return {}}};
  const state=Object.assign({attempts:[],notes:[],errors:[],notifications:false,claimedQuests:[]},safe());
  const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
- const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){console.warn('[PRINCIPIA] Learning Suite storage:',e)}};
+ const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){console.warn('[PRINCIPIA] Learning Suite storage:',e)}};\n const localDateKey=(date=new Date())=>{const y=date.getFullYear(),m=String(date.getMonth()+1).padStart(2,'0'),d=String(date.getDate()).padStart(2,'0');return y+'-'+m+'-'+d};
  const allLessons=()=>{try{return typeof lessons==='function'?lessons():[]}catch(_){return []}};
  function pool(){
   const out=[];
@@ -56,7 +56,7 @@
    '</div><p class="small muted" style="margin-top:14px">Ngân hàng hiện có: '+q.length+' câu hỏi. Nếu nội dung chưa có câu hỏi, phòng Olympic sẽ báo rõ thay vì tự tạo đề.</p>');
  }
  function dailyChallenge(){
-  const today=new Date().toLocaleDateString('en-CA');
+  const today=localDateKey();
   const bank=pool();
   if(!bank.length){open('Thử thách mỗi ngày','<p>Chưa có câu hỏi hợp lệ để tạo thử thách. Hãy bổ sung câu hỏi vào Quiz hoặc bài học.</p>'+btn('Về trung tâm','principiaSuiteHome()'));return}
   if(!state.daily||state.daily.date!==today){const q=bank[Math.floor(Math.random()*bank.length)];state.daily={date:today,q:q.q,a:q.a,correct:q.correct,topic:q.topic,path:q.path,answered:false,choice:null};save()}
@@ -71,7 +71,7 @@
   save();dailyChallenge();
  }
  function spacedReview(){
-  const today=new Date().toISOString().slice(0,10),review=state.review||{},due=pool().filter(q=>{const rec=review[q.path+'|'+q.q];return !rec||!rec.due||rec.due<=today});
+  const today=localDateKey(),review=state.review||{},due=pool().filter(q=>{const rec=review[q.path+'|'+q.q];return !rec||!rec.due||rec.due<=today});
   open('Ôn tập thông minh','<p><b>'+due.length+'</b> thẻ đến hạn hôm nay.</p>'+btn('Bắt đầu ôn','principiaSuiteStartReview()','primary')+btn('Về trung tâm','principiaSuiteHome()'));
  }
  function startReview(){
