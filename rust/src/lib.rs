@@ -9,6 +9,8 @@ pub mod assessment;
 pub mod features;
 pub mod physics;
 pub mod game;
+#[cfg(target_arch = "wasm32")]
+mod wasm_api;
 pub mod virtual_lab;
 pub mod progress;
 pub mod store;
