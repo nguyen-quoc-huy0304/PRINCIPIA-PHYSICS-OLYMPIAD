@@ -14,10 +14,11 @@
  }
  function validateLevel(level){
   if(!level||typeof level!=='object')throw new Error('Màn chơi không hợp lệ.');
-  const title=cleanText(level.title,100),description=cleanText(level.description,300);
+  const title=cleanText(level.title,100),description=cleanText(level.description,300),id=cleanText(level.id,80)||'level-'+Date.now().toString(36);
+  if(!/^[a-zA-Z0-9_-]{1,80}$/.test(id))throw new Error('Mã màn chơi chỉ được chứa chữ, số, dấu gạch ngang và gạch dưới.');
   if(!title)throw new Error('Hãy đặt tên màn chơi.');
   if(!Array.isArray(level.questions)||level.questions.length<1||level.questions.length>MAX_QUESTIONS)throw new Error('Mỗi màn cần từ 1 đến 50 câu hỏi.');
-  return {id:cleanText(level.id,80)||'level-'+Date.now().toString(36),title,description,questions:level.questions.map(validateQuestion),updatedAt:cleanText(level.updatedAt,40)||new Date().toISOString()};
+  return {id,title,description,questions:level.questions.map(validateQuestion),updatedAt:cleanText(level.updatedAt,40)||new Date().toISOString()};
  }
  function validatePack(raw){
   if(!raw||raw.schema!=='principia-level-pack'||raw.version!==VERSION||!Array.isArray(raw.levels)||raw.levels.length>MAX_LEVELS)throw new Error('Tệp chia sẻ không đúng định dạng PRINCIPIA Level Studio.');
