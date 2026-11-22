@@ -182,6 +182,8 @@
 
 | 132 | Hành trình học mỗi ngày: mục tiêu 5/10/15 phút, truy hồi chủ động, ôn tập giãn cách, ghi chú phản tư và thưởng XP tự nguyện | Đã tích hợp trong Learning Suite; tiến độ lưu cục bộ theo ngày; cần nghiệm thu trên trình duyệt và kiểm tra luồng XP |
 
+| 133 | Bản đồ tri thức tương tác: nhóm câu hỏi theo chủ đề, theo dõi thẻ đã thuộc, câu đến hạn, yêu thích và lỗi sai; mở thẳng ngân hàng câu hỏi theo chủ đề | Đã tích hợp; dữ liệu dựa trên ngân hàng hiện có và tiến độ cục bộ; cần nghiệm thu trình duyệt |
+
 ## Nguyên tắc nghiệm thu
 
 1. Không đánh dấu hoàn thành chỉ vì đã tạo file hoặc commit code.
