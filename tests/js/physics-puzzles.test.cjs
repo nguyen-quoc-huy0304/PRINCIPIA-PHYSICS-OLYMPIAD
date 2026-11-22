@@ -39,3 +39,23 @@ test('vector error uses Euclidean magnitude', () => {
 test('points never become negative for a large error', () => {
   assert.equal(math.scoreFor(20, 20, { x: -20, y: -20 }).points, 0);
 });
+
+test('difficulty presets generate bounded force components', () => {
+  for (const [difficulty, limit] of [['easy', 5], ['normal', 9], ['hard', 15]]) {
+    for (let i = 0; i < 80; i++) {
+      const puzzle = math.fresh(difficulty);
+      for (const force of [puzzle.a, puzzle.b]) {
+        assert.ok(Math.abs(force.x) <= limit);
+        assert.ok(Math.abs(force.y) <= limit);
+      }
+      assert.ok(Math.abs(puzzle.target.x) <= 20);
+      assert.ok(Math.abs(puzzle.target.y) <= 20);
+      assert.ok(Math.hypot(puzzle.target.x, puzzle.target.y) >= 3);
+    }
+  }
+});
+
+test('stored history text is escaped before it is inserted into HTML', () => {
+  assert.equal(math.escapeHTML('<img src=x onerror=alert(1)>'), '&lt;img src=x onerror=alert(1)&gt;');
+  assert.equal(math.escapeHTML('"quoted" & <tag>'), '&quot;quoted&quot; &amp; &lt;tag&gt;');
+});
