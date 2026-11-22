@@ -204,6 +204,8 @@
 
 | 143 | Physics Arcade: lưu lịch sử 20 lượt bắn gần nhất, ghi thông số góc/trọng lực/kết quả/engine; thêm thành tựu chơi cục bộ (bắn lần đầu, 90+, 10 lượt, Mặt Trăng, 100 điểm) | Đã code lưu lịch sử và thành tựu trong trò Quỹ đạo chính xác; cần nghiệm thu trình duyệt |
 
+| 144 | Cân bằng lực: lưu 20 lượt giải gần nhất, lịch sử vector F₃, sai số và điểm; hiển thị 5 lượt gần nhất trong game | Đã code lưu lịch sử cục bộ; cần nghiệm thu trình duyệt |
+
 ## Nguyên tắc nghiệm thu
 
 1. Không đánh dấu hoàn thành chỉ vì đã tạo file hoặc commit code.
