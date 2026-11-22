@@ -27,6 +27,45 @@ fn finite(values: &[f64]) -> Result<(), String> {
     }
 }
 
+
+/// Additional calculator kernels shared by web (WASM) and native builds.
+pub fn newton_force(mass: f64, acceleration: f64) -> Result<f64, String> {
+    finite(&[mass, acceleration])?;
+    if mass < 0.0 { return Err("Mass must be non-negative".into()); }
+    Ok(mass * acceleration)
+}
+
+pub fn work_and_power(force: f64, displacement: f64, angle_deg: f64, time: f64) -> Result<(f64, f64), String> {
+    finite(&[force, displacement, angle_deg, time])?;
+    if time <= 0.0 { return Err("Time must be greater than zero".into()); }
+    let work = force * displacement * angle_deg.to_radians().cos();
+    Ok((work, work / time))
+}
+
+pub fn momentum_and_impulse(mass: f64, velocity: f64, force: f64, delta_time: f64) -> Result<(f64, f64), String> {
+    finite(&[mass, velocity, force, delta_time])?;
+    if mass < 0.0 || delta_time < 0.0 { return Err("Mass and time interval must be non-negative".into()); }
+    Ok((mass * velocity, force * delta_time))
+}
+
+pub fn ohms_law(voltage: f64, resistance: f64) -> Result<(f64, f64), String> {
+    finite(&[voltage, resistance])?;
+    if resistance == 0.0 { return Err("Resistance must not be zero".into()); }
+    Ok((voltage / resistance, voltage * voltage / resistance))
+}
+
+pub fn heat_energy(mass: f64, specific_heat: f64, delta_temperature: f64) -> Result<f64, String> {
+    finite(&[mass, specific_heat, delta_temperature])?;
+    if mass < 0.0 || specific_heat < 0.0 { return Err("Mass and specific heat must be non-negative".into()); }
+    Ok(mass * specific_heat * delta_temperature)
+}
+
+pub fn wave_values(wavelength: f64, frequency: f64) -> Result<(f64, f64), String> {
+    finite(&[wavelength, frequency])?;
+    if wavelength < 0.0 || frequency <= 0.0 { return Err("Wavelength must be non-negative and frequency greater than zero".into()); }
+    Ok((wavelength * frequency, 1.0 / frequency))
+}
+
 pub fn motion(u: f64, a: f64, t: f64) -> Result<MotionResult, String> {
     finite(&[u, a, t])?;
     Ok(MotionResult {
@@ -69,6 +108,36 @@ mod wasm_api {
     use wasm_bindgen::prelude::*;
 
     // Compact numeric arrays minimize JS/WASM boundary serialization overhead.
+
+    #[wasm_bindgen]
+    pub fn newton_force_wasm(mass: f64, acceleration: f64) -> Result<f64, JsValue> {
+        newton_force(mass, acceleration).map_err(|e| JsValue::from_str(&e))
+    }
+    #[wasm_bindgen]
+    pub fn work_power_wasm(force: f64, displacement: f64, angle_deg: f64, time: f64) -> Result<Vec<f64>, JsValue> {
+        let (work, power) = work_and_power(force, displacement, angle_deg, time).map_err(|e| JsValue::from_str(&e))?;
+        Ok(vec![work, power])
+    }
+    #[wasm_bindgen]
+    pub fn momentum_impulse_wasm(mass: f64, velocity: f64, force: f64, delta_time: f64) -> Result<Vec<f64>, JsValue> {
+        let (momentum, impulse) = momentum_and_impulse(mass, velocity, force, delta_time).map_err(|e| JsValue::from_str(&e))?;
+        Ok(vec![momentum, impulse])
+    }
+    #[wasm_bindgen]
+    pub fn ohms_law_wasm(voltage: f64, resistance: f64) -> Result<Vec<f64>, JsValue> {
+        let (current, power) = ohms_law(voltage, resistance).map_err(|e| JsValue::from_str(&e))?;
+        Ok(vec![current, power])
+    }
+    #[wasm_bindgen]
+    pub fn heat_energy_wasm(mass: f64, specific_heat: f64, delta_temperature: f64) -> Result<f64, JsValue> {
+        heat_energy(mass, specific_heat, delta_temperature).map_err(|e| JsValue::from_str(&e))
+    }
+    #[wasm_bindgen]
+    pub fn wave_values_wasm(wavelength: f64, frequency: f64) -> Result<Vec<f64>, JsValue> {
+        let (speed, period) = wave_values(wavelength, frequency).map_err(|e| JsValue::from_str(&e))?;
+        Ok(vec![speed, period])
+    }
+
     #[wasm_bindgen]
     pub fn motion_wasm(u: f64, a: f64, t: f64) -> Result<Vec<f64>, JsValue> {
         let value = motion(u, a, t).map_err(|e| JsValue::from_str(&e))?;
@@ -90,6 +159,19 @@ mod wasm_api {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+
+    #[test]
+    fn extended_calculators_validate_and_compute() {
+        assert_eq!(newton_force(2.0, 3.0).unwrap(), 6.0);
+        assert_eq!(work_and_power(20.0, 5.0, 0.0, 4.0).unwrap(), (100.0, 25.0));
+        assert_eq!(momentum_and_impulse(0.5, 8.0, 10.0, 0.2).unwrap(), (4.0, 2.0));
+        assert_eq!(ohms_law(12.0, 6.0).unwrap(), (2.0, 24.0));
+        assert_eq!(heat_energy(1.0, 4200.0, 10.0).unwrap(), 42000.0);
+        assert_eq!(wave_values(2.0, 5.0).unwrap(), (10.0, 0.2));
+        assert!(ohms_law(12.0, 0.0).is_err());
+        assert!(work_and_power(1.0, 1.0, 0.0, 0.0).is_err());
+    }
 
     #[test]
     fn constant_acceleration_matches_si_equations() {
