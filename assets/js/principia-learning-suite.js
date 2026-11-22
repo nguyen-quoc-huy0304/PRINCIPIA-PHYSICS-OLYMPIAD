@@ -82,7 +82,7 @@
   const qs=exam.questions,score=qs.reduce((s,q,i)=>s+(exam.answers[i]===q.correct?1:0),0);
   exam.submitted=true;stopTimer();
   const attempt={date:new Date().toISOString(),score:score,total:qs.length,percent:Math.round(score/qs.length*100),mode:'olympic'};
-  state.attempts.push(attempt);if(state.attempts.length>300)state.attempts=state.attempts.slice(-300);save();
+  state.attempts.push(attempt);qs.forEach((q,i)=>{if(exam.answers[i]!==q.correct){state.errors.unshift({title:q.q,body:'Bạn chọn: '+(q.a[exam.answers[i]]||'Chưa trả lời')+'\\nĐáp án đúng: '+q.a[q.correct]+'\\nNguồn: '+q.path,date:new Date().toISOString()})}});if(state.errors.length>300)state.errors=state.errors.slice(0,300);if(state.attempts.length>300)state.attempts=state.attempts.slice(-300);save();
   try{if(typeof xp!=='undefined'&&typeof saveAll==='function'){xp+=Math.max(5,score*5);saveAll()}}catch(_){}
   let html='<div style="text-align:center;padding:18px"><div style="font-size:42px">🏅</div><h1>'+score+'/'+qs.length+'</h1><h2>'+attempt.percent+'% chính xác</h2><p>'+(auto?'Đã tự động nộp khi hết giờ.':'Đã ghi nhận kết quả bài thi.')+'</p></div>';
   qs.forEach((q,i)=>{const ok=exam.answers[i]===q.correct;html+=panel((ok?'✓ ':'✗ ')+'Câu '+(i+1),'<p>'+esc(q.q)+'</p><p>Đáp án đúng: <b>'+esc(q.a[q.correct])+'</b></p><p class="small muted">Bạn chọn: '+(exam.answers[i]===undefined?'Chưa trả lời':esc(q.a[exam.answers[i]]))+'</p>')});
@@ -164,22 +164,23 @@
  function patchExistingQuizHistory(){
   if(window.__principiaSuiteQuizPatched||typeof window.answerQuestion!=='function')return;
   window.__principiaSuiteQuizPatched=true;window.__principiaSuiteQuizSignature='';
-  ['openQuiz','openFun'].forEach(name=>{const original=window[name];if(typeof original==='function')window[name]=function(){window.__principiaSuiteQuizSignature='';return original.apply(this,arguments)}});
+  ['openQuiz','openFun','lessonQuiz'].forEach(name=>{const original=window[name];if(typeof original==='function')window[name]=function(){window.__principiaSuiteQuizSignature='';return original.apply(this,arguments)}});
   const original=window.answerQuestion;
   window.answerQuestion=function(){
    const result=original.apply(this,arguments);
    try{
     const active=typeof activeQuiz!=='undefined'?activeQuiz:null;
     if(!active||active.kind==='fun'&&typeof funData==='undefined')return result;
-    const node=active.kind==='quiz'?find(active.id,quizData):find(active.id,funData);
-    const qs=node?.questions||[],ans=typeof answers!=='undefined'?answers:[];
+    const node=active.kind==='quiz'?find(active.id,quizData):active.kind==='lesson'?find(active.id,data):find(active.id,funData);
+    const qs=active.kind==='lesson'?(node?.quiz||[]):(node?.questions||[]),ans=typeof answers!=='undefined'?answers:[];
     if(qs.length&&ans.length>=qs.length){
      const signature=active.kind+':'+active.id+':'+ans.join(',');
      if(signature!==window.__principiaSuiteQuizSignature){
       window.__principiaSuiteQuizSignature=signature;
       const score=qs.reduce((sum,q,i)=>sum+(ans[i]===q.correct?1:0),0);
-      state.attempts.push({date:new Date().toISOString(),score:score,total:qs.length,percent:Math.round(score/qs.length*100),mode:'quiz'});
-      if(state.attempts.length>300)state.attempts=state.attempts.slice(-300);save();
+      state.attempts.push({date:new Date().toISOString(),score:score,total:qs.length,percent:Math.round(score/qs.length*100),mode:active.kind});
+      qs.forEach((q,i)=>{if(ans[i]!==q.correct){state.errors.unshift({title:q.q,body:'Bạn chọn: '+(q.a[ans[i]]||'Chưa trả lời')+'\\nĐáp án đúng: '+q.a[q.correct]+'\\nNguồn: '+(node.name||active.id),date:new Date().toISOString()})}});
+      if(state.errors.length>300)state.errors=state.errors.slice(0,300);if(state.attempts.length>300)state.attempts=state.attempts.slice(-300);save();
      }
     }
    }catch(e){console.warn('[PRINCIPIA] Quiz analytics skipped',e)}
