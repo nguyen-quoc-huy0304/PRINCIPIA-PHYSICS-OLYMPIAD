@@ -13,6 +13,7 @@ export const sections: NavigationItem[] = [
   { id: 'browser', label: 'Trình duyệt', icon: '⌕' },
   { id: 'games', label: 'Giải trí', icon: '🎮' },
   { id: 'chat', label: 'AI Chat', icon: '✧' },
+  { id: 'downloads', label: 'Trung tâm tải xuống', icon: '⇩' },
   { id: 'progress', label: 'Tiến độ', icon: '↗' },
   { id: 'profile', label: 'Hồ sơ', icon: '◉' },
 ];
