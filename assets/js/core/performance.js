@@ -19,9 +19,15 @@
 
   function runIdleQueue(deadline) {
     idleScheduled = false;
-    while (idleQueue.length && (!deadline || deadline.timeRemaining() > 3 || deadline.didTimeout)) {
+    let ran = 0;
+    while (idleQueue.length) {
+      const hasBudget = !!deadline && deadline.timeRemaining() > 3;
+      const timedOutFirstTask = !!deadline && deadline.didTimeout && ran === 0;
+      const fallbackFirstTask = !deadline && ran === 0;
+      if (!hasBudget && !timedOutFirstTask && !fallbackFirstTask) break;
       const task = idleQueue.shift();
       try { task(); } catch (error) { setTimeout(() => { throw error; }, 0); }
+      ran += 1;
     }
     if (idleQueue.length) scheduleIdleDrain();
   }
