@@ -61,7 +61,7 @@
 | 36 | Thí nghiệm vật lý tương tác và đo đạc tham số | Có mã nguồn phòng thí nghiệm con lắc đơn; cần nghiệm thu giao diện, mô hình và đo đạc |
 | 37 | Xây dựng phòng lab, lắp thiết bị và tạo thí nghiệm | Chưa làm đầy đủ |
 | 38 | Công cụ nghiên cứu khoa học và ghi nhận kết quả thí nghiệm | Đang triển khai / cần đặc tả |
-| 39 | Mô hình hóa vật lý nâng cao, kiểm tra sai số và đơn vị SI | Có mã nguồn va chạm 1D và mô phỏng nhiều đĩa tròn 2D; có kiểm thử bảo toàn động lượng/động năng cho va chạm cô lập; cần nghiệm thu trình duyệt và xử lý đầy đủ tương tác nhiều vật |
+| 39 | Mô hình hóa vật lý nâng cao, kiểm tra sai số và đơn vị SI | Có mã nguồn va chạm 1D và mô phỏng đĩa tròn 2D; thêm/bớt vật (2–12), tự tạm dừng khi ra khỏi màn hình; có 11 ca kiểm thử được viết, chờ CI và nghiệm thu trình duyệt |
 | 40 | Tích hợp thư viện mã nguồn mở phù hợp giấy phép, có ghi công và khóa phiên bản | Đang triển khai — xét từng thư viện |
 
 ## D. Game, khám phá và thử thách
