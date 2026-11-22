@@ -200,6 +200,8 @@
 
 | 141 | Kế hoạch học tập: thống kê nhiệm vụ có hạn hôm nay và trong 7 ngày tới; cho phép dọn hàng loạt nhiệm vụ đã hoàn thành sau xác nhận | Đã tích hợp thống kê hạn hôm nay/7 ngày và thao tác dọn nhiệm vụ hoàn tất có xác nhận; cần nghiệm thu trình duyệt |
 
+| 142 | Science World: bản đồ khám phá khoa học cục bộ gồm 5 khu vực Cơ học, Điện–Từ, Sóng–Quang học, Nhiệt học và Thiên văn; ghi nhớ khu vực đã khám phá, mở kiến thức ngắn và liên kết luyện câu hỏi | Đã code trên website chính; lưu tiến độ localStorage; cần nghiệm thu trình duyệt và kiểm chứng nội dung khoa học |
+
 ## Nguyên tắc nghiệm thu
 
 1. Không đánh dấu hoàn thành chỉ vì đã tạo file hoặc commit code.
