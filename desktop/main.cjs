@@ -64,6 +64,9 @@ function callNativeCore(operation, params) {
   if (!coreProcess || coreProcess.killed || !coreProcess.stdin.writable) {
     throw new Error('Rust core chưa sẵn sàng trên bản cài đặt này.');
   }
+  if (corePending.size >= 64) {
+    throw new Error('Rust core đang bận; vui lòng thử lại sau.');
+  }
   const id = coreNextId++;
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => {
@@ -71,7 +74,8 @@ function callNativeCore(operation, params) {
       reject(new Error('Rust core phản hồi quá thời gian cho phép.'));
     }, 8000);
     corePending.set(id, { resolve, reject, timer });
-    coreProcess.stdin.write(JSON.stringify({ id, op: operation, ...params }) + '\n', error => {
+    // Put trusted protocol fields last so renderer parameters cannot replace them.
+    coreProcess.stdin.write(JSON.stringify({ ...params, id, op: operation }) + '\n', error => {
       if (!error) return;
       const pending = corePending.get(id);
       if (pending) {
@@ -212,9 +216,21 @@ app.whenReady().then(() => {
   browserSession.setPermissionRequestHandler((_webContents, _permission, callback) => callback(false));
   startNativeCore();
   ipcMain.handle('principia-core:physics', (_event, operation, params) => {
-    const allowed = new Set(['velocity', 'displacement', 'kineticEnergy', 'projectileRange', 'projectileMaxHeight']);
-    if (!allowed.has(operation) || !params || typeof params !== 'object' || Array.isArray(params)) {
+    const schemas = {
+      velocity: ['initial', 'acceleration', 'seconds'],
+      displacement: ['initial', 'acceleration', 'seconds'],
+      kineticEnergy: ['massKg', 'speedMps'],
+      projectileRange: ['speed', 'angleDeg', 'gravity'],
+      projectileMaxHeight: ['speed', 'angleDeg', 'gravity']
+    };
+    const fields = schemas[operation];
+    if (!fields || !params || typeof params !== 'object' || Array.isArray(params)) {
       throw new Error('Yêu cầu tính toán không hợp lệ.');
+    }
+    const keys = Object.keys(params);
+    if (keys.some(key => !fields.includes(key)) ||
+        fields.some(key => typeof params[key] !== 'number' || !Number.isFinite(params[key]))) {
+      throw new Error('Tham số tính toán phải là số hữu hạn và đúng định dạng.');
     }
     return callNativeCore(operation, params);
   });
