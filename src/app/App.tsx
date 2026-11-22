@@ -72,6 +72,8 @@ export function App() {
   const [musicCustomSources, setMusicCustomSources] = useState<Array<{name:string;url:string}>>(() => { try { const list=JSON.parse(localStorage.getItem('principia_v2_music_island') || '{}').customSources; return Array.isArray(list)?list:[]; } catch { return []; } });
   const [focusSeconds, setFocusSeconds] = useState(25 * 60);
   const [focusRunning, setFocusRunning] = useState(false);
+  const [focusClockMode, setFocusClockMode] = useState<'countdown' | 'stopwatch'>('countdown');
+  const [stopwatchSeconds, setStopwatchSeconds] = useState(0);
   const [browserAddress, setBrowserAddress] = useState('https://www.google.com/');
   const [browserUrl, setBrowserUrl] = useState('');
   const [browserHistory, setBrowserHistory] = useState<string[]>([]);
@@ -180,6 +182,11 @@ export function App() {
     return () => window.clearInterval(timer);
   }, [focusRunning]);
   useEffect(() => { if (focusSeconds === 0) setFocusRunning(false); }, [focusSeconds]);
+  useEffect(() => {
+    if (focusClockMode !== 'stopwatch' || !focusRunning) return;
+    const timer = window.setInterval(() => setStopwatchSeconds(value => value + 1), 1000);
+    return () => window.clearInterval(timer);
+  }, [focusClockMode, focusRunning]);
 
   const musicEmbedUrl = (() => {
     try {
@@ -1188,8 +1195,10 @@ export function App() {
           </div>
           {musicEmbedUrl ? <iframe class="music-player-frame" title="Music player" src={musicEmbedUrl} allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy" /> : <div class="music-external-note"><b>Website này không hỗ trợ trình phát nhúng.</b><p>Mở nguồn nhạc trong trình duyệt ngoài để tiếp tục nghe.</p><button class="primary-button" type="button" onClick={() => { try { const url = new URL(musicUrl); if (['http:','https:'].includes(url.protocol)) window.open(url.href,'_blank'); } catch { setLibraryNotice('Link nhạc chưa hợp lệ.'); } }}>Mở nguồn nhạc ↗</button></div>}
           <div class="focus-timer">
-            <div><span>POMODORO · THỜI GIAN TẬP TRUNG</span><strong>{formatFocusTime(focusSeconds)}</strong><small>{focusSeconds === 0 ? 'Hoàn thành phiên tập trung!' : focusRunning ? 'Đang tập trung' : 'Sẵn sàng bắt đầu'}</small></div>
-            <div class="focus-timer-actions"><button class="primary-button" type="button" disabled={focusSeconds === 0} onClick={() => setFocusRunning(value => !value)}>{focusRunning ? 'Tạm dừng' : 'Bắt đầu'}</button><button class="secondary-button" type="button" onClick={() => { setFocusRunning(false); setFocusSeconds(25*60); }}>Đặt lại 25 phút</button></div>
+            <div class="focus-clock-tabs"><button class={focusClockMode === 'countdown' ? 'active' : ''} type="button" onClick={() => { setFocusRunning(false); setFocusClockMode('countdown'); }}>Đếm ngược</button><button class={focusClockMode === 'stopwatch' ? 'active' : ''} type="button" onClick={() => { setFocusRunning(false); setFocusClockMode('stopwatch'); }}>Bấm giờ</button></div>
+            <div><span>{focusClockMode === 'countdown' ? 'FOCUS MODE · POMODORO' : 'STOPWATCH · THỜI GIAN HỌC'}</span><strong>{formatFocusTime(focusClockMode === 'countdown' ? focusSeconds : stopwatchSeconds)}</strong><small>{focusClockMode === 'countdown' ? (focusSeconds === 0 ? 'Hoàn thành phiên tập trung!' : focusRunning ? 'Đang tập trung' : 'Sẵn sàng bắt đầu') : focusRunning ? 'Đang bấm giờ' : 'Đồng hồ đã tạm dừng'}</small></div>
+            <div class="focus-timer-actions"><button class="primary-button" type="button" disabled={focusClockMode === 'countdown' && focusSeconds === 0} onClick={() => setFocusRunning(value => !value)}>{focusRunning ? 'Ⅱ Tạm dừng' : '▶ Bắt đầu'}</button><button class="secondary-button" type="button" onClick={() => { setFocusRunning(false); if (focusClockMode === 'countdown') setFocusSeconds(25*60); else setStopwatchSeconds(0); }}>↺ Đặt lại</button></div>
+            {focusClockMode === 'countdown' && <div class="focus-presets">{[15,25,45,60].map(minutes => <button type="button" key={minutes} onClick={() => { setFocusRunning(false); setFocusSeconds(minutes*60); }}>{minutes} phút</button>)}</div>}
           </div>
         </section>}
         {section === 'physics' && <section class="physics-workspace">
