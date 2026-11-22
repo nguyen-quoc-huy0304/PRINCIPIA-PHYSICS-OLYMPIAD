@@ -251,3 +251,7 @@
 | 163 | Chia sẻ riêng từng màn chơi tự tạo bằng tệp JSON độc lập; nhập lại an toàn và kiểm tra giới hạn sau khi gộp | Đã thêm xuất JSON cho từng màn và 3 regression tests cho chia sẻ độc lập, ID không tồn tại và giới hạn 100 màn; kiểm tra cú pháp đạt, chưa chạy npm test trên runner |
 
 | 164 | Chia sẻ riêng từng thí nghiệm trong Sổ nghiên cứu bằng JSON độc lập; nhập lại an toàn và không làm mất dữ liệu khi vượt giới hạn | Đã thêm nút xuất JSON riêng từng thí nghiệm, API lõi và 3 regression tests; kiểm tra cú pháp đạt, chưa chạy toàn bộ npm test/CI |
+
+| 165 | Sổ nghiên cứu: hiển thị đồ thị phân tán X–Y và đường hồi quy tuyến tính trong phân tích từng thí nghiệm | Đã thêm đồ thị SVG co giãn theo dữ liệu, nhãn đơn vị và đường hồi quy; kiểm tra cú pháp đạt, cần nghiệm thu hiển thị trên mobile/desktop |
+| 166 | Sổ nghiên cứu: từ chối số liệu hữu hạn nhưng làm tràn phép tính thống kê (Infinity/NaN) | Đã bổ sung kiểm tra thống kê sau tính toán và 2 regression tests cho dữ liệu cực lớn; kiểm tra logic thủ công đạt, cần chạy npm test |
+| 167 | Desktop Release: không tự tạo lại tag/release cố định sau mỗi lần push code | Đã tách phát hành thành tùy chọn manual dispatch; push chỉ build và upload artifacts, cần xác nhận bằng GitHub Actions |
