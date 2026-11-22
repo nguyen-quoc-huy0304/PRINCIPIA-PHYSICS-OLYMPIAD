@@ -9,6 +9,7 @@ pub mod session;
 pub mod assessment;
 pub mod features;
 pub mod physics;
+pub mod rigid_body;
 pub mod game;
 #[cfg(target_arch = "wasm32")]
 mod wasm_api;
