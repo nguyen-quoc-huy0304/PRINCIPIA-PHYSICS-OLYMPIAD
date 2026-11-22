@@ -1,0 +1,10 @@
+const test=require('node:test');const assert=require('node:assert/strict');const core=require('../../assets/js/principia-level-studio-core.js');
+function memory(){const m=new Map();return {getItem:k=>m.get(k)||null,setItem:(k,v)=>m.set(k,v)}}
+const sample={id:'m1',title:'Cơ học cơ bản',description:'Luyện tập',questions:[{prompt:'Đơn vị lực?',choices:['N','J'],answer:0,explanation:'Newton'}]};
+test('validates and normalizes authored levels',()=>{assert.equal(core.validateLevel(sample).questions[0].choices.length,2)});
+test('rejects missing title and invalid answer',()=>{assert.throws(()=>core.validateLevel({...sample,title:''}));assert.throws(()=>core.validateLevel({...sample,questions:[{...sample.questions[0],answer:9}]}))});
+test('rejects more than six options and empty option',()=>{assert.throws(()=>core.validateLevel({...sample,questions:[{...sample.questions[0],choices:['a','']}]}));assert.throws(()=>core.validateLevel({...sample,questions:[{...sample.questions[0],choices:['a','b','c','d','e','f','g']}]}))});
+test('saves, edits and deletes levels',()=>{const s=core.createStore(memory());s.save(sample);s.save({...sample,title:'Đã sửa'});assert.equal(s.all().length,1);assert.equal(s.all()[0].title,'Đã sửa');s.remove('m1');assert.equal(s.all().length,0)});
+test('exports and imports a validated share pack',()=>{const a=core.createStore(memory()),b=core.createStore(memory());a.save(sample);assert.equal(b.import(a.export()),1);assert.equal(b.all()[0].title,sample.title)});
+test('rejects oversized or malformed imports without overwriting data',()=>{const s=core.createStore(memory());s.save(sample);assert.throws(()=>s.import('x'.repeat(2*1024*1024+1)));assert.throws(()=>s.import(JSON.stringify({schema:'wrong',version:1,levels:[]})));assert.equal(s.all().length,1)});
+test('caps number of questions and levels',()=>{assert.throws(()=>core.validateLevel({...sample,questions:Array(51).fill(sample.questions[0])}));const s=core.createStore(memory());assert.throws(()=>s.import(JSON.stringify({schema:'principia-level-pack',version:1,levels:Array(101).fill(sample).map((x,i)=>({...x,id:String(i)}))})))});
