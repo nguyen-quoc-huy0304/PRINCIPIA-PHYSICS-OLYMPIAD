@@ -118,6 +118,8 @@
     const momentum = root.querySelector('[data-collision2d="momentum"]');
     const start = root.querySelector('[data-collision2d="start"]');
     const reset = root.querySelector('[data-collision2d="reset"]');
+    const add = root.querySelector('[data-collision2d="add"]');
+    const remove = root.querySelector('[data-collision2d="remove"]');
     const restitutionInput = root.querySelector('[data-collision2d="e"]');
     const restitutionLabel = root.querySelector('[data-collision2d="e-label"]');
     restitutionInput.addEventListener('input', () => { restitutionLabel.textContent = Number(restitutionInput.value).toLocaleString('vi-VN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); });
@@ -181,14 +183,42 @@
     }
     function stop() { running=false; last=0; if(raf) cancelAnimationFrame(raf); raf=0; start.textContent='▶ Chạy mô phỏng'; status.textContent='Đã tạm dừng.'; }
     function resetWorld() { stop(); bodies=seed(); resize(); status.textContent='Đã đặt lại 4 vật.'; }
+    function addBody() {
+      if (bodies.length >= 12) { status.textContent='Đã đạt giới hạn 12 vật để giữ mô phỏng nhẹ.'; return; }
+      const width=Number(canvas.dataset.width||560), height=Number(canvas.dataset.height||280);
+      const radius=11 + (bodies.length % 4) * 2;
+      const candidates=[];
+      for(let y=radius+8;y<height-radius;y+=28) for(let x=radius+8;x<width-radius;x+=28) {
+        if(bodies.every(b=>Math.hypot(b.x-x,b.y-y)>b.radius+radius+5)) candidates.push({x,y});
+      }
+      if(!candidates.length){status.textContent='Không còn vị trí trống. Hãy thu nhỏ số vật hoặc đặt lại.';return;}
+      const point=candidates[Math.floor(Math.random()*candidates.length)];
+      const colors=['#38bdf8','#fb7185','#facc15','#c084fc','#34d399'];
+      bodies.push({x:point.x,y:point.y,vx:(Math.random()-.5)*150,vy:(Math.random()-.5)*150,mass:0.7+(bodies.length%4)*0.45,radius,color:colors[bodies.length%colors.length]});
+      draw(); status.textContent='Đã thêm vật. Hiện có '+bodies.length+'/12 vật.';
+    }
+    function removeBody() {
+      if(bodies.length<=2){status.textContent='Cần giữ ít nhất 2 vật để mô phỏng va chạm.';return;}
+      bodies.pop(); draw(); status.textContent='Đã bỏ vật cuối. Còn '+bodies.length+' vật.';
+    }
     start.addEventListener('click',()=>{
       if(running){stop();return;}
-      if(document.hidden){status.textContent='Mở lại tab để chạy mô phỏng.';return;}
+      if(document.hidden || !onScreen){status.textContent='Mở phòng thí nghiệm trên màn hình để chạy mô phỏng.';return;}
       running=true; start.textContent='Ⅱ Tạm dừng'; status.textContent='Đang mô phỏng va chạm 2D.'; last=0; raf=requestAnimationFrame(tick);
     });
     reset.addEventListener('click',resetWorld);
+    if(add) add.addEventListener('click',addBody);
+    if(remove) remove.addEventListener('click',removeBody);
     document.addEventListener('visibilitychange',()=>{if(document.hidden) stop();});
     if(typeof ResizeObserver!=='undefined') new ResizeObserver(resize).observe(canvas);
+    let onScreen=true;
+    if(typeof IntersectionObserver!=='undefined') {
+      const visibilityObserver=new IntersectionObserver((entries)=>{
+        onScreen=entries.some(entry=>entry.isIntersecting);
+        if(!onScreen && running) stop();
+      },{threshold:0.01});
+      visibilityObserver.observe(root);
+    }
     else window.addEventListener('resize',resize);
     bodies=seed(); resize(); status.textContent='Sẵn sàng: 4 vật, va chạm đĩa tròn 2D.';
   }
