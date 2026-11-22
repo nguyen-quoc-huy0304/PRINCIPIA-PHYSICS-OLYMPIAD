@@ -144,7 +144,12 @@ function card(n){
  let action=n.type==='lesson'?`openInnerLessonWorkspace('${n.id}')`:n.type==='quiz'?`openQuiz('${n.id}')`:n.type==='fun'?`openFun('${n.id}')`:page==='home'?`page='library';stack=['${n.id}'];render();notify('Đã mở ${n.name}')`:`enter('${n.id}')`;
  let amount=n.type==='lesson'?'Bài học':n.type==='quiz'?'Bài kiểm tra':n.type==='fun'?'Đố vui':count(n)+' nội dung';
  return `<div class="tile" draggable="true" ondragstart="dragId='${n.id}'" ondragover="event.preventDefault()" ondrop="dropItem(event,'${n.id}')" onclick="${action}">
- <div class="tile-actions" onclick="event.stopPropagation()">${n.type==='tab'||n.type==='lesson'?'<button type="button" title="Tùy chỉnh icon" onclick="editNode(\''+n.id+'\')">🎨 Icon</button>':''}<button type="button" onclick="editNode('${n.id}')">✎</button><button type="button" onclick="deleteNode('${n.id}')">⋯</button></div>
+ <div class="tile-actions" onclick="event.stopPropagation()">
+ <button type="button" title="Di chuyển vào tab khác" onclick="moveNodeDialog('${n.id}')">↗ Di chuyển</button>
+ <button type="button" title="Lên trước" aria-label="Đưa ${esc(n.name)} lên trước" onclick="shiftNode('${n.id}',-1)">↑</button>
+ <button type="button" title="Xuống sau" aria-label="Đưa ${esc(n.name)} xuống sau" onclick="shiftNode('${n.id}',1)">↓</button>
+ ${n.type==='tab'||n.type==='lesson'?'<button type="button" title="Tùy chỉnh icon" onclick="editNode(\''+n.id+'\')">🎨 Icon</button>':''}
+ <button type="button" onclick="editNode('${n.id}')">✎</button><button type="button" onclick="deleteNode('${n.id}')">⋯</button></div>
  ${n.type==='lesson'||n.type==='tab'?`<div class="tileicon lesson-tile-icon">${nodeIconHTML(n,'')}</div>`:''}<h3>${esc(n.name)}</h3><p>${n.type==='tab'?'Mở tab để xem các nội dung bên trong':n.type==='lesson'?'Mở bài học':'Bắt đầu hoạt động'}</p><div class="tilefoot"><span>${amount}</span><span>↗</span></div></div>`;
 }
 function topbar(){return `<div class="top"><div><button type="button" class="principia-back-btn" onclick="goBack()" title="Quay lại màn hình trước" aria-label="Quay lại">← Quay lại</button><div class="eyebrow">PRO</div><div class="muted small">Your personal learning world</div><div class="principia-clockbar"><span class="principia-time-pill" title="Giờ hiện tại"><b id="principiaLiveTime">--:--</b></span><button class="principia-time-pill" type="button" onclick="toggleTopbarStudyClock()" title="Bấm để bắt đầu hoặc tạm dừng đồng hồ học"><b id="principiaStopwatch">${fmtClock(principiaClock.seconds)}</b><span id="principiaStopwatchState">${principiaClock.running?'Tạm dừng':'Bắt đầu'}</span></button></div><button type="button" class="principia-music-pill" onclick="principiaMusicOpen()" title="Mở Music & Focus">♫ <span>Music</span></button></div><div class="topright"><button class="pill" type="button" onclick="openGameStats()" title="Xem thành tích và nhiệm vụ">🔥 ${streak} ngày học</button><button class="pill" type="button" onclick="openRewardCollection()" title="Mở kho vật phẩm đã nhận">⚡ ${xp} XP</button>${avatarHTML()}</div></div>`}
@@ -610,6 +615,30 @@ function deleteNode(id){
  if(!requirePermission('content'))return;
  if(!confirm('🗑️ Bạn chắc chắn muốn xóa nội dung này chứ? Hành động này có thể không khôi phục được.'))return;
  remove(id,tree());saveAll();closeModal();render();notify('Đã xóa');
+}
+function shiftNode(id,delta){
+ if(!requirePermission('content'))return;
+ const nodes=tree(),siblings=locate(id,nodes);if(!siblings)return;
+ const from=siblings.findIndex(x=>x.id===id),to=from+delta;if(to<0||to>=siblings.length)return;
+ const [item]=siblings.splice(from,1);siblings.splice(to,0,item);saveAll();render();notify('Đã đổi thứ tự');
+}
+function moveNodeDialog(id){
+ if(!requirePermission('content'))return;
+ const nodes=tree(),item=find(id,nodes);if(!item)return;
+ const descendants=new Set(chain(id,nodes).map(x=>x.id));
+ const tabs=[];const walk=list=>list.forEach(n=>{if(n.type==='tab'&&!descendants.has(n.id)&&n.id!==id)tabs.push(n);if(n.children)walk(n.children)});walk(nodes);
+ modal('<h2>Di chuyển nội dung</h2><p class="small muted">Chọn tab đích hoặc đưa mục này về cấp ngoài cùng. Không thể chuyển một tab vào chính nó hoặc tab con của nó.</p><label for="principiaMoveTarget">Vị trí mới</label><select id="principiaMoveTarget" class="inp" style="width:100%"><option value="">📁 Cấp ngoài cùng</option>'+tabs.map(t=>'<option value="'+esc(t.id)+'">📂 '+esc(t.name)+'</option>').join('')+'</select><div class="modalactions"><button class="secondary" onclick="closeModal()">Hủy</button><button class="primary" onclick="moveNodeTo(\''+esc(id)+'\',document.getElementById(\'principiaMoveTarget\').value)">Di chuyển</button></div>');
+}
+function moveNodeTo(id,targetId){
+ if(!requirePermission('content'))return;
+ const nodes=tree(),item=find(id,nodes),source=locate(id,nodes);if(!item||!source)return;
+ const target=targetId?find(targetId,nodes):null;
+ if(targetId&&(!target||target.type!=='tab')){notify('Vị trí đích không hợp lệ');return}
+ if(target&&chain(targetId,nodes).some(x=>x.id===id)){notify('Không thể chuyển vào chính mục hoặc mục con của nó');return}
+ if(target&&targetId===id){notify('Không thể tự chứa chính mình');return}
+ source.splice(source.findIndex(x=>x.id===id),1);
+ if(target){target.children=Array.isArray(target.children)?target.children:[];target.children.push(item)}else nodes.push(item);
+ saveAll();closeModal();render();notify('Đã di chuyển nội dung');
 }
 function dropItem(e,id){
  if(!requirePermission('content'))return;
