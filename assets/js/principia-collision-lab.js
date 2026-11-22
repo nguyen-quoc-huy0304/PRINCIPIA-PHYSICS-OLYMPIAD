@@ -112,6 +112,7 @@
     canvas.dataset.ready = '1';
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+    const fmt2D = (n) => Number(n).toLocaleString('vi-VN', { maximumFractionDigits: 3 });
     const status = root.querySelector('[data-collision2d="status"]');
     const energy = root.querySelector('[data-collision2d="energy"]');
     const momentum = root.querySelector('[data-collision2d="momentum"]');
@@ -153,8 +154,8 @@
         ctx.lineTo(b.x+b.vx*scale-6*Math.cos(angle+0.5),b.y+b.vy*scale-6*Math.sin(angle+0.5)); ctx.closePath(); ctx.fillStyle='#fff'; ctx.fill();
       });
       const totals=momentumAndEnergy2D(bodies);
-      energy.textContent=fmt(totals.kinetic)+' J (đơn vị mô phỏng)';
-      momentum.textContent='px '+fmt(totals.px)+' · py '+fmt(totals.py)+' kg·m/s';
+      energy.textContent=fmt2D(totals.kinetic)+' J (đơn vị mô phỏng)';
+      momentum.textContent='px '+fmt2D(totals.px)+' · py '+fmt2D(totals.py)+' kg·m/s';
     }
     function step(dt) {
       const width=Number(canvas.dataset.width||560), height=Number(canvas.dataset.height||280);
