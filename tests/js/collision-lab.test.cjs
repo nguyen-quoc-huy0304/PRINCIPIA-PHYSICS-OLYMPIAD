@@ -42,3 +42,40 @@ test('rejects non-positive masses and invalid restitution', () => {
   assert.throws(() => collide1D(1, 1, 1, 0, 1.1), RangeError);
   assert.throws(() => collide1D(1, Infinity, 1, 0, 1), TypeError);
 });
+test('2D equal-mass elastic disk collision exchanges normal velocities', () => {
+  const a = { x: 0, y: 0, vx: 1, vy: 0, mass: 1, radius: 1 };
+  const b = { x: 1.5, y: 0, vx: -1, vy: 0, mass: 1, radius: 1 };
+  const before = context.PrincipiaCollisionMath.momentumAndEnergy2D([a, b]);
+  const result = context.PrincipiaCollisionMath.resolveDiskCollision(a, b, 1);
+  const after = context.PrincipiaCollisionMath.momentumAndEnergy2D([a, b]);
+  assert.equal(result.collided, true);
+  assert.ok(Math.abs(a.vx + 1) < 1e-12);
+  assert.ok(Math.abs(b.vx - 1) < 1e-12);
+  assert.ok(Math.abs(after.px - before.px) < 1e-12);
+  assert.ok(Math.abs(after.kinetic - before.kinetic) < 1e-12);
+});
+
+test('2D oblique collision preserves tangential velocity and momentum', () => {
+  const a = { x: 0, y: 0, vx: 2, vy: 3, mass: 2, radius: 2 };
+  const b = { x: 3, y: 0, vx: -1, vy: -2, mass: 1, radius: 2 };
+  const before = context.PrincipiaCollisionMath.momentumAndEnergy2D([a, b]);
+  context.PrincipiaCollisionMath.resolveDiskCollision(a, b, 1);
+  const after = context.PrincipiaCollisionMath.momentumAndEnergy2D([a, b]);
+  assert.ok(Math.abs(after.px - before.px) < 1e-12);
+  assert.ok(Math.abs(after.py - before.py) < 1e-12);
+  assert.ok(Math.abs(after.kinetic - before.kinetic) < 1e-12);
+});
+
+test('2D separating overlapping disks are separated without an impulse', () => {
+  const a = { x: 0, y: 0, vx: -1, vy: 0, mass: 1, radius: 1 };
+  const b = { x: 1, y: 0, vx: 1, vy: 0, mass: 1, radius: 1 };
+  const result = context.PrincipiaCollisionMath.resolveDiskCollision(a, b, 0.5);
+  assert.equal(result.impulse, 0);
+  assert.ok(Math.hypot(b.x - a.x, b.y - a.y) >= 1.99);
+});
+
+test('2D collision rejects invalid body values', () => {
+  const a = { x: 0, y: 0, vx: 0, vy: 0, mass: 0, radius: 1 };
+  const b = { x: 1, y: 0, vx: 0, vy: 0, mass: 1, radius: 1 };
+  assert.throws(() => context.PrincipiaCollisionMath.resolveDiskCollision(a, b, 1), RangeError);
+});
