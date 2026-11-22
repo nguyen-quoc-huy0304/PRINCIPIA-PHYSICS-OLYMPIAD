@@ -244,3 +244,6 @@
 
 | 159 | Nhập lại bản thiết kế thí nghiệm từ JSON, kiểm tra schema, giới hạn kích thước/số lượng và whitelist thiết bị | Đã thêm nhập JSON và gộp theo ID, giới hạn 2 MB/100 bản/30 thiết bị; kiểm tra cú pháp đạt, chưa có kiểm thử trình duyệt |
 | 160 | Sửa regex xác thực ngày hoạt động trong lõi tiến độ và kiểm thử khóa ngày đúng định dạng | Đã sửa và thêm regression test; chưa chạy toàn bộ test suite |
+
+| 161 | Di chuyển tab/bài học/quiz/đố vui trên điện thoại không cần kéo thả; sắp xếp thứ tự bằng điều khiển chạm | Đã thêm hộp thoại chuyển tới tab khác/cấp ngoài cùng và nút ↑ ↓; kiểm tra cú pháp hai đoạn mới đạt, chưa nghiệm thu trên thiết bị |
+| 162 | Bảo đảm gói desktop luôn build lõi Rust sidecar trước khi đóng gói và chạy regression tests trước khi phát hành | Đã bổ sung bước build Rust + npm test vào workflow desktop Windows và đa nền tảng; GitHub Actions hiện báo thất bại trước bước chạy, chưa xác minh build |
