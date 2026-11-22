@@ -23,7 +23,7 @@
   try{if(typeof data!=='undefined')walk(data,'lesson',[])}catch(_){}
   const seen=new Set();return out.filter(x=>{const k=x.path+'|'+x.q;if(seen.has(k))return false;seen.add(k);return true});
  }
- let root=null,exam=null,examTimer=null,flashIndex=0,flashSide=false,flashMode='bank',reviewQueue=[],reviewIndex=0,reviewSide=false;
+ let root=null,exam=null,examTimer=null,flashIndex=0,flashSide=false,flashMode='bank',reviewQueue=[],reviewIndex=0,reviewSide=false,mysteryCase=null;
  function ensure(){
   if(root)return root;
   root=document.createElement('div');root.id='principiaLearningSuite';
@@ -43,7 +43,7 @@
   const pct=total?Math.round(correct/total*100):0;
   open('Trung tâm học tập', '<p style="opacity:.75">Các công cụ học tập mở rộng, dùng dữ liệu bài học và Quiz đang có trong PRINCIPIA.</p><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px">'+
    card('Phòng luyện Olympic',q.length+' câu hỏi có sẵn · bài thi có thời gian','principiaSuiteExamSetup()','🏅')+card('Thử thách mỗi ngày','1 câu hỏi ngẫu nhiên · +10 XP khi đúng','principiaSuiteDaily()','⚡')+
-   card('Science Arcade','Mở game vật lý và thử thách quỹ đạo hiện có','principiaSuiteOpenGames()','🎮')+
+   card('Science Arcade','Mở game vật lý và thử thách quỹ đạo hiện có','principiaSuiteOpenGames()','🎮')+card('Giải mã bí ẩn khoa học','Điều tra 3 manh mối lấy từ câu hỏi bài học thật','principiaSuiteStartMystery()','🕵️')+
    card('Phân tích học tập',attempts.length+' lượt luyện · độ chính xác '+pct+'%','principiaSuiteAnalytics()','📊')+
    card('Nhiệm vụ & hành trình','Mục tiêu lấy từ hoạt động thực tế','principiaSuiteQuests()','🧭')+
    card('Sổ tay kiến thức',(state.notes||[]).length+' ghi chú đã lưu','principiaSuiteNotes()','📓')+
@@ -235,6 +235,38 @@
  function openChat(){const box=document.getElementById('chatBox'),input=document.getElementById('chatInput'),question=document.getElementById('plsAiQuestion')?.value||'';if(box){box.classList.add('open');if(typeof renderPrincipiaAIChoices==='function')renderPrincipiaAIChoices()}if(input){input.value=(window.__principiaSuitePrompt||'Hãy giúp tôi hiểu bài học này theo từng bước.')+question;input.focus()}close()}
  async function copyAI(){const question=document.getElementById('plsAiQuestion')?.value||'';try{await navigator.clipboard.writeText((window.__principiaSuitePrompt||'Hãy giải thích bài học từng bước.')+question);alert('Đã sao chép lời nhắc. Hãy dán vào AI bạn chọn.')}catch(_){alert('Không thể truy cập clipboard. Hãy mở trợ lý PRINCIPIA để tiếp tục.')} }
 
+
+ function renderMystery(message){
+  if(!mysteryCase)return;
+  if(mysteryCase.complete){
+   const total=mysteryCase.questions.length,score=mysteryCase.score,percent=Math.round(score/total*100);
+   state.attempts.push({date:new Date().toISOString(),score,total,percent,mode:'mystery'});
+   mysteryCase.questions.forEach((q,i)=>{const a=mysteryCase.answers[i];if(!a.correct)state.errors.unshift({title:q.q,body:'Điều tra sai. Đáp án đúng: '+q.a[q.correct]+'\\nChủ đề: '+q.topic+'\\nNguồn: '+q.path,date:new Date().toISOString()})});
+   if(state.errors.length>300)state.errors=state.errors.slice(0,300);
+   if(state.attempts.length>300)state.attempts=state.attempts.slice(-300);
+   save();
+   try{if(typeof xp!=='undefined'&&typeof saveAll==='function'){xp+=score===total?20:5;saveAll()}}catch(_){}
+   open('Hồ sơ vụ án đã khép lại','<div style="text-align:center;padding:18px"><div style="font-size:42px">🔎</div><h2>'+score+'/'+total+' manh mối chính xác</h2><p>'+percent+'% · '+(score===total?'Điều tra xuất sắc!':'Đã lưu kết quả và các câu cần ôn lại.')+'</p></div>'+btn('Vụ án mới','principiaSuiteStartMystery()','primary')+btn('Về trung tâm','principiaSuiteHome()'));
+   mysteryCase=null;return;
+  }
+  const q=mysteryCase.questions[mysteryCase.index];
+  const progress=mysteryCase.index+1;
+  open('Giải mã bí ẩn · Manh mối '+progress+'/'+mysteryCase.questions.length,panel('Hồ sơ điều tra','<p class="small muted">Mỗi manh mối là một câu hỏi lấy từ ngân hàng bài học/Quiz thật.</p><b>'+esc(q.topic)+'</b><p style="font-size:18px">'+esc(q.q)+'</p>'+questionMedia(q)+'<div style="display:grid;gap:8px">'+q.a.map((a,i)=>'<button type="button" onclick="principiaSuiteMysteryAnswer('+i+')" style="text-align:left;padding:12px;border:1px solid var(--line,#555);border-radius:12px;background:var(--card,#171a2a);color:inherit">'+String.fromCharCode(65+i)+'. '+esc(a)+'</button>').join('')+'</div>')+'<p class="small muted">Đã giải mã '+mysteryCase.score+' manh mối chính xác.</p>'+btn('Bỏ vụ án','principiaSuiteHome()'));
+ }
+ function startMystery(){
+  const api=window.PrincipiaMysteryCore;
+  if(!api){open('Giải mã bí ẩn','<p>Chế độ điều tra chưa tải được. Hãy tải lại trang.</p>'+btn('Về trung tâm','principiaSuiteHome()'));return}
+  try{mysteryCase=api.createCase(pool());renderMystery()}catch(error){open('Chưa thể mở vụ án','<p>'+esc(error.message)+'</p>'+btn('Về trung tâm','principiaSuiteHome()'))}
+ }
+ function answerMystery(choice){
+  if(!mysteryCase)return;
+  try{
+   const result=window.PrincipiaMysteryCore.answer(mysteryCase,choice);
+   if(result.complete){renderMystery();return}
+   const q=mysteryCase.questions[result.index-1];
+   renderMystery((result.correct?'Đúng!':'Chưa chính xác.')+' Đáp án: '+q.a[q.correct]);
+  }catch(error){alert(error.message)}
+ }
  function backupTool(){
   const api=window.PrincipiaProgressBackup;
   if(!api){open('Sao lưu tiến độ','<p>Chức năng sao lưu chưa tải được. Hãy tải lại trang.</p>'+btn('Về trung tâm','principiaSuiteHome()'));return}
@@ -296,7 +328,7 @@
   b.style.cssText='position:fixed;left:18px;bottom:calc(82px + env(safe-area-inset-bottom,0px));z-index:1201;width:46px;height:46px;border-radius:15px;border:1px solid var(--line,#777);background:var(--card,#171526);color:var(--text,#fff);font-size:24px;box-shadow:0 8px 28px #0004;cursor:pointer';
   b.addEventListener('click',home);document.body.appendChild(b);
  }
- window.principiaSuiteHome=home;window.principiaSuiteOpenGames=()=>{close();if(typeof setPage==='function')setPage('entertainment')};window.principiaSuiteExamSetup=examSetup;window.principiaSuiteDaily=dailyChallenge;window.principiaSuiteDailyAnswer=dailyAnswer;window.principiaSuiteStartExam=startExam;window.principiaSuiteChoose=choose;window.principiaSuiteSubmitExam=submitExam;window.principiaSuiteExitExam=exitExam;window.principiaSuiteAnalytics=analytics;window.principiaSuiteQuests=quests;window.principiaSuiteClaimQuest=claimQuest;window.principiaSuiteNotes=notes;window.principiaSuiteAddNote=addNote;window.principiaSuiteDeleteNote=deleteNote;window.principiaSuiteFormulas=formulas;window.principiaSuiteFlashcards=flashcards;window.principiaSuiteReviewErrors=reviewErrors;window.principiaSuiteSpacedReview=spacedReview;window.principiaSuiteStartReview=startReview;window.principiaSuiteFlipReview=()=>{reviewSide=true;reviewCard()};window.principiaSuiteRateReview=rateReview;window.principiaSuiteSkipReview=skipReview;window.principiaSuiteFlip=()=>{flashSide=!flashSide;renderFlash()};window.principiaSuiteFlashPrev=()=>{flashIndex=Math.max(0,flashIndex-1);renderFlash()};window.principiaSuiteFlashNext=()=>{flashIndex++;renderFlash()};window.principiaSuiteErrors=errors;window.principiaSuiteAddError=addError;window.principiaSuiteDeleteError=deleteError;window.principiaSuiteBadges=badges;window.principiaSuiteNotifications=notifications;window.principiaSuiteEnableNotifications=enableNotifications;window.principiaSuiteDisableNotifications=()=>{state.notifications=false;save();notifications()};window.principiaSuiteAI=ai;window.principiaSuiteBackup=backupTool;window.principiaSuiteExportBackup=exportBackup;window.principiaSuiteImportBackup=importBackup;window.principiaSuiteOpenChat=openChat;window.principiaSuiteCopyAI=copyAI;
+ window.principiaSuiteHome=home;window.principiaSuiteOpenGames=()=>{close();if(typeof setPage==='function')setPage('entertainment')};window.principiaSuiteExamSetup=examSetup;window.principiaSuiteDaily=dailyChallenge;window.principiaSuiteDailyAnswer=dailyAnswer;window.principiaSuiteStartExam=startExam;window.principiaSuiteChoose=choose;window.principiaSuiteSubmitExam=submitExam;window.principiaSuiteExitExam=exitExam;window.principiaSuiteAnalytics=analytics;window.principiaSuiteQuests=quests;window.principiaSuiteClaimQuest=claimQuest;window.principiaSuiteNotes=notes;window.principiaSuiteAddNote=addNote;window.principiaSuiteDeleteNote=deleteNote;window.principiaSuiteFormulas=formulas;window.principiaSuiteFlashcards=flashcards;window.principiaSuiteReviewErrors=reviewErrors;window.principiaSuiteSpacedReview=spacedReview;window.principiaSuiteStartReview=startReview;window.principiaSuiteFlipReview=()=>{reviewSide=true;reviewCard()};window.principiaSuiteRateReview=rateReview;window.principiaSuiteSkipReview=skipReview;window.principiaSuiteFlip=()=>{flashSide=!flashSide;renderFlash()};window.principiaSuiteFlashPrev=()=>{flashIndex=Math.max(0,flashIndex-1);renderFlash()};window.principiaSuiteFlashNext=()=>{flashIndex++;renderFlash()};window.principiaSuiteErrors=errors;window.principiaSuiteAddError=addError;window.principiaSuiteDeleteError=deleteError;window.principiaSuiteBadges=badges;window.principiaSuiteNotifications=notifications;window.principiaSuiteEnableNotifications=enableNotifications;window.principiaSuiteDisableNotifications=()=>{state.notifications=false;save();notifications()};window.principiaSuiteAI=ai;window.principiaSuiteStartMystery=startMystery;window.principiaSuiteMysteryAnswer=answerMystery;window.principiaSuiteBackup=backupTool;window.principiaSuiteExportBackup=exportBackup;window.principiaSuiteImportBackup=importBackup;window.principiaSuiteOpenChat=openChat;window.principiaSuiteCopyAI=copyAI;
  patchExistingQuizHistory();
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();
