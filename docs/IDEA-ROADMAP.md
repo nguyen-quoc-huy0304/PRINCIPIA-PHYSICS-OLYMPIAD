@@ -154,6 +154,17 @@
 | 109 | Theo dõi chuỗi ngày có hoạt động tập trung | Có mã nguồn — chờ kiểm thử |
 | 110 | Tìm kiếm lịch sử và xuất phiên tập trung ra CSV | Có mã nguồn — chờ kiểm thử |
 
+| 111 | Lọc đề Olympic theo chủ đề bài học | Đã tích hợp bộ lọc chủ đề trước khi tạo đề; chờ nghiệm thu |
+| 112 | Tạo đề ngẫu nhiên theo chủ đề đã chọn | Đã tích hợp lấy mẫu ngẫu nhiên từ tập câu hỏi phù hợp |
+| 113 | Đảo thứ tự đáp án trong mỗi đề nhưng giữ đúng đáp án chuẩn | Đã tích hợp xáo trộn lựa chọn và ánh xạ lại đáp án đúng |
+| 114 | Lưới điều hướng nhanh tới từng câu trong bài thi | Đã tích hợp nút điều hướng theo số câu |
+| 115 | Đánh dấu câu cần xem lại trong lúc làm bài | Đã tích hợp trạng thái đánh dấu theo từng câu |
+| 116 | Lọc nhanh câu chưa trả lời hoặc câu đã đánh dấu | Đã tích hợp ba chế độ xem: tất cả, chưa trả lời, đánh dấu |
+| 117 | Hiển thị số câu đã trả lời và còn bỏ trống theo thời gian thực | Đã tích hợp bộ đếm và thanh tiến độ |
+| 118 | Xác nhận trước khi nộp bài nếu còn câu chưa trả lời | Đã tích hợp cảnh báo và cho phép quay lại bài thi |
+| 119 | Lọc riêng các câu sai trong màn hình kết quả | Đã tích hợp chế độ xem toàn bộ hoặc chỉ câu sai |
+| 120 | Tạo lượt luyện mới chỉ từ các câu trả lời sai | Đã tích hợp nút luyện lại câu sai từ kết quả vừa nộp |
+
 ## Nguyên tắc nghiệm thu
 
 1. Không đánh dấu hoàn thành chỉ vì đã tạo file hoặc commit code.
