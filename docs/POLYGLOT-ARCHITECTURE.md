@@ -8,7 +8,7 @@ The languages are deliberately assigned different jobs. They are not interchange
 | C++17 | Small performance-sensitive scientific kernels and simulation primitives | Native/WASM kernel |
 | Rust | Main domain/core logic, validation, permissions, data analysis, robotics, JSON-lines sidecar | Primary application core |
 | Go | Cross-process integration tests for the sidecar protocol, malformed requests and API compatibility | Test-only |
-| C#/.NET 8 | Independent reference calculations and end-to-end contract checks against the native core | Test-only |
+| C#/.NET 10 | Independent reference calculations and end-to-end contract checks against the native core | Test-only |
 
 ## Data flow
 
