@@ -1,8 +1,5 @@
 name: Build and publish PRINCIPIA desktop releases
 on:
-  push:
-    tags:
-      - 'v*'
   workflow_dispatch:
 permissions:
   contents: write
