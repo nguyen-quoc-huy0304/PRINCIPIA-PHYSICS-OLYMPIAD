@@ -11,6 +11,7 @@ function targetFor(a,b){return {x:-(a.x+b.x),y:-(a.y+b.y)};}
 function scoreFor(x,y,target){const error=Math.hypot(x-target.x,y-target.y);return {error,points:Math.max(0,Math.round(100-error*8))};}
 function fresh(){let a,b,t;do{a={x:rand(-9,9),y:rand(-9,9)};b={x:rand(-9,9),y:rand(-9,9)};t=targetFor(a,b);}while(Math.abs(t.x)>18||Math.abs(t.y)>18||Math.hypot(t.x,t.y)<3);return {a,b,target:t,x:0,y:0,score:0,best:0,attempts:0,last:''};}
 function read(){try{const v=JSON.parse(localStorage.getItem(KEY)||'null');if(v&&v.a&&v.b&&v.target&&Number.isFinite(v.x)&&Number.isFinite(v.y))return {...fresh(),...v};}catch(_){}return fresh();}
+window.PrincipiaForcePuzzleMath=Object.freeze({targetFor,scoreFor});
 let state=read();
 function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(_){}}
 function vector(x,y,color,dash){const ex=150+x*5,ey=150-y*5;return '<line x1="150" y1="150" x2="'+ex+'" y2="'+ey+'" stroke="'+color+'" stroke-width="4" stroke-linecap="round" '+(dash?'stroke-dasharray="7 5" ':'')+'/><circle cx="'+ex+'" cy="'+ey+'" r="4.5" fill="'+color+'"/>';}
