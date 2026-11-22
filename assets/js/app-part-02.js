@@ -98,8 +98,22 @@ function goBack(){if(page==='play'&&activeQuiz&&(answers||[]).length>0){if(!conf
 window.getPrincipiaPage=()=>page;window.setPrincipiaPage=p=>{page=p;};
 let activeQuiz=null,answers=[],dragId=null;
 
-function load(k,def){try{return JSON.parse(localStorage.getItem(k))??clone(def)}catch{return clone(def)}}
-function saveAll(){localStorage.setItem('halo_data',JSON.stringify(data));localStorage.setItem('halo_quiz',JSON.stringify(quizData));localStorage.setItem('halo_fun',JSON.stringify(funData));localStorage.setItem('halo_profile',JSON.stringify(profile));localStorage.setItem('halo_completed',JSON.stringify(completed));localStorage.setItem('halo_xp',xp);localStorage.setItem('halo_streak',streak);if(window.syncPrincipiaLeaderboard)window.syncPrincipiaLeaderboard()}
+function load(k,def){
+ try{
+  const raw=localStorage.getItem(k);
+  if(raw!==null){const value=JSON.parse(raw);try{window.PrincipiaData?.write('legacy/'+k,value)}catch(_){}return value??clone(def);}
+  const migrated=window.PrincipiaData?.read('legacy/'+k,undefined);
+  return migrated===undefined?clone(def):migrated;
+ }catch{return clone(def)}
+}
+function saveAll(){
+ const snapshot={halo_data:data,halo_quiz:quizData,halo_fun:funData,halo_profile:profile,halo_completed:completed,halo_xp:xp,halo_streak:streak};
+ Object.entries(snapshot).forEach(([key,value])=>{
+  try{localStorage.setItem(key,typeof value==='string'?value:JSON.stringify(value));}catch(error){console.error('[PRINCIPIA] legacy save failed',key,error);}
+  try{window.PrincipiaData?.write('legacy/'+key,value);}catch(error){console.error('[PRINCIPIA] core repository mirror failed',key,error);}
+ });
+ if(window.syncPrincipiaLeaderboard)window.syncPrincipiaLeaderboard();
+}
 function esc(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function tree(){return page==='quiz'?quizData:page==='fun'?funData:data}
 function find(id,nodes){for(const n of nodes){if(n.id===id)return n;if(n.children){let x=find(id,n.children);if(x)return x}}return null}
@@ -427,6 +441,8 @@ function startPrincipiaJourney(){
 }
 function render(){
  const app=$('#app');
+ if(window.__principiaLastRoute!==page){const previous=window.__principiaLastRoute||null;window.__principiaLastRoute=page;try{window.dispatchEvent(new CustomEvent('principia:page-changed',{detail:{page,previous}}));}catch(_){}}
+
  // Chỉ cho phép xem workspace sau khi có phiên PRINCIPIA đã xác thực.
  if(!getPrincipiaAccount() && page!=='account'){page='account';stack=[];}
  // Giữ màn hình chào cho tới khi người dùng chủ động bấm Bắt đầu hành trình.
