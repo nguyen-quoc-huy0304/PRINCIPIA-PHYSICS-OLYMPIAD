@@ -18,8 +18,7 @@
  function answer(i){const q=active.questions[playIndex];if(!q)return;if(i===q.answer)score++;playIndex++;renderPlay()}
  function exportPack(){const blob=new Blob([store.export()],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='principia-levels.json';a.click();URL.revokeObjectURL(url)}
  function exportOne(id){
-  const level=store.all().find(x=>x.id===id);if(!level)return alert('Không tìm thấy màn chơi.');
-  const pack=JSON.stringify({schema:'principia-level-pack',version:Core.VERSION,levels:[level]},null,2);
+  let pack;try{pack=store.exportOne(id)}catch(e){return alert(e.message)}
   const blob=new Blob([pack],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');
   a.href=url;a.download='principia-'+level.id+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
  }
