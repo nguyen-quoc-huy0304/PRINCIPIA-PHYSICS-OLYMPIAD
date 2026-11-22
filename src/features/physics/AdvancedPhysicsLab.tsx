@@ -1,3 +1,4 @@
+import { calculateAdvancedPhysics, type AdvancedPhysicsTool } from '../../core/physics';
 import { useState } from 'preact/hooks';
 
 type Field = { key: string; label: string; unit: string; initial: string };
@@ -18,11 +19,20 @@ export function AdvancedPhysicsLab() {
   const [result, setResult] = useState<Array<[string,number,string]> | null>(null);
   const [error, setError] = useState('');
   const tool = tools.find(item => item.id === active)!;
-  const calculate = () => {
+  const calculate = async () => {
     const inputs = tool.fields.map(field => Number(values[tool.id]?.[field.key]));
     if (inputs.some(value => !Number.isFinite(value))) { setError('Hãy nhập đầy đủ các giá trị là số hữu hạn.'); setResult(null); return; }
     try {
-      const output = tool.calculate(inputs);
+      const computed = await calculateAdvancedPhysics(tool.id as AdvancedPhysicsTool, inputs);
+      const labels: Record<string, Array<[string, string]>> = {
+        newton: [['Hợp lực F = ma', 'N']],
+        work: [['Công A', 'J'], ['Công suất P = A/t', 'W']],
+        momentum: [['Động lượng p = mv', 'kg·m/s'], ['Xung lượng I = FΔt', 'N·s']],
+        ohm: [['Dòng điện I = U/R', 'A'], ['Công suất P = UI', 'W']],
+        thermal: [['Nhiệt lượng Q = mcΔT', 'J']],
+        wave: [['Vận tốc truyền sóng v = λf', 'm/s'], ['Chu kỳ T = 1/f', 's']]
+      };
+      const output = computed.map((value, index) => [labels[tool.id][index][0], value, labels[tool.id][index][1]] as [string, number, string]);
       if (output.some(([,value]) => !Number.isFinite(value))) throw new Error('Giá trị đầu vào không hợp lệ (ví dụ: mẫu số bằng 0).');
       setResult(output); setError('');
     } catch (reason) { setResult(null); setError(reason instanceof Error ? reason.message : 'Không thể tính kết quả.'); }
