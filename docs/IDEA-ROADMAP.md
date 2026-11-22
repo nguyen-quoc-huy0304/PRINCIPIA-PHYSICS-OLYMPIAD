@@ -190,6 +190,8 @@
 
 | 136 | Tìm kiếm toàn cục nâng cao: lọc Bài học/Quiz/Khám phá, tìm cả nội dung câu hỏi và lựa chọn đáp án, lưu 6 truy vấn gần đây và hỗ trợ điều hướng bàn phím an toàn | Đã cập nhật mã nguồn trên website chính; lưu truy vấn cục bộ; cần nghiệm thu trình duyệt |
 
+| 137 | Trung tâm trợ năng: cỡ chữ 100–130%, chế độ tương phản cao, giảm chuyển động và gạch chân liên kết; lưu tùy chọn cục bộ, có đặt lại mặc định | Đã tích hợp trong Learning Suite; cần nghiệm thu giao diện trên trình duyệt và thiết bị thật |
+
 ## Nguyên tắc nghiệm thu
 
 1. Không đánh dấu hoàn thành chỉ vì đã tạo file hoặc commit code.
