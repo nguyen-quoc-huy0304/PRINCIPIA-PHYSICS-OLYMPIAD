@@ -2,7 +2,13 @@ import { invoke, isTauri } from '@tauri-apps/api/core';
 import {
   motion_wasm,
   kinetic_energy_wasm,
-  projectile_wasm
+  projectile_wasm,
+  newton_force_wasm,
+  work_power_wasm,
+  momentum_impulse_wasm,
+  ohms_law_wasm,
+  heat_energy_wasm,
+  wave_values_wasm
 } from '../wasm/pkg/physics_core';
 
 export type MotionResult = {
@@ -100,4 +106,42 @@ export async function calculateProjectile(
       };
     }
   );
+}
+
+
+export type AdvancedPhysicsTool = 'newton' | 'work' | 'momentum' | 'ohm' | 'thermal' | 'wave';
+export type AdvancedPhysicsResult = number[];
+
+/** Run the advanced calculator kernels in the shared Rust/WASM core. */
+export async function calculateAdvancedPhysics(
+  tool: AdvancedPhysicsTool,
+  values: number[]
+): Promise<AdvancedPhysicsResult> {
+  finite(...values);
+  return browserWasm(() => {
+    switch (tool) {
+      case 'newton':
+        return [newton_force_wasm(values[0], values[1])];
+      case 'work':
+        return Array.from(work_power_wasm(values[0], values[1], values[2], values[3]));
+      case 'momentum':
+        return Array.from(momentum_impulse_wasm(values[0], values[1], values[2], values[3]));
+      case 'ohm':
+        return Array.from(ohms_law_wasm(values[0], values[1]));
+      case 'thermal':
+        return [heat_energy_wasm(values[0], values[1], values[2])];
+      case 'wave':
+        return Array.from(wave_values_wasm(values[0], values[1]));
+    }
+  }, () => {
+    const [a, b, c, d] = values;
+    switch (tool) {
+      case 'newton': return [a * b];
+      case 'work': { const work = a * b * Math.cos(c * Math.PI / 180); return [work, work / d]; }
+      case 'momentum': return [a * b, c * d];
+      case 'ohm': return [a / b, a * a / b];
+      case 'thermal': return [a * b * c];
+      case 'wave': return [a * b, 1 / b];
+    }
+  });
 }
