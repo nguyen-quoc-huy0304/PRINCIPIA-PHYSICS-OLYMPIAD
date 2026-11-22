@@ -705,9 +705,37 @@ async function attachFiles(id,files){
 }
 async function loadFiles(id){
  let el=$('#files');if(!el)return;
- try{let d=await db();let list=await new Promise(res=>{let r=d.transaction('files').objectStore('files').getAll();r.onsuccess=()=>res(r.result.filter(x=>x.lesson===id))});
- el.innerHTML=list.length?list.map(f=>`<div class="file"><span>📄 ${esc(f.name)} · ${(f.size/1024/1024).toFixed(1)} MB</span><span><button class="secondary" onclick="downloadDoc('${f.id}')">Tải</button> <button class="danger" onclick="removeDoc('${f.id}','${id}')">Xóa</button></span></div>`).join(''):'<p class="muted small">Chưa có tài liệu.</p>';
+ try{
+  let d=await db(),all=await new Promise(res=>{let r=d.transaction('files').objectStore('files').getAll();r.onsuccess=()=>res(r.result)});
+  let list=all.filter(x=>x.lesson===id).sort((a,b)=>(Number(a.order)||0)-(Number(b.order)||0));
+  const destinations=lessons(data).map(l=>'<option value="'+esc(l.id)+'" '+(l.id===id?'selected':'')+'>'+esc(l.name)+'</option>').join('');
+  el.innerHTML=list.length?list.map((f,i)=>'<div class="file" draggable="true" ondragstart="principiaDocDragId=\''+esc(f.id)+'\'" ondragover="event.preventDefault()" ondrop="principiaMoveDocOrder(event,\''+esc(f.id)+'\',\''+esc(id)+'\')" style="display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap"><span>📄 '+esc(f.name)+' · '+(f.size/1024/1024).toFixed(1)+' MB</span><span style="display:flex;gap:5px;align-items:center;flex-wrap:wrap"><select aria-label="Chuyển tài liệu đến bài học" onchange="principiaMoveDoc(\''+esc(f.id)+'\',this.value)" style="max-width:190px">'+destinations+'</select><button class="secondary" title="Lên một vị trí" onclick="principiaMoveDocOrder(null,\''+esc(f.id)+'\',\''+esc(id)+'\',-1)" '+(i===0?'disabled':'')+'>↑</button><button class="secondary" title="Xuống một vị trí" onclick="principiaMoveDocOrder(null,\''+esc(f.id)+'\',\''+esc(id)+'\',1)" '+(i===list.length-1?'disabled':'')+'>↓</button><button class="secondary" onclick="downloadDoc(\''+esc(f.id)+'\')">Tải</button><button class="danger" onclick="removeDoc(\''+esc(f.id)+'\',\''+esc(id)+'\')">Xóa</button></span></div>').join(''):'<p class="muted small">Chưa có tài liệu.</p>';
  }catch{el.textContent='Không tải được tài liệu'}
+}
+async function principiaMoveDoc(id,destination){
+ if(!requireAdmin())return;
+ try{
+  const d=await db(),f=await new Promise(res=>{const r=d.transaction('files').objectStore('files').get(id);r.onsuccess=()=>res(r.result)});
+  if(!f||!lessons(data).some(l=>l.id===destination)){notify('Không tìm thấy bài học đích');return}
+  const all=await new Promise(res=>{const r=d.transaction('files').objectStore('files').getAll();r.onsuccess=()=>res(r.result)});
+  f.lesson=destination;f.order=all.filter(x=>x.lesson===destination).length;
+  await new Promise((res,rej)=>{const tx=d.transaction('files','readwrite');tx.objectStore('files').put(f);tx.oncomplete=res;tx.onerror=()=>rej(tx.error)});
+  loadFiles(curLessonId||destination);notify('Đã chuyển tài liệu');
+ }catch{notify('Không chuyển được tài liệu')}
+}
+async function principiaMoveDocOrder(e,id,lesson,delta){
+ if(e)e.preventDefault();
+ if(!requireAdmin())return;
+ try{
+  const d=await db(),all=await new Promise(res=>{const r=d.transaction('files').objectStore('files').getAll();r.onsuccess=()=>res(r.result)});
+  const list=all.filter(x=>x.lesson===lesson).sort((a,b)=>(Number(a.order)||0)-(Number(b.order)||0));
+  let from=list.findIndex(x=>x.id===(principiaDocDragId||id));if(from<0)return;
+  let to=typeof delta==='number'?from+delta:list.findIndex(x=>x.id===id);
+  if(to<0||to>=list.length||to===from)return;
+  const [moving]=list.splice(from,1);list.splice(to,0,moving);list.forEach((x,i)=>x.order=i);
+  await new Promise((res,rej)=>{const tx=d.transaction('files','readwrite');list.forEach(x=>tx.objectStore('files').put(x));tx.oncomplete=res;tx.onerror=()=>rej(tx.error)});
+  principiaDocDragId=null;loadFiles(lesson);
+ }catch{notify('Không sắp xếp được tài liệu')}
 }
 async function downloadDoc(id){
  let d=await db(),f=await new Promise(res=>{let r=d.transaction('files').objectStore('files').get(id);r.onsuccess=()=>res(r.result)});
