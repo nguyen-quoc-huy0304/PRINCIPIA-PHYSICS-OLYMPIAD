@@ -9,7 +9,7 @@ function displacement(u,a,t){u=finite(u,'u');a=finite(a,'a');t=finite(t,'t');ret
 function kineticEnergy(mass,speed){mass=finite(mass,'mass');speed=finite(speed,'speed');if(mass<0)throw new RangeError('mass cannot be negative');return .5*mass*speed*speed}
 function projectile(speed,angleDeg,gravity){speed=finite(speed,'speed');angleDeg=finite(angleDeg,'angleDeg');gravity=gravity===undefined?G:finite(gravity,'gravity');if(speed<0||gravity<=0)throw new RangeError('speed must be >= 0 and gravity > 0');const a=angleDeg*Math.PI/180,vx=speed*Math.cos(a),vy=speed*Math.sin(a),flightTime=2*vy/gravity;return{range:vx*flightTime,flightTime,maxHeight:vy*vy/(2*gravity),vx,vy,impactSpeed:speed}}
 function state(u,a,t){return{position:displacement(u,a,t),velocity:velocity(u,a,t),acceleration:finite(a,'a')}}
-const fallback=Object.freeze({velocity,displacement,kineticEnergy,projectileRange:(p)=>projectile(p.speed,p.angleDeg,p.gravity).range,projectileMaxHeight:(p)=>projectile(p.speed,p.angleDeg,p.gravity).maxHeight});
+const fallback=Object.freeze({velocity:p=>velocity(p.initial,p.acceleration,p.seconds),displacement:p=>displacement(p.initial,p.acceleration,p.seconds),kineticEnergy:p=>kineticEnergy(p.massKg,p.speedMps),projectileRange:p=>projectile(p.speed,p.angleDeg,p.gravity).range,projectileMaxHeight:p=>projectile(p.speed,p.angleDeg,p.gravity).maxHeight});
 const operations=Object.freeze({
   velocity:p=>({initial:p.initial,acceleration:p.acceleration,seconds:p.seconds}),
   displacement:p=>({initial:p.initial,acceleration:p.acceleration,seconds:p.seconds}),
