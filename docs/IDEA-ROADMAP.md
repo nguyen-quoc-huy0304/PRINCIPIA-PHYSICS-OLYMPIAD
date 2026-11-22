@@ -112,6 +112,7 @@
 | 71 | Khôi phục đầy đủ danh sách hơn 100 ý tưởng PRINCIPIA đã trao đổi, đối chiếu từng mục với backlog 70 mục hiện có để không bỏ sót | Đang rà soát lịch sử trao đổi; không tự bịa các mục chưa tìm thấy |
 | 72 | Theo dõi chuỗi ngày học liên tiếp, cấp độ XP và thành tựu theo tiến độ thực tế | Có mã nguồn core + tích hợp; 9/9 unit test chạy local đạt; GitHub Actions lần chạy gần nhất thất bại trước khi có step/log, trình duyệt chưa xác nhận |
 | 73 | Mùa giải tuần với nhiệm vụ theo lượt luyện, số câu và ghi chú; phần thưởng XP không nhận trùng | Có mã nguồn core + giao diện; 5 unit test đã viết, chưa chạy local; chờ CI và nghiệm thu trình duyệt |
+| 74 | Xuất dữ liệu đo trong Sổ nghiên cứu ra CSV có đơn vị và hỗ trợ dấu phẩy/ngoặc kép an toàn | Có mã nguồn core + nút xuất theo từng thí nghiệm; đã thêm unit test, chưa chạy local; chờ CI và nghiệm thu trình duyệt |
 
 ## Nguyên tắc nghiệm thu
 
