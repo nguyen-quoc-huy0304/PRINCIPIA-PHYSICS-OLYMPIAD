@@ -53,6 +53,8 @@ jobs:
           node --check assets/js/principia-external-labs.js
           node --check assets/js/principia-robotics-lab.js
           node --check assets/js/principia-data-lab.js
+          node --check assets/js/principia-physics-puzzles.js
+          node --test tests/js/*.test.cjs
   cpp:
     runs-on: ubuntu-latest
     steps:
