@@ -154,8 +154,8 @@
  async function enableNotifications(){if(!('Notification'in window)){alert('Trình duyệt này không hỗ trợ thông báo.');return}const p=await Notification.requestPermission();state.notifications=p==='granted';save();notifications()}
  function ai(){
   let context='';
-  try{if(typeof activeLesson!=='undefined'&&activeLesson){const l=find(activeLesson,data);if(l)context='\\n\\nBài học: '+l.name+'\\n'+String(l.content||'').slice(0,5000)}}catch(_){}
-  const prompt='Hãy cùng tôi thảo luận và hướng dẫn từng bước như một gia sư PRINCIPIA. Hãy hỏi lại khi thiếu dữ kiện, giải thích bản chất, nêu công thức và kiểm tra hiểu bài.'+context+'\\n\\nCâu hỏi của tôi: ';
+  try{if(typeof activeLesson!=='undefined'&&activeLesson){const l=find(activeLesson,data);if(l)context='\n\nBài học: '+l.name+'\n'+String(l.content||'').slice(0,5000)}}catch(_){}
+  const prompt='Hãy cùng tôi thảo luận và hướng dẫn từng bước như một gia sư PRINCIPIA. Hãy hỏi lại khi thiếu dữ kiện, giải thích bản chất, nêu công thức và kiểm tra hiểu bài.'+context+'\n\nCâu hỏi của tôi: ';
   open('Thảo luận cùng AI','<p>Đưa nội dung bài học hiện tại sang trợ lý PRINCIPIA hoặc sao chép lời nhắc để dùng với AI đang chọn.</p><textarea id="plsAiQuestion" rows="4" placeholder="Bạn đang vướng ở bước nào?..." style="width:100%;padding:12px;margin:8px 0"></textarea>'+btn('Mở khung trợ lý PRINCIPIA','principiaSuiteOpenChat()','primary')+btn('Sao chép lời nhắc học tập','principiaSuiteCopyAI()')+btn('Về trung tâm','principiaSuiteHome()'));
   window.__principiaSuitePrompt=prompt;
  }
@@ -193,5 +193,6 @@
   b.addEventListener('click',home);document.body.appendChild(b);
  }
  window.principiaSuiteHome=home;window.principiaSuiteExamSetup=examSetup;window.principiaSuiteStartExam=startExam;window.principiaSuiteChoose=choose;window.principiaSuiteSubmitExam=submitExam;window.principiaSuiteExitExam=exitExam;window.principiaSuiteAnalytics=analytics;window.principiaSuiteQuests=quests;window.principiaSuiteClaimQuest=claimQuest;window.principiaSuiteNotes=notes;window.principiaSuiteAddNote=addNote;window.principiaSuiteDeleteNote=deleteNote;window.principiaSuiteFormulas=formulas;window.principiaSuiteFlashcards=flashcards;window.principiaSuiteFlip=()=>{flashSide=!flashSide;renderFlash()};window.principiaSuiteFlashPrev=()=>{flashIndex=Math.max(0,flashIndex-1);renderFlash()};window.principiaSuiteFlashNext=()=>{flashIndex++;renderFlash()};window.principiaSuiteErrors=errors;window.principiaSuiteAddError=addError;window.principiaSuiteDeleteError=deleteError;window.principiaSuiteBadges=badges;window.principiaSuiteNotifications=notifications;window.principiaSuiteEnableNotifications=enableNotifications;window.principiaSuiteDisableNotifications=()=>{state.notifications=false;save();notifications()};window.principiaSuiteAI=ai;window.principiaSuiteOpenChat=openChat;window.principiaSuiteCopyAI=copyAI;
- patchExistingQuizHistory();\n if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
+ patchExistingQuizHistory();
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();
