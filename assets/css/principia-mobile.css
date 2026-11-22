@@ -521,26 +521,3 @@
 
 /* Keep the first-login welcome page full-bleed on mobile. */
 @media(max-width:900px){.principia-welcome-screen{width:100%;min-height:100svh;overflow-x:hidden}.pw-content{width:100%}.pw-visual{width:100%}}
-
-
-/* Mobile GPU budget: keep the bottom navigation crisp without a costly 24px blur. */
-@media (max-width: 900px) {
-  body>.sidebar[data-principia-mobile-nav],
-  #app .layout>.sidebar,
-  .sidebar {
-    -webkit-backdrop-filter: blur(8px) saturate(110%) !important;
-    backdrop-filter: blur(8px) saturate(110%) !important;
-  }
-  .tile,.stat,.panel,.card,.modal,.pmb-window {
-    box-shadow: 0 4px 14px rgba(0,0,0,.16) !important;
-  }
-  .tile:hover,.stat:hover,button:hover,.primary:hover {
-    filter: none !important;
-  }
-  .tile:hover { transform: none !important; }
-}
-@media (max-width: 900px) and (prefers-reduced-motion: no-preference) {
-  .reward-box-art,.principia-music-pill::before {
-    animation: none !important;
-  }
-}
