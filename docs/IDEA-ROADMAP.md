@@ -236,3 +236,6 @@
 | 155 | Sửa regression test xuất CSV của Sổ nghiên cứu dùng nhầm biến chưa khai báo | Đã sửa tham chiếu `api` thành `C`; cần chạy `npm test` để xác nhận |
 
 | 156 | Kiểm tra mã định danh màn chơi tự tạo trước khi đưa vào inline UI handler | Đã giới hạn ID theo chữ/số/gạch ngang/gạch dưới và thêm test; cần chạy `npm test` và kiểm thử trình duyệt |
+
+
+| 157 | Tổ chức thư viện nội dung: kéo thả/sắp xếp tab, bài học và chuyển tài liệu giữa các bài; hỗ trợ đổi thứ tự tài liệu | Đã có sẵn kéo thả node giữa tab và sắp xếp trong cây; bổ sung chuyển tài liệu giữa bài và kéo thả/nút lên xuống để đổi thứ tự; cần nghiệm thu trình duyệt, quyền admin và IndexedDB |
