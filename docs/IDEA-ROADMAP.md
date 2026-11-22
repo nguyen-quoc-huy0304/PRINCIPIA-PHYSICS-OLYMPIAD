@@ -188,6 +188,8 @@
 
 | 135 | Kế hoạch học tập cá nhân: tạo nhiệm vụ theo chủ đề, đặt hạn và thời lượng, ghi chú, đánh dấu hoàn thành, theo dõi tiến độ và cảnh báo quá hạn không phạt | Đã tích hợp trong Learning Suite; lưu cục bộ tối đa 200 nhiệm vụ; cần nghiệm thu trình duyệt |
 
+| 136 | Tìm kiếm toàn cục nâng cao: lọc Bài học/Quiz/Khám phá, tìm cả nội dung câu hỏi và lựa chọn đáp án, lưu 6 truy vấn gần đây và hỗ trợ điều hướng bàn phím an toàn | Đã cập nhật mã nguồn trên website chính; lưu truy vấn cục bộ; cần nghiệm thu trình duyệt |
+
 ## Nguyên tắc nghiệm thu
 
 1. Không đánh dấu hoàn thành chỉ vì đã tạo file hoặc commit code.
