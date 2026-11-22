@@ -4,3 +4,6 @@ test('missions calculate progress and completion',()=>{const x=api.missions({ses
 test('negative and invalid metrics do not create progress',()=>{const x=api.missions({sessions:-5,questions:'x',notes:0});assert.equal(x[0].value,0);assert.equal(x[1].value,0)});
 test('claim requires complete mission and prevents duplicate weekly claim',()=>{const x=api.missions({sessions:3});assert.equal(api.canClaim(x,'practice',[]),true);assert.equal(api.canClaim(x,'practice',[x[0].week+':practice']),false);assert.equal(api.canClaim(x,'notes',[]),false)});
 test('unknown mission cannot be claimed',()=>{assert.equal(api.canClaim([], 'unknown', []),false)});
+
+test('mission counters reject non-finite values and count whole events only',()=>{const x=api.missions({sessions:Infinity,questions:2.9,notes:-1});assert.equal(x[0].value,0);assert.equal(x[1].value,2);assert.equal(x[2].value,0)});
+test('very large finite counters are capped safely',()=>{const x=api.missions({sessions:Number.MAX_VALUE});assert.equal(x[0].value,Number.MAX_SAFE_INTEGER);assert.equal(x[0].complete,true);assert.equal(Number.isFinite(x[0].progress),true)});
