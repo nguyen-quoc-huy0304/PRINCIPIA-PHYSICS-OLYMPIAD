@@ -221,7 +221,8 @@ app.whenReady().then(() => {
       displacement: ['initial', 'acceleration', 'seconds'],
       kineticEnergy: ['massKg', 'speedMps'],
       projectileRange: ['speed', 'angleDeg', 'gravity'],
-      projectileMaxHeight: ['speed', 'angleDeg', 'gravity']
+      projectileMaxHeight: ['speed', 'angleDeg', 'gravity'],
+      gameProjectileScore: ['speed', 'angleDeg', 'targetM', 'gravity']
     };
     const fields = schemas[operation];
     if (!fields || !params || typeof params !== 'object' || Array.isArray(params)) {
