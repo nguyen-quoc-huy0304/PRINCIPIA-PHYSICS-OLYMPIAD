@@ -45,7 +45,7 @@ async function computeProjectile(speed,angleDeg,gravity){
   return{range,maxHeight,flightTime:2*vy/params.gravity,vx,vy,impactSpeed:finite(speed,'speed')};
 }
 const api={
-  version:'1.2.0',
+  version:'1.3.0',
   constants:Object.freeze({standardGravity:G}),
   velocity,displacement,kineticEnergy,projectile,state,
   compute,computeProjectile,
@@ -58,6 +58,28 @@ const api={
     if(!result||!Array.isArray(result.positionM)||!Array.isArray(result.velocityMps))throw new Error('Rapier returned an invalid state');
     lastBackend='rapier3d-rust';
     return result;
+  },
+  async fitLinearData(input){
+    if(!Array.isArray(input)||input.length<2||input.length>10000)throw new RangeError('Cần từ 2 đến 10000 cặp dữ liệu.');
+    const points=input.map((p,i)=>{
+      if(!Array.isArray(p)||p.length!==2)throw new TypeError('Mỗi điểm phải có dạng [x, y] (dòng '+(i+1)+').');
+      return [finite(p[0],'x'),finite(p[1],'y')];
+    });
+    if(root.principiaDesktop&&typeof root.principiaDesktop.computePhysics==='function'){
+      const result=await root.principiaDesktop.computePhysics('linearRegression',{points});
+      if(!result||!Number.isFinite(Number(result.slope))||!Number.isFinite(Number(result.intercept)))throw new Error('Native data analysis core returned an invalid fit');
+      lastBackend='rust-linear-regression';return result;
+    }
+    const n=points.length,mx=points.reduce((s,p)=>s+p[0],0)/n,my=points.reduce((s,p)=>s+p[1],0)/n;
+    const sxx=points.reduce((s,p)=>s+(p[0]-mx)**2,0),sxy=points.reduce((s,p)=>s+(p[0]-mx)*(p[1]-my),0),syy=points.reduce((s,p)=>s+(p[1]-my)**2,0);
+    if(!Number.isFinite(sxx)||!Number.isFinite(sxy)||!Number.isFinite(syy))throw new RangeError('Dữ liệu vượt miền số hỗ trợ.');
+    const scale=Math.max(1,...points.map(p=>Math.abs(p[0])));
+    if(sxx<=Number.EPSILON*scale*scale*n)throw new RangeError('Không thể hồi quy: mọi giá trị X gần như giống nhau.');
+    const slope=sxy/sxx,intercept=my-slope*mx;
+    const sse=points.reduce((s,p)=>s+(p[1]-(slope*p[0]+intercept))**2,0),rmse=Math.sqrt(sse/n);
+    const rSquared=syy<=Number.EPSILON*Math.max(1,Math.abs(my))**2*n?(sse<=Number.EPSILON*Math.max(1,Math.abs(my))**2*n?1:0):Math.max(0,Math.min(1,1-sse/syy));
+    if(![slope,intercept,rmse,rSquared].every(Number.isFinite))throw new RangeError('Kết quả hồi quy vượt miền số hỗ trợ.');
+    lastBackend='javascript-analytical-fallback';return {slope,intercept,rSquared,rmse,count:n};
   },
   async solveRobotArm(params){
     const p=params||{},l1=finite(p.l1M,'l1M'),l2=finite(p.l2M,'l2M');
