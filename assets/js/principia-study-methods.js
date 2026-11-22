@@ -23,9 +23,14 @@ function open(){
   r.innerHTML='<div style="max-width:850px;margin:20px auto;background:#151a2b;padding:18px;border-radius:18px"><button onclick="document.getElementById(\'principiaStudyMethods\').remove()">Đóng ×</button>'+html+'</div>';
  }
 }
+function renderResults(){
+ const el=document.getElementById('studyMethodResults');if(!el)return;
+ const filtered=methods.filter(x=>(category==='all'||x.category===category)&&(!query||(x.title+' '+x.desc+' '+x.category).toLocaleLowerCase('vi').includes(query.toLocaleLowerCase('vi')))&&(view==='all'||(view==='saved'?state.saved.includes(x.id):state.done.includes(x.id))));
+ el.innerHTML='<p class="small muted">Đang hiển thị '+filtered.length+' phương pháp</p>'+filtered.map(x=>'<article class="panel" style="padding:12px;margin:8px 0"><div class="small muted">#'+x.id+' · '+esc(x.category)+'</div><b>'+esc(x.title)+'</b><p class="small" style="margin:6px 0">'+esc(x.desc)+'</p><button onclick="principiaStudyMethodToggle('+x.id+')">'+(state.done.includes(x.id)?'✓ Đã thử':'Đánh dấu đã thử')+'</button><button onclick="principiaStudyMethodSave('+x.id+')">'+(state.saved.includes(x.id)?'★ Đã lưu':'☆ Lưu lại')+'</button></article>').join('');
+}
 function refresh(){open()}
 window.principiaStudyMethods=open;
-window.principiaStudyMethodSearch=v=>{query=v;refresh()};
+window.principiaStudyMethodSearch=v=>{query=v;renderResults()};
 window.principiaStudyMethodCategory=v=>{category=v;refresh()};
 window.principiaStudyMethodView=v=>{view=v;refresh()};
 window.principiaStudyMethodToggle=id=>{state.done=state.done.includes(id)?state.done.filter(x=>x!==id):state.done.concat(id);save();refresh()};
