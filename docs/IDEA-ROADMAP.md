@@ -224,3 +224,7 @@
 | 148 | CI JavaScript: khai báo rõ Node.js 22 cho job kiểm tra cú pháp và unit test, tránh phụ thuộc Node cài sẵn trên runner | Đã cập nhật workflow; cần xác nhận bằng lần chạy GitHub Actions tiếp theo |
 
 | 149 | Chuẩn hóa lệnh kiểm thử JavaScript cho nhà phát triển: chạy toàn bộ unit test bằng `npm test`, tài liệu hóa trong README | Đã thêm script và hướng dẫn; đã xác minh JSON/script/tài liệu, chưa chạy test suite thực tế |
+
+| 150 | Bảo vệ màn hình Cân bằng lực khỏi HTML injection qua ngày tháng trong lịch sử LocalStorage | Đã escape dữ liệu lịch sử trước khi chèn vào HTML; đã kiểm tra cú pháp, cần chạy unit test và kiểm thử trình duyệt |
+| 151 | Bổ sung kiểm thử tự động cho ba mức độ bài Cân bằng lực và bộ escape nội dung lịch sử | Đã thêm ca kiểm tra giới hạn lực và HTML escaping; cần chạy `npm test` trên runner |
+| 152 | CI kiểm tra cú pháp mọi file JavaScript thay vì danh sách chọn lọc | Đã đổi job sang quét toàn bộ `assets/js/**/*.js` bằng Node 22 và chạy `npm test`; chờ GitHub Actions xác nhận |
