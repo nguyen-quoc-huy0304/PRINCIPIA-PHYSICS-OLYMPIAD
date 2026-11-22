@@ -1,0 +1,25 @@
+name: PRINCIPIA Native Core Checks
+on:
+  push:
+    paths: ["rust/**", "src/physics/**", ".github/workflows/core-checks.yml"]
+  pull_request:
+    paths: ["rust/**", "src/physics/**", ".github/workflows/core-checks.yml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  rust:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Test Rust core
+        run: cargo test --manifest-path rust/Cargo.toml --all-targets
+  cpp:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile and test C++ physics kernel
+        run: |
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror src/physics/engine.cpp src/physics/engine_test.cpp -o /tmp/principia-physics-test
+          /tmp/principia-physics-test
