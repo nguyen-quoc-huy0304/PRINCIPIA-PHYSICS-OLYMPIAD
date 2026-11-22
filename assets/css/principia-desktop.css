@@ -1275,3 +1275,36 @@ input,textarea,select{background:#0b1020!important;border-color:rgba(158,175,215
  .brand-logo-img{width:42px!important;height:42px!important;min-width:42px!important;min-height:42px!important}
  .pw-brand>img{width:42px!important;height:42px!important;min-width:42px!important;min-height:42px!important}
 }
+
+
+/* PRINCIPIA performance pass: retain the visual style with cheaper compositing. */
+@media (prefers-reduced-transparency: no-preference) {
+  .sidebar,.panel,.tile,.modal,.welcome-card,
+  #codelearnWorkspace .cl-topbar,#principiaCompanionBubble,
+  #principiaMusicWindow,#principiaDownloadOverlay,#stickerStudio,.modalbg {
+    -webkit-backdrop-filter: blur(8px) saturate(110%) !important;
+    backdrop-filter: blur(8px) saturate(110%) !important;
+  }
+}
+button,.button,.tile,.stat,.nav,.tab,.pill {
+  transition-property: transform, opacity, background-color, border-color !important;
+  transition-duration: .16s !important;
+}
+@media (max-width: 900px), (hover: none) and (pointer: coarse) {
+  .tile:hover,.stat:hover,.nav:hover,button:hover,.primary:hover {
+    filter: none !important;
+  }
+  .tile:hover { transform: translateY(-2px) !important; }
+  .stat:hover { transform: none !important; }
+  .panel,.tile,.stat,.card,.sidebar,.welcome-card {
+    box-shadow: 0 5px 16px rgba(0,0,0,.16) !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,*::before,*::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+  }
+}
