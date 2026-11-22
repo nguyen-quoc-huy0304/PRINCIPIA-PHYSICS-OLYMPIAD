@@ -7,9 +7,6 @@ on:
         description: "Release tag to publish"
         required: true
         default: "desktop-v1.0.1"
-  push:
-    tags:
-      - "desktop-v*"
 
 permissions:
   contents: write
