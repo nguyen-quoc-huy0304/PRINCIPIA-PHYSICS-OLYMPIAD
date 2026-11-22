@@ -252,7 +252,7 @@
  }
  function noteCount(value){const el=document.getElementById('plsNoteLength');if(el)el.textContent=String(value||'').length+'/10000 ký tự · Ctrl+Enter để lưu'}
  function addNote(){const title=document.getElementById('plsNoteTitle').value.trim(),body=document.getElementById('plsNoteBody').value.trim();if(!body){alert('Nhập nội dung ghi chú trước nhé.');return}state.notes.unshift({title:title||'Ghi chú mới',body:body,date:new Date().toISOString()});save();notes()}
- function exportNotes(){const rows=(state.notes||[]).map(n=>'## '+(n.title||'Ghi chú')+'\n\n'+String(n.body||'')+'\n\n_'+new Date(n.date).toLocaleString('vi-VN')+'_');downloadText('# Sổ tay PRINCIPIA\n\n'+rows.join('\\n---\n\n'),'principia-study-notes.md','text/markdown;charset=utf-8')}
+ function exportNotes(){const rows=(state.notes||[]).map(n=>'## '+(n.title||'Ghi chú')+'\n\n'+String(n.body||'')+'\n\n_'+new Date(n.date).toLocaleString('vi-VN')+'_');downloadText('# Sổ tay PRINCIPIA\n\n'+rows.join('\n\n---\n\n'),'principia-study-notes.md','text/markdown;charset=utf-8')}
  function editNote(i){
   const n=state.notes[i];if(!n)return;
   open('Sửa ghi chú','<label>Tiêu đề<input id="plsEditNoteTitle" maxlength="100" value="'+esc(n.title||'')+'" style="display:block;width:100%;padding:10px;margin:6px 0 12px"></label><label>Nội dung<textarea id="plsEditNoteBody" rows="7" style="display:block;width:100%;padding:10px;margin:6px 0 12px">'+esc(n.body||'')+'</textarea></label>'+btn('Lưu thay đổi','principiaSuiteSaveNoteEdit('+i+')','primary')+btn('Hủy','principiaSuiteNotes()'));
