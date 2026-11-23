@@ -1,24 +1,3 @@
-// Apply the saved theme only after the main app exports its theme bridge.
-function requestPrincipiaTheme(){
- const apply=window.applyPrincipiaThemePublic;
- if(typeof apply==='function'){
-  try{return apply(localStorage.getItem('principia_theme')||'dark');}
-  catch(err){console.error('[PRINCIPIA] Theme initialization failed:',err);return;}
- }
- if(!window.__principiaThemeRetry)window.__principiaThemeRetry=0;
- if(window.__principiaThemeRetry<30){window.__principiaThemeRetry++;setTimeout(requestPrincipiaTheme,200);}
- else console.error('[PRINCIPIA] Theme bridge unavailable. app-part-02.js may have failed before exporting it.');
-}
-
-// Safe UI bridge: Firebase callbacks may fire before/without the app renderer.
-function requestPrincipiaRender(){
- if(typeof window.renderPrincipiaApp==='function'){
-  try{return window.renderPrincipiaApp();}catch(err){console.error('[PRINCIPIA] UI render failed:',err);}
- }
- if(!window.__principiaRenderRetry)window.__principiaRenderRetry=0;
- if(window.__principiaRenderRetry<30){window.__principiaRenderRetry++;setTimeout(requestPrincipiaRender,200);}
- else console.error('[PRINCIPIA] Main renderer is unavailable. Check app-part-02.js loading/execution.');
-}
 
 // Guard: auth callbacks must never crash if the main UI bridge is missing or overwritten.
 if(typeof window.getPrincipiaPage!=='function')window.getPrincipiaPage=function(){return 'account';};
@@ -103,9 +82,9 @@ function getRoleMap(){return {};}
 function setGrantedRole(){window.principiaNotify('PRINCIPIA hiện chỉ có 1 tài khoản Admin; các tài khoản còn lại chỉ xem.');}
 function revokeGrantedRole(){return;}
 function googleStatus(msg){const el=document.getElementById('googleAccountStatus');if(el)el.textContent=msg;}
-function openGoogleAccount(){window.setPrincipiaAccountReturnPage(window.getPrincipiaPage()==='account'?window.getPrincipiaAccountReturnPage():window.getPrincipiaPage());window.setPrincipiaPage('account');window.resetPrincipiaStack();requestPrincipiaRender();renderGoogleAccount();}
+function openGoogleAccount(){window.setPrincipiaAccountReturnPage(window.getPrincipiaPage()==='account'?window.getPrincipiaAccountReturnPage():window.getPrincipiaPage());window.setPrincipiaPage('account');window.resetPrincipiaStack();window.renderPrincipiaApp();renderGoogleAccount();}
 function closeGoogleAccount(){window.navigatePrincipiaPage(window.getPrincipiaAccountReturnPage()||'home');}
-function setAccountMode(mode){window.setPrincipiaAccountMode(mode);requestPrincipiaRender();renderGoogleAccount();}
+function setAccountMode(mode){window.setPrincipiaAccountMode(mode);window.renderPrincipiaApp();renderGoogleAccount();}
 
 function togglePrincipiaPassword(){const input=document.getElementById("authPassword");if(!input)return;const showing=input.type==="password";input.type=showing?"text":"password";const button=input.parentElement?.querySelector("button");if(button){button.textContent=showing?"🙈":"👁";button.setAttribute("aria-label",showing?"Ẩn mật khẩu":"Hiện mật khẩu");button.title=showing?"Ẩn mật khẩu":"Hiện mật khẩu";}}
 async function sendPrincipiaPasswordReset(){
@@ -126,7 +105,7 @@ function authErrorMessage(err){const map={'auth/email-already-in-use':'Email nà
 async function syncPrincipiaUser(user){
  if(!user)return;const previous=getPrincipiaAccount();const returningAccount=previous?.uid===user.uid;const account={uid:user.uid,name:user.displayName||user.email?.split('@')[0]||'Người dùng',email:user.email||'',customPicture:returningAccount?previous.customPicture||'':'',signedInAt:new Date().toISOString(),provider:user.providerData?.[0]?.providerId||'password'};
  localStorage.setItem('principia_google_account',JSON.stringify(account));const appProfile=JSON.parse(localStorage.getItem('halo_profile')||'{}');appProfile.name=account.name;appProfile.avatar='';localStorage.setItem('halo_profile',JSON.stringify(appProfile));
- if(window.getPrincipiaPage()==='account'){const welcomeKey='principia_welcome_seen_v5_'+(account.uid||account.email||'guest');const alreadyWelcomed=localStorage.getItem(welcomeKey)==='1';window.setPrincipiaPage(alreadyWelcomed?'home':'welcome');}requestPrincipiaRender();
+ if(window.getPrincipiaPage()==='account'){const welcomeKey='principia_welcome_seen_v5_'+(account.uid||account.email||'guest');const alreadyWelcomed=localStorage.getItem(welcomeKey)==='1';window.setPrincipiaPage(alreadyWelcomed?'home':'welcome');}window.renderPrincipiaApp();
  if(window.watchPrincipiaLeaderboard)window.watchPrincipiaLeaderboard();
  if(window.syncPrincipiaLeaderboard)window.syncPrincipiaLeaderboard();
 }
@@ -154,17 +133,17 @@ function renderGoogleAccount(){const mount=document.getElementById('googleSignIn
 function googleSetupNotice(){signInWithGoogle();}
 function saveGoogleClientId(){googleStatus('Không cần Google Client ID riêng. Hãy bật Google provider trong Firebase Authentication.');}
 function escapeAccountText(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-function changeAccountAvatar(file){if(!file)return;if(!file.type.startsWith('image/')){window.principiaNotify('Vui lòng chọn tệp ảnh');return;}if(file.size>4*1024*1024){window.principiaNotify('Ảnh tối đa 4 MB');return;}const reader=new FileReader();reader.onload=()=>{const acc=getPrincipiaAccount();if(!acc)return;acc.customPicture=reader.result;localStorage.setItem('principia_google_account',JSON.stringify(acc));requestPrincipiaRender();window.principiaNotify('Đã cập nhật ảnh đại diện');};reader.readAsDataURL(file);}
-function resetAccountAvatar(){const acc=getPrincipiaAccount();if(!acc)return;delete acc.customPicture;localStorage.setItem('principia_google_account',JSON.stringify(acc));requestPrincipiaRender();}
+function changeAccountAvatar(file){if(!file)return;if(!file.type.startsWith('image/')){window.principiaNotify('Vui lòng chọn tệp ảnh');return;}if(file.size>4*1024*1024){window.principiaNotify('Ảnh tối đa 4 MB');return;}const reader=new FileReader();reader.onload=()=>{const acc=getPrincipiaAccount();if(!acc)return;acc.customPicture=reader.result;localStorage.setItem('principia_google_account',JSON.stringify(acc));window.renderPrincipiaApp();window.principiaNotify('Đã cập nhật ảnh đại diện');};reader.readAsDataURL(file);}
+function resetAccountAvatar(){const acc=getPrincipiaAccount();if(!acc)return;delete acc.customPicture;localStorage.setItem('principia_google_account',JSON.stringify(acc));window.renderPrincipiaApp();}
 function openYoutubeWithGoogle(){const acc=getPrincipiaAccount();window.open(acc?.email?'https://www.youtube.com/?authuser='+encodeURIComponent(acc.email):'https://www.youtube.com/','_blank','noopener');}
-async function signOutGoogleLocal(){try{if(firebase.apps.length)await firebase.auth().signOut();}catch(e){}localStorage.removeItem('principia_google_account');const appProfile=JSON.parse(localStorage.getItem('halo_profile')||'{}');appProfile.name='Learner';appProfile.avatar='';localStorage.setItem('halo_profile',JSON.stringify(appProfile));window.setPrincipiaPage('account');window.setPrincipiaAccountMode('login');requestPrincipiaRender();renderGoogleAccount();}
+async function signOutGoogleLocal(){try{if(firebase.apps.length)await firebase.auth().signOut();}catch(e){}localStorage.removeItem('principia_google_account');const appProfile=JSON.parse(localStorage.getItem('halo_profile')||'{}');appProfile.name='Learner';appProfile.avatar='';localStorage.setItem('halo_profile',JSON.stringify(appProfile));window.setPrincipiaPage('account');window.setPrincipiaAccountMode('login');window.renderPrincipiaApp();renderGoogleAccount();}
 async function initPrincipiaAuth(){
- if(!firebaseConfigured()){if(window.getPrincipiaPage()!=='account'&&!getPrincipiaAccount()){window.setPrincipiaPage('account');requestPrincipiaRender();}return;}
+ if(!firebaseConfigured()){if(window.getPrincipiaPage()!=='account'&&!getPrincipiaAccount()){window.setPrincipiaPage('account');window.renderPrincipiaApp();}return;}
  try{
   const auth=await ensureFirebase();
   auth.onAuthStateChanged(async user=>{
    if(user){await syncPrincipiaUser(user);}
-   else{localStorage.removeItem('principia_google_account');if(window.getPrincipiaPage()!=='account'){window.setPrincipiaPage('account');window.resetPrincipiaStack();requestPrincipiaRender();}renderGoogleAccount();}
+   else{localStorage.removeItem('principia_google_account');if(window.getPrincipiaPage()!=='account'){window.setPrincipiaPage('account');window.resetPrincipiaStack();window.renderPrincipiaApp();}renderGoogleAccount();}
   });
  }catch(e){
   console.error('PRINCIPIA auth init:',e);
@@ -217,6 +196,6 @@ window.watchPrincipiaLeaderboard=function(){
 };
 
 // Khởi động sau khi Firebase và các hàm xác thực đã được khai báo.
-requestPrincipiaTheme();
-requestPrincipiaRender();
+window.applyPrincipiaThemePublic(localStorage.getItem('principia_theme')||'dark');
+window.renderPrincipiaApp();
 
