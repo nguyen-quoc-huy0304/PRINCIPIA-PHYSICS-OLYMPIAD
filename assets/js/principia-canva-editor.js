@@ -6,8 +6,9 @@
  const MAX_IMAGE_CHARS=1400000;
  let state={objects:[],layout:{}};
  let enabled=false,layer=null,activeObjectDrag=null,activeElementDrag=null,lastPointer=null,suppressClickNode=null;
- let resizeObserver=null;
+ let resizeObserver=null,resizeSaveTimer=null;
  const observed=new WeakSet();
+ const observedSizes=new WeakMap();
  const originalResizeStyles=new WeakMap();
  const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
  const isAdmin=()=>{
@@ -97,13 +98,14 @@
   if(entry.height)element.style.setProperty('height',entry.height+'px');
  }
  function recordElementSize(element,key){
-  if(!enabled||!element.isConnected)return;
+  if(!enabled||!element.isConnected)return false;
   const rect=element.getBoundingClientRect();
-  if(rect.width<24||rect.height<20)return;
+  if(rect.width<24||rect.height<20)return false;
   const current=state.layout[key]||{x:0,y:0};
-  current.width=Math.round(rect.width);
-  current.height=Math.round(rect.height);
-  state.layout[key]=current;
+  const width=Math.round(rect.width),height=Math.round(rect.height);
+  if(current.width===width&&current.height===height)return false;
+  current.width=width;current.height=height;state.layout[key]=current;
+  return true;
  }
  function applyPageLayout(){
   const app=document.getElementById('app');
@@ -115,15 +117,29 @@
    element.dataset.proCanvasMoveKey=key;
    setLayoutStyle(element,state.layout[key]);
    if(isResizeTarget(element)){
-    if(!originalResizeStyles.has(element))originalResizeStyles.set(element,{resize:element.style.resize,overflow:element.style.overflow});
+    if(!originalResizeStyles.has(element))originalResizeStyles.set(element,{resize:element.style.resize,overflow:element.style.overflow,display:element.style.display,verticalAlign:element.style.verticalAlign,maxWidth:element.style.maxWidth});
     if(enabled){
      element.style.setProperty('resize','both','important');
      element.style.setProperty('overflow','auto','important');
+     if(element.matches('[data-pro-edit-key]')){
+      element.style.setProperty('display','inline-block','important');
+      element.style.setProperty('vertical-align','baseline','important');
+      element.style.setProperty('max-width','100%','important');
+     }
      if(typeof ResizeObserver==='function'&&!observed.has(element)){
-      if(!resizeObserver)resizeObserver=new ResizeObserver(entries=>entries.forEach(entry=>{
-       const target=entry.target,keyNow=target.dataset.proCanvasMoveKey;
-       if(keyNow)recordElementSize(target,keyNow);
-      }));
+      if(!resizeObserver)resizeObserver=new ResizeObserver(entries=>{
+       let changed=false;
+       entries.forEach(entry=>{
+        const target=entry.target,keyNow=target.dataset.proCanvasMoveKey,rect=target.getBoundingClientRect();
+        const previous=observedSizes.get(target);
+        observedSizes.set(target,{width:rect.width,height:rect.height});
+        if(previous&&(Math.abs(previous.width-rect.width)>1||Math.abs(previous.height-rect.height)>1)&&keyNow)
+         changed=recordElementSize(target,keyNow)||changed;
+       });
+       if(changed){clearTimeout(resizeSaveTimer);resizeSaveTimer=setTimeout(persist,250)}
+      });
+      const rect=element.getBoundingClientRect();
+      observedSizes.set(element,{width:rect.width,height:rect.height});
       resizeObserver.observe(element);observed.add(element);
      }
     }else{
@@ -131,6 +147,9 @@
      if(original){
       element.style.resize=original.resize;
       element.style.overflow=original.overflow;
+      element.style.display=original.display;
+      element.style.verticalAlign=original.verticalAlign;
+      element.style.maxWidth=original.maxWidth;
      }
     }
    }
@@ -142,6 +161,7 @@
   if(!layer){
    layer=document.createElement('div');layer.id='principiaCanvaLayer';
    layer.setAttribute('aria-label','Các đối tượng được thêm bằng trình chỉnh sửa');
+   layer.dataset.proEditorToolbar='1';
    Object.assign(layer.style,{position:'absolute',left:'0',top:'0',width:'100%',minHeight:'100%',overflow:'visible',pointerEvents:'none',zIndex:'2147482000'});
    document.body.appendChild(layer);
   }
