@@ -64,6 +64,13 @@
     return [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
   }
 
+  function weekKey() {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+    return [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
+  }
+
   function currentTier(rp) {
     let index = 0;
     for (let i = 1; i < TIERS.length; i += 1) if (rp >= TIERS[i].min) index = i;
@@ -134,19 +141,26 @@
     const nextText = tier.next ? (tier.next.min - state.rp) + ' RP đến ' + tier.next.name : 'Đã đạt bậc cao nhất';
     const recent = state.matches.slice(-5).reverse();
     const history = recent.length ? recent.map(match => '<div style="display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid #38324d"><span>' + escapeHtml(match.rival) + ' · ' + new Date(match.date).toLocaleString('vi-VN') + '</span><b style="color:' + (match.result === 'win' ? '#78e0ac' : '#f2a2a2') + '">' + (match.result === 'win' ? 'THẮNG' : 'THUA') + ' · ' + (match.rpChange > 0 ? '+' : '') + match.rpChange + ' RP</b></div>').join('') : '<p style="color:#aaa">Chưa có trận xếp hạng.</p>';
+    const thisWeek = weekKey();
+    const weekMatches = state.matches.filter(item => String(item.date || '').slice(0, 10) >= thisWeek);
+    const weeklyWins = weekMatches.filter(item => item.result === 'win').length;
     const missions = [
       { id: 'daily-1', label: 'Chơi 1 trận xếp hạng', value: state.dailyMatches, target: 1, reward: 15 },
       { id: 'daily-3', label: 'Chơi 3 trận xếp hạng', value: state.dailyMatches, target: 3, reward: 25 },
-      { id: 'wins-2', label: 'Thắng 2 trận trong mùa', value: state.wins, target: 2, reward: 30 }
+      { id: 'wins-2', label: 'Thắng 2 trận trong mùa', value: state.wins, target: 2, reward: 30 },
+      { id: 'weekly-play5', label: 'Tuần bền bỉ · chơi 5 trận', value: weekMatches.length, target: 5, reward: 40, period: 'week' },
+      { id: 'weekly-win3', label: 'Tuần chiến thắng · thắng 3 trận', value: weeklyWins, target: 3, reward: 60, period: 'week' }
     ];
     const missionHtml = missions.map(m => {
-      const key = todayKey() + ':' + m.id;
+      const key = (m.period === 'week' ? thisWeek : todayKey()) + ':' + m.id;
       const done = m.value >= m.target;
       const claimed = state.claims.includes(key);
       return '<div style="padding:10px;border:1px solid #39334f;border-radius:12px;margin:7px 0"><b>' + m.label + '</b><div style="color:#aaa;font-size:12px;margin:4px 0">' + Math.min(m.value, m.target) + '/' + m.target + ' · thưởng ' + m.reward + ' RP</div>' + (claimed ? '<small style="color:#80dcae">Đã nhận</small>' : done ? button('Nhận thưởng', 'principiaRankClaim("' + m.id + '")', true) : '<small style="color:#aaa">Đang thực hiện</small>') + '</div>';
     }).join('');
     const rivals = RIVALS.map(r => '<div style="padding:10px;border:1px solid #39334f;border-radius:12px"><b>' + r.icon + ' ' + r.name + '</b><div style="color:#aaa;font-size:12px">' + r.style + ' · Đối thủ AI</div></div>').join('');
-    show('ĐẤU TRƯỜNG', '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px"><section style="padding:17px;border:1px solid #8b75c8;border-radius:16px;background:linear-gradient(130deg,#39265e,#17162b)"><small style="color:#c9b9f5">HẠNG HIỆN TẠI</small><div style="font-size:29px;font-weight:900;margin:6px 0">' + tier.icon + ' ' + tier.label + '</div><div style="font-size:22px;font-weight:800">' + state.rp + ' RP</div><div style="height:9px;background:#090914;border-radius:9px;margin:12px 0;overflow:hidden"><div style="height:100%;width:' + Math.round(tier.progress * 100) + '%;background:linear-gradient(90deg,#9b7aff,#e5c8ff)"></div></div><small style="color:#d0c5e8">' + nextText + '</small></section><section style="padding:15px;border:1px solid #39334f;border-radius:16px"><small style="color:#aaa">THÀNH TÍCH MÙA</small><div style="font-size:25px;font-weight:800;margin-top:8px">' + state.wins + 'W / ' + state.losses + 'L</div><div style="color:#aaa;font-size:12px">MMR ẩn: ' + state.mmr + ' · ' + state.dailyMatches + '/' + DAILY_LIMIT + ' trận hôm nay</div><div style="color:#aaa;font-size:12px;margin-top:8px">RP tách biệt với EXP học tập.</div></section></div><section style="margin-top:14px;padding:14px;border:1px solid #39334f;border-radius:14px"><h3 style="margin:0 0 8px">CHỌN CHẾ ĐỘ</h3><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px"><button onclick="principiaRankStart(&quot;balanced&quot;)" style="padding:14px;border-radius:12px;background:#28223e;color:white;border:1px solid #65538e;text-align:left"><b>⚔️ Đấu xếp hạng</b><div style="font-size:12px;color:#bbb;margin-top:5px">5 câu · cân bằng kiến thức và tốc độ</div></button><button onclick="principiaRankStart(&quot;accuracy&quot;)" style="padding:14px;border-radius:12px;background:#28223e;color:white;border:1px solid #65538e;text-align:left"><b>🎯 Chuẩn xác</b><div style="font-size:12px;color:#bbb;margin-top:5px">Ưu tiên số câu đúng</div></button><button onclick="principiaRankStart(&quot;combo&quot;)" style="padding:14px;border-radius:12px;background:#28223e;color:white;border:1px solid #65538e;text-align:left"><b>🔥 Chuỗi liên tiếp</b><div style="font-size:12px;color:#bbb;margin-top:5px">Thưởng nhịp trả lời đúng liên tục</div></button></div></section><section style="margin-top:14px;padding:14px;border:1px solid #39334f;border-radius:14px"><h3 style="margin:0 0 8px">NHIỆM VỤ</h3>' + missionHtml + '</section><section style="margin-top:14px;padding:14px;border:1px solid #39334f;border-radius:14px"><h3 style="margin:0 0 8px">ĐỐI THỦ AI</h3><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px">' + rivals + '</div><p style="color:#aaa;font-size:12px">Đây là nhân vật AI hư cấu, không phải người chơi trực tuyến.</p></section><section style="margin-top:14px;padding:14px;border:1px solid #39334f;border-radius:14px"><h3 style="margin:0 0 8px">LỊCH SỬ TRẬN</h3>' + history + '</section>' + button('Đóng đấu trường', 'principiaRankClose()') + '<p style="font-size:11px;color:#8f89a1">Mỗi ngày tối đa ' + DAILY_LIMIT + ' trận xếp hạng để hạn chế cày điểm. Không mất RP vì nghỉ học.</p>');
+    const board = RIVALS.map(r => ({ name: r.name, rating: r.rating, icon: r.icon, isUser: false })).concat([{ name: 'BẠN', rating: state.mmr, icon: '★', isUser: true }]).sort((a, b) => b.rating - a.rating).map((item, index) => '<div style="display:flex;justify-content:space-between;padding:8px 4px;border-bottom:1px solid #38324d;color:' + (item.isUser ? '#d6c1ff' : '#ddd') + '"><span>' + (index + 1) + '. ' + item.icon + ' ' + item.name + (item.isUser ? ' (bạn)' : '') + '</span><b>' + item.rating + ' MMR</b></div>').join('');
+    const achievementHtml = state.achievements.length ? state.achievements.map(item => '<span style="display:inline-block;padding:7px 10px;margin:4px;border:1px solid #6c5a91;border-radius:20px;color:#e4d7ff">🏅 ' + escapeHtml(item.name) + '</span>').join('') : '<p style="color:#aaa;font-size:13px">Thắng trận hoặc thăng hạng để mở khóa huy hiệu đầu tiên.</p>';
+    show('ĐẤU TRƯỜNG', '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px"><section style="padding:17px;border:1px solid #8b75c8;border-radius:16px;background:linear-gradient(130deg,#39265e,#17162b)"><small style="color:#c9b9f5">HẠNG HIỆN TẠI</small><div style="font-size:29px;font-weight:900;margin:6px 0">' + tier.icon + ' ' + tier.label + '</div><div style="font-size:22px;font-weight:800">' + state.rp + ' RP</div><div style="height:9px;background:#090914;border-radius:9px;margin:12px 0;overflow:hidden"><div style="height:100%;width:' + Math.round(tier.progress * 100) + '%;background:linear-gradient(90deg,#9b7aff,#e5c8ff)"></div></div><small style="color:#d0c5e8">' + nextText + '</small></section><section style="padding:15px;border:1px solid #39334f;border-radius:16px"><small style="color:#aaa">THÀNH TÍCH MÙA</small><div style="font-size:25px;font-weight:800;margin-top:8px">' + state.wins + 'W / ' + state.losses + 'L</div><div style="color:#aaa;font-size:12px">MMR ẩn: ' + state.mmr + ' · ' + state.dailyMatches + '/' + DAILY_LIMIT + ' trận hôm nay</div><div style="color:#aaa;font-size:12px;margin-top:8px">RP tách biệt với EXP học tập.</div></section></div><section style="margin-top:14px;padding:14px;border:1px solid #39334f;border-radius:14px"><h3 style="margin:0 0 8px">CHỌN CHẾ ĐỘ</h3><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px"><button onclick="principiaRankStart(&quot;balanced&quot;)" style="padding:14px;border-radius:12px;background:#28223e;color:white;border:1px solid #65538e;text-align:left"><b>⚔️ Đấu xếp hạng</b><div style="font-size:12px;color:#bbb;margin-top:5px">5 câu · cân bằng kiến thức và tốc độ</div></button><button onclick="principiaRankStart(&quot;accuracy&quot;)" style="padding:14px;border-radius:12px;background:#28223e;color:white;border:1px solid #65538e;text-align:left"><b>🎯 Chuẩn xác</b><div style="font-size:12px;color:#bbb;margin-top:5px">Ưu tiên số câu đúng</div></button><button onclick="principiaRankStart(&quot;combo&quot;)" style="padding:14px;border-radius:12px;background:#28223e;color:white;border:1px solid #65538e;text-align:left"><b>🔥 Chuỗi liên tiếp</b><div style="font-size:12px;color:#bbb;margin-top:5px">Thưởng nhịp trả lời đúng liên tục</div></button></div></section><section style="margin-top:14px;padding:14px;border:1px solid #39334f;border-radius:14px"><h3 style="margin:0 0 8px">NHIỆM VỤ</h3>' + missionHtml + '</section><section style="margin-top:14px;padding:14px;border:1px solid #39334f;border-radius:14px"><h3 style="margin:0 0 8px">ĐỐI THỦ AI</h3><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px">' + rivals + '</div><p style="color:#aaa;font-size:12px">Đây là nhân vật AI hư cấu, không phải người chơi trực tuyến.</p></section><section style="margin-top:14px;padding:14px;border:1px solid #39334f;border-radius:14px"><h3 style="margin:0 0 8px">LỊCH SỬ TRẬN</h3>' + history + '</section>' + '<section style="margin-top:14px;padding:14px;border:1px solid #39334f;border-radius:14px"><h3 style="margin:0 0 8px">BXH MMR · MÔ PHỎNG</h3>' + board + '<p style="font-size:11px;color:#8f89a1">Bảng xếp hạng hiện mô phỏng với hồ sơ AI trong thiết bị, chưa phải bảng xếp hạng người chơi trực tuyến.</p></section><section style="margin-top:14px;padding:14px;border:1px solid #39334f;border-radius:14px"><h3 style="margin:0 0 8px">HỒ SƠ & HUY HIỆU</h3>' + achievementHtml + '</section>' + button('Đóng đấu trường', 'principiaRankClose()') + '<p style="font-size:11px;color:#8f89a1">Mỗi ngày tối đa ' + DAILY_LIMIT + ' trận xếp hạng để hạn chế cày điểm. Không mất RP vì nghỉ học.</p>');
   }
 
   function startMatch(mode) {
@@ -233,13 +247,17 @@
   function claimMission(id) {
     const today = todayKey();
     if (state.daily !== today) { state.daily = today; state.dailyMatches = 0; }
+    const thisWeek = weekKey();
+    const weekMatches = state.matches.filter(item => String(item.date || '').slice(0, 10) >= thisWeek);
     const definitions = {
-      'daily-1': { value: state.dailyMatches, target: 1, reward: 15 },
-      'daily-3': { value: state.dailyMatches, target: 3, reward: 25 },
-      'wins-2': { value: state.wins, target: 2, reward: 30 }
+      'daily-1': { value: state.dailyMatches, target: 1, reward: 15, period: 'day' },
+      'daily-3': { value: state.dailyMatches, target: 3, reward: 25, period: 'day' },
+      'wins-2': { value: state.wins, target: 2, reward: 30, period: 'day' },
+      'weekly-play5': { value: weekMatches.length, target: 5, reward: 40, period: 'week' },
+      'weekly-win3': { value: weekMatches.filter(item => item.result === 'win').length, target: 3, reward: 60, period: 'week' }
     };
     const mission = definitions[id];
-    const key = today + ':' + id;
+    const key = (mission && mission.period === 'week' ? thisWeek : today) + ':' + id;
     if (!mission || mission.value < mission.target || state.claims.includes(key)) return;
     state.claims.push(key);
     state.rp = Math.min(1000000, state.rp + mission.reward);
