@@ -296,6 +296,20 @@
   exam={questions:wrong,answers:{},marked:[],end:Date.now()+Math.max(5,wrong.length*2)*60000,startedAt:Date.now(),submitted:false,topic:'Ôn câu sai',warned5:false,warned1:false,currentIndex:0};
   examCurrentIndex=0;examView='all';saveExamDraft();renderExam();startTimer();
  }
+ let attemptQuery='',attemptMode='all';
+ function renderAttemptHistory(){
+  const host=document.getElementById('plsAttemptHistoryRows'),count=document.getElementById('plsAttemptHistoryCount');if(!host||!count)return;
+  const all=Array.isArray(state.attempts)?state.attempts:[],term=attemptQuery.toLocaleLowerCase('vi');
+  const rows=all.filter(x=>{const score=Number(x.score)||0,total=Number(x.total)||0,pct=Number.isFinite(Number(x.percent))?Number(x.percent):(total?Math.round(score/total*100):0);return (attemptMode==='all'||(attemptMode==='best'&&pct>=80)||(attemptMode==='low'&&pct<60))&&[x.date,x.topic,x.title,x.score,x.total,pct].join(' ').toLocaleLowerCase('vi').includes(term)}).slice().reverse();
+  count.textContent=rows.length+'/'+all.length+' lượt luyện';
+  host.innerHTML=rows.map(x=>{const score=Number(x.score)||0,total=Number(x.total)||0,pct=Number.isFinite(Number(x.percent))?Number(x.percent):(total?Math.round(score/total*100):0);return '<article style="padding:10px 0;border-bottom:1px solid var(--line,#444)"><b>'+esc(x.topic||x.title||'Lượt luyện')+'</b><div class="small muted">'+esc(x.date||'Không rõ ngày')+'</div><div>'+score+'/'+total+' câu đúng · '+pct+'%</div></article>'}).join('')||'<p class="muted">Không có lượt luyện phù hợp.</p>';
+ }
+ function attemptHistory(){
+  open('Lịch sử luyện tập','<p id="plsAttemptHistoryCount" class="small muted"></p><input type="search" maxlength="100" placeholder="Tìm theo ngày, chủ đề, điểm..." oninput="principiaSuiteAttemptSearch(this.value)" style="width:100%;box-sizing:border-box;padding:10px;margin:6px 0"><select onchange="principiaSuiteAttemptMode(this.value)" style="padding:10px;margin:6px 0"><option value="all">Tất cả lượt luyện</option><option value="best">Đạt từ 80%</option><option value="low">Dưới 60%</option></select>'+btn('Xuất CSV','principiaSuiteExportAttempts()')+'<div id="plsAttemptHistoryRows"></div>'+btn('Về trung tâm','principiaSuiteHome()'));renderAttemptHistory();
+ }
+ function setAttemptQuery(v){attemptQuery=String(v||'').slice(0,100);renderAttemptHistory()}
+ function setAttemptMode(v){attemptMode=['all','best','low'].includes(v)?v:'all';renderAttemptHistory()}
+ function exportAttempts(){const quote=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';const rows=(state.attempts||[]).map(x=>{const total=Number(x.total)||0,score=Number(x.score)||0,pct=Number.isFinite(Number(x.percent))?Number(x.percent):(total?Math.round(score/total*100):0);return [x.date,x.topic||x.title,score,total,pct]});downloadText('\\uFEFF'+[['Ngày','Chủ đề','Điểm đúng','Tổng câu','Độ chính xác (%)'],...rows].map(row=>row.map(quote).join(',')).join('\\r\\n'),'principia-attempt-history.csv','text/csv;charset=utf-8')}
  let analyticsRange='all';
  const A11Y_KEY='principia_accessibility_preferences_v1';
  function readA11y(){try{const x=JSON.parse(localStorage.getItem(A11Y_KEY)||'{}');return {scale:[100,110,120,130].includes(Number(x.scale))?Number(x.scale):100,contrast:!!x.contrast,motion:!!x.motion,underline:!!x.underline}}catch(_){return {scale:100,contrast:false,motion:false,underline:false}}}
