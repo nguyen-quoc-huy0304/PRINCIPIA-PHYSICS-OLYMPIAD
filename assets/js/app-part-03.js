@@ -123,7 +123,7 @@ async function submitEmailAuth(event){
  const password=document.getElementById('authPassword')?.value||'';
  const name=document.getElementById('authName')?.value.trim()||'';
  const isSignup=window.getPrincipiaAccountMode()==='signup';
- if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)){const message='✕ Địa chỉ email chưa hợp lệ.';if(status)status.textContent=message;showPrincipiaAuthFeedback(message);return;}
+ if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){const message='✕ Địa chỉ email chưa hợp lệ.';if(status)status.textContent=message;showPrincipiaAuthFeedback(message);return;}
  if(password.length<6){const message='✕ Mật khẩu phải có ít nhất 6 ký tự.';if(status)status.textContent=message;showPrincipiaAuthFeedback(message);return;}
  if(principiaAuthActionInProgress)return;
  if(submitButton)submitButton.disabled=true;
