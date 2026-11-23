@@ -8,6 +8,7 @@
  const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  function root(){let el=document.getElementById('principiaLocalAI');if(!el){el=document.createElement('div');el.id='principiaLocalAI';el.style.cssText='position:fixed;inset:0;z-index:2147483646;background:rgba(3,7,18,.88);overflow:auto;padding:12px;color:var(--text,#f5f7ff);';document.body.appendChild(el)}return el}
  function open(seed,question){
+  const chatBox=document.getElementById('chatBox');if(chatBox)chatBox.classList.remove('open');
   context=String(seed||'').slice(0,6000);history=[];
   const el=root();
   el.innerHTML='<section style="max-width:760px;margin:12px auto;background:var(--card,#151a2b);border:1px solid var(--line,#3a4055);border-radius:18px;padding:16px;box-shadow:0 18px 60px #0008">'+
