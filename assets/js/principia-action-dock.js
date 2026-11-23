@@ -60,11 +60,10 @@
   closePanel(browserPanel);
   const panel=document.createElement('section');panel.id='principiaMiniBrowser';panel.setAttribute('role','dialog');panel.setAttribute('aria-label','Tìm kiếm Internet');
   panel.innerHTML=header('⌕ Tìm kiếm Internet','principiaBrowserClose','<button type="button" id="principiaBrowserBack" title="Quay lại">←</button><button type="button" id="principiaBrowserForward" title="Tiến">→</button><button type="button" id="principiaBrowserReload" title="Tải lại">↻</button>')+
-   '<form id="principiaBrowserForm" style="display:flex;gap:6px;padding:9px;border-bottom:1px solid var(--line,#46506a)"><input id="principiaBrowserUrl" type="search" inputmode="search" autocomplete="off" placeholder="Tìm trên Google hoặc nhập địa chỉ website" style="flex:1;min-width:0;padding:10px;border:1px solid var(--line,#46506a);border-radius:10px;background:var(--bg,#0b1020);color:inherit"><button type="submit">Tìm</button></form>'+
-   '<div style="display:flex;gap:7px;padding:8px 10px"><button type="button" id="principiaBrowserHistoryToggle">Lịch sử</button><button type="button" id="principiaBrowserSave">☆ Lưu trang</button></div><div id="principiaBrowserHistoryList" hidden style="max-height:180px;overflow:auto;padding:8px 10px;border-bottom:1px solid var(--line,#46506a)"></div><div style="display:flex;align-items:center;gap:8px;padding:7px 10px;font-size:11px;opacity:.8"><span id="principiaBrowserStatus" role="status" style="flex:1">Google Search · nếu Google không cho nhúng, dùng nút mở ngoài.</span><button type="button" id="principiaBrowserExternal">Mở ngoài ↗</button></div>'+
+   '<div style="display:flex;gap:7px;padding:8px 10px"><button type="button" id="principiaBrowserHistoryToggle">Lịch sử</button><button type="button" id="principiaBrowserSave">☆ Lưu trang</button></div><div id="principiaBrowserHistoryList" hidden style="max-height:180px;overflow:auto;padding:8px 10px;border-bottom:1px solid var(--line,#46506a)"></div><div style="display:flex;align-items:center;gap:8px;padding:7px 10px;font-size:11px;opacity:.8"><span id="principiaBrowserStatus" role="status" style="flex:1">Đang xem Google. Dùng thanh tìm kiếm PRINCIPIA ở cạnh nút Quay lại.</span><button type="button" id="principiaBrowserExternal">Mở ngoài ↗</button></div>'+
    '<iframe id="principiaBrowserFrame" title="Kết quả tìm kiếm web" referrerpolicy="strict-origin-when-cross-origin" style="width:100%;flex:1;min-height:0;border:0;background:white" src="https://www.google.com/webhp?igu=1"></iframe>';
   document.body.appendChild(panel);browserPanel=panel;stylePanel(panel,248);makeDraggable(panel);
-  const frame=panel.querySelector('#principiaBrowserFrame'),input=panel.querySelector('#principiaBrowserUrl'),status=panel.querySelector('#principiaBrowserStatus');
+  const frame=panel.querySelector('#principiaBrowserFrame'),status=panel.querySelector('#principiaBrowserStatus');
   let history=['https://www.google.com/webhp?igu=1',...readHistory().map(x=>x.url)],position=0;
   const normalize=raw=>{
    const value=String(raw||'').trim();if(!value)return '';
@@ -75,7 +74,7 @@
   const navigate=raw=>{
    const url=normalize(raw);if(!url)return;
    try{const parsed=new URL(url);if(parsed.protocol!=='http:'&&parsed.protocol!=='https:')throw new Error('scheme')}catch(_){status.textContent='Địa chỉ không hợp lệ. Chỉ hỗ trợ website HTTP/HTTPS.';return}
-   history=history.slice(0,position+1);history.push(url);position=history.length-1;input.value=raw;frame.src=url;saveHistory(url);
+   history=history.slice(0,position+1);history.push(url);position=history.length-1;frame.src=url;saveHistory(url);
    status.textContent=url.includes('google.com/')?'Đang tìm trên Google. Nếu vùng kết quả trắng, Google đã chặn iframe trên trình duyệt này.':'Đang mở website. Một số trang chặn hiển thị nhúng.';
   };
   const historyPanel=panel.querySelector('#principiaBrowserHistoryList');
@@ -86,7 +85,7 @@
    historyPanel.replaceChildren();
    const heading=document.createElement('b');heading.textContent='Lịch sử truy cập';historyPanel.appendChild(heading);
    if(!entries.length){const empty=document.createElement('p');empty.textContent='Chưa có lịch sử.';historyPanel.appendChild(empty)}
-   entries.forEach(entry=>{const item=document.createElement('button');item.type='button';item.textContent=entry.url;item.style.cssText='display:block;width:100%;text-align:left;padding:7px;background:transparent;color:inherit;border:0';item.addEventListener('click',()=>navigate(entry.url));historyPanel.appendChild(item)});
+   entries.forEach(entry=>{const item=document.createElement('button');item.type='button';item.textContent=entry.url;item.style.cssText='display:block;width:100%;text-align:left;padding:7px;background:transparent;color:inherit;border:0';item.addEventListener('click',()=>{navigate(entry.url);});historyPanel.appendChild(item)});
    const savedTitle=document.createElement('b');savedTitle.textContent='Website đã lưu';savedTitle.style.display='block';savedTitle.style.marginTop='10px';historyPanel.appendChild(savedTitle);
    let saved=[];try{const value=JSON.parse(localStorage.getItem('principia_browser_saved_sites_v1')||'[]');saved=Array.isArray(value)?value.filter(x=>x&&typeof x.url==='string'):[]}catch(_){}
    if(!saved.length){const emptySaved=document.createElement('p');emptySaved.textContent='Chưa lưu website nào. Nhấn ☆ để lưu trang đang mở.';historyPanel.appendChild(emptySaved)}
@@ -97,18 +96,18 @@
    const url=history[position];if(!url)return;
    try{const key='principia_browser_saved_sites_v1',items=JSON.parse(localStorage.getItem(key)||'[]');const next=[{url,savedAt:Date.now()},...items.filter(x=>x.url!==url)].slice(0,50);localStorage.setItem(key,JSON.stringify(next));status.textContent='Đã lưu website trên thiết bị; đăng xuất không xóa.'}catch(_){status.textContent='Không lưu được website trên thiết bị.'}
   });
-  panel.querySelector('#principiaBrowserForm').addEventListener('submit',event=>{event.preventDefault();navigate(input.value)});
+  
   panel.querySelector('#principiaBrowserExternal').addEventListener('click',()=>{
    const url=history[position];if(!url)return;
    const win=window.open(url,'_blank','noopener,noreferrer');
    if(!win)status.textContent='Trình duyệt chặn tab mới. Hãy cho phép pop-up.';
   });
-  panel.querySelector('#principiaBrowserBack').addEventListener('click',()=>{if(position>0){position--;frame.src=history[position];input.value=history[position]}});
-  panel.querySelector('#principiaBrowserForward').addEventListener('click',()=>{if(position<history.length-1){position++;frame.src=history[position];input.value=history[position]}});
+  panel.querySelector('#principiaBrowserBack').addEventListener('click',()=>{if(position>0){position--;frame.src=history[position]}});
+  panel.querySelector('#principiaBrowserForward').addEventListener('click',()=>{if(position<history.length-1){position++;frame.src=history[position]}});
   panel.querySelector('#principiaBrowserReload').addEventListener('click',()=>{frame.src=frame.src});
   frame.addEventListener('load',()=>{if(position>=0)status.textContent='Trang đã phản hồi. Nếu nội dung không hiển thị, trang có thể chặn iframe.'});
   panel.querySelector('#principiaBrowserClose').addEventListener('click',()=>{closePanel(panel);browserPanel=null});
-  input.focus();
+
  }
  function pageItems(){
   let nav=[];
