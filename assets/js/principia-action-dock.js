@@ -117,30 +117,42 @@
   panel.querySelector('#principiaFilesClose').addEventListener('click',()=>{closePanel(panel);filesPanel=null});
   search.focus();
  }
+ function ensureDockRoot(){
+  let root=document.getElementById('principiaActionDockRoot');
+  if(!root){root=document.createElement('div');root.id='principiaActionDockRoot';root.setAttribute('aria-label','Thao tác nhanh PRINCIPIA');document.body.appendChild(root)}
+  Object.assign(root.style,{position:'fixed',inset:'0',width:'100%',height:'100%',pointerEvents:'none',zIndex:'2147483000',display:'block',visibility:'visible'});
+  return root;
+ }
  function installDockPositionStyles(){
   if(document.getElementById('principiaDockPositionStyles'))return;
   const style=document.createElement('style');style.id='principiaDockPositionStyles';
   style.textContent=
-   '#principiaDockAI,#principiaDockBrowser,#principiaDockFiles{position:fixed!important;left:auto!important;top:auto!important;transform:none!important;margin:0!important;z-index:2147483002!important}'+
-   '#principiaDockAI{right:18px!important;bottom:18px!important}'+
-   '#principiaDockBrowser{right:18px!important;bottom:74px!important}'+
-   '#principiaDockFiles{right:18px!important;bottom:130px!important}'+
-   '@media(max-width:900px){#principiaDockAI{right:12px!important;bottom:calc(82px + env(safe-area-inset-bottom,0px))!important}#principiaDockBrowser{right:12px!important;bottom:calc(138px + env(safe-area-inset-bottom,0px))!important}#principiaDockFiles{right:12px!important;bottom:calc(194px + env(safe-area-inset-bottom,0px))!important}}'+
-   'body.principia-welcome-active #principiaDockAI,body.principia-welcome-active #principiaDockBrowser,body.principia-welcome-active #principiaDockFiles{display:none!important}';
+   '#principiaActionDockRoot{position:fixed!important;inset:0!important;width:100%!important;height:100%!important;pointer-events:none!important;z-index:2147483000!important;display:block!important;visibility:visible!important}'+
+   '#principiaActionDockRoot>#principiaDockAI,#principiaActionDockRoot>#principiaDockBrowser,#principiaActionDockRoot>#principiaDockFiles{position:absolute!important;left:auto!important;top:auto!important;transform:none!important;margin:0!important;pointer-events:auto!important;visibility:visible!important;display:grid!important;z-index:1!important}'+
+   '#principiaActionDockRoot>#principiaDockAI{right:18px!important;bottom:18px!important}'+
+   '#principiaActionDockRoot>#principiaDockBrowser{right:18px!important;bottom:74px!important}'+
+   '#principiaActionDockRoot>#principiaDockFiles{right:18px!important;bottom:130px!important}'+
+   '@media(max-width:900px){#principiaActionDockRoot>#principiaDockAI{right:12px!important;bottom:calc(82px + env(safe-area-inset-bottom,0px))!important}#principiaActionDockRoot>#principiaDockBrowser{right:12px!important;bottom:calc(138px + env(safe-area-inset-bottom,0px))!important}#principiaActionDockRoot>#principiaDockFiles{right:12px!important;bottom:calc(194px + env(safe-area-inset-bottom,0px))!important}}'+
+   'body.principia-welcome-active #principiaActionDockRoot{display:none!important}';
   document.head.appendChild(style);
  }
  function mount(){
   installDockPositionStyles();
-  const ai=document.querySelector('button.chat-bubble-btn.chat-messenger-launcher');
-  if(ai){
-   ai.id=IDS.ai;ai.title='Mở trợ lý AI';ai.setAttribute('aria-label','Mở trợ lý AI');
-   const mobile=isMobile();const bottom=mobile?82:18;
-   Object.assign(ai.style,{position:'fixed',right:mobile?'12px':'18px',bottom:mobile?'calc('+bottom+'px + env(safe-area-inset-bottom,0px))':bottom+'px',left:'auto',top:'auto',zIndex:'2147483000',width:'46px',height:'46px',minWidth:'46px',minHeight:'46px',display:welcome()?'none':'grid',placeItems:'center',borderRadius:'16px',transform:'none',margin:'0'});
-   ai.setAttribute('aria-hidden',welcome()?'true':'false');
+  const root=ensureDockRoot();
+  let ai=document.querySelector('button.chat-bubble-btn.chat-messenger-launcher')||document.getElementById(IDS.ai);
+  if(!ai){
+   ai=document.createElement('button');ai.type='button';ai.className='chat-bubble-btn chat-messenger-launcher';
+   ai.innerHTML='<span aria-hidden="true">AI</span>';ai.addEventListener('click',()=>{if(typeof window.toggleChatBox==='function')window.toggleChatBox()});
   }
-  const browser=button(IDS.browser,'Mở trình duyệt mini','⌕',isMobile()?138:74);
+  ai.id=IDS.ai;ai.title='Mở trợ lý AI';ai.setAttribute('aria-label','Mở trợ lý AI');
+  if(ai.parentElement!==root)root.appendChild(ai);
+  Object.assign(ai.style,{position:'absolute',right:'18px',bottom:'18px',left:'auto',top:'auto',zIndex:'1',width:'46px',height:'46px',minWidth:'46px',minHeight:'46px',maxWidth:'46px',maxHeight:'46px',display:'grid',placeItems:'center',borderRadius:'16px',transform:'none',margin:'0',pointerEvents:'auto'});
+  ai.setAttribute('aria-hidden',welcome()?'true':'false');
+  const browser=button(IDS.browser,'Tìm kiếm Internet','⌕',isMobile()?138:74);
+  if(browser.parentElement!==root)root.appendChild(browser);
   browser.onclick=openBrowser;
-  const files=button(IDS.files,'Mở điều hướng nhanh','▦',isMobile()?194:130);
+  const files=button(IDS.files,'Tìm tệp và khu vực PRO','▦',isMobile()?194:130);
+  if(files.parentElement!==root)root.appendChild(files);
   files.onclick=openFiles;
   const oldSearch=document.getElementById('principiaSearchTrigger');if(oldSearch)oldSearch.style.display='none';
   const download=document.getElementById('principiaDownloadFab');if(download){download.style.display='none';download.setAttribute('aria-hidden','true');download.tabIndex=-1}
