@@ -502,6 +502,7 @@ function render(){
  document.body.classList.toggle('principia-home-active',page==='home');
 
  if(page==='welcome'){
+  document.querySelectorAll('body > .principia-mobile-nav').forEach(el=>el.remove());
   const welcomeAccount=getPrincipiaAccount()||{};
   const welcomeName=(welcomeAccount.name||profile?.name||'bạn').trim();
   app.innerHTML=`<main class="principia-welcome-screen">

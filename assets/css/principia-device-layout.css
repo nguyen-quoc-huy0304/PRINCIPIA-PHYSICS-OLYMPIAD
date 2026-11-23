@@ -33,3 +33,21 @@
  body>.principia-mobile-nav{position:fixed!important;inset:auto 0 0 0!important;z-index:2147483000!important;width:100vw!important;transform:none!important;}
  #app .principia-mobile-main{padding-bottom:calc(88px + env(safe-area-inset-bottom) + 8px)!important;}
 }
+
+/* Mobile viewport fix: legacy body rules (perspective/grid/overflow) otherwise
+   turn fixed descendants into page-relative elements on some mobile browsers. */
+@media(max-width:900px){
+ html,body{width:100%!important;max-width:none!important;height:auto!important;min-height:100%!important;margin:0!important;padding:0!important;display:block!important;overflow-x:hidden!important;overflow-y:auto!important;perspective:none!important;transform:none!important;filter:none!important;contain:none!important;}
+ body{place-items:initial!important;gap:0!important;}
+ body>.principia-mobile-nav{position:fixed!important;left:0!important;right:0!important;bottom:0!important;top:auto!important;width:100%!important;max-width:none!important;margin:0!important;transform:none!important;}
+ #app{width:100%!important;max-width:none!important;min-height:100svh!important;margin:0!important;padding:0!important;transform:none!important;filter:none!important;perspective:none!important;contain:none!important;}
+ #app .principia-mobile-shell{min-height:100svh!important;}
+ #app .principia-mobile-main{padding-bottom:calc(96px + env(safe-area-inset-bottom))!important;}
+}
+/* Welcome screen: the start action is the only visible button/control. */
+body.principia-welcome-active>.chat-bubble-btn,
+body.principia-welcome-active>.chat-box,
+body.principia-welcome-active>.chat-panel,
+body.principia-welcome-active>.principia-ai-overlay,
+body.principia-welcome-active>.principia-mobile-nav{display:none!important;}
+body.principia-welcome-active #app .principia-welcome-screen button:not(.pw-start-button){display:none!important;}
