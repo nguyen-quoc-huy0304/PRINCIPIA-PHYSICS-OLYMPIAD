@@ -117,7 +117,20 @@
   panel.querySelector('#principiaFilesClose').addEventListener('click',()=>{closePanel(panel);filesPanel=null});
   search.focus();
  }
+ function installDockPositionStyles(){
+  if(document.getElementById('principiaDockPositionStyles'))return;
+  const style=document.createElement('style');style.id='principiaDockPositionStyles';
+  style.textContent=
+   '#principiaDockAI,#principiaDockBrowser,#principiaDockFiles{position:fixed!important;left:auto!important;top:auto!important;transform:none!important;margin:0!important;z-index:2147483002!important}'+
+   '#principiaDockAI{right:18px!important;bottom:18px!important}'+
+   '#principiaDockBrowser{right:18px!important;bottom:74px!important}'+
+   '#principiaDockFiles{right:18px!important;bottom:130px!important}'+
+   '@media(max-width:900px){#principiaDockAI{right:12px!important;bottom:calc(82px + env(safe-area-inset-bottom,0px))!important}#principiaDockBrowser{right:12px!important;bottom:calc(138px + env(safe-area-inset-bottom,0px))!important}#principiaDockFiles{right:12px!important;bottom:calc(194px + env(safe-area-inset-bottom,0px))!important}}'+
+   'body.principia-welcome-active #principiaDockAI,body.principia-welcome-active #principiaDockBrowser,body.principia-welcome-active #principiaDockFiles{display:none!important}';
+  document.head.appendChild(style);
+ }
  function mount(){
+  installDockPositionStyles();
   const ai=document.querySelector('button.chat-bubble-btn.chat-messenger-launcher');
   if(ai){
    ai.id=IDS.ai;ai.title='Mở trợ lý AI';ai.setAttribute('aria-label','Mở trợ lý AI');
