@@ -87,6 +87,17 @@ const seedFun=[
 ]}
 ];
 let data=load('halo_data',seed),quizData=load('halo_quiz',seedQuiz),funData=load('halo_fun',seedFun);
+const defaultEntertainmentData=[
+ {id:'games-chess',name:'Cờ vua',icon:'♟️',type:'tab',children:[
+  {id:'game-chesscom',name:'Chess.com',icon:'♟️',type:'game',url:'https://www.chess.com/'},
+  {id:'game-lichess',name:'Lichess',icon:'♜',type:'game',url:'https://lichess.org/'}
+ ]},
+ {id:'games-puzzle',name:'Trò chơi tư duy',icon:'🧩',type:'tab',children:[
+  {id:'game-sudoku',name:'Sudoku',icon:'🔢',type:'game',url:'https://www.sudoku.com/'},
+  {id:'game-geoguessr',name:'GeoGuessr',icon:'🌍',type:'game',url:'https://www.geoguessr.com/'}
+ ]}
+];
+let entertainmentData=load('halo_entertainment',defaultEntertainmentData),activeEntertainmentGameId=null;
 let profile=load('halo_profile',{name:'Learner',avatar:'',theme:'dark'});
 let xp=Number(localStorage.getItem('halo_xp')||0);
 let streak=Number(localStorage.getItem('halo_streak')||0);
@@ -107,7 +118,7 @@ function load(k,def){
  }catch{return clone(def)}
 }
 function saveAll(){
- const snapshot={halo_data:data,halo_quiz:quizData,halo_fun:funData,halo_profile:profile,halo_completed:completed,halo_xp:xp,halo_streak:streak};
+ const snapshot={halo_data:data,halo_quiz:quizData,halo_fun:funData,halo_entertainment:entertainmentData,halo_profile:profile,halo_completed:completed,halo_xp:xp,halo_streak:streak};
  Object.entries(snapshot).forEach(([key,value])=>{
   try{localStorage.setItem(key,typeof value==='string'?value:JSON.stringify(value));}catch(error){console.error('[PRINCIPIA] legacy save failed',key,error);}
   try{window.PrincipiaData?.write('legacy/'+key,value);}catch(error){console.error('[PRINCIPIA] core repository mirror failed',key,error);}
@@ -115,14 +126,14 @@ function saveAll(){
  if(window.syncPrincipiaLeaderboard)window.syncPrincipiaLeaderboard();
 }
 function esc(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function tree(){return page==='quiz'?quizData:page==='fun'?funData:data}
+function tree(){return page==='quiz'?quizData:page==='fun'?funData:page==='entertainment'?entertainmentData:data}
 function find(id,nodes){for(const n of nodes){if(n.id===id)return n;if(n.children){let x=find(id,n.children);if(x)return x}}return null}
 function parentOf(id,nodes,parent=null){for(const n of nodes){if(n.id===id)return parent;if(n.children){let x=parentOf(id,n.children,n);if(x)return x}}return null}
 function locate(id,nodes){for(const n of nodes){if(n.id===id)return nodes;if(n.children){let x=locate(id,n.children);if(x)return x}}return null}
 function remove(id,nodes){let i=nodes.findIndex(n=>n.id===id);if(i>=0){nodes.splice(i,1);return true}for(const n of nodes)if(n.children&&remove(id,n.children))return true;return false}
 function chain(id,nodes,arr=[]){for(const n of nodes){if(n.id===id)return [...arr,n];if(n.children){let x=chain(id,n.children,[...arr,n]);if(x)return x}}return []}
 function lessons(nodes=data){return nodes.flatMap(n=>n.type==='lesson'?[n]:n.children?lessons(n.children):[])}
-function count(n){return n.type==='lesson'||n.type==='quiz'||n.type==='fun'?1:(n.children||[]).reduce((s,x)=>s+count(x),0)}
+function count(n){return n.type==='lesson'||n.type==='quiz'||n.type==='fun'||n.type==='game'?1:(n.children||[]).reduce((s,x)=>s+count(x),0)}
 function notify(t){$('#toast').innerHTML=`<div class="toast">${esc(t)}</div>`;setTimeout(()=>$('#toast').innerHTML='',2300)}
 function modal(s){$('#modal').innerHTML=`<div class="modalbg" onclick="if(event.target===this)closeModal()"><div class="modal">${s}</div></div>`}
 function closeModal(){$('#modal').innerHTML=''}
@@ -150,8 +161,8 @@ function toggleTileTools(id,button){
  button.setAttribute('aria-expanded',String(open));
 }
 function card(n){
- let action=n.type==='lesson'?`openInnerLessonWorkspace('${n.id}')`:n.type==='quiz'?`openQuiz('${n.id}')`:n.type==='fun'?`openFun('${n.id}')`:page==='home'?`page='library';stack=['${n.id}'];render();notify('Đã mở ${n.name}')`:`enter('${n.id}')`;
- let amount=n.type==='lesson'?'Bài học':n.type==='quiz'?'Bài kiểm tra':n.type==='fun'?'Đố vui':count(n)+' nội dung';
+ let action=n.type==='lesson'?`openInnerLessonWorkspace('${n.id}')`:n.type==='quiz'?`openQuiz('${n.id}')`:n.type==='fun'?`openFun('${n.id}')`:n.type==='game'?`openEntertainmentGame('${n.id}')`:page==='home'?`page='library';stack=['${n.id}'];render();notify('Đã mở ${n.name}')`:`enter('${n.id}')`;
+ let amount=n.type==='lesson'?'Bài học':n.type==='quiz'?'Bài kiểm tra':n.type==='fun'?'Đố vui':n.type==='game'?'Nền tảng':count(n)+' nội dung';
  return `<div class="tile" draggable="true" ondragstart="dragId='${n.id}'" ondragover="event.preventDefault()" ondrop="dropItem(event,'${n.id}')" onclick="${action}">
  <div class="tile-actions" onclick="event.stopPropagation()" style="position:absolute;right:10px;top:10px;z-index:5">
  <button type="button" class="tile-edit-trigger" aria-label="Mở công cụ chỉnh sửa và sắp xếp" aria-expanded="false" title="Chỉnh sửa / Di chuyển" onclick="toggleTileTools('${n.id}',this)">✎</button>
@@ -210,7 +221,8 @@ function home(){
 function library(){
  let items=currentNodes();
  return `<div class="breadcrumb">${crumb()}</div><div class="sectionhead"><div><div class="eyebrow">LEARNING LIBRARY</div><h1>${stack.length?esc(find(stack.at(-1),tree()).name):'Thư viện học tập'}</h1><p class="muted small">Tab trong tab · Tổ chức kiến thức theo cách của bạn</p></div><div class="toolbar"><button class="primary" onclick="addChoice()">＋ Tạo mới</button></div></div>
- <div class="grid">${items.length?items.map(card).join(''):'<div class="empty">Chưa có nội dung. Hãy nhấn + để tạo tab hoặc bài học.</div>'}</div>`;
+ <div class="grid">${items.length?items.map(card).join(''):'<div class="empty">Chưa có nội dung. Hãy nhấn + để tạo tab hoặc bài học.</div>'}</div>
+ ${stack.length?'':`<section class="panel" style="margin-top:20px"><div class="sectionhead"><div><div class="eyebrow">PERSONAL LIBRARY</div><h2>📚 Sách & tài liệu</h2><p class="muted small">Các tệp đã thêm sẽ xuất hiện tại đây.</p></div><div class="toolbar"><button class="secondary" onclick="openLibraryPicker('book')">＋ Thêm sách</button><button class="primary" onclick="openLibraryPicker('file')">＋ Thêm tài liệu</button></div></div><div id="principiaLibraryItems"><p class="muted small">Đang tải danh sách…</p></div></section>`}`;
 }
 function lesson(){
  let l=find(activeLesson,data);if(!l)return '<div class="empty">Không tìm thấy bài học</div>';
@@ -370,6 +382,35 @@ function resetLayoutSettings(){savePrincipiaNav(PRINCIPIA_DEFAULT_NAV);localStor
 function gamePlatforms(){try{return JSON.parse(localStorage.getItem('principia_game_platforms'))||[{id:'chesscom',name:'Chess.com',icon:'♟️',url:'https://www.chess.com/',kind:'chess'},{id:'lichess',name:'Lichess',icon:'♜',url:'https://lichess.org/',kind:'chess'},{id:'sudoku',name:'Sudoku',icon:'🔢',url:'https://www.sudoku.com/',kind:'web'},{id:'geoguessr',name:'GeoGuessr',icon:'🌍',url:'https://www.geoguessr.com/',kind:'web'}]}catch(e){return []}}
 function saveGamePlatforms(a){localStorage.setItem('principia_game_platforms',JSON.stringify(a))}
 function addGameTab(){const name=prompt('Tên tab mới (ví dụ: Cờ vua)');if(!name)return;const a=gamePlatforms();const id='custom_'+Date.now();a.push({id,name,icon:'🎮',url:'https://www.chess.com/',kind:'web'});saveGamePlatforms(a);localStorage.setItem('principia_active_game_tab',id);render();}
+function addEntertainmentGame(){
+ if(!requireAdmin())return;
+ modal('<h2>＋ Thêm trò chơi / nền tảng</h2><label>Tên</label><input id="newGameName" class="inp" maxlength="80" placeholder="Ví dụ: Chess.com"><label>Địa chỉ website</label><input id="newGameUrl" class="inp" type="url" maxlength="2048" placeholder="https://example.com"><div class="modalactions"><button class="secondary" onclick="closeModal()">Hủy</button><button class="primary" onclick="saveEntertainmentGame()">Thêm vào tab</button></div>');
+}
+function saveEntertainmentGame(){
+ if(!requireAdmin())return;
+ const name=document.getElementById('newGameName')?.value.trim(),raw=document.getElementById('newGameUrl')?.value.trim();
+ if(!name||!raw){notify('Hãy nhập tên và địa chỉ website');return}
+ let url;try{url=new URL(raw);if(!['http:','https:'].includes(url.protocol))throw new Error('scheme')}catch(_){notify('Địa chỉ website không hợp lệ');return}
+ currentNodes().push({id:uid(),name,icon:'🎮',type:'game',url:url.href});saveAll();closeModal();render();notify('Đã thêm trò chơi vào tab');
+}
+function openEntertainmentGame(id){
+ const node=find(id,entertainmentData);if(!node||node.type!=='game')return;
+ activeEntertainmentGameId=id;render();
+}
+async function loadPrincipiaLibraryItems(){
+ const host=document.getElementById('principiaLibraryItems');if(!host)return;
+ try{
+  const d=await db(),all=await new Promise((resolve,reject)=>{const q=d.transaction('files').objectStore('files').getAll();q.onsuccess=()=>resolve(q.result||[]);q.onerror=()=>reject(q.error)});
+  const items=all.filter(x=>x.principiaLibrary||x.lesson).sort((a,b)=>(Number(b.created)||0)-(Number(a.created)||0));
+  if(!items.length){host.innerHTML='<p class="muted small">Chưa có sách hoặc tài liệu. Dùng nút Thêm sách / Thêm tài liệu để thêm vào đây.</p>';return}
+  host.innerHTML='<div style="display:grid;gap:8px">'+items.map(x=>{
+   const lessonName=x.lesson?find(x.lesson,data)?.name||'Bài học đã lưu trữ':'';
+   const kind=x.libraryKind==='book'?'📚 Sách':'📄 Tài liệu';
+   return '<div class="file" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap"><div style="min-width:0;overflow-wrap:anywhere"><b>'+kind+' · '+esc(x.name)+'</b><div class="small muted">'+(lessonName?'Đính kèm trong: '+esc(lessonName):'Thư viện chung')+' · '+(Number(x.size||x.blob?.size||0)/1048576).toFixed(1)+' MB</div></div><div class="toolbar"><button class="secondary" onclick="openLibraryItem(\''+esc(x.id)+'\')">Mở / đọc</button><button class="secondary" onclick="downloadDoc(\''+esc(x.id)+'\')">Tải</button><button class="danger" onclick="deleteLibraryItem(\''+esc(x.id)+'\')">Xóa</button></div></div>';
+  }).join('')+'</div>';
+ }catch(error){host.innerHTML='<p class="small" role="status">Không tải được danh sách sách và tài liệu.</p>';console.error('[PRINCIPIA] library listing failed',error)}
+}
+
 function addGamePlatform(){modal(`<h2>＋ Thêm nền tảng</h2><label>Tên nền tảng</label><input id="newPlatformName" placeholder="Ví dụ: Chess.com"><label>Địa chỉ website (URL)</label><input id="newPlatformUrl" placeholder="https://example.com"><label>Icon</label><input id="newPlatformIcon" value="🎮" maxlength="8"><p class="small muted">Website chỉ hiển thị được trong khung nếu nhà cung cấp cho phép nhúng iframe. Nếu bị chặn, dùng nút mở trang gốc.</p><button class="primary" onclick="saveNewGamePlatform()">＋ Thêm nền tảng</button> <button class="secondary" onclick="closeModal()">Hủy</button>`)}
 function saveNewGamePlatform(){const name=document.getElementById('newPlatformName')?.value.trim(),url=document.getElementById('newPlatformUrl')?.value.trim(),icon=document.getElementById('newPlatformIcon')?.value||'🎮';try{const u=new URL(url);if(!/^https?:$/.test(u.protocol))throw 0; if(!name)throw 0;const a=gamePlatforms(),id='custom_'+Date.now();a.push({id,name,icon,url:u.href,kind:'web'});saveGamePlatforms(a);localStorage.setItem('principia_active_game_tab',id);closeModal();render();companionReact('happy','Đã thêm nền tảng mới! 🎉')}catch(e){companionReact('sad','Tên hoặc địa chỉ website chưa hợp lệ nhé.');notify('Vui lòng nhập tên và URL hợp lệ (https://...)')}}
 function chooseGameTab(id){localStorage.setItem('principia_active_game_tab',id);render()}
@@ -394,7 +435,12 @@ function companionReact(mood,msg){
  window.__principiaCompanionTimer=setTimeout(()=>{b.classList.add('companion-hide');setTimeout(()=>b.remove(),260)},(Number(cfg.duration)||4)*1000);
 }
 function analyzeChessPosition(){const p=document.getElementById('chessPosition')?.value.trim();if(!p){notify('Hãy dán PGN hoặc FEN của ván cờ trước nhé');companionReact('sad','Mình cần thế cờ hoặc lịch sử nước đi để phân tích nè.');return;}const url='https://lichess.org/analysis/'+encodeURIComponent(p);window.open(url,'_blank','noopener');companionReact('wow','Mở bàn phân tích Lichess để engine đánh giá nước đi. ♟️')}
-function entertainmentPage(){const platforms=gamePlatforms(),active=localStorage.getItem('principia_active_game_tab')||platforms[0]?.id,chosen=platforms.find(x=>x.id===active)||platforms[0],st=entertainmentState(),bots=leagueBots(),rank=leagueRank(st.points);const all=[...bots,{name:profile.name||'Bạn',points:st.points,avatar:'🙂',you:true}].sort((a,b)=>b.points-a.points);const pos=all.findIndex(x=>x.you)+1;return `<div class="eyebrow">PLAY · THINK · COMPETE</div><h1>Giải trí & tư duy</h1><p class="muted">Mỗi trò chơi có tab riêng. Thêm tab hoặc nền tảng theo ý bạn.</p><div class="toolbar" style="margin:12px 0"><button class="primary" onclick="addGameTab()">＋ Tab</button><button class="secondary" onclick="addGamePlatform()">＋ Nền tảng</button></div><div class="game-tabs" style="display:flex;gap:8px;flex-wrap:wrap;margin:14px 0">${platforms.map(x=>`<button class="${x.id===chosen?.id?'primary':'secondary'}" onclick="chooseGameTab('${x.id}')">${esc(x.name)}</button>`).join('')}</div>${chosen?`<div class="panel"><div class="sectionhead"><div><div class="eyebrow">${esc(chosen.name)}</div><h2>${esc(chosen.name)}</h2></div><div class="toolbar"><button class="secondary" onclick="editGamePlatform('${chosen.id}')">Đổi tên / địa chỉ</button><button class="danger" onclick="deleteGamePlatform('${chosen.id}')">Xóa tab</button></div></div><div style="border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fff"><iframe title="${esc(chosen.name)}" src="${esc(chosen.url)}" style="display:block;width:100%;height:min(68vh,680px);border:0;background:#fff" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="fullscreen; autoplay; clipboard-read; clipboard-write"></iframe></div><p class="small muted">Nếu khung trống hoặc báo từ chối kết nối, website này đang chặn nhúng. Bạn vẫn có thể mở nền tảng gốc.</p><div class="toolbar"><a class="primary" style="text-decoration:none" href="${esc(chosen.url)}" target="_blank" rel="noopener noreferrer">Mở ${esc(chosen.name)} ↗</a></div></div>`:'<div class="empty">Chưa có nền tảng. Nhấn ＋ để thêm nhé.</div>'}<div class="panel"><div class="sectionhead"><h2>AI phân tích cờ vua</h2><span class="pill">Engine phân tích</span></div><p class="muted small">Dán PGN hoặc FEN để mở bàn phân tích Lichess với engine cờ vua. Đây là công cụ phân tích ngoài, không phải AI tự đọc nội dung iframe.</p><textarea id="chessPosition" rows="3" placeholder="Dán PGN hoặc FEN của ván cờ vào đây..."></textarea><button class="primary" onclick="analyzeChessPosition()">Phân tích nước đi</button></div>`}
+function entertainmentPage(){
+ const items=currentNodes(),selected=activeEntertainmentGameId?find(activeEntertainmentGameId,entertainmentData):null;
+ const trail=stack.length?`<div class="breadcrumb">${crumb()}</div>`:'';
+ const gamePanel=selected&&selected.type==='game'?`<div class="panel"><div class="sectionhead"><div><div class="eyebrow">${esc(selected.name)}</div><h2>${esc(selected.name)}</h2></div><div class="toolbar"><button class="secondary" onclick="activeEntertainmentGameId=null;render()">← Đóng</button><a class="primary" href="${esc(selected.url)}" target="_blank" rel="noopener noreferrer">Mở website ↗</a></div></div><div style="border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fff"><iframe title="${esc(selected.name)}" src="${esc(selected.url)}" style="display:block;width:100%;height:min(68vh,680px);border:0;background:#fff" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="fullscreen; autoplay"></iframe></div><p class="small muted">Nếu website chặn nhúng, hãy dùng nút Mở website.</p></div>`:'';
+ return `<div class="eyebrow">PLAY · THINK · COMPETE</div><h1>Giải trí & tư duy</h1><p class="muted">Tổ chức trò chơi theo tab lớn, tab con và nền tảng bên trong.</p>${trail}<div class="toolbar" style="margin:12px 0"><button class="primary" onclick="addNode('tab')">＋ Tạo tab</button><button class="secondary" onclick="addEntertainmentGame()">＋ Thêm trò chơi / nền tảng</button></div><div class="grid">${items.length?items.map(card).join(''):'<div class="empty">Tab này chưa có nội dung. Hãy tạo tab con hoặc thêm trò chơi.</div>'}</div>${gamePanel}<div class="panel"><div class="sectionhead"><h2>AI phân tích cờ vua</h2><span class="pill">Engine phân tích</span></div><p class="muted small">Dán PGN hoặc FEN để mở bàn phân tích Lichess với engine cờ vua.</p><textarea id="chessPosition" rows="3" placeholder="Dán PGN hoặc FEN của ván cờ vào đây..."></textarea><button class="primary" onclick="analyzeChessPosition()">Phân tích nước đi</button></div>`;
+}
 function simulateAiMatch(){let st=entertainmentState();const bots=leagueBots();const opponent=bots[Math.floor(Math.random()*bots.length)];const win=Math.random()<.62;const gain=win?30:12;st.points+=gain;st.matches++;if(win)st.wins++;localStorage.setItem('principia_fun_league',JSON.stringify(st));const before=leagueRank(st.points-gain),after=leagueRank(st.points);render();notify((win?'🏆 Bạn thắng '+opponent.name:'🤝 Trận đấu với '+opponent.name+' kết thúc')+' · +'+gain+' điểm'+(before.name!==after.name?' · Thăng hạng '+after.name+'!':''));if(before.name!==after.name)setTimeout(()=>notify('🎉 Tuyệt vời! Bạn đã lên '+after.name+' '+after.icon+'!'),500)}
 function progressPage(){
  let total=lessons().length,pct=total?Math.round(completed.length/total*100):0;
@@ -563,6 +609,7 @@ const isMobileDevice=(()=>{const ua=String(navigator.userAgent||'');const uaMobi
   if(!canManageMedia() && /Transcript|transcript|Video|video|summarizeTranscript|clearTranscript|saveTranscript/i.test(a))el.style.display='none';
  });
  if(page==='lesson')loadFiles(activeLesson);
+ if(page==='library'&&!stack.length)loadPrincipiaLibraryItems();
 }
 function addChoice(){
  if(!requireAdmin())return;
@@ -765,7 +812,7 @@ async function restore(file){
 }
 function resetAll(){
  if(!confirm('Khôi phục toàn bộ dữ liệu mẫu?'))return;
- data=clone(seed);quizData=clone(seedQuiz);funData=clone(seedFun);profile={name:'Learner',avatar:''};xp=0;streak=0;completed=[];saveAll();render();notify('Đã khôi phục');
+ data=clone(seed);quizData=clone(seedQuiz);funData=clone(seedFun);entertainmentData=clone(defaultEntertainmentData);profile={name:'Learner',avatar:''};xp=0;streak=0;completed=[];saveAll();render();notify('Đã khôi phục');
 }
 // Tài liệu được lưu trong IndexedDB để không làm đầy bộ nhớ cấu hình.
 let dbp;
