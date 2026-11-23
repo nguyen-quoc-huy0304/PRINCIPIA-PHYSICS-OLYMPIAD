@@ -175,8 +175,10 @@
   if(ai.parentElement!==root)root.appendChild(ai);
   Object.assign(ai.style,{position:'absolute',right:'18px',bottom:'18px',left:'auto',top:'auto',zIndex:'1',width:'46px',height:'46px',minWidth:'46px',minHeight:'46px',maxWidth:'46px',maxHeight:'46px',display:'grid',placeItems:'center',borderRadius:'16px',transform:'none',margin:'0',pointerEvents:'auto'});
   ai.setAttribute('aria-hidden',welcome()?'true':'false');
-   const obsoleteBrowserButton=document.getElementById('principiaDockBrowser');if(obsoleteBrowserButton)obsoleteBrowserButton.remove();
-  const files=button(IDS.files,'Tìm tệp và khu vực PRO','▦',isMobile()?194:130);
+  const browser=button(IDS.browser,'Tìm kiếm Internet','⌕',isMobile()?82:74);
+  if(browser.parentElement!==root)root.appendChild(browser);
+  browser.onclick=openBrowser;
+  const files=button(IDS.files,'Tìm tệp và khu vực PRO','▦',isMobile()?138:130);
   if(files.parentElement!==root)root.appendChild(files);
   files.onclick=openFiles;
   const oldSearch=document.getElementById('principiaSearchTrigger');if(oldSearch){oldSearch.style.setProperty('display','none','important');oldSearch.style.setProperty('visibility','hidden','important');oldSearch.style.setProperty('pointer-events','none','important');oldSearch.setAttribute('aria-hidden','true');oldSearch.tabIndex=-1;}
