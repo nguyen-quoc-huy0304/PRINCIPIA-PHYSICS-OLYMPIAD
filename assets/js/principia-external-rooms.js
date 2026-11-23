@@ -87,5 +87,8 @@
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();
  document.addEventListener('principia:rendered',mount);
  document.addEventListener('principia:page-changed',mount);
- new MutationObserver(()=>{mount()}).observe(document.documentElement,{childList:true,subtree:true});
+ new MutationObserver(records=>{
+  const hasHost=records.some(record=>Array.from(record.addedNodes||[]).some(node=>node.nodeType===1&&(node.matches?.('#clTab-phet,#principiaExternalGameRooms')||node.querySelector?.('#clTab-phet,#principiaExternalGameRooms'))));
+  if(hasHost)mount();
+ }).observe(document.documentElement,{childList:true,subtree:true});
 })();
