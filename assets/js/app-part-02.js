@@ -465,6 +465,14 @@ function principiaWelcomeCharacterMarkup(){
  }catch(e){}
  return '';
 }
+// Backward-compatible helper for cached/older welcome render paths.
+function principiaWelcomeCharacterSrc(){
+ try{
+  const markup=principiaWelcomeCharacterMarkup();
+  const match=markup.match(/\\bsrc=["']([^"']+)["']/i);
+  return match?match[1]:'';
+ }catch(_){return '';}
+}
 function startPrincipiaJourney(){
  const acc=getPrincipiaAccount();
  const id=acc?.uid||acc?.email||'guest';
