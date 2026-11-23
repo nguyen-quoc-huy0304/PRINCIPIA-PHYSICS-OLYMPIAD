@@ -170,6 +170,20 @@
    'body.principia-welcome-active #principiaActionDockRoot>#principiaDockAI,body.principia-welcome-active #principiaActionDockRoot>#principiaDockBrowser,body.principia-welcome-active #principiaActionDockRoot>#principiaDockFiles{display:none!important;visibility:hidden!important;pointer-events:none!important}';
   document.head.appendChild(style);
  }
+ function syncEditorPanelPosition(pencil){
+  const panel=document.getElementById('proSiteEditorPanel');
+  if(!panel||!pencil?.isConnected)return;
+  const rect=pencil.getBoundingClientRect();
+  if(!rect.width||!rect.height)return;
+  const gap=12;
+  Object.assign(panel.style,{
+   position:'fixed',
+   right:Math.max(8,window.innerWidth-rect.right)+'px',
+   bottom:Math.max(8,window.innerHeight-rect.top+gap)+'px',
+   left:'auto',
+   top:'auto'
+  });
+ }
  function mount(){
   installDockPositionStyles();
   const root=ensureDockRoot();
@@ -202,7 +216,7 @@
    Object.assign(pencil.style,{position:'fixed',right:'18px',bottom:isMobile()?'138px':'130px',left:'auto',top:'auto',zIndex:'2147483005',width:'46px',height:'46px',minWidth:'46px',minHeight:'46px',display:'grid',placeItems:'center',margin:'0',pointerEvents:'auto'});
    pencil.setAttribute('aria-hidden','false');
   }
-  const editor=document.getElementById('proSiteEditorPanel');if(editor)editor.style.bottom=isMobile()?'306px':'242px';
+  syncEditorPanelPosition(pencil);
   if(browserPanel&&browserPanel.isConnected)stylePanel(browserPanel,248);
  }
  function start(){
