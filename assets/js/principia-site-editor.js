@@ -68,17 +68,7 @@
   Object.assign(panel.style,{position:'fixed',right:'18px',bottom:'186px',zIndex:'2147483005',width:'min(270px,calc(100vw - 36px))',padding:'12px',borderRadius:'14px',background:'rgba(18,20,34,.96)',border:'1px solid rgba(255,255,255,.22)',boxShadow:'0 8px 28px #0006',color:'#fff',font:'13px system-ui'});
   panel.querySelectorAll('button').forEach(button=>Object.assign(button.style,{border:'1px solid rgba(255,255,255,.22)',borderRadius:'9px',padding:'8px 10px',background:'rgba(255,255,255,.1)',color:'#fff',font:'inherit',cursor:'pointer'}));
   toolbar=panel;
-  const positionPanel=()=>{
-   if(panel.hidden||!fab.isConnected)return;
-   const rect=fab.getBoundingClientRect();
-   const width=Math.min(270,window.innerWidth-36);
-   const left=Math.max(12,Math.min(window.innerWidth-width-12,rect.right-width));
-   const top=Math.max(12,rect.top-panel.offsetHeight-10);
-   Object.assign(panel.style,{position:'fixed',left:left+'px',top:top+'px',right:'auto',bottom:'auto',width:width+'px',maxHeight:'min(70vh,560px)',overflowY:'auto'});
-  };
-  fab.addEventListener('click',()=>{panel.hidden=!panel.hidden;if(!panel.hidden)requestAnimationFrame(positionPanel);});
-  window.addEventListener('resize',positionPanel,{passive:true});
-  window.addEventListener('scroll',positionPanel,{passive:true,capture:true});
+  fab.addEventListener('click',()=>{panel.hidden=!panel.hidden;});
   panel.querySelector('[data-close]').addEventListener('click',()=>{panel.hidden=true;});
   panel.querySelector('[data-toggle]').addEventListener('click',()=>setEnabled(!enabled));
   panel.querySelector('[data-export]').addEventListener('click',()=>{
