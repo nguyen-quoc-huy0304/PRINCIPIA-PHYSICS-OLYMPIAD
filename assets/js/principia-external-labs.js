@@ -43,5 +43,7 @@ function init(){
  window.changePhetSrc=applySelection;
  picker.addEventListener('change',applySelection);
 }
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});
+document.addEventListener('principia:rendered',init);
+if(document.readyState!=='loading')init();
 })();

@@ -2,7 +2,7 @@
 (function(){
 'use strict';
 function init(){
- const host=document.getElementById('clTab-phet');
+ const host=document.getElementById('principiaLabTools');
  if(!host||host.dataset.dataLabReady)return;
  host.dataset.dataLabReady='1';
  const panel=document.createElement('section');
@@ -66,5 +66,7 @@ function init(){
  }
  $('dataFitBtn').addEventListener('click',fit);
 }
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});
+document.addEventListener('principia:rendered',init);
+if(document.readyState!=='loading')init();
 })();

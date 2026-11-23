@@ -2,7 +2,7 @@
 (function(){
 'use strict';
 function init(){
- const host=document.getElementById('clTab-phet');
+ const host=document.getElementById('principiaLabTools');
  if(!host||host.dataset.roboticsLabReady)return;
  host.dataset.roboticsLabReady='1';
  const panel=document.createElement('section');
@@ -61,5 +61,7 @@ function init(){
  $('robotToggle').addEventListener('click',()=>{const ws=$('robotWorkspace');ws.hidden=!ws.hidden;$('robotToggle').textContent=ws.hidden?'Mở mô phỏng':'Thu gọn';if(!ws.hidden)solve();});
  inputs.forEach(id=>$(id).addEventListener('input',solve));
 }
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});
+document.addEventListener('principia:rendered',init);
+if(document.readyState!=='loading')init();
 })();
