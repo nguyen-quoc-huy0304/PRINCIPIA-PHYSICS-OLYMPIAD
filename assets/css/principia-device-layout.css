@@ -263,3 +263,37 @@ body.principia-welcome-active .pw-visual{min-height:0!important}
  body.principia-welcome-active .pw-copy>p,body.principia-welcome-active .pw-note{display:none!important}
  body.principia-welcome-active .pw-character-halo{height:min(150px,21vh)!important;width:min(150px,40vw)!important}
 }
+
+
+/* Welcome route: keep the start screen free of floating AI and search controls. */
+body.principia-welcome-active #principiaSearchTrigger,
+body.principia-welcome-active .chat-bubble-btn.chat-messenger-launcher,
+body.principia-welcome-active #principiaGlobalSearch{
+ display:none!important;
+ visibility:hidden!important;
+ pointer-events:none!important;
+}
+
+/* Messenger launcher: transparent canvas; only the Messenger mark remains visible. */
+button.chat-bubble-btn.chat-messenger-launcher{
+ background:transparent!important;
+ background-color:transparent!important;
+ border:0!important;
+ border-radius:0!important;
+ box-shadow:none!important;
+ outline:0!important;
+}
+button.chat-bubble-btn.chat-messenger-launcher:hover,
+button.chat-bubble-btn.chat-messenger-launcher:focus{
+ background:transparent!important;
+ box-shadow:none!important;
+}
+button.chat-bubble-btn.chat-messenger-launcher>.chat-messenger-logo{
+ width:42px!important;height:42px!important;
+ min-width:42px!important;min-height:42px!important;
+ max-width:42px!important;max-height:42px!important;
+}
+@media(min-width:901px){
+ #app>.layout>.sidebar>.brand{display:flex!important;align-items:center!important;gap:12px!important;padding-left:8px!important}
+ #app>.layout>.sidebar>.brand .brand-name{display:inline-block!important;color:var(--txt,#fff)!important;font-size:18px!important;font-weight:900!important;letter-spacing:2px!important;line-height:1!important}
+}
