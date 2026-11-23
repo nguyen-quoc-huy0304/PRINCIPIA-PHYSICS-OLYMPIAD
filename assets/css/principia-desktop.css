@@ -1696,3 +1696,14 @@ body #principiaSearchTrigger,body #principiaDownloadFab,body button.chat-bubble-
  .auth-form .forgot-password-link:focus-visible{outline:3px solid rgba(196,181,253,.55);outline-offset:2px}
  .auth-form .forgot-password-icon{width:17px;height:17px;display:grid;place-items:center;border-radius:50%;background:rgba(196,181,253,.2);color:#ddd6fe;font-size:12px}
  @media(max-width:520px){.auth-form .forgot-password-link{min-height:38px;padding:8px 12px!important;font-size:12px}}}
+
+
+/* PRINCIPIA: suppress the two legacy floating controls; the action dock owns the visible controls. */
+html body button#principiaSearchTrigger,
+html body button#principiaDownloadFab,
+html body #principiaSearchTrigger,
+html body #principiaDownloadFab{
+ display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;
+ width:0!important;height:0!important;min-width:0!important;min-height:0!important;max-width:0!important;max-height:0!important;
+ margin:0!important;padding:0!important;border:0!important;overflow:hidden!important;
+}
