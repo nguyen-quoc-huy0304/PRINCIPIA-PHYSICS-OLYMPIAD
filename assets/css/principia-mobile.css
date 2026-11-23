@@ -533,3 +533,5 @@
 
 /* Manga character sizing on compact screens. */
 @media(max-width:640px){.principia-welcome-screen .pw-character-halo .pw-welcome-character{height:92%!important;width:auto!important;max-width:86%!important}.principia-home-comic .principia-comic-character img{height:130px!important;width:auto!important}}
+
+@media(max-width:520px){.principia-home-art{width:94vw;height:88vh}.principia-home-only{min-height:100dvh}}

@@ -1338,3 +1338,21 @@ input,textarea,select{background:#0b1020!important;border-color:rgba(158,175,215
 
 /* First-login welcome is a separate full-screen route: hide workspace navigation and floating chat launcher. */
 body.principia-welcome-active .sidebar,body.principia-welcome-active .chat-bubble-btn,body.principia-welcome-active #principiaStickerFab{display:none!important}
+
+/* Home is image-only: hide navigation and the floating launcher on Home. */
+body.principia-home-active .sidebar,body.principia-home-active .top,body.principia-home-active .chat-bubble-btn{display:none!important}
+body.principia-home-active .main{padding:0!important;min-height:100vh!important}
+body.principia-home-active #body{min-height:100vh!important;display:grid;place-items:center!important;padding:0!important}
+.principia-home-only{min-height:100vh;width:100%;display:grid;place-items:center;overflow:hidden;background:radial-gradient(ellipse at 50% 45%,rgba(132,112,225,.18),transparent 58%)}
+.principia-home-art{width:min(72vw,520px);height:min(88vh,720px);display:grid;place-items:center}
+.principia-home-art img,.principia-home-art span{max-width:100%!important;max-height:100%!important;width:auto!important;height:auto!important;object-fit:contain!important;filter:drop-shadow(0 18px 32px rgba(0,0,0,.25))}
+
+/* AI companion: character-led manga balloon instead of a generic floating button. */
+.chat-bubble-btn{position:fixed!important;right:18px!important;bottom:18px!important;z-index:99990!important;display:flex!important;align-items:flex-end!important;gap:0!important;width:auto!important;height:auto!important;min-height:0!important;max-width:min(310px,calc(100vw - 24px))!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;color:inherit!important;overflow:visible!important}
+.chat-bubble-btn::before{display:none!important;content:none!important}
+.chat-character-portrait{order:2!important;width:108px!important;height:132px!important;flex:0 0 108px!important;display:grid!important;place-items:end center!important;overflow:visible!important;border:0!important;border-radius:0!important;background:transparent!important}
+.chat-character-portrait img,.chat-character-portrait span,.chat-character-portrait>div{width:auto!important;height:126px!important;max-width:108px!important;max-height:126px!important;object-fit:contain!important;filter:drop-shadow(1px 4px 4px #0004)}
+.chat-character-speech{order:1!important;position:relative!important;display:block!important;max-width:180px!important;margin:0 -4px 32px 0!important;padding:13px 16px!important;border:2px solid #282333!important;border-radius:48% 44% 46% 42% / 38% 42% 48% 46%!important;background:#fffdf8!important;color:#24202c!important;font-size:12px!important;font-weight:800!important;line-height:1.4!important;text-align:center!important;box-shadow:3px 4px 0 #282333!important}
+.chat-character-speech:before{content:""!important;position:absolute!important;right:-9px!important;left:auto!important;bottom:8px!important;width:16px!important;height:16px!important;background:#fffdf8!important;border-right:2px solid #282333!important;border-bottom:2px solid #282333!important;transform:rotate(-25deg) skew(-18deg)!important;border-radius:0 0 3px 0!important}
+@media(max-width:520px){.chat-bubble-btn{right:8px!important;bottom:calc(8px + env(safe-area-inset-bottom))!important;max-width:calc(100vw - 16px)!important}.chat-character-portrait{width:82px!important;height:104px!important;flex-basis:82px!important}.chat-character-portrait img,.chat-character-portrait span,.chat-character-portrait>div{height:100px!important;max-width:82px!important}.chat-character-speech{max-width:150px!important;margin-bottom:25px!important;padding:10px 12px!important;font-size:11px!important}}
+body.principia-welcome-active .chat-bubble-btn,body.principia-home-active .chat-bubble-btn{display:none!important}
