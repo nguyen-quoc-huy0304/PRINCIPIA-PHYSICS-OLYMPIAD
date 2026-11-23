@@ -148,8 +148,9 @@ async function initPrincipiaAuth(){
  }catch(e){
   console.error('PRINCIPIA auth init:',e);
   const status=document.getElementById('googleAccountStatus');
-  if(status)status.textContent='Không kết nối được máy chủ đăng nhập. Giao diện vẫn hoạt động; hãy tải lại hoặc kiểm tra kết nối.';
-  window.principiaAuthInitError=e?.message||String(e);
+  const detail=e?.message||String(e)||'Lỗi không xác định';
+  if(status)status.textContent='Lỗi Firebase: '+detail;
+  window.principiaAuthInitError=detail;
  }
 }
 document.addEventListener('DOMContentLoaded',()=>{initPrincipiaAuth();if(window.getPrincipiaPage()==='account')renderGoogleAccount();});
