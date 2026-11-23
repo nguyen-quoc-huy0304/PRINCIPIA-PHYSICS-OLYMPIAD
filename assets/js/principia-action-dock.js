@@ -4,6 +4,9 @@
  const IDS={ai:'principiaDockAI',browser:'principiaDockBrowser',files:'principiaDockFiles'};
  const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
  let browserPanel=null,filesPanel=null;
+ const HISTORY_KEY='principia_browser_history_v1';
+ const readHistory=()=>{try{const v=JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]');return Array.isArray(v)?v.filter(x=>x&&typeof x.url==='string').slice(0,50):[]}catch(_){return[]}};
+ const saveHistory=url=>{try{localStorage.setItem(HISTORY_KEY,JSON.stringify([{url,at:Date.now()},...readHistory().filter(x=>x.url!==url)].slice(0,50)))}catch(_){}};
  const isMobile=()=>window.matchMedia('(max-width:900px)').matches;
  const welcome=()=>document.body.classList.contains('principia-welcome-active');
  function button(id,label,glyph,bottom){
@@ -62,7 +65,7 @@
    '<iframe id="principiaBrowserFrame" title="Kết quả tìm kiếm web" referrerpolicy="strict-origin-when-cross-origin" style="width:100%;flex:1;min-height:0;border:0;background:white" src="https://www.google.com/webhp?igu=1"></iframe>';
   document.body.appendChild(panel);browserPanel=panel;stylePanel(panel,248);makeDraggable(panel);
   const frame=panel.querySelector('#principiaBrowserFrame'),input=panel.querySelector('#principiaBrowserUrl'),status=panel.querySelector('#principiaBrowserStatus');
-  let history=['https://www.google.com/webhp?igu=1'],position=0;
+  let history=['https://www.google.com/webhp?igu=1',...readHistory().map(x=>x.url)],position=0;
   const normalize=raw=>{
    const value=String(raw||'').trim();if(!value)return '';
    if(value.startsWith('https://')||value.startsWith('http://'))return value;
@@ -72,7 +75,7 @@
   const navigate=raw=>{
    const url=normalize(raw);if(!url)return;
    try{const parsed=new URL(url);if(parsed.protocol!=='http:'&&parsed.protocol!=='https:')throw new Error('scheme')}catch(_){status.textContent='Địa chỉ không hợp lệ. Chỉ hỗ trợ website HTTP/HTTPS.';return}
-   history=history.slice(0,position+1);history.push(url);position=history.length-1;input.value=raw;frame.src=url;
+   history=history.slice(0,position+1);history.push(url);position=history.length-1;input.value=raw;frame.src=url;saveHistory(url);
    status.textContent=url.includes('google.com/')?'Đang tìm trên Google. Nếu vùng kết quả trắng, Google đã chặn iframe trên trình duyệt này.':'Đang mở website. Một số trang chặn hiển thị nhúng.';
   };
   panel.querySelector('#principiaBrowserForm').addEventListener('submit',event=>{event.preventDefault();navigate(input.value)});
@@ -139,7 +142,11 @@
  function mount(){
   installDockPositionStyles();
   const root=ensureDockRoot();
-  let ai=document.querySelector('button.chat-bubble-btn.chat-messenger-launcher')||document.getElementById(IDS.ai);
+  const launchers=[...document.querySelectorAll('button.chat-bubble-btn.chat-messenger-launcher')];
+  let ai=launchers[0]||document.getElementById(IDS.ai);
+  launchers.slice(1).forEach(node=>node.remove());
+  const chatBoxes=[...document.querySelectorAll('#chatBox')];
+  chatBoxes.slice(1).forEach(node=>node.remove());
   if(!ai){
    ai=document.createElement('button');ai.type='button';ai.className='chat-bubble-btn chat-messenger-launcher';
    ai.innerHTML='<span aria-hidden="true">AI</span>';ai.addEventListener('click',()=>{if(typeof window.toggleChatBox==='function')window.toggleChatBox()});
