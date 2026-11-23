@@ -196,7 +196,7 @@ function resetStudyClock(){if(principiaClock.interval)clearInterval(principiaClo
 function principiaRandomPoseMarkup(size=76){
  const n=Math.floor(Math.random()*34),cell=Math.max(48,Math.min(520,Number(size)||76));
  const col=n%5,row=Math.floor(n/5),xp=col*25,yp=row*(100/6);
- return '<span class="principia-bundled-pose" role="img" aria-label="Nhân vật PRINCIPIA · tư thế '+(n+1)+'" style="display:block;width:'+cell+'px;height:'+cell+'px;background-image:url(\\'/assets/images/principia-poses-34.png\\');background-size:500% 700%;background-position:'+xp+'% '+yp+'%;background-repeat:no-repeat"></span>';
+ return `<span class="principia-bundled-pose" role="img" aria-label="Nhân vật PRINCIPIA · tư thế ${n+1}" style="display:block;width:${cell}px;height:${cell}px;background-image:url('/assets/images/principia-poses-34.png');background-size:500% 700%;background-position:${xp}% ${yp}%;background-repeat:no-repeat"></span>`;
 }
 window.principiaRandomPoseMarkup=principiaRandomPoseMarkup;
 function home(){
