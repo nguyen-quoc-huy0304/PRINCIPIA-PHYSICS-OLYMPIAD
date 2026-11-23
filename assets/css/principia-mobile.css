@@ -521,3 +521,8 @@
 
 /* Keep the first-login welcome page full-bleed on mobile. */
 @media(max-width:900px){.principia-welcome-screen{width:100%;min-height:100svh;overflow-x:hidden}.pw-content{width:100%}.pw-visual{width:100%}}
+
+
+/* PRINCIPIA comic companion responsive layout */
+.principia-home-comic{max-width:100%;gap:0}
+@media(max-width:640px){.principia-home-comic{display:flex;align-items:flex-end}.principia-comic-character{flex-basis:88px;width:88px}.principia-comic-balloon{flex:1 1 auto;min-width:0}.principia-comic-balloon p{overflow-wrap:anywhere}}
