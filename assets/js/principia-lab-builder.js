@@ -90,5 +90,7 @@ function exportCurrent(){
  const r=records.find(x=>x.id===current.id);if(!r)return;
  const blob=new Blob([JSON.stringify(r,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=(r.title||'principia-lab').replace(/[^a-z0-9-_]+/gi,'-').slice(0,60)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});
+document.addEventListener('principia:rendered',mount);
+if(document.readyState!=='loading')mount();
 })();

@@ -318,5 +318,6 @@
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
-  else init();
+  document.addEventListener('principia:rendered', init);
+  if (document.readyState !== 'loading') init();
 })();
