@@ -638,7 +638,7 @@ function accountPage(){
 }
 function setAccountMode(mode){accountMode=mode==='signup'?'signup':'login';render();renderGoogleAccount();}
 
-function principiaWelcomeCharacterMarkup(){
+function buildPrincipiaWelcomeCharacterMarkup(){
  try{if(typeof window.principiaRandomPoseMarkup==='function')return window.principiaRandomPoseMarkup(320);}catch(e){}
  try{if(typeof window.getPrincipiaCharacterMarkup==='function')return window.getPrincipiaCharacterMarkup();}catch(e){}
  try{
@@ -651,7 +651,7 @@ function principiaWelcomeCharacterMarkup(){
 // Backward-compatible helper for cached/older welcome render paths.
 function principiaWelcomeCharacterSrc(){
  try{
-  const markup=principiaWelcomeCharacterMarkup();
+  const markup=buildPrincipiaWelcomeCharacterMarkup();
   const match=markup.match(/\\bsrc=["']([^"']+)["']/i);
   return match?match[1]:'';
  }catch(_){return '';}
@@ -1497,7 +1497,7 @@ function resetOuterCover(){
 // Public bridge for the separately-loaded Firebase auth script.
 window.PRINCIPIA_OWNER_EMAIL_PUBLIC=PRINCIPIA_OWNER_EMAIL;
 window.PRINCIPIA_OWNER_UID_PUBLIC=PRINCIPIA_OWNER_UID;
-window.principiaWelcomeCharacterMarkup=()=>principiaWelcomeCharacterMarkup();
+window.principiaWelcomeCharacterMarkup=buildPrincipiaWelcomeCharacterMarkup;
 window.renderPrincipiaApp=()=>render();
 let principiaViewportMode=window.matchMedia('(max-width:900px)').matches?'mobile':'desktop';
 window.addEventListener('resize',()=>{
