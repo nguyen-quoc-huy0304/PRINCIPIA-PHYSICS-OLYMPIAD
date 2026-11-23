@@ -134,7 +134,7 @@ function count(n){return n.type==='lesson'||n.type==='quiz'||n.type==='fun'||n.t
 function notify(t){$('#toast').innerHTML=`<div class="toast">${esc(t)}</div>`;setTimeout(()=>$('#toast').innerHTML='',2300)}
 function modal(s){$('#modal').innerHTML=`<div class="modalbg" onclick="if(event.target===this)closeModal()"><div class="modal">${s}</div></div>`}
 function closeModal(){$('#modal').innerHTML=''}
-function setPage(p){if(p!==page||stack.length)rememberPage();if(page==='play'&&activeQuiz&&(answers||[]).length>0){if(!confirm('🧸 Khoan đã! Bài làm của bạn chưa hoàn thành. Nếu thoát bây giờ, tiến trình hiện tại có thể mất. Bạn vẫn muốn rời khỏi bài chứ?')){companionReact('sad','Đừng bỏ cuộc giữa chừng nhé! Bạn làm tiếp được mà 💪');return;}}page=p;stack=[];search='';render();if(p==='home')notify('Đã mở Home');else notify('Đã mở '+({library:'Học tập',quiz:'Quiz',fun:'Đố vui',progress:'Tiến độ'}[p]||p));/* Không bật bong bóng 'Chào mừng' khi vào Home; màn hình chào và Home được tách riêng. */}
+function setPage(p){if(p!==page||stack.length)rememberPage();if(page==='play'&&activeQuiz&&(answers||[]).length>0){if(!confirm('🧸 Khoan đã! Bài làm của bạn chưa hoàn thành. Nếu thoát bây giờ, tiến trình hiện tại có thể mất. Bạn vẫn muốn rời khỏi bài chứ?')){companionReact('sad','Đừng bỏ cuộc giữa chừng nhé! Bạn làm tiếp được mà 💪');return;}}if(p==='entertainment')p='lab';page=p;stack=[];search='';render();if(p==='home')notify('Đã mở Home');else notify('Đã mở '+({library:'Học tập',quiz:'Quiz',fun:'Đố vui',progress:'Tiến độ',lab:'Phòng thí nghiệm'}[p]||p));/* Không bật bong bóng 'Chào mừng' khi vào Home; màn hình chào và Home được tách riêng. */}
 function currentNodes(){let nodes=tree();for(const id of stack){let n=find(id,nodes);nodes=n?.children||[]}return nodes}
 function crumb(){let html=`<button onclick="stack=[];render()">Trang chủ</button>`;let nodes=tree();for(let i=0;i<stack.length;i++){let n=find(stack[i],nodes);if(n)html+=` / <button onclick="stack=stack.slice(0,${i+1});render()">${esc(n.name)}</button>`}return html}
 function enter(id){rememberPage();stack.push(id);render()}
@@ -219,7 +219,16 @@ function library(){
  let items=currentNodes();
  return `<div class="breadcrumb">${crumb()}</div><div class="sectionhead"><div><div class="eyebrow">LEARNING LIBRARY</div><h1>${stack.length?esc(find(stack.at(-1),tree()).name):'Thư viện học tập'}</h1><p class="muted small">Tab trong tab · Tổ chức kiến thức theo cách của bạn</p></div><div class="toolbar"><button class="primary" onclick="addChoice()">＋ Tạo mới</button></div></div>
  <div class="grid">${items.length?items.map(card).join(''):'<div class="empty">Chưa có nội dung. Hãy nhấn + để tạo tab hoặc bài học.</div>'}</div>
- ${stack.length?'':`<section class="panel" style="margin-top:20px"><div class="sectionhead"><div><div class="eyebrow">PERSONAL LIBRARY</div><h2>📚 Sách & tài liệu</h2><p class="muted small">Các tệp đã thêm sẽ xuất hiện tại đây.</p></div><div class="toolbar"><button class="secondary" onclick="openLibraryPicker('book')">＋ Thêm sách</button><button class="primary" onclick="openLibraryPicker('file')">＋ Thêm tài liệu</button></div></div><div id="principiaLibraryItems"><p class="muted small">Đang tải danh sách…</p></div></section>`}`;
+ ${stack.length?'':`
+ <section class="panel" style="margin-top:20px">
+  <div class="sectionhead"><div><div class="eyebrow">PRO LEARNING TOOLS</div><h2>✦ Trung tâm học tập & IDEA</h2><p class="muted small">Mở các công cụ học tập mở rộng đã bổ sung: bản đồ tri thức, kế hoạch, báo cáo, phương pháp học, trợ năng và ngân hàng câu hỏi.</p></div><div class="toolbar"><button class="primary" onclick="principiaSuiteHome()">Mở trung tâm học tập ↗</button></div></div>
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:9px">
+   <button class="secondary" onclick="principiaSuiteKnowledgeMap()">🗺️ Bản đồ tri thức</button><button class="secondary" onclick="principiaSuiteStudyPlanner()">🗓️ Kế hoạch học tập</button>
+   <button class="secondary" onclick="principiaSuiteDailyJourney()">🚀 Hành trình mỗi ngày</button><button class="secondary" onclick="principiaSuiteWeeklyReport()">📊 Báo cáo 7 ngày</button>
+   <button class="secondary" onclick="principiaSuiteThinkingProfile()">🧠 Hồ sơ tư duy</button><button class="secondary" onclick="principiaStudyMethods()">💡 100 phương pháp học</button>
+   <button class="secondary" onclick="principiaSuiteAccessibility()">♿ Trợ năng</button><button class="secondary" onclick="principiaSuiteQuestionBank()">🔎 Ngân hàng câu hỏi</button>
+  </div>
+ </section><section class="panel" style="margin-top:20px"><div class="sectionhead"><div><div class="eyebrow">PERSONAL LIBRARY</div><h2>📚 Sách & tài liệu</h2><p class="muted small">Các tệp đã thêm sẽ xuất hiện tại đây.</p></div><div class="toolbar"><button class="secondary" onclick="openLibraryPicker('book')">＋ Thêm sách</button><button class="primary" onclick="openLibraryPicker('file')">＋ Thêm tài liệu</button></div></div><div id="principiaLibraryItems"><p class="muted small">Đang tải danh sách…</p></div></section>`}`;
 }
 function lesson(){
  let l=find(activeLesson,data);if(!l)return '<div class="empty">Không tìm thấy bài học</div>';
@@ -332,12 +341,17 @@ function entertainmentWeekKey(d=new Date()){const x=new Date(Date.UTC(d.getFullY
 function entertainmentState(){const wk=entertainmentWeekKey();let st;try{st=JSON.parse(localStorage.getItem('principia_fun_league')||'null')}catch(e){}if(!st||st.week!==wk){st={week:wk,points:0,matches:0,wins:0};localStorage.setItem('principia_fun_league',JSON.stringify(st));}return st}
 function leagueBots(){const names=['NewtonBot','Einstein AI','Gauss.exe','CurieBot','Feynman AI','TeslaMind','NoetherBot'];const st=entertainmentState();let seed=0;for(const c of st.week)seed=(seed*31+c.charCodeAt(0))>>>0;return names.map((name,i)=>{seed=(seed*1664525+1013904223)>>>0;return {name,points:150+seed%650,avatar:['🤖','🧠','🦾','👾','⚙️','🛰️','🔬'][i]}}).sort((a,b)=>b.points-a.points)}
 function leagueRank(points){return points>=900?{name:'Đại kiện tướng',icon:'👑'}:points>=600?{name:'Cao thủ',icon:'💎'}:points>=350?{name:'Chiến binh',icon:'🥇'}:points>=150?{name:'Kỳ thủ',icon:'🥈'}:{name:'Tân binh',icon:'🌱'}}
-const PRINCIPIA_DEFAULT_NAV=[['home','sparkle','Trang chủ'],['library','books','Học tập'],['quiz','calculator','Quiz'],['fun','puzzle','Đố vui'],['entertainment','game','Giải trí'],['progress','trophy','Tiến độ']];
+const PRINCIPIA_DEFAULT_NAV=[['home','sparkle','Trang chủ'],['library','books','Học tập'],['quiz','calculator','Quiz'],['fun','puzzle','Đố vui'],['lab','flask','Phòng thí nghiệm'],['progress','trophy','Tiến độ']];
 /* PRINCIPIA: icon emoji hiện đại, vẫn ưu tiên ảnh do người dùng tải lên. */
 const PRINCIPIA_NAV_IMAGE_STYLE='<style>.nav-image-empty{display:inline-flex;align-items:center;justify-content:center;width:64px;height:64px;border:1px dashed var(--line);border-radius:14px;color:var(--muted);font-size:11px;text-align:center}.nav-custom-icon{width:28px;height:28px;object-fit:cover;border-radius:9px;flex:none}.nav-default-icon{font-size:23px;line-height:1;display:inline-grid;place-items:center;width:28px;height:28px;flex:none}.node-emoji-icon{font-size:42px;line-height:1.2;display:inline-flex;align-items:center;justify-content:center;min-width:1.25em;min-height:1.25em}.icon-choice-grid{grid-template-columns:repeat(6,minmax(0,1fr))}.icon-choice{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:7px 3px}.icon-choice-name{font-size:10px;line-height:1.2}.nav .ni{display:none!important}</style>';
 document.head.insertAdjacentHTML('beforeend',PRINCIPIA_NAV_IMAGE_STYLE);
 function principiaNavGroups(){try{const g={...{workspace:'PRO',more:'MORE'},...JSON.parse(localStorage.getItem('principia_nav_groups')||'{}')};if(g.workspace==='WORKSPACE')g.workspace='PRO';return g}catch(e){return {workspace:'PRO',more:'MORE'}}}
-function principiaNav(){try{return JSON.parse(localStorage.getItem('principia_nav_config'))||PRINCIPIA_DEFAULT_NAV}catch(e){return PRINCIPIA_DEFAULT_NAV}}
+function principiaNav(){
+ let saved;try{saved=JSON.parse(localStorage.getItem('principia_nav_config'))}catch(e){saved=null}
+ const nav=Array.isArray(saved)?saved.filter(x=>Array.isArray(x)&&x[0]!=='entertainment'):PRINCIPIA_DEFAULT_NAV.map(x=>[...x]);
+ if(!nav.some(x=>x[0]==='lab'))nav.splice(Math.min(4,nav.length),0,['lab','flask','Phòng thí nghiệm']);
+ return nav;
+}
 function savePrincipiaNav(v){localStorage.setItem('principia_nav_config',JSON.stringify(v))}
 function nodeIconImage(id){try{return localStorage.getItem('principia_node_icon_'+id)||''}catch(e){return ''}}
 function setNodeIconImage(id,input){const f=input.files&&input.files[0];if(!f)return;if(!(f.type.startsWith('image/')||/\\.(svg|ico)$/i.test(f.name))){notify('Chọn ảnh hoặc tệp icon SVG/ICO nhé');return}if(f.size>2*1024*1024){notify('Tệp icon tối đa 2 MB');return}const rd=new FileReader();rd.onload=()=>{try{localStorage.setItem('principia_node_icon_'+id,rd.result);const p=document.getElementById('nodeIconPreview');if(p)p.innerHTML='<img src="'+rd.result+'" alt="Icon xem trước" style="width:58px;height:58px;object-fit:cover;border-radius:14px">';notify('Đã lưu icon cho mục này')}catch(e){notify('Không lưu được icon. Hãy dùng ảnh nhỏ hơn')}};rd.readAsDataURL(f)}
@@ -432,6 +446,34 @@ function companionReact(mood,msg){
  window.__principiaCompanionTimer=setTimeout(()=>{b.classList.add('companion-hide');setTimeout(()=>b.remove(),260)},(Number(cfg.duration)||4)*1000);
 }
 function analyzeChessPosition(){const p=document.getElementById('chessPosition')?.value.trim();if(!p){notify('Hãy dán PGN hoặc FEN của ván cờ trước nhé');companionReact('sad','Mình cần thế cờ hoặc lịch sử nước đi để phân tích nè.');return;}const url='https://lichess.org/analysis/'+encodeURIComponent(p);window.open(url,'_blank','noopener');companionReact('wow','Mở bàn phân tích Lichess để engine đánh giá nước đi. ♟️')}
+function labPage(){
+ return `<div class="eyebrow">PRO · PHYSICS WORKSPACE</div>
+ <h1>Phòng thí nghiệm</h1>
+ <p class="muted">Mô phỏng, đo đạc và kiểm chứng các định luật vật lý. Các công cụ kỹ thuật được gom tại một khu vực riêng.</p>
+ <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:14px 0">
+  <div class="panel"><b>⚖️ Cân bằng lực</b><div class="small muted">Hợp lực và cân bằng vectơ</div></div>
+  <div class="panel"><b>🪐 Quỹ đạo & phóng vật</b><div class="small muted">Vận tốc quỹ đạo, chu kỳ và ném xiên</div></div>
+  <div class="panel"><b>💥 Va chạm 1D / 2D</b><div class="small muted">Động lượng và động năng</div></div>
+  <div class="panel"><b>📈 Phân tích số liệu</b><div class="small muted">Hồi quy, R² và RMSE</div></div>
+  <div class="panel"><b>🤖 Robotics</b><div class="small muted">Động học cánh tay robot 2 khớp</div></div>
+  <div class="panel"><b>🧰 Xưởng thí nghiệm</b><div class="small muted">Thiết kế và lưu quy trình</div></div>
+ </div>
+ <section id="clTab-phet" class="panel" style="padding:16px;margin-bottom:16px">
+  <div class="sectionhead"><div><h2>🔬 Thư viện mô phỏng</h2><p class="small muted">Chọn mô phỏng theo chủ đề. Nội dung ngoài chỉ tải khi bạn chọn.</p></div></div>
+  <label class="small" for="phetSubjectPicker">Chủ đề / mô phỏng</label>
+  <select class="inp" id="phetSubjectPicker" style="width:100%;margin:8px 0 12px">
+   <option value="https://phet.colorado.edu/vi/simulations/filter?subjects=physics&type=html">Thư viện Vật lý</option>
+   <option value="https://phet.colorado.edu/vi/simulations/filter?subjects=math&type=html">Toán và Thống kê</option>
+   <option value="https://phet.colorado.edu/vi/simulations/filter?subjects=chemistry&type=html">Hóa học</option>
+   <option value="https://phet.colorado.edu/vi/simulations/filter?subjects=earth-science&type=html">Trái đất và Không gian</option>
+   <option value="https://phet.colorado.edu/vi/simulations/filter?subjects=biology&type=html">Sinh học</option>
+  </select>
+  <iframe id="phetFrame" data-principia-src="https://phet.colorado.edu/vi/simulations/filter?subjects=physics&type=html" title="Thư viện mô phỏng PhET" loading="lazy" style="width:100%;height:430px;border:1px solid var(--line);border-radius:12px"></iframe>
+  <div id="principiaLabTools"></div>
+ </section>
+ ${collision}
+ </div>`;
+}
 function entertainmentPage(){
  const items=currentNodes(),selected=activeEntertainmentGameId?find(activeEntertainmentGameId,entertainmentData):null;
  const trail=stack.length?`<div class="breadcrumb">${crumb()}</div>`:'';
@@ -579,7 +621,7 @@ function render(){
   return;
  }
  let nav=principiaNav();
- let body=page==='account'?accountPage():page==='home'?home():page==='library'?library():page==='lesson'?lesson():page==='quiz'?quizHome():page==='fun'?funHome():page==='entertainment'?entertainmentPage():page==='play'?playPage():page==='lessonplay'?lessonPlayPage():page==='progress'?progressPage():morePage();
+ let body=page==='account'?accountPage():page==='home'?home():page==='library'?library():page==='lesson'?lesson():page==='quiz'?quizHome():page==='fun'?funHome():page==='lab'?labPage():page==='play'?playPage():page==='lessonplay'?lessonPlayPage():page==='progress'?progressPage():morePage();
  const outerCoverHtml = `<div class="outer-cover-banner"><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;"><img class="outer-cover-thumb" src="${outerCoverImg}" alt="Ảnh ngoài trang"><div><div class="eyebrow">ẢNH NGOÀI TRANG</div><div class="small muted">Hiển thị ảnh bạn đưa ngay ngoài không gian học tập</div></div></div><div style="display:flex;gap:8px;flex-wrap:wrap;"><button class="secondary" onclick="$('#outerCoverInput').click()">Đổi ảnh ngoài</button><button class="secondary" onclick="resetOuterCover()">Ảnh mặc định</button><input type="file" id="outerCoverInput" accept="image/*" class="hidden" onchange="updateOuterCover(this.files[0])"></div></div>`;
 const isMobileDevice=(()=>{const ua=String(navigator.userAgent||'');const uaMobile=typeof navigator.userAgentData?.mobile==='boolean'?navigator.userAgentData.mobile:/Android|iPhone|iPad|iPod|Mobile|IEMobile|Windows Phone/i.test(ua);return uaMobile;})();
  const navButtons=nav.map(([id,ic,n],idx)=>{const image=navItemImage(id),preset=PRINCIPIA_EMOJI_ICONS[ic]?ic:['home','books','calculator','puzzle','game','trophy'][idx%6],active=page===id||page==='lesson'&&id==='library'||page==='play'&&id===(activeQuiz?.kind==='fun'?'fun':'quiz');return `<button class="nav ${active?'active':''}" data-page="${id}" onclick="setPage('${id}')">${image?`<img class="nav-custom-icon" src="${image}" alt="">`:`<span class="nav-default-icon">${principiaEmojiIcon(preset)}</span>`}<span>${n}</span></button>`}).join('');
@@ -591,6 +633,7 @@ const isMobileDevice=(()=>{const ua=String(navigator.userAgent||'');const uaMobi
   // Restore the original PRINCIPIA desktop layout: classic sidebar + main workspace.
   app.innerHTML=`<div class="layout"><aside class="sidebar"><div class="brand" aria-label="PRO — PRINCIPIA PHYSICS OLYMPIAD"><img class="brand-logo-img" src="${PRINCIPIA_LOGO_URI}" alt="PRO"><span class="brand-name">PRO</span></div>${navGroupLabelHTML('workspace')}${nav.map(([id,ic,n],idx)=>{const image=navItemImage(id),preset=PRINCIPIA_EMOJI_ICONS[ic]?ic:['home','books','calculator','puzzle','game','trophy'][idx%6];return `<button class="nav ${page===id||page==='lesson'&&id==='library'||page==='play'&&id===(activeQuiz?.kind==='fun'?'fun':'quiz')?'active':''}" onclick="setPage('${id}')">${image?`<img class="nav-custom-icon" src="${image}" alt="">`:`<span class="nav-default-icon">${principiaEmojiIcon(preset)}</span>`}<span>${n}</span></button>`}).join('')}<div class="sidebottom">${navGroupLabelHTML('more')}<button class="nav ${page==='more'?'active':''}" onclick="setPage('more')">More / Settings</button></div></aside><main class="main">${topbar()}<div id="body">${body}</div></main></div>`;
  }
+ document.dispatchEvent(new CustomEvent('principia:rendered',{detail:{page}}));
  document.body.dataset.principiaDevice=isMobileDevice?'mobile':'desktop';
  document.body.dataset.principiaRole=principiaRole();
  document.body.classList.toggle('principia-admin',isPrincipiaAdmin());
