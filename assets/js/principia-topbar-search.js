@@ -7,6 +7,7 @@
   if(!back||document.getElementById(INPUT_ID))return;
   const parent=back.parentElement;
   if(!parent)return;
+  Object.assign(parent.style,{display:'flex',alignItems:'center',flexWrap:'wrap',gap:'10px',minWidth:'0',flex:'1 1 auto'});
   const input=document.createElement('input');
   input.id=INPUT_ID;
   input.type='search';
@@ -17,7 +18,7 @@
   input.placeholder='Tìm bài học, công thức, chủ đề...';
   input.style.cssText=[
    'box-sizing:border-box','display:block','flex:1 1 260px',
-   'width:min(420px,38vw)','min-width:min(260px,48vw)',
+   'width:min(420px,calc(100vw - 190px))','min-width:min(240px,calc(100vw - 48px))',
    'max-width:480px','height:44px','margin:0 12px 0 8px',
    'padding:0 16px','border:1px solid var(--line,#596078)',
    'border-radius:13px','background:var(--card,#171a2b)',
