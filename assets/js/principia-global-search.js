@@ -43,7 +43,7 @@
  }
  function close(){if(overlay)overlay.style.display='none'}
  function paintFilters(){overlay?.querySelectorAll('#principiaGlobalSearchFilters button').forEach(b=>{const on=b.dataset.kind===selectedKind;b.style.background=on?'var(--card2,#29263d)':'transparent';b.style.borderColor=on?'var(--accent,#9b87ff)':'var(--line,#555)'})}
- function open(){const el=ensure();el.style.display='flex';selectedKind='all';const input=el.querySelector('input');input.value='';renderResults('');paintFilters();setTimeout(()=>input.focus(),20)}
+ function open(initialQuery=''){const el=ensure();el.style.display='flex';selectedKind='all';const input=el.querySelector('input');input.value=String(initialQuery||'');renderResults(input.value);paintFilters();setTimeout(()=>input.focus(),20)}
  function renderResults(q){
   const term=String(q||'').trim().toLocaleLowerCase('vi');
   const source=collect();
