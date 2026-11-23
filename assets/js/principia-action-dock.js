@@ -182,19 +182,30 @@
   }
   return input;
  }
+ function syncDockRootToViewport(root=document.getElementById('principiaActionDockRoot')){
+  if(!root?.isConnected)return;
+  root.style.setProperty('position','absolute','important');
+  root.style.setProperty('top',Math.max(0,window.scrollY||window.pageYOffset||0)+'px','important');
+  root.style.setProperty('left',Math.max(0,window.scrollX||window.pageXOffset||0)+'px','important');
+  root.style.setProperty('right','auto','important');
+  root.style.setProperty('bottom','auto','important');
+  root.style.setProperty('width',Math.max(1,window.innerWidth)+'px','important');
+  root.style.setProperty('height',Math.max(1,window.innerHeight)+'px','important');
+ }
  function ensureDockRoot(){
   let root=document.getElementById('principiaActionDockRoot');
   if(!root){root=document.createElement('div');root.id='principiaActionDockRoot';root.setAttribute('aria-label','Thao tác nhanh PRINCIPIA')}
   if(root.parentElement!==document.documentElement)document.documentElement.appendChild(root);
-  Object.assign(root.style,{position:'fixed',inset:'0',top:'0',right:'0',bottom:'0',left:'0',width:'100vw',height:'100vh',height:'100dvh',pointerEvents:'none',zIndex:'2147483000',display:'block',visibility:'visible',transform:'none',contain:'none'});
+  Object.assign(root.style,{position:'absolute',inset:'auto',top:'0',right:'auto',bottom:'auto',left:'0',width:'100vw',height:'100vh',height:'100dvh',pointerEvents:'none',zIndex:'2147483000',display:'block',visibility:'visible',transform:'none',contain:'none',overflow:'visible'});
+  syncDockRootToViewport(root);
   return root;
  }
  function installDockPositionStyles(){
   if(document.getElementById('principiaDockPositionStyles'))return;
   const style=document.createElement('style');style.id='principiaDockPositionStyles';
   style.textContent=
-   'html>#principiaActionDockRoot{position:fixed!important;inset:0!important;top:0!important;right:0!important;bottom:0!important;left:0!important;width:100vw!important;height:100vh!important;height:100dvh!important;pointer-events:none!important;z-index:2147483000!important;display:block!important;visibility:visible!important;transform:none!important;contain:none!important}'+
-   '#principiaActionDockRoot>#principiaDockAI,#principiaActionDockRoot>#principiaDockBrowser,#principiaActionDockRoot>#proSiteEditorFab{position:fixed!important;transform:none!important;margin:0!important;pointer-events:auto!important;visibility:visible!important;display:grid!important;z-index:1!important;touch-action:none!important;cursor:grab!important}'+
+   'html>#principiaActionDockRoot{position:absolute!important;inset:auto!important;right:auto!important;bottom:auto!important;width:100vw!important;height:100vh!important;height:100dvh!important;pointer-events:none!important;z-index:2147483000!important;display:block!important;visibility:visible!important;transform:none!important;contain:none!important;overflow:visible!important}'+
+   '#principiaActionDockRoot>#principiaDockAI,#principiaActionDockRoot>#principiaDockBrowser,#principiaActionDockRoot>#proSiteEditorFab{position:absolute!important;transform:none!important;margin:0!important;pointer-events:auto!important;visibility:visible!important;display:grid!important;z-index:1!important;touch-action:none!important;cursor:grab!important}'+
    'html body #principiaSearchTrigger,html body #principiaDownloadFab{display:none!important;visibility:hidden!important;pointer-events:none!important}'+
    'body.principia-welcome-active #principiaActionDockRoot>#principiaDockAI,body.principia-welcome-active #principiaActionDockRoot>#principiaDockBrowser,body.principia-welcome-active #principiaActionDockRoot>#principiaDockFiles{display:none!important;visibility:hidden!important;pointer-events:none!important}';
   document.head.appendChild(style);
@@ -226,7 +237,7 @@
    node.style.setProperty('right',(mobile?'12px':'18px'),'important');
    node.style.setProperty('bottom',(mobile?'calc('+defaultBottom+'px + env(safe-area-inset-bottom,0px))':defaultBottom+'px'),'important');
   }
-  node.style.setProperty('position','fixed','important');
+  node.style.setProperty('position','absolute','important');
  }
  function bindLauncherDrag(node,onMove){
   if(node.dataset.dockDragBound==='true')return;
@@ -285,7 +296,7 @@
   }
   ai.id=IDS.ai;ai.title='Mở trợ lý AI';ai.setAttribute('aria-label','Mở trợ lý AI');
   if(ai.parentElement!==root)root.appendChild(ai);
-  Object.assign(ai.style,{position:'fixed',right:'18px',bottom:'18px',left:'auto',top:'auto',zIndex:'1',width:'46px',height:'46px',minWidth:'46px',minHeight:'46px',maxWidth:'46px',maxHeight:'46px',display:welcome()?'none':'grid',placeItems:'center',borderRadius:'16px',transform:'none',margin:'0',pointerEvents:'auto'});
+  Object.assign(ai.style,{position:'absolute',right:'18px',bottom:'18px',left:'auto',top:'auto',zIndex:'1',width:'46px',height:'46px',minWidth:'46px',minHeight:'46px',maxWidth:'46px',maxHeight:'46px',display:welcome()?'none':'grid',placeItems:'center',borderRadius:'16px',transform:'none',margin:'0',pointerEvents:'auto'});
   ai.style.display=welcome()?'none':'grid';
   ai.setAttribute('aria-hidden',welcome()?'true':'false');
   const browser=button(IDS.browser,'Tìm kiếm Internet','⌕',isMobile()?138:74);
@@ -299,7 +310,7 @@
    const onWelcome=welcome();
    const target=onWelcome?document.body:root;
    if(pencil.parentElement!==target)target.appendChild(pencil);
-   Object.assign(pencil.style,{position:'fixed',right:'18px',bottom:isMobile()?'194px':'130px',left:'auto',top:'auto',zIndex:'2147483005',width:'46px',height:'46px',minWidth:'46px',minHeight:'46px',display:'grid',placeItems:'center',margin:'0',pointerEvents:'auto'});
+   Object.assign(pencil.style,{position:'absolute',right:'18px',bottom:isMobile()?'194px':'130px',left:'auto',top:'auto',zIndex:'2147483005',width:'46px',height:'46px',minWidth:'46px',minHeight:'46px',display:'grid',placeItems:'center',margin:'0',pointerEvents:'auto'});
    pencil.setAttribute('aria-hidden','false');
    if(target===root){
     applyLauncherPosition(pencil,isMobile()?194:130);
@@ -319,7 +330,8 @@
  function start(){
   mount();
   new MutationObserver(mount).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class','hidden']});
-  window.addEventListener('resize',mount,{passive:true});
+  window.addEventListener('resize',()=>{mount();syncDockRootToViewport();},{passive:true});
+  window.addEventListener('scroll',()=>syncDockRootToViewport(),{passive:true});
   document.addEventListener('principia:rendered',mount);
   document.addEventListener('principia:page-changed',mount);
   document.addEventListener('keydown',event=>{if(event.key==='Escape'){closePanel(browserPanel);browserPanel=null}});
