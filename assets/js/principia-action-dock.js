@@ -150,7 +150,7 @@
   if(topRight){
    const streak=[...topRight.querySelectorAll('button.pill')].find(item=>/ngày học|thành tích/i.test(item.textContent+' '+item.title))||topRight.querySelector('button.pill');
    if(streak&&streak.parentElement===topRight){
-    if(streak.nextElementSibling!==input)topRight.insertBefore(input,streak.nextSibling);
+    if(input.parentElement!==topRight||input.nextElementSibling!==streak)topRight.insertBefore(input,streak);
    }else if(input.parentElement!==topRight)topRight.prepend(input);
    Object.assign(input.style,{
     position:'relative',right:'auto',top:'auto',bottom:'auto',left:'auto',
