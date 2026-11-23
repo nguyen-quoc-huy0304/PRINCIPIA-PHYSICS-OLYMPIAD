@@ -1,5 +1,5 @@
 //! PRINCIPIA — Rust-first application core.
-//! The existing web/Electron clients are adapters; domain rules live here.
+ //! The existing web/Electron clients are adapters; domain rules live here.
 
 #[cfg(not(target_arch = "wasm32"))]
 pub mod cpp_physics;
@@ -13,6 +13,7 @@ pub mod rigid_body;
 pub mod robotics;
 pub mod data_analysis;
 pub mod game;
+pub mod science_mystery;
 #[cfg(target_arch = "wasm32")]
 mod wasm_api;
 pub mod virtual_lab;
@@ -29,7 +30,6 @@ pub struct CoreInfo {
     pub primary_language: &'static str,
     pub simulation_language: &'static str,
 }
-
 pub fn info() -> CoreInfo {
     CoreInfo {
         name: APP_NAME,
