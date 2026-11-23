@@ -287,7 +287,7 @@
   Object.assign(ai.style,{position:'absolute',right:'18px',bottom:'18px',left:'auto',top:'auto',zIndex:'1',width:'46px',height:'46px',minWidth:'46px',minHeight:'46px',maxWidth:'46px',maxHeight:'46px',display:welcome()?'none':'grid',placeItems:'center',borderRadius:'16px',transform:'none',margin:'0',pointerEvents:'auto'});
   ai.style.display=welcome()?'none':'grid';
   ai.setAttribute('aria-hidden',welcome()?'true':'false');
-  const browser=button(IDS.browser,'Tìm kiếm Internet','⌕',isMobile()?82:74);
+  const browser=button(IDS.browser,'Tìm kiếm Internet','⌕',isMobile()?138:74);
   if(browser.parentElement!==root)root.appendChild(browser);
   browser.onclick=openBrowser;
   installFileSearchBar(root);
@@ -298,14 +298,14 @@
    const onWelcome=welcome();
    const target=onWelcome?document.body:root;
    if(pencil.parentElement!==target)target.appendChild(pencil);
-   Object.assign(pencil.style,{position:'absolute',right:'18px',bottom:isMobile()?'138px':'130px',left:'auto',top:'auto',zIndex:'2147483005',width:'46px',height:'46px',minWidth:'46px',minHeight:'46px',display:'grid',placeItems:'center',margin:'0',pointerEvents:'auto'});
+   Object.assign(pencil.style,{position:'absolute',right:'18px',bottom:isMobile()?'194px':'130px',left:'auto',top:'auto',zIndex:'2147483005',width:'46px',height:'46px',minWidth:'46px',minHeight:'46px',display:'grid',placeItems:'center',margin:'0',pointerEvents:'auto'});
    pencil.setAttribute('aria-hidden','false');
    if(target===root){
-    applyLauncherPosition(pencil,isMobile()?138:130);
+    applyLauncherPosition(pencil,isMobile()?194:130);
     bindLauncherDrag(pencil,()=>syncEditorPanelPosition(pencil));
    }
   }
-  applyLauncherPosition(browser,isMobile()?82:74);
+  applyLauncherPosition(browser,isMobile()?138:74);
   bindLauncherDrag(browser,()=>{
    if(browserPanel&&browserPanel.isConnected)positionPanelFromAnchor(browserPanel,browser);
   });
