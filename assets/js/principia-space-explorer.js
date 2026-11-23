@@ -28,6 +28,6 @@ function start(){if(frame||document.hidden||reduced())return;startedAt=0;frame=r
 window.principiaSpaceAltitude=function(value){altitude=clamp(Number(value)||BODIES[bodyId].min,BODIES[bodyId].min,BODIES[bodyId].max);updateValues();save();};
 window.principiaSpaceBody=function(value){if(!BODIES[value])return;bodyId=value;altitude=clamp(altitude,BODIES[value].min,BODIES[value].max);save();if(typeof window.render==='function')window.render();};
 document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();else start();},{passive:true});
-function install(){style();if(typeof window.entertainmentPage!=='function'||window.__principiaSpaceExplorerInstalled)return;const previous=window.entertainmentPage;window.entertainmentPage=function(){return previous.apply(this,arguments)+panel();};window.__principiaSpaceExplorerInstalled=true;start();}
+function install(){style();if(typeof window.labPage!=='function'||window.__principiaSpaceExplorerInstalled)return;const previous=window.labPage;window.labPage=function(){return previous.apply(this,arguments)+panel();};window.__principiaSpaceExplorerInstalled=true;start();}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();
