@@ -1559,3 +1559,19 @@ button.chat-bubble-btn.chat-messenger-launcher{
     right:12px!important;bottom:calc(82px + env(safe-area-inset-bottom,0px))!important;
   }
 }
+
+/* Final neutral glass treatment: remove every blue surface from the Messenger control. */
+button.chat-bubble-btn.chat-messenger-launcher,
+button.chat-bubble-btn.chat-messenger-launcher:hover,
+button.chat-bubble-btn.chat-messenger-launcher:active{
+  background:linear-gradient(145deg,rgba(255,255,255,.23),rgba(255,255,255,.055))!important;
+  background-color:rgba(255,255,255,.10)!important;
+  background-image:linear-gradient(145deg,rgba(255,255,255,.23),rgba(255,255,255,.055))!important;
+  border:1px solid rgba(255,255,255,.42)!important;
+  box-shadow:0 10px 30px rgba(0,0,0,.23),inset 0 1px 0 rgba(255,255,255,.48),inset 0 -1px 0 rgba(255,255,255,.08)!important;
+  -webkit-backdrop-filter:blur(26px) saturate(155%)!important;
+  backdrop-filter:blur(26px) saturate(155%)!important;
+}
+button.chat-bubble-btn.chat-messenger-launcher>.chat-messenger-logo{
+  width:29px!important;height:29px!important;min-width:29px!important;min-height:29px!important;
+}
