@@ -72,13 +72,14 @@
   panel.querySelector('[data-close]').addEventListener('click',()=>{panel.hidden=true;});
   panel.querySelector('[data-toggle]').addEventListener('click',()=>setEnabled(!enabled));
   panel.querySelector('[data-export]').addEventListener('click',()=>{
-   const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const link=document.createElement('a');link.href=url;link.download='pro-site-edits.json';link.click();URL.revokeObjectURL(url);setStatus('Đã xuất bản sao nội dung.');
+   const exported=typeof window.PrincipiaSiteEditor?.export==='function'?window.PrincipiaSiteEditor.export():JSON.stringify(state,null,2);
+   const blob=new Blob([exported],{type:'application/json'});const url=URL.createObjectURL(blob);const link=document.createElement('a');link.href=url;link.download='pro-site-edits.json';link.click();URL.revokeObjectURL(url);setStatus('Đã xuất bản sao nội dung.');
   });
   const fileInput=panel.querySelector('input[type=file]');
   panel.querySelector('[data-import]').addEventListener('click',()=>fileInput.click());
   fileInput.addEventListener('change',async()=>{
    const file=fileInput.files?.[0];if(!file)return;
-   try{const parsed=JSON.parse(await file.text());if(!parsed||typeof parsed!=='object'||!parsed.text||!parsed.images)throw new Error('Sai định dạng');state={text:parsed.text,images:parsed.images};persist();scan();setStatus('Đã nhập nội dung.');}
+   try{const parsed=JSON.parse(await file.text());if(!parsed||typeof parsed!=='object'||!parsed.text||!parsed.images)throw new Error('Sai định dạng');state={text:parsed.text,images:parsed.images};window.PrincipiaCanvaEditor?.importState?.(parsed.canvas);persist();scan();setStatus('Đã nhập nội dung.');}
    catch(_){setStatus('Tệp JSON không hợp lệ.');}
    fileInput.value='';
   });
