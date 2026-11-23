@@ -19,9 +19,9 @@ function open(){
  '<div style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0"><button onclick="principiaStudyMethodView(\'all\')">Tất cả 130</button><button onclick="principiaStudyMethodView(\'saved\')">★ Đã lưu ('+state.saved.length+')</button><button onclick="principiaStudyMethodView(\'done\')">✓ Đã thử ('+state.done.length+')</button></div>'+
  '<div id="studyMethodResults"><p class="small muted">Đang hiển thị '+filtered.length+' phương pháp</p>'+filtered.map(x=>'<article class="panel" style="padding:12px;margin:8px 0"><div class="small muted">#'+x.id+' · '+esc(x.category)+'</div><b>'+esc(x.title)+'</b><p class="small" style="margin:6px 0">'+esc(x.desc)+'</p><button onclick="principiaStudyMethodToggle('+x.id+')">'+(state.done.includes(x.id)?'✓ Đã thử':'Đánh dấu đã thử')+'</button><button onclick="principiaStudyMethodSave('+x.id+')">'+(state.saved.includes(x.id)?'★ Đã lưu':'☆ Lưu lại')+'</button></article>').join('')+'</div>'+
  '<p class="small muted">Tiến độ của bạn: '+state.done.length+'/100 phương pháp đã thử. Dữ liệu lưu trên thiết bị này.</p>';
- if(typeof window.principiaSuiteOpenExternal==='function')window.principiaSuiteOpenExternal('100 phương pháp học tập',html);else{
+ if(typeof window.principiaSuiteOpenExternal==='function'){window.principiaSuiteOpenExternal('130 phương pháp học tập',html);setTimeout(paintFlow,0)}else{
   let r=document.getElementById('principiaStudyMethods');if(!r){r=document.createElement('div');r.id='principiaStudyMethods';r.style.cssText='position:fixed;inset:0;z-index:2147483000;background:#080b18ee;overflow:auto;padding:14px;color:white';document.body.appendChild(r)}
-  r.innerHTML='<div style="max-width:850px;margin:20px auto;background:#151a2b;padding:18px;border-radius:18px"><button onclick="document.getElementById(\'principiaStudyMethods\').remove()">Đóng ×</button>'+html+'</div>';
+  r.innerHTML='<div style="max-width:850px;margin:20px auto;background:#151a2b;padding:18px;border-radius:18px"><button onclick="document.getElementById(\'principiaStudyMethods\').remove()">Đóng ×</button>'+html+'</div>';paintFlow();
  }
 }
 function renderResults(){
