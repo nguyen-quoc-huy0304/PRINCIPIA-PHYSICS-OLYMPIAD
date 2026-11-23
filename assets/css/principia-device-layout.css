@@ -120,3 +120,66 @@ body[data-principia-device="desktop"] #app .principia-desktop-shell>.main{displa
     padding:24px!important;
   }
 }
+
+
+/* PRINCIPIA PRO Home + AI launcher final override.
+   Loaded after legacy styles so Home uses the same workspace shell as every tab. */
+body.principia-home-active .sidebar,
+body.principia-home-active .top,
+body.principia-home-active .chat-bubble-btn.chat-messenger-launcher{
+  visibility:visible!important;
+  opacity:1!important;
+}
+@media(min-width:901px){
+  body.principia-home-active .sidebar{display:flex!important}
+  body.principia-home-active .top{display:flex!important}
+  body.principia-home-active .main{
+    display:block!important;min-height:100vh!important;
+    padding:27px clamp(15px,4vw,48px)!important;
+  }
+  body.principia-home-active #body{
+    display:block!important;min-height:0!important;width:100%!important;
+    max-width:1500px!important;margin:0 auto!important;padding:0!important;
+  }
+}
+@media(max-width:900px){
+  body.principia-home-active .principia-mobile-nav{display:flex!important}
+  body.principia-home-active .principia-mobile-topbar{display:block!important}
+  body.principia-home-active .principia-mobile-main{
+    display:block!important;min-width:0!important;width:100%!important;
+    padding-bottom:calc(96px + env(safe-area-inset-bottom))!important;
+  }
+  body.principia-home-active .principia-mobile-main>#body{
+    display:block!important;min-height:0!important;width:100%!important;
+    padding:0 13px 16px!important;
+  }
+}
+/* Search-control silhouette with the existing Messenger logo centered inside. */
+button.chat-bubble-btn.chat-messenger-launcher{
+  position:fixed!important;right:18px!important;bottom:18px!important;
+  z-index:2147483002!important;display:grid!important;place-items:center!important;
+  box-sizing:border-box!important;width:46px!important;height:46px!important;
+  min-width:46px!important;min-height:46px!important;max-width:46px!important;max-height:46px!important;
+  padding:0!important;margin:0!important;gap:0!important;
+  border:1px solid var(--line,#777)!important;border-radius:14px!important;
+  background:var(--card,#171526)!important;color:var(--text,#fff)!important;
+  box-shadow:0 8px 24px #0004!important;overflow:hidden!important;line-height:0!important;
+}
+button.chat-bubble-btn.chat-messenger-launcher::before,
+button.chat-bubble-btn.chat-messenger-launcher::after{display:none!important;content:none!important}
+button.chat-bubble-btn.chat-messenger-launcher>.chat-messenger-logo{
+  display:block!important;position:static!important;grid-area:1/1!important;
+  align-self:center!important;justify-self:center!important;flex:none!important;
+  width:29px!important;height:29px!important;min-width:29px!important;min-height:29px!important;
+  max-width:29px!important;max-height:29px!important;margin:0!important;padding:0!important;
+  object-fit:contain!important;transform:none!important;
+}
+button.chat-bubble-btn.chat-messenger-launcher:hover{
+  background:var(--card2,#29263d)!important;transform:translateY(-1px)!important;
+}
+@media(max-width:900px){
+  body[data-principia-device="mobile"] .chat-bubble-btn.chat-messenger-launcher,
+  body.principia-home-active .chat-bubble-btn.chat-messenger-launcher{
+    right:12px!important;bottom:calc(82px + env(safe-area-inset-bottom))!important;
+  }
+}
