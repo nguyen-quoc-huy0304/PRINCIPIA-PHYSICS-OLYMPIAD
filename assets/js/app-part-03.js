@@ -208,23 +208,32 @@ async function syncPrincipiaUser(user){
  if(window.syncPrincipiaLeaderboard)window.syncPrincipiaLeaderboard();
 }
 async function signInWithGoogle(){
+ if(principiaAuthActionInProgress)return;
+ principiaAuthActionInProgress=true;
  try{
   const auth=await ensureFirebase();
+  await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
   const provider=new firebase.auth.GoogleAuthProvider();
   provider.setCustomParameters({prompt:'select_account'});
-  // Website: use the current tab, then Firebase returns the user to PRINCIPIA.
-  // Electron: keep the separate popup flow; Google restricts embedded webviews.
   if(!window.principiaDesktop){
    googleStatus('Đang chuyển đến Google để xác thực…');
    await auth.signInWithRedirect(provider);
    return;
   }
   const cred=await auth.signInWithPopup(provider);
+  principiaAuthLastSuccessAt=Date.now();
+  principiaAuthInitialStateResolved=true;
+  principiaAuthExplicitSignOut=false;
   await syncPrincipiaUser(cred.user);
- }
- catch(err){
-  googleStatus(authErrorMessage(err));
-  if(typeof window.principiaCompanionReact==='function')window.principiaCompanionReact('wrong',authErrorMessage(err)+' Thử lại nhé!');
+  window.principiaNotify?.('✓ Đăng nhập Google thành công.');
+ }catch(err){
+  const message=authErrorMessage(err)+(err?.code?' ['+err.code+']':'');
+  console.error('PRINCIPIA Google sign-in failed:',err);
+  googleStatus('✕ '+message);
+  window.principiaNotify?.('✕ Đăng nhập Google thất bại: '+message);
+  if(typeof window.principiaCompanionReact==='function')window.principiaCompanionReact('wrong',message+' Thử lại nhé!');
+ }finally{
+  principiaAuthActionInProgress=false;
  }
 }
 function renderGoogleAccount(){const mount=document.getElementById('googleSignInButton');if(!mount)return;mount.innerHTML='';if(getPrincipiaAccount())return;mount.innerHTML=`<button type="button" class="google-login-fallback" onclick="signInWithGoogle()"><span aria-hidden="true">G</span> ${window.getPrincipiaAccountMode()==='signup'?'Đăng ký':'Đăng nhập'} bằng Google</button>`;if(!firebaseConfigured())googleStatus('Cần cấu hình Firebase để bật cả Google và email/mật khẩu.');else googleStatus('Đăng nhập Google qua Firebase.');}
@@ -270,6 +279,21 @@ async function initPrincipiaAuth(){
    if(principiaAuthExplicitSignOut)return;
    // Ignore subsequent null events: only an explicit sign-out action may end the app session.
   });
+  try{
+   const redirectResult=await auth.getRedirectResult();
+   if(redirectResult?.user){
+    principiaAuthLastSuccessAt=Date.now();
+    principiaAuthInitialStateResolved=true;
+    principiaAuthExplicitSignOut=false;
+    await syncPrincipiaUser(redirectResult.user);
+    window.principiaNotify?.('✓ Đăng nhập Google thành công.');
+   }
+  }catch(redirectError){
+   const message=authErrorMessage(redirectError)+(redirectError?.code?' ['+redirectError.code+']':'');
+   console.error('PRINCIPIA Google redirect result failed:',redirectError);
+   googleStatus('✕ Đăng nhập Google thất bại: '+message);
+   window.principiaNotify?.('✕ Đăng nhập Google thất bại: '+message);
+  }
  }catch(error){
   console.error('PRINCIPIA auth init:',error);
   const status=document.getElementById('googleAccountStatus');
