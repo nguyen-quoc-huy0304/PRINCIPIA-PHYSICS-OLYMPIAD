@@ -1040,13 +1040,22 @@ function openInnerLessonWorkspace(lessonId){
 }
 
 function exitCodelearnWorkspace(){
+  suspendPrincipiaPhetFrame();
   document.getElementById('codelearnWorkspace').classList.remove('active');
   document.getElementById('app').classList.remove('hidden');
   render();
 }
 
+function suspendPrincipiaPhetFrame(){
+  const frame=document.getElementById('phetFrame');if(!frame)return;
+  const current=frame.getAttribute('src');
+  if(current&&current!=='about:blank')frame.dataset.principiaPendingSrc=current;
+  frame.removeAttribute('src');
+}
+
 function switchClLeftTab(t){
   const valid=['note','list','files','grade','phet'];if(!valid.includes(t))return;
+  if(t!=='phet')suspendPrincipiaPhetFrame();
   document.querySelectorAll('.cl-ico-btn').forEach(b=>b.classList.toggle('active',b.dataset.t===t));
   valid.forEach(id=>{const panel=document.getElementById('clTab-'+id);if(panel){panel.hidden=id!==t;panel.style.display=id===t?'block':'none';}});
   const pane=document.getElementById('clLeftPane');if(pane)pane.classList.remove('cl-pane-hidden');
