@@ -1,10 +1,10 @@
-/* PRO quick actions: keep each control fixed to the viewport, independent of page layout. */
+/* PRO quick actions: AI, search and admin editor stay fixed to the viewport. */
 (()=> {
  'use strict';
  const controls=[
   {selector:()=>document.querySelector('button.chat-bubble-btn.chat-messenger-launcher'),desktop:18,mobile:82},
   {selector:()=>document.getElementById('principiaSearchTrigger'),desktop:74,mobile:138},
-  {selector:()=>document.getElementById('principiaDownloadFab'),desktop:130,mobile:194}
+  {selector:()=>document.getElementById('proSiteEditorFab'),desktop:130,mobile:194}
  ];
  function apply(item,index){
   const button=item.selector();
