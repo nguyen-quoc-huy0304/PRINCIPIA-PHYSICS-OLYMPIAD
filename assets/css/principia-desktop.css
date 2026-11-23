@@ -966,7 +966,7 @@ button.principia-time-pill:hover{border-color:var(--purple);background:var(--bg)
 /* Extracted inline style 22 id="principia-settings-only-rounding" */
 
 /* Sticker và hộp quà chỉ được mở từ Cài đặt, không có nút nổi ngoài màn hình */
-#principiaStickerFab,#principiaGiftFab{display:none!important;visibility:hidden!important;pointer-events:none!important}
+#principiaGiftFab{display:none!important;visibility:hidden!important;pointer-events:none!important}
 /* Bo góc đồng bộ toàn giao diện */
 :root{--principia-glass-radius:22px}
 .panel,.tile,.stat,.hero,.welcome-card,.card,.modal,.modal-card,.sticker-card,.reward-card,
