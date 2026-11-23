@@ -3,7 +3,19 @@
  const MAX_FILE_BYTES=8*1024*1024;
  const MAX_OUTPUT_SIDE=720;
  const status=message=>{const el=document.getElementById('principiaChatAvatarStatus');if(el)el.textContent=message;};
- const refresh=()=>{if(typeof window.refreshPrincipiaChatCharacter==='function')window.refreshPrincipiaChatCharacter();};
+ const refresh=()=>{
+  const root=document.getElementById('chatCharacterPortrait');
+  if(!root)return;
+  let avatar='';
+  try{avatar=localStorage.getItem('principia_chat_avatar')||'';}catch(_){}
+  root.innerHTML=avatar
+   ?'<img src="'+avatar+'" alt="Nhân vật trợ lý PRINCIPIA">'
+   :'<img src="/assets/images/principia-chat-character.png" alt="Nhân vật PRINCIPIA">';
+  root.classList.add('has-character');
+  root.setAttribute('aria-hidden','false');
+ };
+ window.refreshPrincipiaChatCharacter=refresh;
+ window.addEventListener('principia:character-updated',refresh);
  window.removePrincipiaChatAvatar=()=>{
   try{localStorage.removeItem('principia_chat_avatar');refresh();status('Đã khôi phục nhân vật PRINCIPIA cũ.');}
   catch(error){status('Không thể cập nhật ảnh trên thiết bị này.');}
