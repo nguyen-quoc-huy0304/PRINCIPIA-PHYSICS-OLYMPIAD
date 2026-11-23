@@ -14,6 +14,7 @@ pub mod robotics;
 pub mod data_analysis;
 pub mod game;
 pub mod science_mystery;
+pub mod daily_challenge;
 #[cfg(target_arch = "wasm32")]
 mod wasm_api;
 pub mod virtual_lab;
