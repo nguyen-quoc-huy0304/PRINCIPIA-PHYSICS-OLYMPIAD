@@ -55,7 +55,7 @@
    if(rooms.length>=MAX_ROOMS){count.textContent='Đã đạt giới hạn 12 phòng';return}
    const data=new FormData(form),title=String(data.get('title')||'').trim(),url=normalizeUrl(data.get('url'));
    if(!title||!url){count.textContent='Tên hoặc đường dẫn không hợp lệ';return}
-   const room={id:(crypto.randomUUID?crypto.randomUUID():'room-'+Date.now()+'-'+Math.random().toString(36).slice(2)),title:title.slice(0,80),url,createdAt:Date.now()};
+   const id=window.crypto&&typeof window.crypto.randomUUID==='function'?window.crypto.randomUUID():'room-'+Date.now()+'-'+Math.random().toString(36).slice(2);\n   const room={id,title:title.slice(0,80),url,createdAt:Date.now()};
    rooms.unshift(room);
    if(!write(kind,rooms)){rooms.shift();count.textContent='Không lưu được. Bộ nhớ trình duyệt có thể đã đầy.';return}
    activeId=room.id;form.reset();form.hidden=true;toggle.textContent=isGame?'＋ Tạo trò chơi':'＋ Tạo phòng / tab';render();
