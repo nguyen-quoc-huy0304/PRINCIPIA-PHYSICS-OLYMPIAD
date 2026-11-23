@@ -18,6 +18,7 @@
      <h2>Chào mừng <em>${safeName}</em><br>đến với PRO!</h2>
      <p>Một không gian học tập được tạo ra để bạn khám phá Vật lý, chinh phục thử thách và tiến bộ theo cách của riêng mình.</p>
      <div class="pw-note"><span class="pw-note-line"></span> HỌC TẬP · KHÁM PHÁ · BỨT PHÁ</div>
+     <button class="pw-start-button" type="button" onclick="startPrincipiaJourney()">Bắt đầu hành trình <span aria-hidden="true">→</span></button>
     </div>
     <div class="pw-visual" aria-label="Không gian khám phá Vật lý">
      <div class="pw-orbit pw-orbit-a"></div><div class="pw-orbit pw-orbit-b"></div>
