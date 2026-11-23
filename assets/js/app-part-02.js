@@ -571,8 +571,28 @@ function morePage(){
 }
 
 let accountReturnPage='home';
-function getPrincipiaAccount(){try{return JSON.parse(localStorage.getItem('principia_google_account')||'null')}catch(e){return null}}
-function getPrincipiaAccount(){try{return JSON.parse(localStorage.getItem('principia_google_account')||'null')}catch(e){return null}}
+function getPrincipiaAccount(){
+ let saved=null;
+ try{saved=JSON.parse(localStorage.getItem('principia_google_account')||'null');}catch(_){}
+ let user=null;
+ try{if(window.firebase?.apps?.length&&typeof window.firebase.auth==='function')user=window.firebase.auth().currentUser||null;}catch(_){}
+ if(user?.uid){
+  return {uid:user.uid,name:user.displayName||(saved?.uid===user.uid?saved.name:'')||user.email?.split('@')[0]||'Người dùng',email:user.email||'',customPicture:saved?.uid===user.uid?saved.customPicture||'':'',provider:user.providerData?.[0]?.providerId||'password'};
+ }
+ if(window.__principiaSessionAccount?.uid)return window.__principiaSessionAccount;
+ return saved&&typeof saved==='object'?saved:null;
+}
+function getPrincipiaAccount(){
+ let saved=null;
+ try{saved=JSON.parse(localStorage.getItem('principia_google_account')||'null');}catch(_){}
+ let user=null;
+ try{if(window.firebase?.apps?.length&&typeof window.firebase.auth==='function')user=window.firebase.auth().currentUser||null;}catch(_){}
+ if(user?.uid){
+  return {uid:user.uid,name:user.displayName||(saved?.uid===user.uid?saved.name:'')||user.email?.split('@')[0]||'Người dùng',email:user.email||'',customPicture:saved?.uid===user.uid?saved.customPicture||'':'',provider:user.providerData?.[0]?.providerId||'password'};
+ }
+ if(window.__principiaSessionAccount?.uid)return window.__principiaSessionAccount;
+ return saved&&typeof saved==='object'?saved:null;
+}
 const PRINCIPIA_OWNER_EMAIL='huyquocnguyen03042011@gmail.com';
 const PRINCIPIA_OWNER_UID='WNrwcRq8lza5DbKrxSlttIex93i1';
 function getRoleMap(){try{return JSON.parse(localStorage.getItem('principia_role_map')||'{}')}catch(e){return {}}}
