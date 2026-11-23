@@ -530,3 +530,6 @@
 
 /* Welcome is a standalone first-run screen, not a mobile Home variant. */
 @media(max-width:900px){.principia-welcome-screen .pw-welcome-layout{width:100%;margin:auto}.principia-welcome-screen .pw-visual{width:100%}}
+
+/* Manga character sizing on compact screens. */
+@media(max-width:640px){.principia-welcome-screen .pw-character-halo .pw-welcome-character{height:92%!important;width:auto!important;max-width:86%!important}.principia-home-comic .principia-comic-character img{height:130px!important;width:auto!important}}

@@ -194,11 +194,11 @@ function toggleStudyClock(){
 }
 function resetStudyClock(){if(principiaClock.interval)clearInterval(principiaClock.interval);principiaClock.running=false;principiaClock.left=principiaClock.mode==='countdown'?principiaClock.seconds:0;const d=document.getElementById('studyClockDisplay');if(d)d.textContent=fmtClock(principiaClock.mode==='countdown'?principiaClock.left:0);const b=document.getElementById('studyClockStart');if(b)b.textContent='▶ Bắt đầu';const h=document.getElementById('studyClockHint');if(h)h.textContent=principiaClock.mode==='countdown'?'Sẵn sàng tập trung':'Bấm giờ học tập'}
 function home(){
- const companionHtml=principiaWelcomeCharacterMarkup();
+ const companionHtml=principiaWelcomeCharacterMarkup()||'<img src="/assets/images/principia-chat-character.png" alt="Nhân vật PRINCIPIA">';
  let companionMessage='Mình ở đây để đồng hành cùng cậu!';
  try{const cfg=JSON.parse(localStorage.getItem('principia_sticker_settings')||'{}');if(typeof cfg.message==='string'&&cfg.message.trim())companionMessage=cfg.message.trim();}catch(_){}
  return `<div class="hero"><div class="eyebrow">WELCOME BACK</div><h1>Học tập theo cách<br>của riêng bạn.</h1><p>Khám phá kiến thức, chinh phục từng bài học và xây dựng chuỗi ngày học tập của bạn.</p><div class="toolbar" style="margin-top:14px"><button class="primary" onclick="setPage('library')">Tiếp tục học</button><button class="secondary" onclick="addChoice()">Tạo bài / tab</button><button class="secondary" onclick="setPage('quiz')">Mở Quiz</button></div></div>
- ${companionHtml?`<section class="principia-home-comic" aria-label="Nhân vật PRINCIPIA đang trò chuyện"><div class="principia-comic-character">${companionHtml}</div><div class="principia-comic-balloon" role="status"><span class="principia-comic-dots" aria-hidden="true">•••</span><p>${esc(companionMessage)}</p></div></section>`:''}
+ <section class="principia-home-comic" aria-label="Nhân vật PRINCIPIA đang trò chuyện"><div class="principia-comic-character">${companionHtml}</div><div class="principia-comic-balloon" role="status"><p>${esc(companionMessage)}</p></div></section>
  <div class="stats"><div class="stat"><span class="muted small">Kinh nghiệm</span><strong>${xp} XP</strong><div class="xpbar"><div style="width:${xp%100}%"></div></div></div><div class="stat"><div class="muted small">Chuỗi ngày</div><strong>${streak} ngày</strong><span class="small muted">Giữ streak mỗi ngày</span></div><div class="stat"><div class="muted small">Bài đã học</div><strong>${completed.length}</strong><span class="small muted">Bài hoàn thành</span></div></div>
  <div class="sectionhead"><h2>Môn học của bạn</h2><div class="toolbar"><button class="primary" onclick="addChoice()">＋</button><button class="secondary" onclick="setPage('library')">Xem tất cả</button></div></div><div class="grid">${data.map(card).join('')}</div>
  <div class="sectionhead"><h2>Khám phá thêm</h2></div><div class="grid"><div class="tile" onclick="setPage('entertainment')"><h3>Giải trí & tư duy</h3><p>Cờ vua, Sudoku và bảng xếp hạng AI</p></div><div class="tile" onclick="setPage('quiz')"><h3>Quiz</h3><p>Kiểm tra kiến thức theo môn học</p></div><div class="tile" onclick="setPage('fun')"><h3>Đố vui</h3><p>Thử thách tư duy mỗi ngày</p></div></div>`;
@@ -513,7 +513,7 @@ function render(){
      <div class="pw-orbit pw-orbit-a"></div><div class="pw-orbit pw-orbit-b"></div>
      <div class="pw-art-panel">
       <div class="pw-art-top"><span>PHYSICS EXPLORER</span><i>● READY TO BEGIN</i></div>
-      <div class="pw-character-halo"><div class="pw-atom" aria-hidden="true"><i></i><i></i><i></i><b>Φ</b></div></div>
+      <div class="pw-character-halo"><img class="pw-welcome-character" src="/assets/images/principia-chat-character.png" alt="Nhân vật PRINCIPIA"></div>
       <div class="pw-speech"><span class="pw-speech-dot"></span><b>Tri thức bắt đầu từ sự tò mò.</b><small>Hãy bắt đầu hành trình của bạn hôm nay.</small></div>
       <div class="pw-formula-row"><span>F = ma</span><span>E = mc²</span><span>v = λf</span></div>
       <div class="pw-art-bottom"><span>LEARN</span><span>DISCOVER</span><span>ACHIEVE</span></div>

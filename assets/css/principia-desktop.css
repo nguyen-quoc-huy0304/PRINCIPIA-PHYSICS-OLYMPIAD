@@ -1320,3 +1320,18 @@ input,textarea,select{background:#0b1020!important;border-color:rgba(158,175,215
 .pw-atom b{display:grid;place-items:center;width:72px;height:72px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#c9bcff,#7159c7 72%);box-shadow:0 0 42px rgba(155,130,255,.65);font-size:32px;color:white}
 @media(max-width:900px){.principia-welcome-screen .pw-welcome-layout{grid-template-columns:1fr;gap:18px;padding:34px 0 24px}.principia-welcome-screen .pw-copy{text-align:center}.principia-welcome-screen .pw-kicker,.principia-welcome-screen .pw-note{justify-content:center}.principia-welcome-screen .pw-visual{min-height:360px}.principia-welcome-screen .pw-art-panel{min-height:350px;width:min(440px,100%)}}
 @media(max-width:520px){.principia-welcome-screen .pw-welcome-layout{padding:26px 0 18px}.principia-welcome-screen .pw-visual{min-height:330px}.principia-welcome-screen .pw-art-panel{min-height:325px;padding:15px 14px}.principia-welcome-screen .pw-character-halo{width:210px;height:210px;margin:10px auto 4px}.pw-atom{transform:scale(.82)}.pw-formula-row span{padding:8px 9px;font-size:12px}.principia-welcome-screen .pw-footer{font-size:7px}}
+
+
+/* Manga speech balloons + supplied PRINCIPIA character (replace old chat-card styling). */
+.pw-character-halo{background:radial-gradient(circle,rgba(169,147,255,.18),rgba(113,95,191,.05) 62%,transparent 72%)}
+.pw-character-halo:before,.pw-character-halo:after{opacity:.25}
+.pw-character-halo .pw-welcome-character{position:relative;z-index:2;width:auto!important;height:94%!important;max-width:86%;object-fit:contain;filter:drop-shadow(0 18px 25px rgba(0,0,0,.28));animation:pw-float 4.5s ease-in-out infinite}
+.pw-atom{display:none!important}
+.principia-home-comic{align-items:flex-end;gap:0;min-height:190px}
+.principia-comic-character{flex:0 0 126px;width:126px;height:172px;display:grid;place-items:end center;overflow:visible}
+.principia-comic-character img,.principia-comic-character span{width:auto!important;height:164px!important;max-width:120px!important;object-fit:contain!important;transform:none!important;transform-origin:bottom center;filter:drop-shadow(2px 5px 3px rgba(15,12,30,.24))}
+.principia-comic-balloon{flex:0 1 300px;align-self:center;margin:0 0 30px 8px;padding:18px 23px 17px;background:#fffdf8;color:#201c2a;border:3px solid #201c2a;border-radius:48% 44% 46% 42% / 38% 42% 48% 46%;box-shadow:3px 5px 0 #201c2a,0 12px 24px rgba(0,0,0,.15);transform:rotate(-2deg);font-family:inherit}
+.principia-comic-balloon:after{content:"";position:absolute;left:34px;bottom:-22px;width:27px;height:27px;background:#fffdf8;border-left:3px solid #201c2a;border-bottom:3px solid #201c2a;transform:skew(-22deg) rotate(-35deg);border-radius:0 0 0 5px}
+.principia-comic-balloon p{margin:0;font-size:15px;font-weight:750;line-height:1.5;overflow-wrap:anywhere;text-align:center}
+.principia-comic-dots{display:none!important}
+@media(max-width:640px){.principia-home-comic{min-height:148px;margin:12px 0 18px;gap:0;padding:0 3px 8px 0}.principia-comic-character{flex:0 0 98px;width:98px;height:136px}.principia-comic-character img,.principia-comic-character span{height:130px!important;max-width:94px!important}.principia-comic-balloon{flex:1 1 auto;min-width:0;margin:0 0 22px 3px;padding:14px 13px 13px;border-width:2px;box-shadow:3px 4px 0 #201c2a}.principia-comic-balloon:after{left:23px;bottom:-16px;width:19px;height:19px;border-width:2px}.principia-comic-balloon p{font-size:13px}}
