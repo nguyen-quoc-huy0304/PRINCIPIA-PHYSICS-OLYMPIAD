@@ -140,16 +140,29 @@ function avatarHTML(){
  if(acc&&acc.customPicture)return `<button type="button" class="account-avatar-trigger" style="position:relative" onclick="openGoogleAccount()" title="Thông tin tài khoản"><img class="avatar" src="${esc(acc.customPicture)}" alt="Ảnh đại diện">${crown}</button>`;
  return `<button type="button" class="account-avatar-trigger" style="position:relative" onclick="openGoogleAccount()" title="${acc?'Thông tin tài khoản':'Đăng nhập / đăng ký'}"><span class="avatar-default" aria-label="Avatar mặc định">👤</span>${crown}</button>`;
 }
+function toggleTileTools(id,button){
+ const panel=document.getElementById('tile-tools-'+id);
+ if(!panel)return;
+ const open=panel.hidden;
+ document.querySelectorAll('.tile-tool-menu').forEach(el=>{el.hidden=true;});
+ document.querySelectorAll('.tile-edit-trigger').forEach(el=>el.setAttribute('aria-expanded','false'));
+ panel.hidden=!open;
+ button.setAttribute('aria-expanded',String(open));
+}
 function card(n){
  let action=n.type==='lesson'?`openInnerLessonWorkspace('${n.id}')`:n.type==='quiz'?`openQuiz('${n.id}')`:n.type==='fun'?`openFun('${n.id}')`:page==='home'?`page='library';stack=['${n.id}'];render();notify('Đã mở ${n.name}')`:`enter('${n.id}')`;
  let amount=n.type==='lesson'?'Bài học':n.type==='quiz'?'Bài kiểm tra':n.type==='fun'?'Đố vui':count(n)+' nội dung';
  return `<div class="tile" draggable="true" ondragstart="dragId='${n.id}'" ondragover="event.preventDefault()" ondrop="dropItem(event,'${n.id}')" onclick="${action}">
- <div class="tile-actions" onclick="event.stopPropagation()">
- <button type="button" title="Di chuyển vào tab khác" onclick="moveNodeDialog('${n.id}')">↗ Di chuyển</button>
- <button type="button" title="Lên trước" aria-label="Đưa ${esc(n.name)} lên trước" onclick="shiftNode('${n.id}',-1)">↑</button>
- <button type="button" title="Xuống sau" aria-label="Đưa ${esc(n.name)} xuống sau" onclick="shiftNode('${n.id}',1)">↓</button>
- ${n.type==='tab'||n.type==='lesson'?'<button type="button" title="Tùy chỉnh icon" onclick="editNode(\''+n.id+'\')">🎨 Icon</button>':''}
- <button type="button" onclick="editNode('${n.id}')">✎</button><button type="button" onclick="deleteNode('${n.id}')">⋯</button></div>
+ <div class="tile-actions" onclick="event.stopPropagation()" style="position:absolute;right:10px;top:10px;z-index:5">
+ <button type="button" class="tile-edit-trigger" aria-label="Mở công cụ chỉnh sửa và sắp xếp" aria-expanded="false" title="Chỉnh sửa / Di chuyển" onclick="toggleTileTools('${n.id}',this)">✎</button>
+ <div id="tile-tools-${n.id}" class="tile-tool-menu" hidden style="position:absolute;right:0;top:38px;min-width:160px;padding:8px;gap:6px;flex-direction:column;background:var(--panel,#171b2b);border:1px solid var(--line,#34394d);border-radius:12px;box-shadow:0 12px 30px #0006">
+ <button type="button" onclick="moveNodeDialog('${n.id}')">↗ Di chuyển vào tab</button>
+ <button type="button" onclick="shiftNode('${n.id}',-1)">↑ Đưa lên trước</button>
+ <button type="button" onclick="shiftNode('${n.id}',1)">↓ Đưa xuống sau</button>
+ ${n.type==='tab'||n.type==='lesson'?'<button type="button" onclick="editNode(\''+n.id+'\')">🎨 Tùy chỉnh icon</button>':''}
+ <button type="button" onclick="editNode('${n.id}')">✎ Chỉnh sửa</button>
+ <button type="button" onclick="deleteNode('${n.id}')">🗑 Xóa</button>
+ </div></div>
  ${n.type==='lesson'||n.type==='tab'?`<div class="tileicon lesson-tile-icon">${nodeIconHTML(n,'')}</div>`:''}<h3>${esc(n.name)}</h3><p>${n.type==='tab'?'Mở tab để xem các nội dung bên trong':n.type==='lesson'?'Mở bài học':'Bắt đầu hoạt động'}</p><div class="tilefoot"><span>${amount}</span><span>↗</span></div></div>`;
 }
 function topbar(){return `<div class="top"><div><button type="button" class="principia-back-btn" onclick="goBack()" title="Quay lại màn hình trước" aria-label="Quay lại">← Quay lại</button><div class="eyebrow">PRO</div><div class="muted small">Your personal learning world</div><div class="principia-clockbar"><span class="principia-time-pill" title="Giờ hiện tại"><b id="principiaLiveTime">--:--</b></span><button class="principia-time-pill" type="button" onclick="toggleTopbarStudyClock()" title="Bấm để bắt đầu hoặc tạm dừng đồng hồ học"><b id="principiaStopwatch">${fmtClock(principiaClock.seconds)}</b><span id="principiaStopwatchState">${principiaClock.running?'Tạm dừng':'Bắt đầu'}</span></button></div><button type="button" class="principia-music-pill" onclick="principiaMusicOpen()" title="Mở Music & Focus">♫ <span>Music</span></button></div><div class="topright"><button class="pill" type="button" onclick="openGameStats()" title="Xem thành tích và nhiệm vụ">🔥 ${streak} ngày học</button><button class="pill" type="button" onclick="openRewardCollection()" title="Mở kho vật phẩm đã nhận">⚡ ${xp} XP</button>${avatarHTML()}</div></div>`}
@@ -488,7 +501,7 @@ function render(){
      <button class="pw-start-button" type="button" onclick="startPrincipiaJourney()">Bắt đầu hành trình <span aria-hidden="true">→</span></button>
      <div class="pw-note"><span class="pw-note-line"></span> HỌC TẬP · KHÁM PHÁ · BỨT PHÁ</div>
     </div>
-
+    ${principiaWelcomeCharacterMarkup()?'<div class="pw-character" aria-label="Nhân vật PRINCIPIA">'+principiaWelcomeCharacterMarkup()+'</div>':''}
    </section>
    <footer class="pw-footer"><span>PRINCIPIA • PHYSICS OLYMPIAD</span><span>MADE FOR CURIOUS MINDS</span></footer>
   </main>`;
