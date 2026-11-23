@@ -86,9 +86,9 @@ async function submitEmailAuth(event){
 }
 function authErrorMessage(err){const map={'auth/email-already-in-use':'Email này đã được đăng ký. Hãy đăng nhập.','auth/invalid-credential':'Email hoặc mật khẩu không chính xác.','auth/weak-password':'Mật khẩu cần ít nhất 6 ký tự.','auth/invalid-email':'Địa chỉ email không hợp lệ.','auth/popup-closed-by-user':'Bạn đã đóng cửa sổ đăng nhập.','auth/unauthorized-domain':'Domain website chưa được thêm vào Authorized domains trong Firebase.'};return map[err?.code]||err?.message||'Không thể xác thực tài khoản.';}
 async function syncPrincipiaUser(user){
- if(!user)return;const previous=getPrincipiaAccount();const account={uid:user.uid,name:user.displayName||user.email?.split('@')[0]||'Người dùng',email:user.email||'',customPicture:previous?.uid===user.uid?previous.customPicture||'':'',signedInAt:new Date().toISOString(),provider:user.providerData?.[0]?.providerId||'password'};
+ if(!user)return;const previous=getPrincipiaAccount();const returningAccount=previous?.uid===user.uid;const account={uid:user.uid,name:user.displayName||user.email?.split('@')[0]||'Người dùng',email:user.email||'',customPicture:returningAccount?previous.customPicture||'':'',signedInAt:new Date().toISOString(),provider:user.providerData?.[0]?.providerId||'password'};
  localStorage.setItem('principia_google_account',JSON.stringify(account));const appProfile=JSON.parse(localStorage.getItem('halo_profile')||'{}');appProfile.name=account.name;appProfile.avatar='';localStorage.setItem('halo_profile',JSON.stringify(appProfile));
- if(window.getPrincipiaPage()==='account'){const welcomeKey='principia_welcome_seen_v4_'+(account.uid||account.email||'guest');const alreadyWelcomed=localStorage.getItem(welcomeKey)==='1';window.setPrincipiaPage(alreadyWelcomed?'home':'welcome');}window.renderPrincipiaApp();
+ if(window.getPrincipiaPage()==='account'){const welcomeKey='principia_welcome_seen_v4_'+(account.uid||account.email||'guest');const alreadyWelcomed=localStorage.getItem(welcomeKey)==='1'||returningAccount;if(alreadyWelcomed)localStorage.setItem(welcomeKey,'1');window.setPrincipiaPage(alreadyWelcomed?'home':'welcome');}window.renderPrincipiaApp();
  if(window.watchPrincipiaLeaderboard)window.watchPrincipiaLeaderboard();
  if(window.syncPrincipiaLeaderboard)window.syncPrincipiaLeaderboard();
 }
