@@ -44,12 +44,14 @@
  }
  function setMode(value){
   active=!!value;screen()?.classList.toggle('pw-layout-editing',active);
-  panel?.querySelector('[data-mode]').textContent=active?'Tắt chọn & di chuyển':'Bật chọn & di chuyển';
+   const modeButton=panel?.querySelector('[data-mode]');
+   if(modeButton)modeButton.textContent=active?'Tắt chọn & di chuyển':'Bật chọn & di chuyển';
   if(!active)setSelected(null);
  }
  function build(){
   if(!isAdmin()||bubble)return;
-  const style=document.createElement('style');style.dataset.welcomeEditor='1';style.textContent='.principia-welcome-screen.pw-layout-editing button,.principia-welcome-screen.pw-layout-editing img{cursor:grab!important;touch-action:none!important}.principia-welcome-screen [data-welcome-selected="true"]{outline:2px solid #a78bfa!important;outline-offset:4px!important}';document.head.appendChild(style);\n  bubble=document.createElement('button');bubble.type='button';bubble.dataset.welcomeEditor='1';bubble.id='principiaWelcomeEditorBubble';
+  const style=document.createElement('style');style.dataset.welcomeEditor='1';style.textContent='.principia-welcome-screen.pw-layout-editing button,.principia-welcome-screen.pw-layout-editing img{cursor:grab!important;touch-action:none!important}.principia-welcome-screen [data-welcome-selected="true"]{outline:2px solid #a78bfa!important;outline-offset:4px!important}';document.head.appendChild(style);
+  bubble=document.createElement('button');bubble.type='button';bubble.dataset.welcomeEditor='1';bubble.id='principiaWelcomeEditorBubble';
   bubble.textContent='✎';bubble.title='Chỉnh sửa màn hình chào';bubble.setAttribute('aria-label','Chỉnh sửa màn hình chào');
   bubble.style.cssText='position:fixed;right:16px;bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:2147483600;width:50px;height:50px;border:1px solid #ffffff55;border-radius:50%;background:rgba(25,29,48,.92);backdrop-filter:blur(14px);color:#fff;font-size:24px;box-shadow:0 8px 26px #0006;cursor:pointer;display:none;place-items:center';
   panel=document.createElement('section');panel.dataset.welcomeEditor='1';panel.id='principiaWelcomeEditorPanel';
