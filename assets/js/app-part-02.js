@@ -479,7 +479,6 @@ function startPrincipiaJourney(){
  const acc=getPrincipiaAccount();
  const id=acc?.uid||acc?.email||'guest';
  localStorage.setItem('principia_welcome_seen_v5_'+id,'1');
- localStorage.setItem('principia_web_welcome_seen_v2','1');
  setPage('home');
  // Giveaway/reward popup removed; keep the welcome screen and continue to Home.
 }
@@ -500,7 +499,7 @@ function render(){
     <div class="pw-brand"><img src="${PRINCIPIA_LOGO_URI}" alt="PRINCIPIA"><span><b>PRINCIPIA</b><small>PHYSICS OLYMPIAD · PRO</small></span></div>
     <div class="pw-account"><span class="pw-online-dot"></span><span>${esc(welcomeAccount.email||'Tài khoản đã đăng nhập')}</span></div>
    </header>
-   <section class="pw-content" style="grid-template-columns:minmax(0,1fr)">
+   <section class="pw-content pw-welcome-layout">
     <div class="pw-copy">
      <div class="pw-kicker"><span></span> YOUR NEXT CHAPTER STARTS HERE</div>
      <div class="pw-overline">WELCOME TO</div>
@@ -509,6 +508,17 @@ function render(){
      <p>Một không gian học tập được tạo ra để bạn khám phá Vật lý, chinh phục thử thách và tiến bộ theo cách của riêng mình.</p>
      <button class="pw-start-button" type="button" onclick="startPrincipiaJourney()">Bắt đầu hành trình <span aria-hidden="true">→</span></button>
      <div class="pw-note"><span class="pw-note-line"></span> HỌC TẬP · KHÁM PHÁ · BỨT PHÁ</div>
+    </div>
+    <div class="pw-visual" aria-label="Không gian khám phá Vật lý">
+     <div class="pw-orbit pw-orbit-a"></div><div class="pw-orbit pw-orbit-b"></div>
+     <div class="pw-art-panel">
+      <div class="pw-art-top"><span>PHYSICS EXPLORER</span><i>● READY TO BEGIN</i></div>
+      <div class="pw-character-halo"><div class="pw-atom" aria-hidden="true"><i></i><i></i><i></i><b>Φ</b></div></div>
+      <div class="pw-speech"><span class="pw-speech-dot"></span><b>Tri thức bắt đầu từ sự tò mò.</b><small>Hãy bắt đầu hành trình của bạn hôm nay.</small></div>
+      <div class="pw-formula-row"><span>F = ma</span><span>E = mc²</span><span>v = λf</span></div>
+      <div class="pw-art-bottom"><span>LEARN</span><span>DISCOVER</span><span>ACHIEVE</span></div>
+     </div>
+     <div class="pw-floating-chip pw-chip-top">01 · EXPLORE</div><div class="pw-floating-chip pw-chip-bottom">02 · DISCOVER</div>
     </div>
    </section>
    <footer class="pw-footer"><span>PRINCIPIA • PHYSICS OLYMPIAD</span><span>MADE FOR CURIOUS MINDS</span></footer>

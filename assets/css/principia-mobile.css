@@ -526,3 +526,7 @@
 /* PRINCIPIA comic companion responsive layout */
 .principia-home-comic{max-width:100%;gap:0}
 @media(max-width:640px){.principia-home-comic{display:flex;align-items:flex-end}.principia-comic-character{flex-basis:88px;width:88px}.principia-comic-balloon{flex:1 1 auto;min-width:0}.principia-comic-balloon p{overflow-wrap:anywhere}}
+
+
+/* Welcome is a standalone first-run screen, not a mobile Home variant. */
+@media(max-width:900px){.principia-welcome-screen .pw-welcome-layout{width:100%;margin:auto}.principia-welcome-screen .pw-visual{width:100%}}

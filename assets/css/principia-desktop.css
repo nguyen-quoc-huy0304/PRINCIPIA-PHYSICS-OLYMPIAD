@@ -1302,3 +1302,21 @@ input,textarea,select{background:#0b1020!important;border-color:rgba(158,175,215
 .principia-comic-balloon p{margin:0;font-size:14px;font-weight:700;line-height:1.55;overflow-wrap:anywhere}
 .principia-comic-dots{position:absolute;right:13px;top:5px;color:#e16e89;font-size:19px;letter-spacing:3px;font-weight:900}
 @media(max-width:640px){.principia-home-comic{width:100%;min-height:126px;gap:0;margin:12px 0 18px;padding:0 5px 8px 0}.principia-comic-character{flex-basis:94px;width:94px;height:120px}.principia-comic-character img,.principia-comic-character span{transform:scale(1.42)}.principia-comic-balloon{flex-basis:250px;padding:15px 15px 14px;margin-bottom:13px;border-width:2px;box-shadow:4px 5px 0 #29243b}.principia-comic-balloon:after{border-width:2px;bottom:-14px;width:18px;height:18px}.principia-comic-balloon p{font-size:13px}}
+
+
+/* PRINCIPIA · independent first-login welcome screen (never shares Home layout). */
+.principia-welcome-screen{min-height:100svh}
+.principia-welcome-screen .pw-welcome-layout{grid-template-columns:minmax(0,1.02fr) minmax(320px,.98fr);width:min(1260px,100%);gap:clamp(28px,5vw,76px)}
+.principia-welcome-screen .pw-copy{text-align:left}
+.principia-welcome-screen .pw-kicker,.principia-welcome-screen .pw-note{justify-content:flex-start}
+.pw-formula-row{display:flex;justify-content:space-around;gap:8px;width:100%;margin:0 0 18px}
+.pw-formula-row span{padding:9px 13px;border:1px solid rgba(185,174,255,.22);border-radius:12px;background:rgba(115,97,190,.12);color:#d9d2ff;font:700 14px/1.2 ui-monospace,monospace}
+.pw-atom{position:relative;width:220px;height:220px;display:grid;place-items:center}
+.pw-atom:before,.pw-atom:after{content:"";position:absolute;inset:34px 0;border:2px solid rgba(175,157,255,.7);border-radius:50%;transform:rotate(60deg)}
+.pw-atom:after{transform:rotate(-60deg)}
+.pw-atom i{position:absolute;width:220px;height:78px;border:2px solid rgba(112,207,235,.72);border-radius:50%;transform:rotate(0deg)}
+.pw-atom i:nth-child(2){transform:rotate(60deg)}
+.pw-atom i:nth-child(3){transform:rotate(-60deg)}
+.pw-atom b{display:grid;place-items:center;width:72px;height:72px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#c9bcff,#7159c7 72%);box-shadow:0 0 42px rgba(155,130,255,.65);font-size:32px;color:white}
+@media(max-width:900px){.principia-welcome-screen .pw-welcome-layout{grid-template-columns:1fr;gap:18px;padding:34px 0 24px}.principia-welcome-screen .pw-copy{text-align:center}.principia-welcome-screen .pw-kicker,.principia-welcome-screen .pw-note{justify-content:center}.principia-welcome-screen .pw-visual{min-height:360px}.principia-welcome-screen .pw-art-panel{min-height:350px;width:min(440px,100%)}}
+@media(max-width:520px){.principia-welcome-screen .pw-welcome-layout{padding:26px 0 18px}.principia-welcome-screen .pw-visual{min-height:330px}.principia-welcome-screen .pw-art-panel{min-height:325px;padding:15px 14px}.principia-welcome-screen .pw-character-halo{width:210px;height:210px;margin:10px auto 4px}.pw-atom{transform:scale(.82)}.pw-formula-row span{padding:8px 9px;font-size:12px}.principia-welcome-screen .pw-footer{font-size:7px}}
