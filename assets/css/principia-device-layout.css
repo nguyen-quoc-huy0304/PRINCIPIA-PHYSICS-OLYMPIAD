@@ -61,3 +61,14 @@ body[data-principia-device="desktop"] #app>.principia-desktop-shell{display:grid
 body[data-principia-device="desktop"] #app>.principia-mobile-shell{display:none!important;}
 body[data-principia-device="desktop"] #app .principia-desktop-shell>.sidebar{display:flex!important;}
 body[data-principia-device="desktop"] #app .principia-desktop-shell>.main{display:block!important;min-width:0!important;}
+
+
+/* Keep desktop mode on physical computers even in narrow browser windows. */
+@media(max-width:900px){
+ body[data-principia-device="desktop"] #app>.principia-desktop-shell{display:grid!important;grid-template-columns:250px minmax(0,1fr)!important;min-height:100vh!important;width:100%!important;}
+ body[data-principia-device="desktop"] #app>.principia-mobile-shell{display:none!important;}
+ body[data-principia-device="desktop"] #app .principia-desktop-shell>.sidebar{display:flex!important;position:sticky!important;top:0!important;height:100vh!important;min-height:100vh!important;}
+ body[data-principia-device="desktop"] #app .principia-desktop-shell>.main{display:block!important;min-width:0!important;width:100%!important;max-width:none!important;padding:28px 24px!important;}
+ body[data-principia-device="mobile"] #principiaDownloadFab,
+ body[data-principia-device="mobile"] #principiaSuiteTrigger{display:none!important;visibility:hidden!important;pointer-events:none!important;}
+}
