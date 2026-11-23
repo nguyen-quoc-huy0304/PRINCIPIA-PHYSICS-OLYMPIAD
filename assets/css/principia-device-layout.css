@@ -345,5 +345,7 @@ body.principia-welcome-active .principia-welcome-screen button,
 body.principia-welcome-active #principiaWelcomeEditorBubble,
 body.principia-welcome-active #principiaWelcomeEditorPanel{display:none!important;visibility:hidden!important;pointer-events:none!important}
 
-html:has(body.principia-welcome-active)>#principiaActionDockRoot{display:none!important;visibility:hidden!important;pointer-events:none!important}
 body.principia-welcome-active>#principiaWelcomeEditorBubble,body.principia-welcome-active>#principiaWelcomeEditorPanel,body.principia-welcome-active>#proSiteEditorPanel{display:none!important;visibility:hidden!important;pointer-events:none!important}
+
+body.principia-welcome-active>#proSiteEditorFab{display:grid!important;visibility:visible!important;pointer-events:auto!important;position:fixed!important;right:18px!important;bottom:130px!important;z-index:2147483005!important}
+body.principia-welcome-active>#principiaWelcomeEditorBubble,body.principia-welcome-active>#principiaWelcomeEditorPanel,body.principia-welcome-active>#proSiteEditorPanel,body.principia-welcome-active>.chat-bubble-btn,body.principia-welcome-active>.chat-box,body.principia-welcome-active>.chat-panel,body.principia-welcome-active>.principia-ai-overlay,body.principia-welcome-active>.principia-mobile-nav,body.principia-welcome-active>#principiaSearchTrigger,body.principia-welcome-active>#principiaDownloadFab,body.principia-welcome-active>#principiaGlobalSearch{display:none!important;visibility:hidden!important;pointer-events:none!important}
