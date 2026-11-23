@@ -1291,3 +1291,14 @@ input,textarea,select{background:#0b1020!important;border-color:rgba(158,175,215
 .chat-bubble-btn{width:auto!important;height:auto!important;min-height:90px!important;font-size:initial!important;display:flex!important;}
 .chat-bubble-btn::before{content:none!important;display:none!important;}
 @media(max-width:520px){.chat-bubble-btn{min-height:78px!important}.chat-character-portrait{width:64px!important;height:64px!important;flex-basis:64px!important}.chat-character-portrait img{width:64px!important;height:64px!important}}
+
+
+/* PRINCIPIA comic companion — character + speech balloon on Home only */
+.principia-home-comic{position:relative;display:flex;align-items:flex-end;justify-content:flex-end;gap:8px;width:min(100%,470px);min-height:154px;margin:8px 8px 22px auto;padding:4px 10px 8px 4px;isolation:isolate}
+.principia-comic-character{position:relative;z-index:2;display:grid;place-items:end center;flex:0 0 116px;width:116px;height:144px;overflow:visible}
+.principia-comic-character img,.principia-comic-character span{width:76px!important;height:76px!important;max-width:none!important;object-fit:contain!important;transform:scale(1.72);transform-origin:bottom center;filter:drop-shadow(2px 4px 2px rgba(15,12,30,.24))}
+.principia-comic-balloon{position:relative;align-self:center;flex:0 1 292px;min-width:0;margin:0 0 20px;padding:17px 20px 16px;background:#fffdf7;color:#29243b;border:3px solid #29243b;border-radius:26px 26px 26px 9px;box-shadow:5px 6px 0 #29243b,0 12px 24px rgba(0,0,0,.16);transform:rotate(-1deg);font-family:inherit}
+.principia-comic-balloon:after{content:"";position:absolute;left:20px;bottom:-17px;width:22px;height:22px;background:#fffdf7;border-left:3px solid #29243b;border-bottom:3px solid #29243b;transform:skew(-18deg) rotate(-38deg);border-radius:0 0 0 4px}
+.principia-comic-balloon p{margin:0;font-size:14px;font-weight:700;line-height:1.55;overflow-wrap:anywhere}
+.principia-comic-dots{position:absolute;right:13px;top:5px;color:#e16e89;font-size:19px;letter-spacing:3px;font-weight:900}
+@media(max-width:640px){.principia-home-comic{width:100%;min-height:126px;gap:0;margin:12px 0 18px;padding:0 5px 8px 0}.principia-comic-character{flex-basis:94px;width:94px;height:120px}.principia-comic-character img,.principia-comic-character span{transform:scale(1.42)}.principia-comic-balloon{flex-basis:250px;padding:15px 15px 14px;margin-bottom:13px;border-width:2px;box-shadow:4px 5px 0 #29243b}.principia-comic-balloon:after{border-width:2px;bottom:-14px;width:18px;height:18px}.principia-comic-balloon p{font-size:13px}}
