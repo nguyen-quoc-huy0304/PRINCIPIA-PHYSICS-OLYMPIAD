@@ -1397,3 +1397,21 @@ body.principia-welcome-active .chat-bubble-btn,body.principia-home-active .chat-
   box-sizing:border-box!important;
  }
 }
+
+/* Messenger-style AI launcher: icon only, keep the existing chat action. */
+.chat-bubble-btn.chat-messenger-launcher{
+ position:fixed!important;right:22px!important;bottom:22px!important;
+ display:grid!important;place-items:center!important;
+ width:62px!important;height:62px!important;min-width:62px!important;min-height:62px!important;
+ max-width:none!important;padding:0!important;margin:0!important;
+ border:0!important;border-radius:50%!important;
+ background:transparent!important;box-shadow:0 5px 18px rgba(0,0,0,.22)!important;
+ overflow:visible!important;cursor:pointer!important;z-index:99990!important;
+}
+.chat-bubble-btn.chat-messenger-launcher::before{display:none!important;content:none!important}
+.chat-messenger-logo{display:block!important;width:62px!important;height:62px!important;flex:none!important;filter:drop-shadow(0 2px 4px rgba(0,0,0,.14))}
+.chat-bubble-btn.chat-messenger-launcher:hover{transform:translateY(-2px) scale(1.04)!important}
+@media(max-width:520px){
+ .chat-bubble-btn.chat-messenger-launcher{right:14px!important;bottom:calc(14px + env(safe-area-inset-bottom))!important;width:54px!important;height:54px!important;min-width:54px!important;min-height:54px!important}
+ .chat-messenger-logo{width:54px!important;height:54px!important}
+}
