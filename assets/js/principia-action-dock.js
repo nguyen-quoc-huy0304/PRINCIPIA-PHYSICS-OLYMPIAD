@@ -182,29 +182,22 @@
   }
   return input;
  }
- function syncDockRootToViewport(root=document.getElementById('principiaActionDockRoot')){
-  if(!root?.isConnected)return;
-  root.style.setProperty('position','absolute','important');
-  root.style.setProperty('top',Math.max(0,window.scrollY||window.pageYOffset||0)+'px','important');
-  root.style.setProperty('left',Math.max(0,window.scrollX||window.pageXOffset||0)+'px','important');
-  root.style.setProperty('right','auto','important');
-  root.style.setProperty('bottom','auto','important');
-  root.style.setProperty('width',Math.max(1,window.innerWidth)+'px','important');
-  root.style.setProperty('height',Math.max(1,window.innerHeight)+'px','important');
- }
  function ensureDockRoot(){
   let root=document.getElementById('principiaActionDockRoot');
   if(!root){root=document.createElement('div');root.id='principiaActionDockRoot';root.setAttribute('aria-label','Thao tác nhanh PRINCIPIA')}
   if(root.parentElement!==document.documentElement)document.documentElement.appendChild(root);
-  Object.assign(root.style,{position:'absolute',inset:'auto',top:'0',right:'auto',bottom:'auto',left:'0',width:'100vw',height:'100vh',height:'100dvh',pointerEvents:'none',zIndex:'2147483000',display:'block',visibility:'visible',transform:'none',contain:'none',overflow:'visible'});
-  syncDockRootToViewport(root);
+  root.setAttribute('popover','manual');
+  Object.assign(root.style,{position:'fixed',inset:'0',top:'0',right:'0',bottom:'0',left:'0',width:'100vw',height:'100vh',height:'100dvh',minWidth:'100vw',minHeight:'100dvh',maxWidth:'none',maxHeight:'none',margin:'0',padding:'0',border:'0',background:'transparent',overflow:'visible',pointerEvents:'none',zIndex:'2147483000',display:'block',visibility:'visible',transform:'none',contain:'none'});
+  if(typeof root.showPopover==='function'&&!root.matches(':popover-open')){
+   try{root.showPopover()}catch(_){root.removeAttribute('popover')}
+  }
   return root;
  }
  function installDockPositionStyles(){
   if(document.getElementById('principiaDockPositionStyles'))return;
   const style=document.createElement('style');style.id='principiaDockPositionStyles';
   style.textContent=
-   'html>#principiaActionDockRoot{position:absolute!important;inset:auto!important;right:auto!important;bottom:auto!important;width:100vw!important;height:100vh!important;height:100dvh!important;pointer-events:none!important;z-index:2147483000!important;display:block!important;visibility:visible!important;transform:none!important;contain:none!important;overflow:visible!important}'+
+   'html>#principiaActionDockRoot{position:fixed!important;inset:0!important;top:0!important;right:0!important;bottom:0!important;left:0!important;width:100vw!important;height:100vh!important;height:100dvh!important;min-width:100vw!important;min-height:100dvh!important;max-width:none!important;max-height:none!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;pointer-events:none!important;z-index:2147483000!important;display:block!important;visibility:visible!important;transform:none!important;contain:none!important;overflow:visible!important}'+
    '#principiaActionDockRoot>#principiaDockAI,#principiaActionDockRoot>#principiaDockBrowser,#principiaActionDockRoot>#proSiteEditorFab{position:absolute!important;transform:none!important;margin:0!important;pointer-events:auto!important;visibility:visible!important;display:grid!important;z-index:1!important;touch-action:none!important;cursor:grab!important}'+
    'html body #principiaSearchTrigger,html body #principiaDownloadFab{display:none!important;visibility:hidden!important;pointer-events:none!important}'+
    'body.principia-welcome-active #principiaActionDockRoot>#principiaDockAI,body.principia-welcome-active #principiaActionDockRoot>#principiaDockBrowser,body.principia-welcome-active #principiaActionDockRoot>#principiaDockFiles{display:none!important;visibility:hidden!important;pointer-events:none!important}';
@@ -330,8 +323,7 @@
  function start(){
   mount();
   new MutationObserver(mount).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class','hidden']});
-  window.addEventListener('resize',()=>{mount();syncDockRootToViewport();},{passive:true});
-  window.addEventListener('scroll',()=>syncDockRootToViewport(),{passive:true});
+  window.addEventListener('resize',mount,{passive:true});
   document.addEventListener('principia:rendered',mount);
   document.addEventListener('principia:page-changed',mount);
   document.addEventListener('keydown',event=>{if(event.key==='Escape'){closePanel(browserPanel);browserPanel=null}});
