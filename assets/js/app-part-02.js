@@ -471,7 +471,77 @@ function labPage(){
   <iframe id="phetFrame" data-principia-src="https://phet.colorado.edu/vi/simulations/filter?subjects=physics&type=html" title="Thư viện mô phỏng PhET" loading="lazy" style="width:100%;height:430px;border:1px solid var(--line);border-radius:12px"></iframe>
   <div id="principiaLabTools"></div>
  </section>
- ${collision}
+ <section id="principia-collision-lab" style="margin-top:18px;padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--bg-2);">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+                <div><h3 style="margin:0">⚖️ Phòng thí nghiệm va chạm 1D</h3><p class="small muted" style="margin:5px 0">Điều chỉnh khối lượng, vận tốc và hệ số đàn hồi để kiểm tra định luật bảo toàn</p></div>
+                <button type="button" class="oli-btn" data-collision="reset">Đặt lại</button>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin-top:12px">
+                <label class="small">Khối lượng vật A (kg)<input class="inp" data-collision="m1" type="number" min="0.01" step="0.1" value="1" style="width:100%;margin-top:4px"></label>
+                <label class="small">Vận tốc ban đầu A (m/s)<input class="inp" data-collision="u1" type="number" step="0.1" value="3" style="width:100%;margin-top:4px"></label>
+                <label class="small">Khối lượng vật B (kg)<input class="inp" data-collision="m2" type="number" min="0.01" step="0.1" value="2" style="width:100%;margin-top:4px"></label>
+                <label class="small">Vận tốc ban đầu B (m/s)<input class="inp" data-collision="u2" type="number" step="0.1" value="-1" style="width:100%;margin-top:4px"></label>
+                <label class="small">Hệ số đàn hồi e<input class="inp" data-collision="e" type="number" min="0" max="1" step="0.05" value="1" style="width:100%;margin-top:4px"></label>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:9px;margin-top:12px">
+                <div style="padding:10px;border-radius:10px;background:var(--bg)"><span class="small muted">Vật A sau va chạm</span><div data-collision="v1" style="font-weight:700;font-size:18px">—</div></div>
+                <div style="padding:10px;border-radius:10px;background:var(--bg)"><span class="small muted">Vật B sau va chạm</span><div data-collision="v2" style="font-weight:700;font-size:18px">—</div></div>
+              </div>
+              <div style="margin-top:12px;padding:12px;border-radius:10px;background:var(--bg);">
+                <strong class="small">Sơ đồ vận tốc (vị trí biểu diễn tương đối, không phải quãng đường)</strong>
+                <div class="small muted" style="margin-top:8px">Trước va chạm</div>
+                <div style="height:30px;position:relative;border-bottom:1px solid var(--line)"><span data-collision="before-a" style="position:absolute;top:0;left:50%;font-size:19px">🔵</span><span data-collision="before-b" style="position:absolute;top:0;left:65%;font-size:19px">🟠</span></div>
+                <div class="small muted" style="margin-top:8px">Sau va chạm</div>
+                <div style="height:30px;position:relative;border-bottom:1px solid var(--line)"><span data-collision="after-a" style="position:absolute;top:0;left:50%;font-size:19px">🔵</span><span data-collision="after-b" style="position:absolute;top:0;left:65%;font-size:19px">🟠</span></div>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:12px">
+                <div style="padding:11px;border:1px solid var(--line);border-radius:10px"><strong>Động lượng</strong><div class="small muted">Trước: <span data-collision="p-before">—</span></div><div class="small">Sau: <span data-collision="p-after">—</span></div><div class="small muted">Sai lệch: <span data-collision="error">—</span></div></div>
+                <div style="padding:11px;border:1px solid var(--line);border-radius:10px"><strong>Động năng</strong><div class="small muted">Trước: <span data-collision="k-before">—</span></div><div class="small">Sau: <span data-collision="k-after">—</span></div><div class="small muted">Năng lượng hao hụt: <span data-collision="loss">—</span></div></div>
+              </div>
+              <p data-collision="status" class="small" aria-live="polite" style="margin:12px 0 4px;font-weight:600"></p>
+              <p data-collision="error-note" class="small muted" style="margin:0"></p>
+              <p class="small muted" style="margin:10px 0 0">Mô hình một chiều, hai vật cô lập, không xét lực ngoài hay biến dạng chi tiết. Hệ số e nằm trong [0,1]. Bảo toàn động lượng; động năng chỉ bảo toàn khi e = 1.</p>
+              <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--line)">
+                <h3 style="margin:0">🔵 Mô phỏng va chạm nhiều vật 2D</h3>
+                <p class="small muted" style="margin:5px 0 10px">Bốn đĩa tròn chuyển động trong hộp kín; mũi tên biểu diễn vận tốc. Thử thay đổi hệ số đàn hồi.</p>
+                <label class="small">Hệ số đàn hồi 2D
+                  <input class="inp" data-collision2d="e" type="range" min="0" max="1" step="0.05" value="1" style="width:100%;max-width:320px;display:block;margin-top:5px">
+                  <span data-collision2d="e-label">1,00</span>
+                </label>
+                <canvas data-collision2d="canvas" aria-label="Mô phỏng bốn vật va chạm trong mặt phẳng hai chiều" style="display:block;width:100%;height:280px;margin-top:10px;border-radius:10px;border:1px solid var(--line);touch-action:none"></canvas>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:end">
+                  <label class="small" style="flex:1;min-width:180px">Kịch bản mẫu
+                    <select class="inp" data-collision2d="preset" style="width:100%;margin-top:4px">
+                      <option value="headon">Hai vật đối đầu</option>
+                      <option value="oblique">Va chạm xiên</option>
+                      <option value="chain">Dây chuyền 3 vật</option>
+                      <option value="cluster">Cụm 6 vật</option>
+                    </select>
+                  </label>
+                  <button type="button" class="oli-btn" data-collision2d="apply-preset">Nạp kịch bản</button>
+                  <button type="button" class="oli-btn primary" data-collision2d="start">▶ Chạy mô phỏng</button>
+                  <button type="button" class="oli-btn" data-collision2d="reset">Đặt lại 2D</button>
+                  <button type="button" class="oli-btn" data-collision2d="add">＋ Thêm vật</button>
+                  <button type="button" class="oli-btn" data-collision2d="remove">－ Bỏ vật cuối</button>
+                </div>
+                <div style="margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:10px">
+                  <strong class="small">🎯 Chọn vật trên khung mô phỏng để chỉnh thông số</strong>
+                  <div class="small muted" data-collision2d-edit="selected" style="margin:5px 0 9px">Đang chọn vật 1/4</div>
+                  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px">
+                    <label class="small">Khối lượng (kg)<input class="inp" data-collision2d-edit="mass" type="number" min="0.01" max="1000" step="0.1" value="1" style="width:100%;margin-top:4px"></label>
+                    <label class="small">Bán kính (px)<input class="inp" data-collision2d-edit="radius" type="number" min="6" max="45" step="1" value="15" style="width:100%;margin-top:4px"></label>
+                    <label class="small">Vận tốc Vx<input class="inp" data-collision2d-edit="vx" type="number" min="-500" max="500" step="1" value="115" style="width:100%;margin-top:4px"></label>
+                    <label class="small">Vận tốc Vy<input class="inp" data-collision2d-edit="vy" type="number" min="-500" max="500" step="1" value="34" style="width:100%;margin-top:4px"></label>
+                  </div>
+                </div>
+                <div class="small" data-collision2d="status" aria-live="polite" style="margin-top:8px">Đang chuẩn bị…</div>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin-top:8px">
+                  <div style="padding:9px;border-radius:9px;background:var(--bg)"><span class="small muted">Tổng động năng</span><div data-collision2d="energy" style="font-weight:700">—</div></div>
+                  <div style="padding:9px;border-radius:9px;background:var(--bg)"><span class="small muted">Tổng động lượng</span><div data-collision2d="momentum" style="font-weight:700">—</div></div>
+                </div>
+                <p class="small muted" style="margin:9px 0 0">Lưu ý: thành hộp tác dụng lực ngoài nên tổng động lượng của các vật không nhất thiết bảo toàn khi chúng bật khỏi tường. Mô hình dùng va chạm đĩa cứng, không mô phỏng biến dạng, ma sát hay xoáy.</p>
+              </div>
+            </section>
  </div>`;
 }
 function entertainmentPage(){
