@@ -279,7 +279,7 @@
     <div class="ai-chat-head"><div><strong>Trợ lý AI</strong><div class="ai-chat-sub">Lịch sử riêng theo từng AI</div></div><div style="display:flex;gap:6px"><button class="iconbtn" onclick="clearPrincipiaChatHistory()" title="Xóa lịch sử">⌫</button><button class="iconbtn" onclick="toggleChatBox()" aria-label="Đóng">✕</button></div></div>
     <div class="ai-picker-head"><label for="principiaAISelect"><strong>AI đang dùng</strong></label><div style="display:flex;gap:6px;align-items:center"><select id="principiaAISelect" class="ai-mini-select" onchange="selectPrincipiaAI(this.value)"></select><button class="ai-add-btn" onclick="addPrincipiaAI()" title="Thêm AI">＋</button></div></div>
     <div id="chatMsgs" class="chat-msgs" aria-live="polite"></div>
-    <div class="ai-chat-compose"><div class="ai-chat-sub" style="margin-bottom:7px">Tin nhắn được lưu trong lịch sử trên thiết bị này. Gửi sẽ mở AI đã chọn ở mini trình duyệt PRINCIPIA và sao chép câu hỏi để bạn dán vào AI.</div><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap"><label class="secondary ai-attach" style="cursor:pointer;margin:0">＋ Ảnh<input type="file" accept="image/*" hidden onchange="attachChatImg(event)"></label><span id="chatImgName" class="ai-chat-sub"></span></div><div style="display:flex;gap:7px"><input type="text" id="chatInput" placeholder="Nhập câu hỏi..." onkeydown="if(event.key==='Enter') sendChat()"><button class="primary" onclick="sendChat()">Gửi ↗</button></div></div>
+    <div class="ai-chat-compose"><div class="ai-chat-sub" style="margin-bottom:7px">Lịch sử trò chuyện được lưu riêng theo từng AI trên thiết bị này.</div><div style="display:flex;gap:7px"><input type="text" id="chatInput" placeholder="Nhập câu hỏi..." onkeydown="if(event.key==='Enter') sendChat()"><button class="primary" onclick="sendChat()">Gửi ↗</button></div></div>
   </div>
 
 <div id="modal"></div>
@@ -291,7 +291,7 @@
 <script defer src="/assets/js/core/permissions.js"></script>
 <script defer src="/assets/js/core/repository.js"></script>
 <script defer src="/assets/js/core/navigation.js"></script>
-<script defer src="/assets/js/app-part-02.js?v=20261123-home-restore1"></script>
+<script defer src="/assets/js/app-part-02.js?v=20261123-chat-avatar1"></script>
 
 <!-- Firebase SDK được nạp nền sau khi giao diện đã hiển thị; tránh chặn toàn bộ trang nếu CDN chậm. -->
 
@@ -316,6 +316,7 @@
 
 <script defer src="/assets/js/app-part-05.js"></script>
 <script defer src="/assets/js/app-part-07.js?v=20261123-chat-fallback-fix1"></script>
+<script defer src="/assets/js/principia-chat-avatar.js?v=20261123-bgremove1"></script>
 
 
 
