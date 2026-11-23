@@ -45,7 +45,7 @@
    const name=document.createElement('b');name.textContent=room.title;
    const external=document.createElement('a');external.href=room.url;external.target='_blank';external.rel='noopener noreferrer';external.textContent='Mở ngoài ↗';
    toolbar.append(name,external);
-   const frame=document.createElement('iframe');frame.src=room.url;frame.title=room.title;frame.loading='lazy';frame.referrerPolicy='strict-origin-when-cross-origin';frame.allow='fullscreen; autoplay; clipboard-read; clipboard-write';frame.setAttribute('sandbox','allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-presentation');
+   const frame=document.createElement('iframe');frame.src=room.url;frame.title=room.title;frame.loading='lazy';frame.referrerPolicy='strict-origin-when-cross-origin';frame.allow='fullscreen; autoplay; clipboard-read; clipboard-write';frame.setAttribute('sandbox','allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-presentation');
    const note=document.createElement('p');note.className='per-frame-note';note.textContent='Nếu khung trống hoặc website báo không cho hiển thị, hãy chọn “Mở ngoài”.';
    view.append(toolbar,frame,note);
   }
