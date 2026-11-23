@@ -61,7 +61,7 @@
   const panel=document.createElement('section');panel.id='principiaMiniBrowser';panel.setAttribute('role','dialog');panel.setAttribute('aria-label','Tìm kiếm Internet');
   panel.innerHTML=header('⌕ Tìm kiếm Internet','principiaBrowserClose','<button type="button" id="principiaBrowserBack" title="Quay lại">←</button><button type="button" id="principiaBrowserForward" title="Tiến">→</button><button type="button" id="principiaBrowserReload" title="Tải lại">↻</button>')+
    '<form id="principiaBrowserForm" style="display:flex;gap:6px;padding:9px;border-bottom:1px solid var(--line,#46506a)"><input id="principiaBrowserUrl" type="search" inputmode="search" autocomplete="off" placeholder="Tìm trên Google hoặc nhập địa chỉ website" style="flex:1;min-width:0;padding:10px;border:1px solid var(--line,#46506a);border-radius:10px;background:var(--bg,#0b1020);color:inherit"><button type="submit">Tìm</button></form>'+
-   '<div id="principiaBrowserHistoryList" hidden style="max-height:150px;overflow:auto;padding:8px 10px;border-bottom:1px solid var(--line,#46506a)"></div><div style="display:flex;align-items:center;gap:8px;padding:7px 10px;font-size:11px;opacity:.8"><span id="principiaBrowserStatus" role="status" style="flex:1">Google Search · nếu Google không cho nhúng, dùng nút mở ngoài.</span><button type="button" id="principiaBrowserExternal">Mở ngoài ↗</button></div>'+
+   '<div style="display:flex;gap:7px;padding:8px 10px"><button type="button" id="principiaBrowserHistoryToggle">Lịch sử</button><button type="button" id="principiaBrowserSave">☆ Lưu trang</button></div><div id="principiaBrowserHistoryList" hidden style="max-height:180px;overflow:auto;padding:8px 10px;border-bottom:1px solid var(--line,#46506a)"></div><div style="display:flex;align-items:center;gap:8px;padding:7px 10px;font-size:11px;opacity:.8"><span id="principiaBrowserStatus" role="status" style="flex:1">Google Search · nếu Google không cho nhúng, dùng nút mở ngoài.</span><button type="button" id="principiaBrowserExternal">Mở ngoài ↗</button></div>'+
    '<iframe id="principiaBrowserFrame" title="Kết quả tìm kiếm web" referrerpolicy="strict-origin-when-cross-origin" style="width:100%;flex:1;min-height:0;border:0;background:white" src="https://www.google.com/webhp?igu=1"></iframe>';
   document.body.appendChild(panel);browserPanel=panel;stylePanel(panel,248);makeDraggable(panel);
   const frame=panel.querySelector('#principiaBrowserFrame'),input=panel.querySelector('#principiaBrowserUrl'),status=panel.querySelector('#principiaBrowserStatus');
@@ -120,7 +120,7 @@
   closePanel(filesPanel);
   const panel=document.createElement('section');panel.id='principiaQuickNavigation';panel.setAttribute('role','dialog');panel.setAttribute('aria-label','Điều hướng nhanh PRINCIPIA');
   panel.innerHTML=header('▦ Tìm tệp & khu vực PRO','principiaFilesClose')+
-   '<div style="padding:10px;border-bottom:1px solid var(--line,#46506a)"><input id="principiaFilesSearch" type="search" placeholder="Tìm khu vực, bài học, quiz..." style="width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--line,#46506a);border-radius:10px;background:var(--bg,#0b1020);color:inherit"><button type="button" id="principiaFilesContentSearch" style="width:100%;margin-top:7px;padding:9px">Tìm trong nội dung PRINCIPIA ↗</button></div>'+
+   '<div style="padding:16px;border-bottom:1px solid var(--line,#46506a)"><label for="principiaFilesSearch" style="display:block;font-size:15px;font-weight:700;margin:0 0 9px">Tìm vị trí tệp và nội dung</label><input id="principiaFilesSearch" type="search" placeholder="Nhập tên tệp, bài học, chủ đề hoặc khu vực..." style="display:block;width:100%;box-sizing:border-box;padding:17px 16px;min-height:62px;font-size:18px;line-height:1.4;border:2px solid var(--accent,#8b7cff);border-radius:14px;background:var(--bg,#0b1020);color:inherit;outline-offset:3px"><button type="button" id="principiaFilesContentSearch" style="width:100%;margin-top:10px;min-height:48px;padding:12px;font-size:15px">Tìm trong nội dung PRINCIPIA ↗</button></div>'+
    '<div id="principiaFilesList" style="padding:10px;overflow:auto;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-content:start"></div>';
   document.body.appendChild(panel);filesPanel=panel;stylePanel(panel,248);makeDraggable(panel);
   const list=panel.querySelector('#principiaFilesList'),search=panel.querySelector('#principiaFilesSearch');
@@ -151,11 +151,12 @@
   const style=document.createElement('style');style.id='principiaDockPositionStyles';
   style.textContent=
    'html>#principiaActionDockRoot{position:fixed!important;inset:0!important;top:0!important;right:0!important;bottom:0!important;left:0!important;width:100vw!important;height:100vh!important;height:100dvh!important;pointer-events:none!important;z-index:2147483000!important;display:block!important;visibility:visible!important;transform:none!important;contain:none!important}'+
-   '#principiaActionDockRoot>#principiaDockAI,#principiaActionDockRoot>#principiaDockBrowser,#principiaActionDockRoot>#principiaDockFiles{position:absolute!important;left:auto!important;top:auto!important;transform:none!important;margin:0!important;pointer-events:auto!important;visibility:visible!important;display:grid!important;z-index:1!important}'+
+   '#principiaActionDockRoot>#principiaDockAI,#principiaActionDockRoot>#principiaDockBrowser,#principiaActionDockRoot>#principiaDockFiles,#principiaActionDockRoot>#proSiteEditorFab{position:absolute!important;left:auto!important;top:auto!important;transform:none!important;margin:0!important;pointer-events:auto!important;visibility:visible!important;display:grid!important;z-index:1!important}'+
    '#principiaActionDockRoot>#principiaDockAI{right:18px!important;bottom:18px!important}'+
    '#principiaActionDockRoot>#principiaDockBrowser{right:18px!important;bottom:74px!important}'+
    '#principiaActionDockRoot>#principiaDockFiles{right:18px!important;bottom:130px!important}'+
-   '@media(max-width:900px){#principiaActionDockRoot>#principiaDockAI{right:12px!important;bottom:calc(82px + env(safe-area-inset-bottom,0px))!important}#principiaActionDockRoot>#principiaDockBrowser{right:12px!important;bottom:calc(138px + env(safe-area-inset-bottom,0px))!important}#principiaActionDockRoot>#principiaDockFiles{right:12px!important;bottom:calc(194px + env(safe-area-inset-bottom,0px))!important}}'+
+   '#principiaActionDockRoot>#proSiteEditorFab{position:absolute!important;right:18px!important;bottom:186px!important;left:auto!important;top:auto!important;z-index:2!important;pointer-events:auto!important;margin:0!important}'+
+   '@media(max-width:900px){#principiaActionDockRoot>#principiaDockAI{right:12px!important;bottom:calc(82px + env(safe-area-inset-bottom,0px))!important}#principiaActionDockRoot>#principiaDockBrowser{right:12px!important;bottom:calc(138px + env(safe-area-inset-bottom,0px))!important}#principiaActionDockRoot>#principiaDockFiles{right:12px!important;bottom:calc(194px + env(safe-area-inset-bottom,0px))!important}#principiaActionDockRoot>#proSiteEditorFab{right:12px!important;bottom:calc(250px + env(safe-area-inset-bottom,0px))!important}}'+
    'body.principia-welcome-active #principiaActionDockRoot{display:none!important}';
   document.head.appendChild(style);
  }
@@ -184,7 +185,10 @@
   files.onclick=openFiles;
   const oldSearch=document.getElementById('principiaSearchTrigger');if(oldSearch)oldSearch.style.display='none';
   const download=document.getElementById('principiaDownloadFab');if(download){download.style.display='none';download.setAttribute('aria-hidden','true');download.tabIndex=-1}
-  const editor=document.getElementById('proSiteEditorPanel');if(editor)editor.style.bottom=isMobile()?'250px':'186px';
+  const pencil=document.getElementById('proSiteEditorFab');
+  if(pencil&&pencil.parentElement!==root)root.appendChild(pencil);
+  if(pencil)Object.assign(pencil.style,{position:'absolute',right:'18px',bottom:'186px',left:'auto',top:'auto',zIndex:'2',width:'46px',height:'46px',minWidth:'46px',minHeight:'46px',display:welcome()?'none':'grid',placeItems:'center',margin:'0',pointerEvents:'auto'});
+  const editor=document.getElementById('proSiteEditorPanel');if(editor)editor.style.bottom=isMobile()?'306px':'242px';
   [browserPanel,filesPanel].forEach(panel=>{if(panel&&panel.isConnected)stylePanel(panel,248)});
  }
  function start(){
