@@ -7,6 +7,14 @@
  const HISTORY_KEY='principia_browser_history_v1';
  const POSITION_KEY='principia_action_dock_positions_v1';
  let dockPositions=readDockPositions();
+ const POSITION_RESET_KEY='principia_action_dock_positions_reset_20261124';
+ try{
+  if(localStorage.getItem(POSITION_RESET_KEY)!=='1'){
+   localStorage.removeItem(POSITION_KEY);
+   dockPositions={};
+   localStorage.setItem(POSITION_RESET_KEY,'1');
+  }
+ }catch(_){dockPositions={}}
  function readDockPositions(){try{const value=JSON.parse(localStorage.getItem(POSITION_KEY)||'{}');return value&&typeof value==='object'?value:{}}catch(_){return{}}}
  function saveDockPositions(){try{localStorage.setItem(POSITION_KEY,JSON.stringify(dockPositions))}catch(_){}}
  const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
@@ -323,10 +331,7 @@
    if(pencil.parentElement!==target)target.appendChild(pencil);
    Object.assign(pencil.style,{position:'fixed',right:'18px',bottom:isMobile()?'194px':'130px',left:'auto',top:'auto',zIndex:'2147483005',width:'46px',height:'46px',minWidth:'46px',minHeight:'46px',display:'grid',placeItems:'center',margin:'0',pointerEvents:'auto'});
    pencil.setAttribute('aria-hidden','false');
-   if(target===root){
-    applyLauncherPosition(pencil,isMobile()?194:130);
-    bindLauncherDrag(pencil,()=>syncEditorPanelPosition(pencil));
-   }
+   applyLauncherPosition(pencil,isMobile()?194:130);
   }
   applyLauncherPosition(browser,isMobile()?138:74);
   bindLauncherDrag(browser,()=>{
