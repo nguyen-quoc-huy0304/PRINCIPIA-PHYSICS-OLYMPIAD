@@ -36,11 +36,12 @@
   const width=Math.max(180,panelRect.width||panel.offsetWidth||300);
   const height=Math.max(120,panelRect.height||panel.offsetHeight||260);
   const gap=12;
-  let left=rect.left>=window.innerWidth/2?rect.left-width-gap:rect.right+gap;
-  if(left<8||left+width>window.innerWidth-8)left=rect.left>=window.innerWidth/2?rect.right-width-gap:rect.left+gap;
+  // All floating panels stay on the LEFT of their own launcher.
+  // Do not flip to the right: dragging a launcher must preserve this relationship.
+  const left=rect.left-width-gap;
   const top=clamp(rect.top+(rect.height-height)/2,8,Math.max(8,window.innerHeight-height-8));
   panel.style.setProperty('position','fixed','important');
-  panel.style.setProperty('left',clamp(left,8,Math.max(8,window.innerWidth-width-8))+'px','important');
+  panel.style.setProperty('left',left+'px','important');
   panel.style.setProperty('top',top+'px','important');
   panel.style.setProperty('right','auto','important');
   panel.style.setProperty('bottom','auto','important');
