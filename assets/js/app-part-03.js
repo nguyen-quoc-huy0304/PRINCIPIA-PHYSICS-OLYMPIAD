@@ -107,6 +107,13 @@ async function sendPrincipiaPasswordReset(){
  try{const auth=await ensureFirebase();if(status)status.textContent="Đang gửi email đặt lại mật khẩu…";await auth.sendPasswordResetEmail(email);if(status)status.textContent="Đã gửi email đặt lại mật khẩu. Hãy kiểm tra Hộp thư đến và cả thư rác.";}
  catch(err){const messages={"auth/invalid-email":"Địa chỉ email không hợp lệ.","auth/user-not-found":"Không tìm thấy tài khoản với email này.","auth/too-many-requests":"Bạn thao tác quá nhiều lần. Hãy thử lại sau.","auth/unauthorized-continue-uri":"Cấu hình đường dẫn đặt lại mật khẩu trong Firebase chưa hợp lệ."};if(status)status.textContent=messages[err?.code]||authErrorMessage(err);}
 }
+function showPrincipiaAuthFeedback(message){
+ const text=String(message||'').trim();
+ if(!text)return;
+ try{if(typeof window.principiaNotify==='function'){window.principiaNotify(text);return;}}catch(error){console.warn('PRINCIPIA notification unavailable:',error);}
+ const status=document.getElementById('emailAuthStatus');
+ if(status)status.textContent=text;
+}
 async function submitEmailAuth(event){
  event.preventDefault();
  const form=event.currentTarget;
@@ -116,11 +123,12 @@ async function submitEmailAuth(event){
  const password=document.getElementById('authPassword')?.value||'';
  const name=document.getElementById('authName')?.value.trim()||'';
  const isSignup=window.getPrincipiaAccountMode()==='signup';
- if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){if(status)status.textContent='Địa chỉ email chưa hợp lệ.';return;}
- if(password.length<6){if(status)status.textContent='Mật khẩu phải có ít nhất 6 ký tự.';return;}
+ if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)){const message='✕ Địa chỉ email chưa hợp lệ.';if(status)status.textContent=message;showPrincipiaAuthFeedback(message);return;}
+ if(password.length<6){const message='✕ Mật khẩu phải có ít nhất 6 ký tự.';if(status)status.textContent=message;showPrincipiaAuthFeedback(message);return;}
  if(principiaAuthActionInProgress)return;
  if(submitButton)submitButton.disabled=true;
  principiaAuthActionInProgress=true;
+ let firebaseAuthenticated=false;
  if(status)status.textContent='Đang kết nối và xác thực…';
  try{
   const auth=await ensureFirebase();
@@ -128,33 +136,46 @@ async function submitEmailAuth(event){
   const cred=isSignup
    ?await auth.createUserWithEmailAndPassword(email,password)
    :await auth.signInWithEmailAndPassword(email,password);
+  firebaseAuthenticated=true;
   principiaAuthLastSuccessAt=Date.now();
   principiaAuthInitialStateResolved=true;
   principiaAuthExplicitSignOut=false;
   await syncPrincipiaUser(cred.user);
+  let profileWarning=false;
   if(isSignup&&name){
    try{
     await cred.user.updateProfile({displayName:name});
     await syncPrincipiaUser(cred.user);
    }catch(profileError){
+    profileWarning=true;
     console.warn('PRINCIPIA: tài khoản đã tạo nhưng chưa cập nhật được tên hiển thị.',profileError);
-    if(status)status.textContent='Tài khoản đã được tạo. Tên hiển thị sẽ được cập nhật sau.';
    }
   }
-  if(status&&status.isConnected)status.textContent=isSignup?'Đăng ký thành công.':'Đăng nhập thành công.';
+  showPrincipiaAuthFeedback(profileWarning
+   ?'✓ Tài khoản đã được tạo/đăng nhập. Tên hiển thị chưa cập nhật được.'
+   :(isSignup?'✓ Đăng ký thành công.':'✓ Đăng nhập thành công.'));
  }catch(err){
-  const currentUser=(()=>{try{return firebase?.auth?.()?.currentUser||null;}catch(_){return null;}})();
-  if(currentUser){
-   try{await syncPrincipiaUser(currentUser);}catch(syncError){console.error('PRINCIPIA: session sync failed',syncError);}
+  const currentUser=(()=>{try{return window.firebase?.apps?.length?window.firebase.auth().currentUser:null;}catch(_){return null;}})();
+  if(firebaseAuthenticated||currentUser){
+   if(currentUser){
+    try{await syncPrincipiaUser(currentUser);}
+    catch(syncError){console.error('PRINCIPIA: Firebase authenticated but app sync failed.',syncError);}
+   }
+   const message='✓ Firebase đã xác thực tài khoản, nhưng ứng dụng gặp lỗi khi đồng bộ: '+(err?.message||'lỗi không xác định');
+   console.error('PRINCIPIA post-authentication error:',err);
+   showPrincipiaAuthFeedback(message);
+   return;
   }
-  if(status)status.textContent=authErrorMessage(err)+(err?.code?' ['+err.code+']':'');
+  const message='✕ '+authErrorMessage(err)+(err?.code?' ['+err.code+']':'');
+  if(status)status.textContent=message;
+  showPrincipiaAuthFeedback(message);
   if(typeof window.principiaCompanionReact==='function')window.principiaCompanionReact('wrong',authErrorMessage(err));
  }finally{
   principiaAuthActionInProgress=false;
   if(submitButton)submitButton.disabled=false;
  }
 }
-function authErrorMessage(err){const map={'auth/email-already-in-use':'Email này đã được đăng ký. Hãy đăng nhập.','auth/invalid-credential':'Email hoặc mật khẩu không chính xác.','auth/weak-password':'Mật khẩu cần ít nhất 6 ký tự.','auth/invalid-email':'Địa chỉ email không hợp lệ.','auth/popup-closed-by-user':'Bạn đã đóng cửa sổ đăng nhập.','auth/unauthorized-domain':'Domain website chưa được thêm vào Authorized domains trong Firebase.','auth/operation-not-allowed':'Firebase chưa bật phương thức đăng nhập Email/Password hoặc Google.','auth/network-request-failed':'Không kết nối được Firebase. Kiểm tra mạng và thử lại.','auth/too-many-requests':'Bạn thao tác quá nhiều lần. Hãy thử lại sau.','auth/user-disabled':'Tài khoản này đã bị vô hiệu hóa.','auth/missing-password':'Bạn chưa nhập mật khẩu.','auth/invalid-api-key':'Firebase API key không hợp lệ.'};return map[err?.code]||err?.message||'Không thể xác thực tài khoản.';}
+function authErrorMessage(err){const map={'auth/email-already-in-use':'Email này đã được đăng ký. Hãy đăng nhập.','auth/invalid-credential':'Email hoặc mật khẩu không chính xác.','auth/invalid-login-credentials':'Email hoặc mật khẩu không chính xác.','auth/weak-password':'Mật khẩu cần ít nhất 6 ký tự.','auth/invalid-email':'Địa chỉ email không hợp lệ.','auth/popup-closed-by-user':'Bạn đã đóng cửa sổ đăng nhập.','auth/unauthorized-domain':'Domain website chưa được thêm vào Authorized domains trong Firebase.','auth/operation-not-allowed':'Firebase chưa bật phương thức đăng nhập Email/Password hoặc Google.','auth/network-request-failed':'Không kết nối được Firebase. Kiểm tra mạng và thử lại.','auth/too-many-requests':'Bạn thao tác quá nhiều lần. Hãy thử lại sau.','auth/user-disabled':'Tài khoản này đã bị vô hiệu hóa.','auth/missing-password':'Bạn chưa nhập mật khẩu.','auth/invalid-api-key':'Firebase API key không hợp lệ.'};return map[err?.code]||err?.message||'Không thể xác thực tài khoản.';}
 async function syncPrincipiaUser(user){
  if(!user)return;
  const previous=getPrincipiaAccount();
