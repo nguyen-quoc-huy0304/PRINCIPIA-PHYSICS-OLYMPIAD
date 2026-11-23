@@ -87,17 +87,14 @@ const seedFun=[
 ]}
 ];
 let data=load('halo_data',seed),quizData=load('halo_quiz',seedQuiz),funData=load('halo_fun',seedFun);
-const defaultEntertainmentData=[
- {id:'games-chess',name:'Cờ vua',icon:'♟️',type:'tab',children:[
-  {id:'game-chesscom',name:'Chess.com',icon:'♟️',type:'game',url:'https://www.chess.com/'},
-  {id:'game-lichess',name:'Lichess',icon:'♜',type:'game',url:'https://lichess.org/'}
- ]},
- {id:'games-puzzle',name:'Trò chơi tư duy',icon:'🧩',type:'tab',children:[
-  {id:'game-sudoku',name:'Sudoku',icon:'🔢',type:'game',url:'https://www.sudoku.com/'},
-  {id:'game-geoguessr',name:'GeoGuessr',icon:'🌍',type:'game',url:'https://www.geoguessr.com/'}
- ]}
-];
-let entertainmentData=load('halo_entertainment',defaultEntertainmentData),activeEntertainmentGameId=null;
+const defaultEntertainmentData=()=>{
+ const legacy=gamePlatforms(),chess=legacy.filter(x=>x.kind==='chess'),other=legacy.filter(x=>x.kind!=='chess');
+ const groups=[];
+ if(chess.length)groups.push({id:'games-chess',name:'Cờ vua',icon:'♟️',type:'tab',children:chess.map(x=>({id:x.id,name:x.name,icon:x.icon||'♟️',type:'game',url:x.url}))});
+ if(other.length)groups.push({id:'games-other',name:'Trò chơi & tư duy',icon:'🧩',type:'tab',children:other.map(x=>({id:x.id,name:x.name,icon:x.icon||'🎮',type:'game',url:x.url}))});
+ return groups.length?groups:[{id:'games-empty',name:'Trò chơi',icon:'🎮',type:'tab',children:[]}];
+};
+let entertainmentData=load('halo_entertainment',defaultEntertainmentData()),activeEntertainmentGameId=null;
 let profile=load('halo_profile',{name:'Learner',avatar:'',theme:'dark'});
 let xp=Number(localStorage.getItem('halo_xp')||0);
 let streak=Number(localStorage.getItem('halo_streak')||0);
@@ -174,7 +171,7 @@ function card(n){
  <button type="button" onclick="editNode('${n.id}')">✎ Chỉnh sửa</button>
  <button type="button" onclick="deleteNode('${n.id}')">🗑 Xóa</button>
  </div></div>
- ${n.type==='lesson'||n.type==='tab'?`<div class="tileicon lesson-tile-icon">${nodeIconHTML(n,'')}</div>`:''}<h3>${esc(n.name)}</h3><p>${n.type==='tab'?'Mở tab để xem các nội dung bên trong':n.type==='lesson'?'Mở bài học':'Bắt đầu hoạt động'}</p><div class="tilefoot"><span>${amount}</span><span>↗</span></div></div>`;
+ ${n.type==='lesson'||n.type==='tab'||n.type==='game'?`<div class="tileicon lesson-tile-icon">${nodeIconHTML(n,'')}</div>`:''}<h3>${esc(n.name)}</h3><p>${n.type==='tab'?'Mở tab để xem các nội dung bên trong':n.type==='lesson'?'Mở bài học':'Bắt đầu hoạt động'}</p><div class="tilefoot"><span>${amount}</span><span>↗</span></div></div>`;
 }
 function topbar(){return `<div class="top"><div><button type="button" class="principia-back-btn" onclick="goBack()" title="Quay lại màn hình trước" aria-label="Quay lại">← Quay lại</button><div class="eyebrow">PRO</div><div class="muted small">Your personal learning world</div><div class="principia-clockbar"><span class="principia-time-pill" title="Giờ hiện tại"><b id="principiaLiveTime">--:--</b></span><button class="principia-time-pill" type="button" onclick="toggleTopbarStudyClock()" title="Bấm để bắt đầu hoặc tạm dừng đồng hồ học"><b id="principiaStopwatch">${fmtClock(principiaClock.seconds)}</b><span id="principiaStopwatchState">${principiaClock.running?'Tạm dừng':'Bắt đầu'}</span></button></div><button type="button" class="principia-music-pill" onclick="principiaMusicOpen()" title="Mở Music & Focus">♫ <span>Music</span></button></div><div class="topright"><button class="pill" type="button" onclick="openGameStats()" title="Xem thành tích và nhiệm vụ">🔥 ${streak} ngày học</button><button class="pill" type="button" onclick="openRewardCollection()" title="Mở kho vật phẩm đã nhận">⚡ ${xp} XP</button>${avatarHTML()}</div></div>`}
 let principiaClock={mode:'stopwatch',seconds:0,left:1500,running:false,interval:null};
@@ -635,7 +632,7 @@ async function savePrincipiaLibraryItems(kind){
    const rec={id:uid(),name:f.name,blob:f,size:f.size,type:f.type||'',created:Date.now(),principiaLibrary:true,libraryKind:kind};
    await new Promise((resolve,reject)=>{const tx=d.transaction('files','readwrite');tx.objectStore('files').put(rec);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)});
   }
-  closeModal();notify('Đã lưu '+files.length+' mục vào thư viện');openPrincipiaLibrary(kind);
+  closeModal();page='library';stack=[];render();notify('Đã lưu '+files.length+' mục vào Thư viện học tập');
  }catch(e){notify('Không lưu được tệp. Hãy kiểm tra dung lượng bộ nhớ trình duyệt.')}
 }
 async function openPrincipiaLibrary(kind){
@@ -646,7 +643,7 @@ async function openPrincipiaLibrary(kind){
 }
 async function deleteLibraryItem(id,kind){
  if(!confirm('Xóa mục này khỏi thư viện?'))return;
- const d=await db();await new Promise(resolve=>{const tx=d.transaction('files','readwrite');tx.objectStore('files').delete(id);tx.oncomplete=resolve});openPrincipiaLibrary(kind||undefined);
+ const d=await db();await new Promise(resolve=>{const tx=d.transaction('files','readwrite');tx.objectStore('files').delete(id);tx.oncomplete=resolve});if(page==='library'){render();}else{openPrincipiaLibrary(kind||undefined);}
 }
 async function openLibraryItem(id){
  const d=await db(),f=await new Promise(resolve=>{const q=d.transaction('files').objectStore('files').get(id);q.onsuccess=()=>resolve(q.result)});
@@ -655,7 +652,7 @@ async function openLibraryItem(id){
  const state=JSON.parse(localStorage.getItem('principia_reader_'+id)||'{}'),isPdf=(f.type==='application/pdf'||/\.pdf$/i.test(f.name)),isText=(/^(text\/|application\/(json|xml))/.test(f.type)||/\.(txt|md|csv)$/i.test(f.name));
  let raw='';if(isText){try{raw=await f.blob.text()}catch{}}
  const safe=esc(raw),rot=Number(state.rotation)||0;
- modal(`<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><h2 style="margin:0">${f.libraryKind==='book'?'📚':'📄'} ${esc(f.name)}</h2><button class="secondary" onclick="openPrincipiaLibrary('${f.libraryKind}')">← Thư viện</button></div>
+ modal(`<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><h2 style="margin:0">${f.libraryKind==='book'?'📚':'📄'} ${esc(f.name)}</h2><button class="secondary" onclick="if(page==='library'){closeModal();render()}else{openPrincipiaLibrary('${f.libraryKind}')} ">← Thư viện</button></div>
  <div style="display:flex;gap:7px;flex-wrap:wrap;margin:10px 0"><button class="secondary" onclick="setReaderMode('${id}','side')">Hai bản song song</button><button class="secondary" onclick="setReaderMode('${id}','original')">Chỉ bản gốc</button><button class="secondary" onclick="setReaderMode('${id}','translated')">Chỉ bản dịch</button><button class="secondary" onclick="rotateReader('${id}',90)">↻ Xoay</button><button class="secondary" onclick="setReaderPages('${id}',1)">1 trang</button><button class="secondary" onclick="setReaderPages('${id}',2)">2 trang</button></div>
  <div id="principiaReaderGrid" style="display:grid;grid-template-columns:repeat(${state.pages===2?2:1},minmax(0,1fr));gap:10px;max-height:65vh;overflow:auto">
  <section id="readerOriginal" style="min-width:0"><b>Bản gốc</b>${isPdf?'<iframe title="Tài liệu gốc" src="'+url+'#toolbar=1" style="width:100%;height:58vh;border:1px solid var(--line);border-radius:12px;transform:rotate('+rot+'deg);transform-origin:center"></iframe>':isText?'<pre style="white-space:pre-wrap;overflow:auto;max-height:55vh;padding:12px;background:var(--bg-2);border-radius:10px">'+safe+'</pre>':'<p class="muted">Định dạng này chưa xem trực tiếp được trong trình duyệt. Bạn có thể tải tệp xuống để mở bằng ứng dụng phù hợp.</p>'}</section>
@@ -812,7 +809,7 @@ async function restore(file){
 }
 function resetAll(){
  if(!confirm('Khôi phục toàn bộ dữ liệu mẫu?'))return;
- data=clone(seed);quizData=clone(seedQuiz);funData=clone(seedFun);entertainmentData=clone(defaultEntertainmentData);profile={name:'Learner',avatar:''};xp=0;streak=0;completed=[];saveAll();render();notify('Đã khôi phục');
+ data=clone(seed);quizData=clone(seedQuiz);funData=clone(seedFun);entertainmentData=clone(defaultEntertainmentData());profile={name:'Learner',avatar:''};xp=0;streak=0;completed=[];saveAll();render();notify('Đã khôi phục');
 }
 // Tài liệu được lưu trong IndexedDB để không làm đầy bộ nhớ cấu hình.
 let dbp;
