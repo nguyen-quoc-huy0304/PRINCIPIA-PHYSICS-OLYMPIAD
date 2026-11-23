@@ -1369,15 +1369,3 @@ body.principia-welcome-active .chat-bubble-btn,body.principia-home-active .chat-
 .pw-character-halo .principia-bundled-pose{width:min(34vw,360px)!important;height:min(34vw,360px)!important}
 .chat-character-portrait .principia-bundled-pose{width:92px!important;height:92px!important}
 @media(max-width:600px){.principia-home-art{width:100vw!important;height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom))!important}.principia-home-art .principia-bundled-pose{width:min(88vw,440px)!important;height:min(88vw,440px)!important}}
-
-
-/* FINAL OVERRIDE: Home is a clean character-only canvas; never portal navigation or AI launcher over it. */
-body.principia-home-active #app .layout>.sidebar,
-body.principia-home-active .sidebar,
-body.principia-home-active> .sidebar[data-principia-web-nav],
-body.principia-home-active> .sidebar[data-principia-mobile-nav],
-body.principia-home-active .chat-bubble-btn,
-body.principia-home-active #principiaStickerFab{display:none!important;visibility:hidden!important;pointer-events:none!important}
-body.principia-home-active #app .layout>.main{padding:0!important;margin:0!important;max-width:none!important;width:100%!important}
-body.principia-home-active #app .layout{display:block!important;min-height:100dvh!important}
-body.principia-home-active #body,body.principia-home-active #app #body{padding:0!important;margin:0!important;min-height:100dvh!important}
