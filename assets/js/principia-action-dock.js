@@ -141,15 +141,16 @@
  }
  function ensureDockRoot(){
   let root=document.getElementById('principiaActionDockRoot');
-  if(!root){root=document.createElement('div');root.id='principiaActionDockRoot';root.setAttribute('aria-label','Thao tác nhanh PRINCIPIA');document.body.appendChild(root)}
-  Object.assign(root.style,{position:'fixed',inset:'0',width:'100%',height:'100%',pointerEvents:'none',zIndex:'2147483000',display:'block',visibility:'visible'});
+  if(!root){root=document.createElement('div');root.id='principiaActionDockRoot';root.setAttribute('aria-label','Thao tác nhanh PRINCIPIA')}
+  if(root.parentElement!==document.documentElement)document.documentElement.appendChild(root);
+  Object.assign(root.style,{position:'fixed',inset:'0',top:'0',right:'0',bottom:'0',left:'0',width:'100vw',height:'100vh',height:'100dvh',pointerEvents:'none',zIndex:'2147483000',display:'block',visibility:'visible',transform:'none',contain:'none'});
   return root;
  }
  function installDockPositionStyles(){
   if(document.getElementById('principiaDockPositionStyles'))return;
   const style=document.createElement('style');style.id='principiaDockPositionStyles';
   style.textContent=
-   '#principiaActionDockRoot{position:fixed!important;inset:0!important;width:100%!important;height:100%!important;pointer-events:none!important;z-index:2147483000!important;display:block!important;visibility:visible!important}'+
+   'html>#principiaActionDockRoot{position:fixed!important;inset:0!important;top:0!important;right:0!important;bottom:0!important;left:0!important;width:100vw!important;height:100vh!important;height:100dvh!important;pointer-events:none!important;z-index:2147483000!important;display:block!important;visibility:visible!important;transform:none!important;contain:none!important}'+
    '#principiaActionDockRoot>#principiaDockAI,#principiaActionDockRoot>#principiaDockBrowser,#principiaActionDockRoot>#principiaDockFiles{position:absolute!important;left:auto!important;top:auto!important;transform:none!important;margin:0!important;pointer-events:auto!important;visibility:visible!important;display:grid!important;z-index:1!important}'+
    '#principiaActionDockRoot>#principiaDockAI{right:18px!important;bottom:18px!important}'+
    '#principiaActionDockRoot>#principiaDockBrowser{right:18px!important;bottom:74px!important}'+
