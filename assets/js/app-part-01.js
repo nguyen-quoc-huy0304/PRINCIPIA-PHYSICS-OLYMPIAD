@@ -16,7 +16,7 @@
       const tag=e.target.tagName||'RESOURCE';
       const src=e.target.src||e.target.href||'';
       // Firebase CDN errors are handled by the SDK loader's mirror fallback.
-      if(/firebase-(?:app|auth|firestore)-compat\\.js(?:[?#]|$)/i.test(src))return;
+      if(/firebase-(?:app|auth|firestore)-compat\.js(?:[?#]|$)/i.test(src))return;
       showStartupError('Không tải được '+tag+(src?' : '+src:''));
     }else{
       showStartupError((e.message||'JavaScript error')+(e.filename?'\n'+e.filename+':'+e.lineno+':'+e.colno:''));
