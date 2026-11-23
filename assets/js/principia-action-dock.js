@@ -157,7 +157,7 @@
    '#principiaActionDockRoot>#principiaDockFiles{right:18px!important;bottom:130px!important}'+
    '#principiaActionDockRoot>#proSiteEditorFab{position:absolute!important;right:18px!important;bottom:186px!important;left:auto!important;top:auto!important;z-index:2!important;pointer-events:auto!important;margin:0!important}'+
    '@media(max-width:900px){#principiaActionDockRoot>#principiaDockAI{right:12px!important;bottom:calc(82px + env(safe-area-inset-bottom,0px))!important}#principiaActionDockRoot>#principiaDockBrowser{right:12px!important;bottom:calc(138px + env(safe-area-inset-bottom,0px))!important}#principiaActionDockRoot>#principiaDockFiles{right:12px!important;bottom:calc(194px + env(safe-area-inset-bottom,0px))!important}#principiaActionDockRoot>#proSiteEditorFab{right:12px!important;bottom:calc(250px + env(safe-area-inset-bottom,0px))!important}}'+
-   '#principiaSearchTrigger,#principiaDownloadFab{display:none!important;visibility:hidden!important;pointer-events:none!important}'+
+   'html body #principiaSearchTrigger,html body #principiaDownloadFab{display:none!important;visibility:hidden!important;pointer-events:none!important}'+
    'body.principia-welcome-active #principiaActionDockRoot{display:none!important}';
   document.head.appendChild(style);
  }
