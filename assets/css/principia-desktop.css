@@ -1575,3 +1575,58 @@ button.chat-bubble-btn.chat-messenger-launcher:active{
 button.chat-bubble-btn.chat-messenger-launcher>.chat-messenger-logo{
   width:29px!important;height:29px!important;min-width:29px!important;min-height:29px!important;
 }
+
+/* PRO viewport action dock: three matching Liquid Glass circles, fixed to the screen. */
+#principiaSearchTrigger,
+#principiaDownloadFab,
+button.chat-bubble-btn.chat-messenger-launcher{
+  position:fixed!important;
+  right:18px!important;
+  top:auto!important;
+  z-index:2147483002!important;
+  box-sizing:border-box!important;
+  width:46px!important;
+  height:46px!important;
+  min-width:46px!important;
+  min-height:46px!important;
+  max-width:46px!important;
+  max-height:46px!important;
+  padding:0!important;
+  margin:0!important;
+  display:grid!important;
+  place-items:center!important;
+  border:1px solid rgba(255,255,255,.42)!important;
+  border-radius:50%!important;
+  background:linear-gradient(145deg,rgba(255,255,255,.23),rgba(255,255,255,.055))!important;
+  background-color:rgba(255,255,255,.10)!important;
+  color:var(--text,#fff)!important;
+  box-shadow:0 10px 30px rgba(0,0,0,.23),inset 0 1px 0 rgba(255,255,255,.48),inset 0 -1px 0 rgba(255,255,255,.08)!important;
+  -webkit-backdrop-filter:blur(26px) saturate(155%)!important;
+  backdrop-filter:blur(26px) saturate(155%)!important;
+  overflow:hidden!important;
+}
+#principiaSearchTrigger{bottom:72px!important;font-size:27px!important;line-height:1!important;cursor:pointer!important}
+#principiaDownloadFab{bottom:126px!important}
+button.chat-bubble-btn.chat-messenger-launcher{bottom:18px!important;line-height:0!important}
+#principiaSearchTrigger:hover,
+#principiaDownloadFab:hover,
+button.chat-bubble-btn.chat-messenger-launcher:hover{
+  background:linear-gradient(145deg,rgba(255,255,255,.30),rgba(255,255,255,.09))!important;
+  transform:translateY(-1px)!important;
+}
+button.chat-bubble-btn.chat-messenger-launcher>.chat-messenger-logo{
+  display:block!important;position:static!important;width:29px!important;height:29px!important;
+  min-width:29px!important;min-height:29px!important;max-width:29px!important;max-height:29px!important;
+  margin:0!important;object-fit:contain!important;
+}
+#principiaDownloadFab span{font-size:21px!important;margin:0!important}
+@media(max-width:900px){
+  #principiaSearchTrigger,#principiaDownloadFab,button.chat-bubble-btn.chat-messenger-launcher{
+    right:12px!important;
+    width:46px!important;height:46px!important;min-width:46px!important;min-height:46px!important;
+    max-width:46px!important;max-height:46px!important;
+  }
+  button.chat-bubble-btn.chat-messenger-launcher{bottom:calc(78px + env(safe-area-inset-bottom,0px))!important}
+  #principiaSearchTrigger{bottom:calc(132px + env(safe-area-inset-bottom,0px))!important}
+  #principiaDownloadFab{bottom:calc(186px + env(safe-area-inset-bottom,0px))!important}
+}
