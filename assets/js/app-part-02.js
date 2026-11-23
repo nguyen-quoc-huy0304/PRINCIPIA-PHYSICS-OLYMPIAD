@@ -181,9 +181,9 @@ function toggleStudyClock(){
 }
 function resetStudyClock(){if(principiaClock.interval)clearInterval(principiaClock.interval);principiaClock.running=false;principiaClock.left=principiaClock.mode==='countdown'?principiaClock.seconds:0;const d=document.getElementById('studyClockDisplay');if(d)d.textContent=fmtClock(principiaClock.mode==='countdown'?principiaClock.left:0);const b=document.getElementById('studyClockStart');if(b)b.textContent='▶ Bắt đầu';const h=document.getElementById('studyClockHint');if(h)h.textContent=principiaClock.mode==='countdown'?'Sẵn sàng tập trung':'Bấm giờ học tập'}
 function home(){
- const companionSrc=principiaWelcomeCharacterSrc();
+ const companionHtml=principiaWelcomeCharacterMarkup();
  return `<div class="hero"><div class="eyebrow">WELCOME BACK</div><h1>Học tập theo cách<br>của riêng bạn.</h1><p>Khám phá kiến thức, chinh phục từng bài học và xây dựng chuỗi ngày học tập của bạn.</p><div class="toolbar" style="margin-top:14px"><button class="primary" onclick="setPage('library')">Tiếp tục học</button><button class="secondary" onclick="addChoice()">Tạo bài / tab</button><button class="secondary" onclick="setPage('quiz')">Mở Quiz</button></div></div>
- ${companionSrc?`<div class="panel principia-home-companion" style="display:flex;align-items:center;gap:16px;margin:16px 0;padding:14px 18px"><img src="${esc(companionSrc)}" alt="Nhân vật PRINCIPIA" style="width:76px;height:76px;object-fit:contain;border-radius:18px"><div><div class="eyebrow">PRINCIPIA COMPANION</div><strong>Nhân vật đồng hành</strong><p class="muted small" style="margin:4px 0 0">Cùng bạn học tập và chinh phục thử thách.</p></div></div>`:''}
+ ${companionHtml?`<div class="panel principia-home-companion" style="display:flex;align-items:center;gap:16px;margin:16px 0;padding:14px 18px"><div style="width:76px;height:76px;display:grid;place-items:center;flex:none">${companionHtml}</div><div><div class="eyebrow">PRINCIPIA COMPANION</div><strong>Nhân vật đồng hành</strong><p class="muted small" style="margin:4px 0 0">Cùng bạn học tập và chinh phục thử thách.</p></div></div>`:''}
  <div class="stats"><div class="stat"><span class="muted small">Kinh nghiệm</span><strong>${xp} XP</strong><div class="xpbar"><div style="width:${xp%100}%"></div></div></div><div class="stat"><div class="muted small">Chuỗi ngày</div><strong>${streak} ngày</strong><span class="small muted">Giữ streak mỗi ngày</span></div><div class="stat"><div class="muted small">Bài đã học</div><strong>${completed.length}</strong><span class="small muted">Bài hoàn thành</span></div></div>
  <div class="sectionhead"><h2>Môn học của bạn</h2><div class="toolbar"><button class="primary" onclick="addChoice()">＋</button><button class="secondary" onclick="setPage('library')">Xem tất cả</button></div></div><div class="grid">${data.map(card).join('')}</div>
  <div class="sectionhead"><h2>Khám phá thêm</h2></div><div class="grid"><div class="tile" onclick="setPage('entertainment')"><h3>Giải trí & tư duy</h3><p>Cờ vua, Sudoku và bảng xếp hạng AI</p></div><div class="tile" onclick="setPage('quiz')"><h3>Quiz</h3><p>Kiểm tra kiến thức theo môn học</p></div><div class="tile" onclick="setPage('fun')"><h3>Đố vui</h3><p>Thử thách tư duy mỗi ngày</p></div></div>`;
@@ -443,10 +443,12 @@ function accountPage(){
 }
 function setAccountMode(mode){accountMode=mode==='signup'?'signup':'login';render();renderGoogleAccount();}
 
-function principiaWelcomeCharacterSrc(){
+function principiaWelcomeCharacterMarkup(){
+ try{if(typeof window.getPrincipiaCharacterMarkup==='function')return window.getPrincipiaCharacterMarkup();}catch(e){}
  try{
   const settings=JSON.parse(localStorage.getItem('principia_sticker_settings')||'{}');
-  if(typeof settings.selected==='string' && settings.selected.startsWith('data:image/'))return settings.selected;
+  const list=JSON.parse(localStorage.getItem('principia_custom_stickers')||'[]');
+  if(typeof settings.selected==='string'&&settings.selected.startsWith('data:image/')&&list.some(x=>x.data===settings.selected))return '<img src="'+settings.selected+'" alt="Nhân vật PRINCIPIA" style="width:76px;height:76px;object-fit:contain">';
  }catch(e){}
  return '';
 }
