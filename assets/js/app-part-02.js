@@ -489,6 +489,7 @@ function render(){
  // Chỉ cho phép xem workspace sau khi có phiên PRINCIPIA đã xác thực.
  if(!getPrincipiaAccount() && page!=='account'){page='account';stack=[];}
  // Giữ màn hình chào cho tới khi người dùng chủ động bấm Bắt đầu hành trình.
+ document.body.classList.toggle('principia-welcome-active',page==='welcome');
 
  if(page==='welcome'){
   const welcomeAccount=getPrincipiaAccount()||{};

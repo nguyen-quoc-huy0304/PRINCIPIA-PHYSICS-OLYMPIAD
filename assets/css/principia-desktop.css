@@ -1335,3 +1335,6 @@ input,textarea,select{background:#0b1020!important;border-color:rgba(158,175,215
 .principia-comic-balloon p{margin:0;font-size:15px;font-weight:750;line-height:1.5;overflow-wrap:anywhere;text-align:center}
 .principia-comic-dots{display:none!important}
 @media(max-width:640px){.principia-home-comic{min-height:148px;margin:12px 0 18px;gap:0;padding:0 3px 8px 0}.principia-comic-character{flex:0 0 98px;width:98px;height:136px}.principia-comic-character img,.principia-comic-character span{height:130px!important;max-width:94px!important}.principia-comic-balloon{flex:1 1 auto;min-width:0;margin:0 0 22px 3px;padding:14px 13px 13px;border-width:2px;box-shadow:3px 4px 0 #201c2a}.principia-comic-balloon:after{left:23px;bottom:-16px;width:19px;height:19px;border-width:2px}.principia-comic-balloon p{font-size:13px}}
+
+/* First-login welcome is a separate full-screen route: hide workspace navigation and floating chat launcher. */
+body.principia-welcome-active .sidebar,body.principia-welcome-active .chat-bubble-btn,body.principia-welcome-active #principiaStickerFab{display:none!important}
