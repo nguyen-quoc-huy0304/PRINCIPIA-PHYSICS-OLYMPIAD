@@ -183,3 +183,37 @@ button.chat-bubble-btn.chat-messenger-launcher:hover{
     right:12px!important;bottom:calc(82px + env(safe-area-inset-bottom))!important;
   }
 }
+
+
+/* PRO refinements: remove the unused Home character spacer and make Messenger launcher glass-transparent. */
+body.principia-home-active .principia-home-comic{display:none!important}
+body.principia-home-active .stats{margin-top:8px!important}
+button.chat-bubble-btn.chat-messenger-launcher{
+  display:grid!important;
+  place-items:center!important;
+  align-content:center!important;
+  justify-content:center!important;
+  background:transparent!important;
+  background-color:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  padding:0!important;
+  width:46px!important;height:46px!important;
+  min-width:46px!important;min-height:46px!important;
+  max-width:46px!important;max-height:46px!important;
+}
+button.chat-bubble-btn.chat-messenger-launcher>.chat-messenger-logo{
+  position:absolute!important;
+  inset:50% auto auto 50%!important;
+  display:block!important;
+  width:31px!important;height:31px!important;
+  min-width:31px!important;min-height:31px!important;
+  max-width:31px!important;max-height:31px!important;
+  margin:0!important;padding:0!important;
+  transform:translate(-50%,-50%)!important;
+  object-fit:contain!important;
+}
+button.chat-bubble-btn.chat-messenger-launcher:hover{
+  background:rgba(255,255,255,.08)!important;
+  box-shadow:0 4px 16px rgba(0,0,0,.12)!important;
+}
