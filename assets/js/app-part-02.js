@@ -501,7 +501,7 @@ function render(){
      <button class="pw-start-button" type="button" onclick="startPrincipiaJourney()">Bắt đầu hành trình <span aria-hidden="true">→</span></button>
      <div class="pw-note"><span class="pw-note-line"></span> HỌC TẬP · KHÁM PHÁ · BỨT PHÁ</div>
     </div>
-    ${principiaWelcomeCharacterMarkup()?'<div class="pw-character" aria-label="Nhân vật PRINCIPIA">'+principiaWelcomeCharacterMarkup()+'</div>':''}
+    ${principiaWelcomeCharacterMarkup()?'<div class="pw-character" aria-label="Nhân vật PRINCIPIA" style="display:flex;justify-content:center;align-items:center;min-height:96px;margin-top:12px">'+principiaWelcomeCharacterMarkup()+'</div>':''}
    </section>
    <footer class="pw-footer"><span>PRINCIPIA • PHYSICS OLYMPIAD</span><span>MADE FOR CURIOUS MINDS</span></footer>
   </main>`;
