@@ -142,12 +142,15 @@
     const recent = state.matches.slice(-5).reverse();
     const history = recent.length ? recent.map(match => '<div style="display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid #38324d"><span>' + escapeHtml(match.rival) + ' · ' + new Date(match.date).toLocaleString('vi-VN') + '</span><b style="color:' + (match.result === 'win' ? '#78e0ac' : '#f2a2a2') + '">' + (match.result === 'win' ? 'THẮNG' : 'THUA') + ' · ' + (match.rpChange > 0 ? '+' : '') + match.rpChange + ' RP</b></div>').join('') : '<p style="color:#aaa">Chưa có trận xếp hạng.</p>';
     const thisWeek = weekKey();
+    const today = todayKey();
+    const todayMatches = state.matches.filter(item => String(item.date || '').slice(0, 10) === today);
+    const winsToday = todayMatches.filter(item => item.result === 'win').length;
     const weekMatches = state.matches.filter(item => String(item.date || '').slice(0, 10) >= thisWeek);
     const weeklyWins = weekMatches.filter(item => item.result === 'win').length;
     const missions = [
       { id: 'daily-1', label: 'Chơi 1 trận xếp hạng', value: state.dailyMatches, target: 1, reward: 15 },
       { id: 'daily-3', label: 'Chơi 3 trận xếp hạng', value: state.dailyMatches, target: 3, reward: 25 },
-      { id: 'wins-2', label: 'Thắng 2 trận trong mùa', value: state.wins, target: 2, reward: 30 },
+      { id: 'wins-2', label: 'Thắng 2 trận hôm nay', value: winsToday, target: 2, reward: 30 },
       { id: 'weekly-play5', label: 'Tuần bền bỉ · chơi 5 trận', value: weekMatches.length, target: 5, reward: 40, period: 'week' },
       { id: 'weekly-win3', label: 'Tuần chiến thắng · thắng 3 trận', value: weeklyWins, target: 3, reward: 60, period: 'week' }
     ];
@@ -252,7 +255,7 @@
     const definitions = {
       'daily-1': { value: state.dailyMatches, target: 1, reward: 15, period: 'day' },
       'daily-3': { value: state.dailyMatches, target: 3, reward: 25, period: 'day' },
-      'wins-2': { value: state.wins, target: 2, reward: 30, period: 'day' },
+      'wins-2': { value: state.matches.filter(item => String(item.date || '').slice(0, 10) === today && item.result === 'win').length, target: 2, reward: 30, period: 'day' },
       'weekly-play5': { value: weekMatches.length, target: 5, reward: 40, period: 'week' },
       'weekly-win3': { value: weekMatches.filter(item => item.result === 'win').length, target: 3, reward: 60, period: 'week' }
     };
