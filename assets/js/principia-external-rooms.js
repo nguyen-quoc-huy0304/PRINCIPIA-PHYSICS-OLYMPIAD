@@ -23,11 +23,12 @@
   const isGame=kind==='games';
   const rooms=read(kind);
   root.className='principia-external-rooms';
-  root.innerHTML='<section class="per-card"><div class="per-head"><div><b>'+(isGame?'🎮 Trò chơi từ website bên ngoài':'🧪 Phòng thí nghiệm mở rộng')+'</b><p>'+(isGame?'Tạo phòng trò chơi bằng link; nội dung chỉ tải khi bạn tạo phòng.':'Tự tạo phòng hoặc tab mô phỏng từ website khác; nội dung chỉ tải khi bạn chọn.')+'</p></div><span class="per-count"></span></div>'+
-   '<form class="per-form"><input name="title" maxlength="80" placeholder="'+(isGame?'Tên trò chơi':'Tên phòng / mô phỏng')+'" aria-label="Tên phòng" required><input name="url" type="url" maxlength="2048" placeholder="Dán link website (https://...)" aria-label="Đường dẫn website" required><button type="submit">'+(isGame?'＋ Tạo trò chơi':'＋ Tạo phòng / tab')+'</button></form>'+
-   '<div class="per-body"><nav class="per-tabs" aria-label="Phòng đã tạo"></nav><div class="per-view"><div class="per-empty">Chưa có phòng nào. Nhập tên và link để tạo phòng đầu tiên.</div></div></div>'+
+  root.innerHTML='<section class="per-card"><div class="per-head"><div><b>'+(isGame?'🎮 Trò chơi từ website bên ngoài':'🧪 Phòng thí nghiệm mở rộng')+'</b><p>'+(isGame?'Tạo phòng trò chơi bằng link; nội dung chỉ tải khi bạn tạo phòng.':'Tự tạo phòng hoặc tab mô phỏng từ website khác; nội dung chỉ tải khi bạn chọn.')+'</p></div><div class="per-head-actions"><span class="per-count"></span><button type="button" class="per-toggle">'+(isGame?'＋ Tạo trò chơi':'＋ Tạo phòng / tab')+'</button></div></div>'+
+   '<form class="per-form" hidden><input name="title" maxlength="80" placeholder="'+(isGame?'Tên trò chơi':'Tên phòng / mô phỏng')+'" aria-label="Tên phòng" required><input name="url" type="url" maxlength="2048" placeholder="Dán link website (https://...)" aria-label="Đường dẫn website" required><button type="submit">'+(isGame?'＋ Tạo trò chơi':'＋ Tạo phòng / tab')+'</button></form>'+
+   '<div class="per-body"><nav class="per-tabs" aria-label="Phòng đã tạo"></nav><div class="per-view"><div class="per-empty">Chưa có phòng nào. Nhấn nút tạo phòng để thêm website.</div></div></div>'+
    '<p class="per-foot">Website cho phép iframe sẽ hiển thị ngay tại đây. Nếu website chặn nhúng, dùng “Mở ngoài”. PRINCIPIA không thể vượt chính sách bảo mật của website đó.</p></section>';
-  const form=root.querySelector('.per-form'),toggle=root.querySelector('.per-toggle'),tabs=root.querySelector('.per-tabs'),view=root.querySelector('.per-view'),count=root.querySelector('.per-count');\n  toggle.addEventListener('click',()=>{form.hidden=!form.hidden;toggle.textContent=form.hidden?(isGame?'＋ Tạo trò chơi':'＋ Tạo phòng / tab'):'Đóng biểu mẫu';if(!form.hidden)form.querySelector('[name=title]').focus()});
+  const form=root.querySelector('.per-form'),toggle=root.querySelector('.per-toggle'),tabs=root.querySelector('.per-tabs'),view=root.querySelector('.per-view'),count=root.querySelector('.per-count');
+  toggle.addEventListener('click',()=>{form.hidden=!form.hidden;toggle.textContent=form.hidden?(isGame?'＋ Tạo trò chơi':'＋ Tạo phòng / tab'):'Đóng biểu mẫu';if(!form.hidden)form.querySelector('[name=title]').focus()});
   let activeId=rooms[0]?.id||null;
   function render(){
    count.textContent=rooms.length+'/'+MAX_ROOMS+' phòng';
