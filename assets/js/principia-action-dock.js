@@ -162,6 +162,7 @@
  function mount(){
   installDockPositionStyles();
   const root=ensureDockRoot();
+  root.style.display=welcome()?'none':'block';
   const launchers=[...document.querySelectorAll('button.chat-bubble-btn.chat-messenger-launcher')];
   let ai=launchers[0]||document.getElementById(IDS.ai);
   launchers.slice(1).forEach(node=>node.remove());
