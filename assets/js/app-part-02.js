@@ -491,6 +491,7 @@ function startPrincipiaJourney(){
  // Giveaway/reward popup removed; keep the welcome screen and continue to Home.
 }
 function render(){
+ document.querySelectorAll('body > .principia-mobile-nav').forEach(el=>el.remove());
  const app=$('#app');
  if(window.__principiaLastRoute!==page){const previous=window.__principiaLastRoute||null;window.__principiaLastRoute=page;try{window.dispatchEvent(new CustomEvent('principia:page-changed',{detail:{page,previous}}));}catch(_){}}
 
@@ -544,6 +545,8 @@ const isMobileDevice=window.matchMedia('(max-width:900px)').matches;
  const settingsButton=`<button class="nav ${page==='more'?'active':''}" onclick="setPage('more')"><span class="nav-default-icon">⚙</span><span>Cài đặt</span></button>`;
  if(isMobileDevice){
   app.innerHTML=`<div class="principia-mobile-shell"><main class="principia-mobile-main"><div class="principia-mobile-topbar">${topbar()}</div><div id="body">${body}</div></main><nav class="principia-mobile-nav" aria-label="Điều hướng mobile">${brandMarkup}${navButtons}${settingsButton}</nav></div>`;
+  const mobileNav=app.querySelector('.principia-mobile-nav');
+  if(mobileNav)document.body.appendChild(mobileNav);
  }else{
   app.innerHTML=`<div class="principia-desktop-shell"><aside class="sidebar">${brandMarkup}${navGroupLabelHTML('workspace')}${navButtons}<div class="sidebottom">${navGroupLabelHTML('more')}${settingsButton}</div></aside><main class="main">${topbar()}<div id="body">${body}</div></main></div>`;
  }
