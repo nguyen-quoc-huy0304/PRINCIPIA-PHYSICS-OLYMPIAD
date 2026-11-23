@@ -782,6 +782,15 @@
  }
  function install(){
   const mobileDevice=/Android|iPhone|iPad|iPod|Mobile|IEMobile|Windows Phone/i.test(navigator.userAgent||'');
+  if(!document.getElementById('principiaRankQuickAccess')){
+   const rankButton=document.createElement('button');
+   rankButton.id='principiaRankQuickAccess';rankButton.type='button';
+   rankButton.textContent='🏆 Rank';rankButton.title='Mở đấu trường xếp hạng PRO';
+   rankButton.setAttribute('aria-label','Mở đấu trường xếp hạng PRO');
+   rankButton.style.cssText='position:fixed;left:14px;bottom:calc('+(mobileDevice?'142px':'18px')+' + env(safe-area-inset-bottom,0px));z-index:1202;min-height:42px;padding:0 14px;border:1px solid rgba(167,139,250,.5);border-radius:14px;background:rgba(31,27,53,.94);backdrop-filter:blur(16px);color:#eee8ff;font:700 13px/1 system-ui,sans-serif;box-shadow:0 8px 26px #0005;cursor:pointer';
+   rankButton.addEventListener('click',()=>{if(typeof window.principiaSuiteRankLeague==='function')window.principiaSuiteRankLeague();else alert('Đấu trường rank chưa tải xong. Hãy tải lại trang.');});
+   document.body.appendChild(rankButton);
+  }
   if(mobileDevice){document.getElementById('principiaSuiteTrigger')?.remove();return;}
   if(document.getElementById('principiaSuiteTrigger'))return;
   const b=document.createElement('button');b.id='principiaSuiteTrigger';b.type='button';b.textContent='✦';b.title='Trung tâm học tập PRINCIPIA';b.setAttribute('aria-label','Trung tâm học tập PRINCIPIA');
