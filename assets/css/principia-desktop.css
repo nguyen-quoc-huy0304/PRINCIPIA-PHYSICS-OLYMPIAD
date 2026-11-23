@@ -1658,3 +1658,26 @@ button.chat-bubble-btn.chat-messenger-launcher>.chat-messenger-logo{
 @media(max-width:900px){
  #principiaViewportActionDock{right:12px!important;bottom:calc(76px + env(safe-area-inset-bottom,0px))!important}
 }
+
+
+/* Final viewport anchoring: each action is fixed independently, not at the document bottom. */
+body #principiaSearchTrigger,
+body #principiaDownloadFab,
+body button.chat-bubble-btn.chat-messenger-launcher{
+ position:fixed!important;top:auto!important;right:18px!important;left:auto!important;
+ z-index:2147483000!important;width:46px!important;height:46px!important;
+ min-width:46px!important;min-height:46px!important;max-width:46px!important;max-height:46px!important;
+ border-radius:50%!important;display:grid!important;place-items:center!important;
+}
+body #principiaSearchTrigger{bottom:74px!important}
+body #principiaDownloadFab{bottom:130px!important}
+body button.chat-bubble-btn.chat-messenger-launcher{bottom:18px!important}
+body.principia-home-active button.chat-bubble-btn.chat-messenger-launcher,
+body.principia-welcome-active button.chat-bubble-btn.chat-messenger-launcher{display:grid!important}
+body #principiaSearchTrigger,body #principiaDownloadFab,body button.chat-bubble-btn.chat-messenger-launcher{pointer-events:auto!important}
+@media(max-width:900px){
+ body #principiaSearchTrigger,body #principiaDownloadFab,body button.chat-bubble-btn.chat-messenger-launcher{right:12px!important}
+ body #principiaSearchTrigger{bottom:calc(138px + env(safe-area-inset-bottom,0px))!important}
+ body #principiaDownloadFab{bottom:calc(194px + env(safe-area-inset-bottom,0px))!important}
+ body button.chat-bubble-btn.chat-messenger-launcher{bottom:calc(82px + env(safe-area-inset-bottom,0px))!important}
+}
