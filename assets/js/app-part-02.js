@@ -181,7 +181,9 @@ function toggleStudyClock(){
 }
 function resetStudyClock(){if(principiaClock.interval)clearInterval(principiaClock.interval);principiaClock.running=false;principiaClock.left=principiaClock.mode==='countdown'?principiaClock.seconds:0;const d=document.getElementById('studyClockDisplay');if(d)d.textContent=fmtClock(principiaClock.mode==='countdown'?principiaClock.left:0);const b=document.getElementById('studyClockStart');if(b)b.textContent='▶ Bắt đầu';const h=document.getElementById('studyClockHint');if(h)h.textContent=principiaClock.mode==='countdown'?'Sẵn sàng tập trung':'Bấm giờ học tập'}
 function home(){
+ const companionSrc=principiaWelcomeCharacterSrc();
  return `<div class="hero"><div class="eyebrow">WELCOME BACK</div><h1>Học tập theo cách<br>của riêng bạn.</h1><p>Khám phá kiến thức, chinh phục từng bài học và xây dựng chuỗi ngày học tập của bạn.</p><div class="toolbar" style="margin-top:14px"><button class="primary" onclick="setPage('library')">Tiếp tục học</button><button class="secondary" onclick="addChoice()">Tạo bài / tab</button><button class="secondary" onclick="setPage('quiz')">Mở Quiz</button></div></div>
+ ${companionSrc?`<div class="panel principia-home-companion" style="display:flex;align-items:center;gap:16px;margin:16px 0;padding:14px 18px"><img src="${esc(companionSrc)}" alt="Nhân vật PRINCIPIA" style="width:76px;height:76px;object-fit:contain;border-radius:18px"><div><div class="eyebrow">PRINCIPIA COMPANION</div><strong>Nhân vật đồng hành</strong><p class="muted small" style="margin:4px 0 0">Cùng bạn học tập và chinh phục thử thách.</p></div></div>`:''}
  <div class="stats"><div class="stat"><span class="muted small">Kinh nghiệm</span><strong>${xp} XP</strong><div class="xpbar"><div style="width:${xp%100}%"></div></div></div><div class="stat"><div class="muted small">Chuỗi ngày</div><strong>${streak} ngày</strong><span class="small muted">Giữ streak mỗi ngày</span></div><div class="stat"><div class="muted small">Bài đã học</div><strong>${completed.length}</strong><span class="small muted">Bài hoàn thành</span></div></div>
  <div class="sectionhead"><h2>Môn học của bạn</h2><div class="toolbar"><button class="primary" onclick="addChoice()">＋</button><button class="secondary" onclick="setPage('library')">Xem tất cả</button></div></div><div class="grid">${data.map(card).join('')}</div>
  <div class="sectionhead"><h2>Khám phá thêm</h2></div><div class="grid"><div class="tile" onclick="setPage('entertainment')"><h3>Giải trí & tư duy</h3><p>Cờ vua, Sudoku và bảng xếp hạng AI</p></div><div class="tile" onclick="setPage('quiz')"><h3>Quiz</h3><p>Kiểm tra kiến thức theo môn học</p></div><div class="tile" onclick="setPage('fun')"><h3>Đố vui</h3><p>Thử thách tư duy mỗi ngày</p></div></div>`;
@@ -446,14 +448,12 @@ function principiaWelcomeCharacterSrc(){
   const settings=JSON.parse(localStorage.getItem('principia_sticker_settings')||'{}');
   if(typeof settings.selected==='string' && settings.selected.startsWith('data:image/'))return settings.selected;
  }catch(e){}
- const svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 360"><defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#c9b7ff"/><stop offset="1" stop-color="#8bd5ef"/></linearGradient><linearGradient id="hair" x2="1" y2="1"><stop stop-color="#30254e"/><stop offset="1" stop-color="#7357a8"/></linearGradient><linearGradient id="skin" x2="0" y2="1"><stop stop-color="#fff0e7"/><stop offset="1" stop-color="#f5c8ba"/></linearGradient></defs><circle cx="160" cy="174" r="145" fill="url(#bg)"/><circle cx="160" cy="174" r="132" fill="none" stroke="#fff" stroke-opacity=".8" stroke-width="4"/><path d="M55 350Q61 260 160 254Q259 260 265 350" fill="#6552a4" stroke="#fff" stroke-width="6"/><path d="M80 155Q55 23 158 23Q278 15 250 167L232 251H87Z" fill="url(#hair)"/><ellipse cx="160" cy="147" rx="82" ry="96" fill="url(#skin)" stroke="#fff" stroke-width="5"/><path d="M78 130Q75 24 161 30Q244 23 245 118Q211 89 186 92Q133 65 78 130Z" fill="url(#hair)"/><path d="M83 105Q48 171 95 231L111 236L104 142ZM239 105Q276 173 226 232L210 236L217 142Z" fill="#3c2c60"/><path d="M111 140Q132 124 148 140M173 140Q190 124 210 140" fill="none" stroke="#563a60" stroke-width="6" stroke-linecap="round"/><ellipse cx="130" cy="162" rx="18" ry="24" fill="#fff"/><ellipse cx="190" cy="162" rx="18" ry="24" fill="#fff"/><ellipse cx="134" cy="166" rx="11" ry="17" fill="#51417e"/><ellipse cx="194" cy="166" rx="11" ry="17" fill="#51417e"/><circle cx="138" cy="157" r="5" fill="#fff"/><circle cx="198" cy="157" r="5" fill="#fff"/><ellipse cx="104" cy="194" rx="17" ry="9" fill="#f28da9" opacity=".55"/><ellipse cx="216" cy="194" rx="17" ry="9" fill="#f28da9" opacity=".55"/><path d="M145 211Q160 225 176 211" fill="none" stroke="#b65e7a" stroke-width="5" stroke-linecap="round"/><path d="M111 263L160 302L209 263" fill="none" stroke="#fff" stroke-width="6"/><path d="M254 61Q277 39 291 59Q300 79 277 94Q252 85 254 61Z" fill="#fff"/><path d="M273 51L279 66L294 72L279 78L273 94L267 78L252 72L267 66Z" fill="#ffd56f"/></svg>';
- return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+ return '';
 }
 function startPrincipiaJourney(){
  const acc=getPrincipiaAccount();
  const id=acc?.uid||acc?.email||'guest';
  localStorage.setItem('principia_welcome_seen_v4_'+id,'1');
- localStorage.setItem('principia_home_greeted_v2_'+id,'1');
  setPage('home');
  // Giveaway/reward popup removed; keep the welcome screen and continue to Home.
 }
@@ -475,7 +475,7 @@ function render(){
     <div class="pw-brand"><img src="${PRINCIPIA_LOGO_URI}" alt="PRINCIPIA"><span><b>PRINCIPIA</b><small>PHYSICS OLYMPIAD · PRO</small></span></div>
     <div class="pw-account"><span class="pw-online-dot"></span><span>${esc(welcomeAccount.email||'Tài khoản đã đăng nhập')}</span></div>
    </header>
-   <section class="pw-content">
+   <section class="pw-content" style="grid-template-columns:minmax(0,1fr)">
     <div class="pw-copy">
      <div class="pw-kicker"><span></span> YOUR NEXT CHAPTER STARTS HERE</div>
      <div class="pw-overline">WELCOME TO</div>
@@ -485,15 +485,7 @@ function render(){
      <button class="pw-start-button" type="button" onclick="startPrincipiaJourney()">Bắt đầu hành trình <span aria-hidden="true">→</span></button>
      <div class="pw-note"><span class="pw-note-line"></span> HỌC TẬP · KHÁM PHÁ · BỨT PHÁ</div>
     </div>
-    <div class="pw-visual">
-     <div class="pw-orbit pw-orbit-a"></div><div class="pw-orbit pw-orbit-b"></div>
-     <div class="pw-art-panel"><div class="pw-art-top"><span>PRINCIPIA COMPANION</span><i>● ONLINE</i></div>
-      <div class="pw-character-halo"><img src="${esc(characterSrc)}" alt="Nhân vật chibi PRINCIPIA"></div>
-      <div class="pw-speech"><span class="pw-speech-dot"></span><b>Sẵn sàng chưa?</b><small>Cùng bắt đầu hành trình nhé!</small></div>
-      <div class="pw-art-bottom"><span>LEARN</span><span>EXPLORE</span><span>GROW</span></div>
-     </div>
-     <div class="pw-floating-chip pw-chip-top">01 <span>START</span></div><div class="pw-floating-chip pw-chip-bottom">YOUR LEARNING WORLD</div>
-    </div>
+
    </section>
    <footer class="pw-footer"><span>PRINCIPIA • PHYSICS OLYMPIAD</span><span>MADE FOR CURIOUS MINDS</span></footer>
   </main>`;
