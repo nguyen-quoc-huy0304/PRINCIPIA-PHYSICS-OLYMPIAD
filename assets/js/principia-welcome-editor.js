@@ -97,6 +97,7 @@
  function start(){
   mount();
   document.addEventListener('pointerdown',onPointerDown,true);
+  document.addEventListener('click',event=>{if(!active||!screen()?.contains(event.target))return;const target=event.target.closest?.('button,img');if(!target||target.closest('[data-welcome-editor]'))return;event.preventDefault();event.stopImmediatePropagation();},true);
   observer=new MutationObserver(()=>{if(!screen())return;applyState();});
   observer.observe(document.body,{childList:true,subtree:true});
   document.addEventListener('principia:rendered',mount);
