@@ -339,3 +339,8 @@ html body #principiaDownloadFab{
  width:0!important;height:0!important;min-width:0!important;min-height:0!important;max-width:0!important;max-height:0!important;
  margin:0!important;padding:0!important;border:0!important;overflow:hidden!important;
 }
+
+/* Remove all controls from the welcome screen, including the welcome editor bubble. */
+body.principia-welcome-active .principia-welcome-screen button,
+body.principia-welcome-active #principiaWelcomeEditorBubble,
+body.principia-welcome-active #principiaWelcomeEditorPanel{display:none!important;visibility:hidden!important;pointer-events:none!important}
