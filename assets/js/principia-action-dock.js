@@ -87,6 +87,10 @@
    const heading=document.createElement('b');heading.textContent='Lịch sử truy cập';historyPanel.appendChild(heading);
    if(!entries.length){const empty=document.createElement('p');empty.textContent='Chưa có lịch sử.';historyPanel.appendChild(empty)}
    entries.forEach(entry=>{const item=document.createElement('button');item.type='button';item.textContent=entry.url;item.style.cssText='display:block;width:100%;text-align:left;padding:7px;background:transparent;color:inherit;border:0';item.addEventListener('click',()=>navigate(entry.url));historyPanel.appendChild(item)});
+   const savedTitle=document.createElement('b');savedTitle.textContent='Website đã lưu';savedTitle.style.display='block';savedTitle.style.marginTop='10px';historyPanel.appendChild(savedTitle);
+   let saved=[];try{const value=JSON.parse(localStorage.getItem('principia_browser_saved_sites_v1')||'[]');saved=Array.isArray(value)?value.filter(x=>x&&typeof x.url==='string'):[]}catch(_){}
+   if(!saved.length){const emptySaved=document.createElement('p');emptySaved.textContent='Chưa lưu website nào. Nhấn ☆ để lưu trang đang mở.';historyPanel.appendChild(emptySaved)}
+   saved.forEach(entry=>{const item=document.createElement('button');item.type='button';item.textContent=entry.url;item.style.cssText='display:block;width:100%;text-align:left;padding:7px;background:transparent;color:inherit;border:0';item.addEventListener('click',()=>navigate(entry.url));historyPanel.appendChild(item)});
    const clear=document.createElement('button');clear.type='button';clear.textContent='Xóa lịch sử';clear.addEventListener('click',()=>{try{localStorage.removeItem(HISTORY_KEY)}catch(_){};historyPanel.replaceChildren()});historyPanel.appendChild(clear);
   });
   panel.querySelector('#principiaBrowserSave').addEventListener('click',()=>{
