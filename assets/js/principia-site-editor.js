@@ -52,28 +52,37 @@
  }
  function setEnabled(next){
   enabled=!!next;
-  if(toolbar){toolbar.querySelector('[data-toggle]').textContent=enabled?'✓ Hoàn tất':'✎ Sửa chữ & ảnh';toolbar.classList.toggle('is-editing',enabled);}
+  if(toolbar){const toggle=toolbar.querySelector('[data-toggle]');if(toggle)toggle.textContent=enabled?'✓ Hoàn tất sửa':'✎ Bật sửa chữ & ảnh';toolbar.classList.toggle('is-editing',enabled);}
   scan();
  }
  function makeToolbar(){
   if(!isAdmin()||toolbar)return;
-  toolbar=document.createElement('div');toolbar.dataset.proEditorToolbar='1';toolbar.id='proSiteEditorToolbar';
-  toolbar.innerHTML='<button type="button" data-toggle>✎ Sửa chữ & ảnh</button><button type="button" data-export>Xuất</button><button type="button" data-import>Nhập</button><span data-status>Chỉ quản trị viên</span><input type="file" accept="application/json,.json" hidden>';
-  Object.assign(toolbar.style,{position:'fixed',left:'12px',bottom:'12px',zIndex:'2147483005',display:'flex',gap:'6px',alignItems:'center',padding:'8px',borderRadius:'14px',background:'rgba(18,20,34,.94)',border:'1px solid rgba(255,255,255,.22)',boxShadow:'0 8px 28px #0005',color:'#fff',font:'12px system-ui',maxWidth:'calc(100vw - 24px)',flexWrap:'wrap'});
-  toolbar.querySelectorAll('button').forEach(button=>Object.assign(button.style,{border:'1px solid rgba(255,255,255,.24)',borderRadius:'10px',padding:'8px 10px',background:'rgba(255,255,255,.1)',color:'#fff',font:'inherit'}));
-  toolbar.querySelector('[data-toggle]').addEventListener('click',()=>setEnabled(!enabled));
-  toolbar.querySelector('[data-export]').addEventListener('click',()=>{
+  const fab=document.createElement('button');
+  fab.type='button';fab.id='proSiteEditorFab';fab.dataset.proEditorToolbar='1';
+  fab.innerHTML='<svg viewBox="0 0 24 24" width="21" height="21" aria-hidden="true"><path d="m4 16.5-.8 4.3 4.3-.8L19 8.5 15.5 5 4 16.5Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="m13.8 6.7 3.5 3.5M3 21h18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+  fab.setAttribute('aria-label','Công cụ sửa chữ và ảnh');fab.title='Sửa chữ & ảnh';
+  Object.assign(fab.style,{position:'fixed',right:'18px',bottom:'130px',zIndex:'2147483005',display:'grid',placeItems:'center',width:'46px',height:'46px',minWidth:'46px',minHeight:'46px',borderRadius:'50%',border:'1px solid rgba(255,255,255,.25)',background:'rgba(20,22,36,.88)',backdropFilter:'blur(16px)',color:'#fff',boxShadow:'0 8px 24px #0005',cursor:'pointer'});
+  const panel=document.createElement('div');panel.id='proSiteEditorPanel';panel.dataset.proEditorToolbar='1';
+  panel.hidden=true;
+  panel.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px"><strong>Chỉnh sửa trang</strong><button type="button" data-close aria-label="Đóng">×</button></div><button type="button" data-toggle style="width:100%;margin-bottom:7px">✎ Bật sửa chữ & ảnh</button><div style="display:flex;gap:7px"><button type="button" data-export>Xuất bản sao</button><button type="button" data-import>Nhập bản sao</button></div><span data-status style="display:block;margin-top:8px;font-size:11px;opacity:.75">Chỉ quản trị viên</span><input type="file" accept="application/json,.json" hidden>';
+  Object.assign(panel.style,{position:'fixed',right:'18px',bottom:'186px',zIndex:'2147483005',width:'min(270px,calc(100vw - 36px))',padding:'12px',borderRadius:'14px',background:'rgba(18,20,34,.96)',border:'1px solid rgba(255,255,255,.22)',boxShadow:'0 8px 28px #0006',color:'#fff',font:'13px system-ui'});
+  panel.querySelectorAll('button').forEach(button=>Object.assign(button.style,{border:'1px solid rgba(255,255,255,.22)',borderRadius:'9px',padding:'8px 10px',background:'rgba(255,255,255,.1)',color:'#fff',font:'inherit',cursor:'pointer'}));
+  toolbar=panel;
+  fab.addEventListener('click',()=>{panel.hidden=!panel.hidden;});
+  panel.querySelector('[data-close]').addEventListener('click',()=>{panel.hidden=true;});
+  panel.querySelector('[data-toggle]').addEventListener('click',()=>setEnabled(!enabled));
+  panel.querySelector('[data-export]').addEventListener('click',()=>{
    const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const link=document.createElement('a');link.href=url;link.download='pro-site-edits.json';link.click();URL.revokeObjectURL(url);setStatus('Đã xuất bản sao nội dung.');
   });
-  const fileInput=toolbar.querySelector('input[type=file]');
-  toolbar.querySelector('[data-import]').addEventListener('click',()=>fileInput.click());
+  const fileInput=panel.querySelector('input[type=file]');
+  panel.querySelector('[data-import]').addEventListener('click',()=>fileInput.click());
   fileInput.addEventListener('change',async()=>{
    const file=fileInput.files?.[0];if(!file)return;
    try{const parsed=JSON.parse(await file.text());if(!parsed||typeof parsed!=='object'||!parsed.text||!parsed.images)throw new Error('Sai định dạng');state={text:parsed.text,images:parsed.images};persist();scan();setStatus('Đã nhập nội dung.');}
    catch(_){setStatus('Tệp JSON không hợp lệ.');}
    fileInput.value='';
   });
-  document.body.appendChild(toolbar);
+  document.body.append(fab,panel);
  }
  function compressImage(file){
   return new Promise((resolve,reject)=>{
