@@ -1392,3 +1392,8 @@ body.principia-welcome-active .chat-bubble-btn,body.principia-home-active .chat-
  .chat-messenger-logo{width:54px!important;height:54px!important}
  .chat-box{right:12px!important;bottom:calc(146px + env(safe-area-inset-bottom))!important;width:min(380px,calc(100vw - 24px))!important;max-height:calc(100svh - 170px)!important}
 }
+
+/* Move desktop download control clear of the search/action controls. */
+@media(min-width:901px){
+ #principiaDownloadFab{right:22px!important;bottom:154px!important;z-index:99990!important}
+}
