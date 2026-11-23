@@ -5,6 +5,11 @@
  const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
  let browserPanel=null;
  const HISTORY_KEY='principia_browser_history_v1';
+ const POSITION_KEY='principia_action_dock_positions_v1';
+ let dockPositions=readDockPositions();
+ function readDockPositions(){try{const value=JSON.parse(localStorage.getItem(POSITION_KEY)||'{}');return value&&typeof value==='object'?value:{}}catch(_){return{}}}
+ function saveDockPositions(){try{localStorage.setItem(POSITION_KEY,JSON.stringify(dockPositions))}catch(_){}}
+ const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
  const readHistory=()=>{try{const v=JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]');return Array.isArray(v)?v.filter(x=>x&&typeof x.url==='string').slice(0,50):[]}catch(_){return[]}};
  const saveHistory=url=>{try{localStorage.setItem(HISTORY_KEY,JSON.stringify([{url,at:Date.now()},...readHistory().filter(x=>x.url!==url)].slice(0,50)))}catch(_){}};
  const isMobile=()=>window.matchMedia('(max-width:900px)').matches;
@@ -23,7 +28,24 @@
   node.setAttribute('aria-hidden',welcome()?'true':'false');
   return node;
  }
- function stylePanel(panel,mobileBottom){
+ function positionPanelFromAnchor(panel,anchor){
+  if(!panel?.isConnected||!anchor?.isConnected)return;
+  const rect=anchor.getBoundingClientRect();
+  if(!rect.width||!rect.height)return;
+  const panelRect=panel.getBoundingClientRect();
+  const width=Math.max(180,panelRect.width||panel.offsetWidth||300);
+  const height=Math.max(120,panelRect.height||panel.offsetHeight||260);
+  const gap=12;
+  let left=rect.left>=window.innerWidth/2?rect.left-width-gap:rect.right+gap;
+  if(left<8||left+width>window.innerWidth-8)left=rect.left>=window.innerWidth/2?rect.right-width-gap:rect.left+gap;
+  const top=clamp(rect.top+(rect.height-height)/2,8,Math.max(8,window.innerHeight-height-8));
+  panel.style.setProperty('position','fixed','important');
+  panel.style.setProperty('left',clamp(left,8,Math.max(8,window.innerWidth-width-8))+'px','important');
+  panel.style.setProperty('top',top+'px','important');
+  panel.style.setProperty('right','auto','important');
+  panel.style.setProperty('bottom','auto','important');
+ }
+ function stylePanel(panel,mobileBottom,anchor){
   const mobile=isMobile();
   Object.assign(panel.style,{
    position:'fixed',right:mobile?'12px':'74px',
@@ -35,6 +57,7 @@
    background:'var(--card,#111827)',color:'var(--text,var(--txt,#fff))',
    boxShadow:'0 18px 60px #0009'
   });
+  if(anchor)positionPanelFromAnchor(panel,anchor);
  }
  function header(title,closeId,extra=''){
   return '<header data-dock-drag style="display:flex;align-items:center;gap:9px;min-height:46px;padding:0 12px;background:var(--card2,#20283a);border-bottom:1px solid var(--line,#46506a);touch-action:none;cursor:move"><b style="flex:1;min-width:0">'+title+'</b>'+extra+'<button type="button" id="'+closeId+'" aria-label="Đóng" style="font-size:20px;padding:3px 8px">×</button></header>';
@@ -62,7 +85,7 @@
   panel.innerHTML=header('⌕ Tìm kiếm Internet','principiaBrowserClose','<button type="button" id="principiaBrowserBack" title="Quay lại">←</button><button type="button" id="principiaBrowserForward" title="Tiến">→</button><button type="button" id="principiaBrowserReload" title="Tải lại">↻</button>')+
    '<div style="display:flex;gap:7px;padding:8px 10px"><button type="button" id="principiaBrowserHistoryToggle">Lịch sử</button><button type="button" id="principiaBrowserSave">☆ Lưu trang</button></div><div id="principiaBrowserHistoryList" hidden style="max-height:180px;overflow:auto;padding:8px 10px;border-bottom:1px solid var(--line,#46506a)"></div><div style="display:flex;align-items:center;gap:8px;padding:7px 10px;font-size:11px;opacity:.8"><span id="principiaBrowserStatus" role="status" style="flex:1">Đang xem Google. Dùng thanh tìm kiếm PRINCIPIA ở cạnh nút Quay lại.</span><button type="button" id="principiaBrowserExternal">Mở ngoài ↗</button></div>'+
    '<iframe id="principiaBrowserFrame" title="Kết quả tìm kiếm web" referrerpolicy="strict-origin-when-cross-origin" style="width:100%;flex:1;min-height:0;border:0;background:white" src="https://www.google.com/webhp?igu=1"></iframe>';
-  document.body.appendChild(panel);browserPanel=panel;stylePanel(panel,248);makeDraggable(panel);
+  document.body.appendChild(panel);browserPanel=panel;stylePanel(panel,248,document.getElementById(IDS.browser));makeDraggable(panel);
   const frame=panel.querySelector('#principiaBrowserFrame'),status=panel.querySelector('#principiaBrowserStatus');
   let history=['https://www.google.com/webhp?igu=1',...readHistory().map(x=>x.url)],position=0;
   const normalize=raw=>{
@@ -123,16 +146,26 @@
    input.placeholder='Tìm tệp / khu vực PRO…';input.autocomplete='off';
    input.setAttribute('aria-label','Tìm tệp và khu vực PRO');
   }
-  if(input.parentElement!==root)root.appendChild(input);
-  Object.assign(input.style,{
-   position:'fixed',right:isMobile()?'12px':'18px',top:isMobile()?'12px':'16px',
-   bottom:'auto',left:'auto',width:isMobile()?'min(230px,calc(100vw - 24px))':'min(280px,calc(100vw - 36px))',
-   height:'46px',minHeight:'46px',boxSizing:'border-box',padding:'0 15px',
-   border:'1px solid var(--line,#68708a)',borderRadius:'24px',
-   background:'var(--card,#171a2b)',color:'var(--text,var(--txt,#fff))',
-   fontSize:'14px',outlineOffset:'3px',boxShadow:'0 8px 26px #0005',
-   zIndex:'2',display:welcome()?'none':'block',pointerEvents:'auto'
-  });
+  const topRight=document.querySelector('#app .topright');
+  if(topRight){
+   const streak=[...topRight.querySelectorAll('button.pill')].find(item=>/ngày học|thành tích/i.test(item.textContent+' '+item.title))||topRight.querySelector('button.pill');
+   if(streak&&streak.parentElement===topRight){
+    if(streak.nextElementSibling!==input)topRight.insertBefore(input,streak.nextSibling);
+   }else if(input.parentElement!==topRight)topRight.prepend(input);
+   Object.assign(input.style,{
+    position:'relative',right:'auto',top:'auto',bottom:'auto',left:'auto',
+    width:isMobile()?'min(190px,42vw)':'min(260px,24vw)',minWidth:isMobile()?'118px':'170px',
+    maxWidth:'100%',height:'38px',minHeight:'38px',flex:'0 1 250px',
+    boxSizing:'border-box',padding:'0 13px',margin:'0',
+    border:'1px solid var(--line,#68708a)',borderRadius:'20px',
+    background:'var(--card,#171a2b)',color:'var(--text,var(--txt,#fff))',
+    fontSize:'13px',outlineOffset:'3px',boxShadow:'0 5px 16px #0004',
+    zIndex:'2',display:welcome()?'none':'block',pointerEvents:'auto'
+   });
+  }else{
+   if(input.parentElement!==root)root.appendChild(input);
+   Object.assign(input.style,{display:'none',position:'fixed'});
+  }
   if(input.dataset.searchBound!=='true'){
    input.dataset.searchBound='true';
    input.addEventListener('keydown',event=>{
@@ -160,29 +193,81 @@
   const style=document.createElement('style');style.id='principiaDockPositionStyles';
   style.textContent=
    'html>#principiaActionDockRoot{position:fixed!important;inset:0!important;top:0!important;right:0!important;bottom:0!important;left:0!important;width:100vw!important;height:100vh!important;height:100dvh!important;pointer-events:none!important;z-index:2147483000!important;display:block!important;visibility:visible!important;transform:none!important;contain:none!important}'+
-   '#principiaActionDockRoot>#principiaDockAI,#principiaActionDockRoot>#principiaDockBrowser,#principiaActionDockRoot>#proSiteEditorFab{position:absolute!important;left:auto!important;top:auto!important;transform:none!important;margin:0!important;pointer-events:auto!important;visibility:visible!important;display:grid!important;z-index:1!important}'+
-   '#principiaActionDockRoot>#principiaDockFiles{position:fixed!important;right:18px!important;top:16px!important;bottom:auto!important;left:auto!important;width:min(280px,calc(100vw - 36px))!important;height:46px!important;display:block!important;box-sizing:border-box!important;border-radius:24px!important;z-index:2147483002!important}'+
-   '@media(max-width:900px){#principiaActionDockRoot>#principiaDockFiles{right:12px!important;top:12px!important;width:min(230px,calc(100vw - 24px))!important}}'+
-   '#principiaActionDockRoot>#principiaDockAI{right:18px!important;bottom:18px!important}'+
-   '#principiaActionDockRoot>#principiaDockBrowser{right:18px!important;bottom:74px!important}'+
-   '#principiaActionDockRoot>#proSiteEditorFab{position:absolute!important;right:18px!important;bottom:130px!important;left:auto!important;top:auto!important;z-index:2!important;pointer-events:auto!important;margin:0!important}'+
+   '#principiaActionDockRoot>#principiaDockAI,#principiaActionDockRoot>#principiaDockBrowser,#principiaActionDockRoot>#proSiteEditorFab{position:absolute!important;transform:none!important;margin:0!important;pointer-events:auto!important;visibility:visible!important;display:grid!important;z-index:1!important;touch-action:none!important;cursor:grab!important}'+
    'html body #principiaSearchTrigger,html body #principiaDownloadFab{display:none!important;visibility:hidden!important;pointer-events:none!important}'+
    'body.principia-welcome-active #principiaActionDockRoot>#principiaDockAI,body.principia-welcome-active #principiaActionDockRoot>#principiaDockBrowser,body.principia-welcome-active #principiaActionDockRoot>#principiaDockFiles{display:none!important;visibility:hidden!important;pointer-events:none!important}';
   document.head.appendChild(style);
  }
  function syncEditorPanelPosition(pencil){
   const panel=document.getElementById('proSiteEditorPanel');
-  if(!panel||!pencil?.isConnected)return;
-  const rect=pencil.getBoundingClientRect();
-  if(!rect.width||!rect.height)return;
-  const gap=12;
-  Object.assign(panel.style,{
-   position:'fixed',
-   right:Math.max(8,window.innerWidth-rect.right)+'px',
-   bottom:Math.max(8,window.innerHeight-rect.top+gap)+'px',
-   left:'auto',
-   top:'auto'
+  if(!panel||panel.hidden||!pencil?.isConnected)return;
+  positionPanelFromAnchor(panel,pencil);
+ }
+ function syncChatPanelPosition(ai){
+  const panel=document.getElementById('chatBox');
+  if(!panel||!panel.classList.contains('open')||!ai?.isConnected)return;
+  positionPanelFromAnchor(panel,ai);
+ }
+ function applyLauncherPosition(node,defaultBottom){
+  const saved=dockPositions[node.id];
+  const mobile=isMobile();
+  if(saved&&Number.isFinite(Number(saved.x))&&Number.isFinite(Number(saved.y))){
+   const x=clamp(Number(saved.x),8,Math.max(8,window.innerWidth-54));
+   const y=clamp(Number(saved.y),8,Math.max(8,window.innerHeight-54));
+   node.style.setProperty('left',x+'px','important');
+   node.style.setProperty('top',y+'px','important');
+   node.style.setProperty('right','auto','important');
+   node.style.setProperty('bottom','auto','important');
+   dockPositions[node.id]={x,y};
+  }else{
+   node.style.setProperty('left','auto','important');
+   node.style.setProperty('top','auto','important');
+   node.style.setProperty('right',(mobile?'12px':'18px'),'important');
+   node.style.setProperty('bottom',(mobile?'calc('+defaultBottom+'px + env(safe-area-inset-bottom,0px))':defaultBottom+'px'),'important');
+  }
+  node.style.setProperty('position','absolute','important');
+ }
+ function bindLauncherDrag(node,onMove){
+  if(node.dataset.dockDragBound==='true')return;
+  node.dataset.dockDragBound='true';
+  node.addEventListener('pointerdown',event=>{
+   if(event.button!==0||event.target.closest('input,select,textarea'))return;
+   const rect=node.getBoundingClientRect();
+   node._principiaDrag={startX:event.clientX,startY:event.clientY,left:rect.left,top:rect.top,moved:false};
+   try{node.setPointerCapture(event.pointerId)}catch(_){}
   });
+  node.addEventListener('pointermove',event=>{
+   const drag=node._principiaDrag;if(!drag)return;
+   const dx=event.clientX-drag.startX,dy=event.clientY-drag.startY;
+   if(!drag.moved&&Math.hypot(dx,dy)<5)return;
+   drag.moved=true;
+   const x=clamp(drag.left+dx,8,Math.max(8,window.innerWidth-node.offsetWidth-8));
+   const y=clamp(drag.top+dy,8,Math.max(8,window.innerHeight-node.offsetHeight-8));
+   node.style.setProperty('left',x+'px','important');
+   node.style.setProperty('top',y+'px','important');
+   node.style.setProperty('right','auto','important');
+   node.style.setProperty('bottom','auto','important');
+   if(onMove)onMove();
+   event.preventDefault();
+  });
+  const finish=()=>{
+   const drag=node._principiaDrag;if(!drag)return;
+   if(drag.moved){
+    const rect=node.getBoundingClientRect();
+    dockPositions[node.id]={x:Math.round(rect.left),y:Math.round(rect.top)};
+    saveDockPositions();
+    node._principiaSuppressClick=true;
+    setTimeout(()=>{node._principiaSuppressClick=false},0);
+    if(onMove)onMove();
+   }
+   node._principiaDrag=null;
+  };
+  node.addEventListener('pointerup',finish);
+  node.addEventListener('pointercancel',finish);
+  node.addEventListener('click',event=>{
+   if(!node._principiaSuppressClick)return;
+   event.preventDefault();event.stopImmediatePropagation();node._principiaSuppressClick=false;
+  },true);
  }
  function mount(){
   installDockPositionStyles();
@@ -213,15 +298,26 @@
    const onWelcome=welcome();
    const target=onWelcome?document.body:root;
    if(pencil.parentElement!==target)target.appendChild(pencil);
-   Object.assign(pencil.style,{position:'fixed',right:'18px',bottom:isMobile()?'138px':'130px',left:'auto',top:'auto',zIndex:'2147483005',width:'46px',height:'46px',minWidth:'46px',minHeight:'46px',display:'grid',placeItems:'center',margin:'0',pointerEvents:'auto'});
+   Object.assign(pencil.style,{position:'absolute',right:'18px',bottom:isMobile()?'138px':'130px',left:'auto',top:'auto',zIndex:'2147483005',width:'46px',height:'46px',minWidth:'46px',minHeight:'46px',display:'grid',placeItems:'center',margin:'0',pointerEvents:'auto'});
    pencil.setAttribute('aria-hidden','false');
+   if(target===root){
+    applyLauncherPosition(pencil,isMobile()?138:130);
+    bindLauncherDrag(pencil,()=>syncEditorPanelPosition(pencil));
+   }
   }
+  applyLauncherPosition(browser,isMobile()?82:74);
+  bindLauncherDrag(browser,()=>{
+   if(browserPanel&&browserPanel.isConnected)positionPanelFromAnchor(browserPanel,browser);
+  });
+  applyLauncherPosition(ai,isMobile()?82:18);
+  bindLauncherDrag(ai,()=>syncChatPanelPosition(ai));
   syncEditorPanelPosition(pencil);
-  if(browserPanel&&browserPanel.isConnected)stylePanel(browserPanel,248);
+  syncChatPanelPosition(ai);
+  if(browserPanel&&browserPanel.isConnected)stylePanel(browserPanel,248,browser);
  }
  function start(){
   mount();
-  new MutationObserver(mount).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
+  new MutationObserver(mount).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class','hidden']});
   window.addEventListener('resize',mount,{passive:true});
   document.addEventListener('principia:rendered',mount);
   document.addEventListener('principia:page-changed',mount);
