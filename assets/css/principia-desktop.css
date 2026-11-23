@@ -1404,3 +1404,27 @@ body.principia-welcome-active .chat-bubble-btn,body.principia-home-active .chat-
 .chat-messenger-launcher::before{display:none!important;content:none!important}
 .chat-messenger-launcher .chat-messenger-logo{display:block!important;width:39px!important;height:39px!important;min-width:39px!important;min-height:39px!important;object-fit:contain!important}
 @media(max-width:520px){.chat-messenger-launcher{width:54px!important;height:54px!important;min-width:54px!important;min-height:54px!important;max-width:54px!important}.chat-messenger-launcher .chat-messenger-logo{width:37px!important;height:37px!important;min-width:37px!important;min-height:37px!important}}
+
+
+/* Desktop Home must use the same workspace shell and content flow as every other tab.
+   The old image-only Home rules above are intentionally superseded here. */
+@media (min-width:901px){
+ body.principia-home-active .sidebar{display:flex!important}
+ body.principia-home-active .top{display:flex!important}
+ body.principia-home-active .main{
+  display:block!important;
+  min-height:100vh!important;
+  padding:27px clamp(15px,4vw,48px)!important;
+ }
+ body.principia-home-active #body{
+  display:block!important;
+  place-items:initial!important;
+  min-height:0!important;
+  width:100%!important;
+  max-width:1600px!important;
+  margin:0 auto!important;
+  padding:clamp(16px,3vw,34px)!important;
+ }
+ body.principia-home-active .chat-bubble-btn.chat-messenger-launcher{display:grid!important}
+ body.principia-home-active .principia-home-comic{display:flex!important}
+}
