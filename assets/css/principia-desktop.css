@@ -1687,3 +1687,12 @@ body #principiaSearchTrigger,body #principiaDownloadFab,body button.chat-bubble-
 .pro-edit-image{outline:2px dashed rgba(150,190,255,.8)!important;outline-offset:3px!important;cursor:copy!important}
 #proSiteEditorToolbar [data-status]{max-width:42vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media(max-width:520px){#proSiteEditorToolbar{left:8px!important;bottom:8px!important;right:8px!important;gap:4px!important}#proSiteEditorToolbar [data-status]{max-width:100%;flex-basis:100%}}
+
+
+/* Refined password recovery action — responsive, accessible and visually quiet. */
+.auth-form .forgot-password-row{display:flex;justify-content:flex-end;align-items:center;margin:1px 0 5px}
+.auth-form .forgot-password-link{width:auto!important;min-height:36px;margin:0!important;padding:7px 11px!important;display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid color-mix(in srgb,var(--purple) 24%,var(--line))!important;border-radius:999px!important;background:color-mix(in srgb,var(--purple) 7%,var(--card))!important;color:var(--purple)!important;font-size:12px;font-weight:700;letter-spacing:.01em;line-height:1;cursor:pointer;transition:background .18s ease,border-color .18s ease,transform .18s ease,box-shadow .18s ease}
+.auth-form .forgot-password-link:hover{background:color-mix(in srgb,var(--purple) 13%,var(--card))!important;border-color:color-mix(in srgb,var(--purple) 48%,var(--line))!important;box-shadow:0 4px 14px rgba(124,92,230,.12);transform:translateY(-1px)}
+.auth-form .forgot-password-link:focus-visible{outline:3px solid color-mix(in srgb,var(--purple) 35%,transparent);outline-offset:2px}
+.auth-form .forgot-password-icon{width:17px;height:17px;display:grid;place-items:center;border-radius:50%;background:color-mix(in srgb,var(--purple) 13%,transparent);font-size:12px}
+@media(max-width:520px){.auth-form .forgot-password-link{min-height:38px;padding:8px 12px!important;font-size:12px}}
