@@ -307,7 +307,7 @@
   }
   ai.id=IDS.ai;ai.title='Mở trợ lý AI';ai.setAttribute('aria-label','Mở trợ lý AI');
   if(ai.parentElement!==document.body)document.body.appendChild(ai);
-  Object.assign(ai.style,{position:'fixed',right:'18px',bottom:'18px',left:'auto',top:'auto',zIndex:'2147483005',width:'46px',height:'46px',minWidth:'46px',minHeight:'46px',maxWidth:'46px',maxHeight:'46px',display:welcome()?'none':'grid',placeItems:'center',borderRadius:'16px',transform:'none',margin:'0',pointerEvents:'auto',touchAction:'none',userSelect:'none',cursor:'grab'});
+  Object.assign(ai.style,{position:'fixed',right:'18px',bottom:'18px',left:'auto',top:'auto',zIndex:'1',width:'46px',height:'46px',minWidth:'46px',minHeight:'46px',maxWidth:'46px',maxHeight:'46px',display:welcome()?'none':'grid',placeItems:'center',borderRadius:'16px',transform:'none',margin:'0',pointerEvents:'auto'});
   ai.style.display=welcome()?'none':'grid';
   ai.setAttribute('aria-hidden',welcome()?'true':'false');
   const browser=button(IDS.browser,'Tìm kiếm Internet','⌕',isMobile()?138:74);
@@ -318,12 +318,15 @@
   const download=document.getElementById('principiaDownloadFab');if(download){download.style.setProperty('display','none','important');download.style.setProperty('visibility','hidden','important');download.style.setProperty('pointer-events','none','important');download.style.setProperty('width','0','important');download.style.setProperty('height','0','important');download.setAttribute('aria-hidden','true');download.tabIndex=-1;}
   const pencil=document.getElementById('proSiteEditorFab');
   if(pencil){
+   const onWelcome=welcome();
    const target=document.body;
    if(pencil.parentElement!==target)target.appendChild(pencil);
-   Object.assign(pencil.style,{position:'fixed',right:'18px',bottom:isMobile()?'194px':'130px',left:'auto',top:'auto',zIndex:'2147483005',width:'46px',height:'46px',minWidth:'46px',minHeight:'46px',display:'grid',placeItems:'center',margin:'0',pointerEvents:'auto',touchAction:'none',userSelect:'none',cursor:'grab'});
+   Object.assign(pencil.style,{position:'fixed',right:'18px',bottom:isMobile()?'194px':'130px',left:'auto',top:'auto',zIndex:'2147483005',width:'46px',height:'46px',minWidth:'46px',minHeight:'46px',display:'grid',placeItems:'center',margin:'0',pointerEvents:'auto'});
    pencil.setAttribute('aria-hidden','false');
-   applyLauncherPosition(pencil,isMobile()?194:130);
-   bindLauncherDrag(pencil,()=>syncEditorPanelPosition(pencil));
+   if(target===root){
+    applyLauncherPosition(pencil,isMobile()?194:130);
+    bindLauncherDrag(pencil,()=>syncEditorPanelPosition(pencil));
+   }
   }
   applyLauncherPosition(browser,isMobile()?138:74);
   bindLauncherDrag(browser,()=>{
