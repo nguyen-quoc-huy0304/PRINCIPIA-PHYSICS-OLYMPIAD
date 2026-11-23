@@ -1369,3 +1369,31 @@ body.principia-welcome-active .chat-bubble-btn,body.principia-home-active .chat-
 .pw-character-halo .principia-bundled-pose{width:min(34vw,360px)!important;height:min(34vw,360px)!important}
 .chat-character-portrait .principia-bundled-pose{width:92px!important;height:92px!important}
 @media(max-width:600px){.principia-home-art{width:100vw!important;height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom))!important}.principia-home-art .principia-bundled-pose{width:min(88vw,440px)!important;height:min(88vw,440px)!important}}
+
+/* PRINCIPIA desktop width recovery: keep the classic PC workspace full-width. */
+@media (min-width:901px){
+ html,body{width:100%!important;min-width:0!important}
+ #app{display:block!important;width:100%!important;max-width:none!important;min-width:0!important;margin:0!important}
+ #app>.layout{
+  display:grid!important;
+  grid-template-columns:248px minmax(0,1fr)!important;
+  align-items:stretch!important;
+  width:100%!important;max-width:none!important;min-width:0!important;
+  min-height:100vh!important;margin:0!important;
+ }
+ #app>.layout>.sidebar{
+  grid-column:1!important;grid-row:1!important;
+  width:248px!important;min-width:248px!important;max-width:248px!important;
+ }
+ #app>.layout>.main{
+  grid-column:2!important;grid-row:1!important;
+  display:block!important;width:100%!important;min-width:0!important;
+  max-width:none!important;margin:0!important;
+  box-sizing:border-box!important;
+ }
+ #app>.layout>.main>#body{
+  display:block!important;width:100%!important;max-width:1600px!important;
+  min-width:0!important;margin:0 auto!important;
+  box-sizing:border-box!important;
+ }
+}
