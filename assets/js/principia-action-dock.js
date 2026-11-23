@@ -167,13 +167,13 @@
    '#principiaActionDockRoot>#principiaDockBrowser{right:18px!important;bottom:74px!important}'+
    '#principiaActionDockRoot>#proSiteEditorFab{position:absolute!important;right:18px!important;bottom:186px!important;left:auto!important;top:auto!important;z-index:2!important;pointer-events:auto!important;margin:0!important}'+
    'html body #principiaSearchTrigger,html body #principiaDownloadFab{display:none!important;visibility:hidden!important;pointer-events:none!important}'+
-   'body.principia-welcome-active #principiaActionDockRoot{display:none!important}';
+   'body.principia-welcome-active #principiaActionDockRoot>#principiaDockAI,body.principia-welcome-active #principiaActionDockRoot>#principiaDockBrowser,body.principia-welcome-active #principiaActionDockRoot>#principiaDockFiles{display:none!important;visibility:hidden!important;pointer-events:none!important}';
   document.head.appendChild(style);
  }
  function mount(){
   installDockPositionStyles();
   const root=ensureDockRoot();
-  root.style.display=welcome()?'none':'block';
+  root.style.display='block';
   const launchers=[...document.querySelectorAll('button.chat-bubble-btn.chat-messenger-launcher')];
   let ai=launchers[0]||document.getElementById(IDS.ai);
   launchers.slice(1).forEach(node=>node.remove());
@@ -185,7 +185,8 @@
   }
   ai.id=IDS.ai;ai.title='Mở trợ lý AI';ai.setAttribute('aria-label','Mở trợ lý AI');
   if(ai.parentElement!==root)root.appendChild(ai);
-  Object.assign(ai.style,{position:'absolute',right:'18px',bottom:'18px',left:'auto',top:'auto',zIndex:'1',width:'46px',height:'46px',minWidth:'46px',minHeight:'46px',maxWidth:'46px',maxHeight:'46px',display:'grid',placeItems:'center',borderRadius:'16px',transform:'none',margin:'0',pointerEvents:'auto'});
+  Object.assign(ai.style,{position:'absolute',right:'18px',bottom:'18px',left:'auto',top:'auto',zIndex:'1',width:'46px',height:'46px',minWidth:'46px',minHeight:'46px',maxWidth:'46px',maxHeight:'46px',display:welcome()?'none':'grid',placeItems:'center',borderRadius:'16px',transform:'none',margin:'0',pointerEvents:'auto'});
+  ai.style.display=welcome()?'none':'grid';
   ai.setAttribute('aria-hidden',welcome()?'true':'false');
   const browser=button(IDS.browser,'Tìm kiếm Internet','⌕',isMobile()?82:74);
   if(browser.parentElement!==root)root.appendChild(browser);
@@ -194,8 +195,13 @@
   const oldSearch=document.getElementById('principiaSearchTrigger');if(oldSearch){oldSearch.style.setProperty('display','none','important');oldSearch.style.setProperty('visibility','hidden','important');oldSearch.style.setProperty('pointer-events','none','important');oldSearch.setAttribute('aria-hidden','true');oldSearch.tabIndex=-1;}
   const download=document.getElementById('principiaDownloadFab');if(download){download.style.setProperty('display','none','important');download.style.setProperty('visibility','hidden','important');download.style.setProperty('pointer-events','none','important');download.style.setProperty('width','0','important');download.style.setProperty('height','0','important');download.setAttribute('aria-hidden','true');download.tabIndex=-1;}
   const pencil=document.getElementById('proSiteEditorFab');
-  if(pencil&&pencil.parentElement!==root)root.appendChild(pencil);
-  if(pencil)Object.assign(pencil.style,{position:'absolute',right:'18px',bottom:'130px',left:'auto',top:'auto',zIndex:'2',width:'46px',height:'46px',minWidth:'46px',minHeight:'46px',display:welcome()?'none':'grid',placeItems:'center',margin:'0',pointerEvents:'auto'});
+  if(pencil){
+   const onWelcome=welcome();
+   const target=onWelcome?document.body:root;
+   if(pencil.parentElement!==target)target.appendChild(pencil);
+   Object.assign(pencil.style,{position:'fixed',right:'18px',bottom:'130px',left:'auto',top:'auto',zIndex:'2147483005',width:'46px',height:'46px',minWidth:'46px',minHeight:'46px',display:'grid',placeItems:'center',margin:'0',pointerEvents:'auto'});
+   pencil.setAttribute('aria-hidden','false');
+  }
   const editor=document.getElementById('proSiteEditorPanel');if(editor)editor.style.bottom=isMobile()?'306px':'242px';
   if(browserPanel&&browserPanel.isConnected)stylePanel(browserPanel,248);
  }
