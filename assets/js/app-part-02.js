@@ -456,6 +456,7 @@ function startPrincipiaJourney(){
  const acc=getPrincipiaAccount();
  const id=acc?.uid||acc?.email||'guest';
  localStorage.setItem('principia_welcome_seen_v4_'+id,'1');
+ localStorage.setItem('principia_web_welcome_seen_v1','1');
  setPage('home');
  // Giveaway/reward popup removed; keep the welcome screen and continue to Home.
 }
