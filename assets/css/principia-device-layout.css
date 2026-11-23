@@ -380,3 +380,23 @@ html:has(#app .principia-welcome-screen:not([hidden])) body>#proSiteEditorPanel{
 html:has(#app .principia-welcome-screen:not([hidden])) #app .principia-welcome-screen .pw-start-button{
  display:inline-flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;
 }
+
+/* Strict welcome screen: only the explicit entry CTA remains visible. */
+html:has(#app .principia-welcome-screen:not([hidden]))>#principiaActionDockRoot,
+html:has(#app .principia-welcome-screen:not([hidden])) body>#proSiteEditorFab,
+html:has(#app .principia-welcome-screen:not([hidden])) body>#principiaWelcomeEditorBubble,
+html:has(#app .principia-welcome-screen:not([hidden])) body>#principiaWelcomeEditorPanel,
+html:has(#app .principia-welcome-screen:not([hidden])) body>#proSiteEditorPanel,
+html:has(#app .principia-welcome-screen:not([hidden])) body>#principiaSearchTrigger,
+html:has(#app .principia-welcome-screen:not([hidden])) body>#principiaDownloadFab,
+html:has(#app .principia-welcome-screen:not([hidden])) body>#principiaGlobalSearch,
+html:has(#app .principia-welcome-screen:not([hidden])) body>.chat-bubble-btn,
+html:has(#app .principia-welcome-screen:not([hidden])) body>.chat-box,
+html:has(#app .principia-welcome-screen:not([hidden])) body>.chat-panel,
+html:has(#app .principia-welcome-screen:not([hidden])) body>.principia-ai-overlay,
+html:has(#app .principia-welcome-screen:not([hidden])) body>.principia-mobile-nav{
+ display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;
+}
+html:has(#app .principia-welcome-screen:not([hidden])) #app .principia-welcome-screen .pw-start-button{
+ display:inline-flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;
+}
