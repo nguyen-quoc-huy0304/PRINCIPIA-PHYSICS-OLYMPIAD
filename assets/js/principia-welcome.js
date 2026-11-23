@@ -17,7 +17,6 @@
      <div class="pw-overline">WELCOME TO</div><h1>PRO</h1>
      <h2>Chào mừng <em>${safeName}</em><br>đến với PRO!</h2>
      <p>Một không gian học tập được tạo ra để bạn khám phá Vật lý, chinh phục thử thách và tiến bộ theo cách của riêng mình.</p>
-     <button class="pw-start-button" type="button" onclick="startPrincipiaJourney()">Bắt đầu hành trình <span aria-hidden="true">→</span></button>
      <div class="pw-note"><span class="pw-note-line"></span> HỌC TẬP · KHÁM PHÁ · BỨT PHÁ</div>
     </div>
     <div class="pw-visual" aria-label="Không gian khám phá Vật lý">
