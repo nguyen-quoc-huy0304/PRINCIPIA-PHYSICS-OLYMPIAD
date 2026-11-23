@@ -28,7 +28,13 @@
   button.style.setProperty('margin','0','important');
   button.style.setProperty('pointer-events','auto','important');
  }
- function mount(){controls.forEach(apply);}
+ function mount(){
+  controls.forEach(apply);
+  const panel=document.getElementById('proSiteEditorPanel');
+  if(panel)panel.style.setProperty('bottom',window.matchMedia('(max-width:900px)').matches?'250px':'186px','important');
+  const download=document.getElementById('principiaDownloadFab');
+  if(download){download.style.setProperty('display','none','important');download.setAttribute('aria-hidden','true');download.tabIndex=-1;}
+ }
  function start(){
   mount();
   new MutationObserver(mount).observe(document.body,{childList:true,subtree:true});
