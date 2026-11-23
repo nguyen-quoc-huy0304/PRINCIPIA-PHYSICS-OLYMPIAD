@@ -484,7 +484,6 @@ function render(){
  if(page==='welcome'){
   const welcomeAccount=getPrincipiaAccount()||{};
   const welcomeName=(welcomeAccount.name||profile?.name||'bạn').trim();
-  const characterSrc=principiaWelcomeCharacterSrc();
   app.innerHTML=`<main class="principia-welcome-screen">
    <div class="pw-glow pw-glow-one"></div><div class="pw-glow pw-glow-two"></div><div class="pw-stars"></div>
    <header class="pw-header">
