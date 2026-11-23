@@ -1,3 +1,15 @@
+// Apply the saved theme only after the main app exports its theme bridge.
+function requestPrincipiaTheme(){
+ const apply=window.applyPrincipiaThemePublic;
+ if(typeof apply==='function'){
+  try{return apply(localStorage.getItem('principia_theme')||'dark');}
+  catch(err){console.error('[PRINCIPIA] Theme initialization failed:',err);return;}
+ }
+ if(!window.__principiaThemeRetry)window.__principiaThemeRetry=0;
+ if(window.__principiaThemeRetry<30){window.__principiaThemeRetry++;setTimeout(requestPrincipiaTheme,200);}
+ else console.error('[PRINCIPIA] Theme bridge unavailable. app-part-02.js may have failed before exporting it.');
+}
+
 // Safe UI bridge: Firebase callbacks may fire before/without the app renderer.
 function requestPrincipiaRender(){
  if(typeof window.renderPrincipiaApp==='function'){
@@ -205,6 +217,6 @@ window.watchPrincipiaLeaderboard=function(){
 };
 
 // Khởi động sau khi Firebase và các hàm xác thực đã được khai báo.
-window.applyPrincipiaThemePublic(localStorage.getItem('principia_theme')||'dark');
+requestPrincipiaTheme();
 requestPrincipiaRender();
 
