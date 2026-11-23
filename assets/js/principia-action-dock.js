@@ -59,9 +59,9 @@
  function openBrowser(){
   closePanel(browserPanel);
   const panel=document.createElement('section');panel.id='principiaMiniBrowser';panel.setAttribute('role','dialog');panel.setAttribute('aria-label','Tìm kiếm Internet');
-  panel.innerHTML=header('⌕ Tìm kiếm Internet','principiaBrowserClose','<button type="button" id="principiaBrowserFilesOpen" title="Tìm vị trí tệp">Tìm tệp</button><button type="button" id="principiaBrowserBack" title="Quay lại">←</button><button type="button" id="principiaBrowserForward" title="Tiến">→</button><button type="button" id="principiaBrowserReload" title="Tải lại">↻</button>')+
+  panel.innerHTML=header('⌕ Tìm kiếm Internet','principiaBrowserClose','<button type="button" id="principiaBrowserBack" title="Quay lại">←</button><button type="button" id="principiaBrowserForward" title="Tiến">→</button><button type="button" id="principiaBrowserReload" title="Tải lại">↻</button>')+
    '<form id="principiaBrowserForm" style="display:flex;gap:6px;padding:9px;border-bottom:1px solid var(--line,#46506a)"><input id="principiaBrowserUrl" type="search" inputmode="search" autocomplete="off" placeholder="Tìm trên Google hoặc nhập địa chỉ website" style="flex:1;min-width:0;padding:10px;border:1px solid var(--line,#46506a);border-radius:10px;background:var(--bg,#0b1020);color:inherit"><button type="submit">Tìm</button></form>'+
-   '<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;font-size:11px;opacity:.8"><span id="principiaBrowserStatus" role="status" style="flex:1">Google Search · nếu Google không cho nhúng, dùng nút mở ngoài.</span><button type="button" id="principiaBrowserExternal">Mở ngoài ↗</button></div>'+
+   '<div style="display:flex;gap:7px;padding:8px 10px"><button type="button" id="principiaBrowserHistoryToggle">Lịch sử</button><button type="button" id="principiaBrowserSave">☆ Lưu trang</button></div><div id="principiaBrowserHistoryList" hidden style="max-height:180px;overflow:auto;padding:8px 10px;border-bottom:1px solid var(--line,#46506a)"></div><div style="display:flex;align-items:center;gap:8px;padding:7px 10px;font-size:11px;opacity:.8"><span id="principiaBrowserStatus" role="status" style="flex:1">Google Search · nếu Google không cho nhúng, dùng nút mở ngoài.</span><button type="button" id="principiaBrowserExternal">Mở ngoài ↗</button></div>'+
    '<iframe id="principiaBrowserFrame" title="Kết quả tìm kiếm web" referrerpolicy="strict-origin-when-cross-origin" style="width:100%;flex:1;min-height:0;border:0;background:white" src="https://www.google.com/webhp?igu=1"></iframe>';
   document.body.appendChild(panel);browserPanel=panel;stylePanel(panel,248);makeDraggable(panel);
   const frame=panel.querySelector('#principiaBrowserFrame'),input=panel.querySelector('#principiaBrowserUrl'),status=panel.querySelector('#principiaBrowserStatus');
@@ -78,6 +78,25 @@
    history=history.slice(0,position+1);history.push(url);position=history.length-1;input.value=raw;frame.src=url;saveHistory(url);
    status.textContent=url.includes('google.com/')?'Đang tìm trên Google. Nếu vùng kết quả trắng, Google đã chặn iframe trên trình duyệt này.':'Đang mở website. Một số trang chặn hiển thị nhúng.';
   };
+  const historyPanel=panel.querySelector('#principiaBrowserHistoryList');
+  panel.querySelector('#principiaBrowserHistoryToggle').addEventListener('click',()=>{
+   historyPanel.hidden=!historyPanel.hidden;
+   if(historyPanel.hidden)return;
+   const entries=readHistory();
+   historyPanel.replaceChildren();
+   const heading=document.createElement('b');heading.textContent='Lịch sử truy cập';historyPanel.appendChild(heading);
+   if(!entries.length){const empty=document.createElement('p');empty.textContent='Chưa có lịch sử.';historyPanel.appendChild(empty)}
+   entries.forEach(entry=>{const item=document.createElement('button');item.type='button';item.textContent=entry.url;item.style.cssText='display:block;width:100%;text-align:left;padding:7px;background:transparent;color:inherit;border:0';item.addEventListener('click',()=>navigate(entry.url));historyPanel.appendChild(item)});
+   const savedTitle=document.createElement('b');savedTitle.textContent='Website đã lưu';savedTitle.style.display='block';savedTitle.style.marginTop='10px';historyPanel.appendChild(savedTitle);
+   let saved=[];try{const value=JSON.parse(localStorage.getItem('principia_browser_saved_sites_v1')||'[]');saved=Array.isArray(value)?value.filter(x=>x&&typeof x.url==='string'):[]}catch(_){}
+   if(!saved.length){const emptySaved=document.createElement('p');emptySaved.textContent='Chưa lưu website nào. Nhấn ☆ để lưu trang đang mở.';historyPanel.appendChild(emptySaved)}
+   saved.forEach(entry=>{const item=document.createElement('button');item.type='button';item.textContent=entry.url;item.style.cssText='display:block;width:100%;text-align:left;padding:7px;background:transparent;color:inherit;border:0';item.addEventListener('click',()=>navigate(entry.url));historyPanel.appendChild(item)});
+   const clear=document.createElement('button');clear.type='button';clear.textContent='Xóa lịch sử';clear.addEventListener('click',()=>{try{localStorage.removeItem(HISTORY_KEY)}catch(_){};historyPanel.replaceChildren()});historyPanel.appendChild(clear);
+  });
+  panel.querySelector('#principiaBrowserSave').addEventListener('click',()=>{
+   const url=history[position];if(!url)return;
+   try{const key='principia_browser_saved_sites_v1',items=JSON.parse(localStorage.getItem(key)||'[]');const next=[{url,savedAt:Date.now()},...items.filter(x=>x.url!==url)].slice(0,50);localStorage.setItem(key,JSON.stringify(next));status.textContent='Đã lưu website trên thiết bị; đăng xuất không xóa.'}catch(_){status.textContent='Không lưu được website trên thiết bị.'}
+  });
   panel.querySelector('#principiaBrowserForm').addEventListener('submit',event=>{event.preventDefault();navigate(input.value)});
   panel.querySelector('#principiaBrowserExternal').addEventListener('click',()=>{
    const url=history[position];if(!url)return;
@@ -88,7 +107,6 @@
   panel.querySelector('#principiaBrowserForward').addEventListener('click',()=>{if(position<history.length-1){position++;frame.src=history[position];input.value=history[position]}});
   panel.querySelector('#principiaBrowserReload').addEventListener('click',()=>{frame.src=frame.src});
   frame.addEventListener('load',()=>{if(position>=0)status.textContent='Trang đã phản hồi. Nếu nội dung không hiển thị, trang có thể chặn iframe.'});
-  panel.querySelector('#principiaBrowserFilesOpen').addEventListener('click',()=>openFiles());
   panel.querySelector('#principiaBrowserClose').addEventListener('click',()=>{closePanel(panel);browserPanel=null});
   input.focus();
  }
@@ -102,7 +120,7 @@
   closePanel(filesPanel);
   const panel=document.createElement('section');panel.id='principiaQuickNavigation';panel.setAttribute('role','dialog');panel.setAttribute('aria-label','Điều hướng nhanh PRINCIPIA');
   panel.innerHTML=header('▦ Tìm tệp & khu vực PRO','principiaFilesClose')+
-   '<div style="padding:16px;border-bottom:1px solid var(--line,#46506a)"><label for="principiaFilesSearch" style="display:block;font-size:15px;font-weight:700;margin:0 0 9px">Tìm vị trí tệp và nội dung</label><input id="principiaFilesSearch" type="search" placeholder="Nhập tên tệp, bài học, chủ đề hoặc khu vực..." style="display:block;width:100%;box-sizing:border-box;padding:17px 16px;min-height:62px;font-size:18px;line-height:1.4;border:2px solid var(--accent,#8b7cff);border-radius:14px;background:var(--bg,#0b1020);color:inherit;outline-offset:3px"></div>'+
+   '<div style="padding:16px;border-bottom:1px solid var(--line,#46506a)"><label for="principiaFilesSearch" style="display:block;font-size:15px;font-weight:700;margin:0 0 9px">Tìm vị trí tệp và nội dung</label><input id="principiaFilesSearch" type="search" placeholder="Nhập tên tệp, bài học, chủ đề hoặc khu vực..." style="display:block;width:100%;box-sizing:border-box;padding:17px 16px;min-height:62px;font-size:18px;line-height:1.4;border:2px solid var(--accent,#8b7cff);border-radius:14px;background:var(--bg,#0b1020);color:inherit;outline-offset:3px"><button type="button" id="principiaFilesContentSearch" style="width:100%;margin-top:10px;min-height:48px;padding:12px;font-size:15px">Tìm trong nội dung PRINCIPIA ↗</button></div>'+
    '<div id="principiaFilesList" style="padding:10px;overflow:auto;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-content:start"></div>';
   document.body.appendChild(panel);filesPanel=panel;stylePanel(panel,248);makeDraggable(panel);
   const list=panel.querySelector('#principiaFilesList'),search=panel.querySelector('#principiaFilesSearch');
@@ -117,7 +135,7 @@
    }));
   };
   search.addEventListener('input',render);render();
-
+  panel.querySelector('#principiaFilesContentSearch').addEventListener('click',()=>{const query=search.value.trim();closePanel(panel);filesPanel=null;if(typeof window.openPrincipiaGlobalSearch==='function')window.openPrincipiaGlobalSearch(query);else if(typeof window.navigatePrincipiaPage==='function')window.navigatePrincipiaPage('library')});
   panel.querySelector('#principiaFilesClose').addEventListener('click',()=>{closePanel(panel);filesPanel=null});
   search.focus();
  }
@@ -133,11 +151,13 @@
   const style=document.createElement('style');style.id='principiaDockPositionStyles';
   style.textContent=
    'html>#principiaActionDockRoot{position:fixed!important;inset:0!important;top:0!important;right:0!important;bottom:0!important;left:0!important;width:100vw!important;height:100vh!important;height:100dvh!important;pointer-events:none!important;z-index:2147483000!important;display:block!important;visibility:visible!important;transform:none!important;contain:none!important}'+
-   '#principiaActionDockRoot>#principiaDockAI,#principiaActionDockRoot>#principiaDockBrowser,#principiaActionDockRoot>#proSiteEditorFab{position:absolute!important;left:auto!important;top:auto!important;transform:none!important;margin:0!important;pointer-events:auto!important;visibility:visible!important;display:grid!important;z-index:1!important}'+
+   '#principiaActionDockRoot>#principiaDockAI,#principiaActionDockRoot>#principiaDockBrowser,#principiaActionDockRoot>#principiaDockFiles,#principiaActionDockRoot>#proSiteEditorFab{position:absolute!important;left:auto!important;top:auto!important;transform:none!important;margin:0!important;pointer-events:auto!important;visibility:visible!important;display:grid!important;z-index:1!important}'+
    '#principiaActionDockRoot>#principiaDockAI{right:18px!important;bottom:18px!important}'+
    '#principiaActionDockRoot>#principiaDockBrowser{right:18px!important;bottom:74px!important}'+
-   '#principiaActionDockRoot>#proSiteEditorFab{position:absolute!important;right:18px!important;bottom:130px!important;left:auto!important;top:auto!important;z-index:2!important;pointer-events:auto!important;margin:0!important}'+
-   '@media(max-width:900px){#principiaActionDockRoot>#principiaDockAI{right:12px!important;bottom:calc(82px + env(safe-area-inset-bottom,0px))!important}#principiaActionDockRoot>#principiaDockBrowser{right:12px!important;bottom:calc(138px + env(safe-area-inset-bottom,0px))!important}#principiaActionDockRoot>#proSiteEditorFab{right:12px!important;bottom:calc(194px + env(safe-area-inset-bottom,0px))!important}}'+
+   '#principiaActionDockRoot>#principiaDockFiles{right:18px!important;bottom:130px!important}'+
+   '#principiaActionDockRoot>#proSiteEditorFab{position:absolute!important;right:18px!important;bottom:186px!important;left:auto!important;top:auto!important;z-index:2!important;pointer-events:auto!important;margin:0!important}'+
+   '@media(max-width:900px){#principiaActionDockRoot>#principiaDockAI{right:12px!important;bottom:calc(82px + env(safe-area-inset-bottom,0px))!important}#principiaActionDockRoot>#principiaDockBrowser{right:12px!important;bottom:calc(138px + env(safe-area-inset-bottom,0px))!important}#principiaActionDockRoot>#principiaDockFiles{right:12px!important;bottom:calc(194px + env(safe-area-inset-bottom,0px))!important}#principiaActionDockRoot>#proSiteEditorFab{right:12px!important;bottom:calc(250px + env(safe-area-inset-bottom,0px))!important}}'+
+   '#principiaSearchTrigger,#principiaDownloadFab{display:none!important;visibility:hidden!important;pointer-events:none!important}'+
    'body.principia-welcome-active #principiaActionDockRoot{display:none!important}';
   document.head.appendChild(style);
  }
@@ -161,13 +181,15 @@
   const browser=button(IDS.browser,'Tìm kiếm Internet','⌕',isMobile()?138:74);
   if(browser.parentElement!==root)root.appendChild(browser);
   browser.onclick=openBrowser;
-  const files=document.getElementById(IDS.files);if(files)files.remove();
+  const files=button(IDS.files,'Tìm tệp và khu vực PRO','▦',isMobile()?194:130);
+  if(files.parentElement!==root)root.appendChild(files);
+  files.onclick=openFiles;
   const oldSearch=document.getElementById('principiaSearchTrigger');if(oldSearch)oldSearch.style.display='none';
   const download=document.getElementById('principiaDownloadFab');if(download){download.style.display='none';download.setAttribute('aria-hidden','true');download.tabIndex=-1}
   const pencil=document.getElementById('proSiteEditorFab');
   if(pencil&&pencil.parentElement!==root)root.appendChild(pencil);
-  if(pencil)Object.assign(pencil.style,{position:'absolute',right:'18px',bottom:'130px',left:'auto',top:'auto',zIndex:'2',width:'46px',height:'46px',minWidth:'46px',minHeight:'46px',display:welcome()?'none':'grid',placeItems:'center',margin:'0',pointerEvents:'auto'});
-  const editor=document.getElementById('proSiteEditorPanel');if(editor)editor.style.bottom=isMobile()?'250px':'186px';
+  if(pencil)Object.assign(pencil.style,{position:'absolute',right:'18px',bottom:'186px',left:'auto',top:'auto',zIndex:'2',width:'46px',height:'46px',minWidth:'46px',minHeight:'46px',display:welcome()?'none':'grid',placeItems:'center',margin:'0',pointerEvents:'auto'});
+  const editor=document.getElementById('proSiteEditorPanel');if(editor)editor.style.bottom=isMobile()?'306px':'242px';
   [browserPanel,filesPanel].forEach(panel=>{if(panel&&panel.isConnected)stylePanel(panel,248)});
  }
  function start(){
