@@ -224,7 +224,7 @@ body.principia-welcome-active .principia-welcome-screen{height:100dvh!important;
 body.principia-welcome-active .pw-header,body.principia-welcome-active .pw-footer{flex:0 0 auto!important}
 body.principia-welcome-active .pw-content{flex:1 1 auto!important;min-height:0!important;margin:0 auto!important;padding:clamp(8px,2vh,24px) 0!important;overflow:hidden!important}
 body.principia-welcome-active .pw-visual{min-height:0!important}
-#principiaDownloadFab,#principiaSuiteTrigger{display:none!important;visibility:hidden!important;pointer-events:none!important}
+#principiaSuiteTrigger{display:none!important;visibility:hidden!important;pointer-events:none!important}
 .brand{justify-content:flex-start!important;gap:12px!important}
 .brand-name{display:inline-block!important;color:var(--txt,#fff)!important;font-size:17px!important;font-weight:900!important;letter-spacing:2px!important;line-height:1!important}
 @media(max-width:900px){
@@ -316,4 +316,15 @@ button.chat-bubble-btn.chat-messenger-launcher>.chat-messenger-logo{
  .principia-top-logo{width:32px!important;height:32px!important;min-width:32px!important}
  .principia-top-brand{gap:8px!important;margin:2px 0 7px!important}
  #principiaDownloadFab{right:12px!important;bottom:calc(142px + env(safe-area-inset-bottom))!important}
+}
+
+
+/* Match the workspace header to the rounded Liquid Glass surface language. */
+#app .top{
+ border:1px solid rgba(255,255,255,.20)!important;
+ border-radius:24px!important;
+ background:linear-gradient(135deg,rgba(255,255,255,.075),rgba(137,112,235,.055) 48%,rgba(255,255,255,.035))!important;
+ box-shadow:0 14px 42px rgba(0,0,0,.16),inset 0 1px 0 rgba(255,255,255,.10)!important;
+ -webkit-backdrop-filter:blur(24px) saturate(165%)!important;
+ backdrop-filter:blur(24px) saturate(165%)!important;
 }
