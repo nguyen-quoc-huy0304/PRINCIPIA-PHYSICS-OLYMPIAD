@@ -1,0 +1,29 @@
+/* PRINCIPIA: independent desktop and mobile application shells. */
+.principia-desktop-shell{display:grid;grid-template-columns:250px minmax(0,1fr);min-height:100vh;width:100%;background:var(--bg)}
+.principia-desktop-shell>.sidebar{position:sticky;top:0;align-self:start;height:100vh;min-height:100vh;overflow-y:auto}
+.principia-desktop-shell>.main{min-width:0;width:100%;max-width:none;margin:0;padding:28px clamp(24px,3vw,52px)}
+.principia-mobile-shell{display:none}
+@media(min-width:901px){
+ #app>.principia-desktop-shell{display:grid!important}
+ #app>.principia-mobile-shell{display:none!important}
+ .principia-desktop-shell>.sidebar{display:flex!important}
+ .principia-desktop-shell>.main{display:block!important}
+}
+@media(max-width:900px){
+ #app>.principia-desktop-shell{display:none!important}
+ #app>.principia-mobile-shell{display:flex!important;flex-direction:column;min-height:100svh;width:100%;padding:0}
+ .principia-mobile-main{order:1;flex:1 1 auto;width:100%;min-width:0;min-height:0;padding:0 0 calc(86px + env(safe-area-inset-bottom));}
+ .principia-mobile-topbar{position:relative;width:100%;z-index:5;padding:12px 14px 0}
+ .principia-mobile-topbar .top{align-items:flex-start;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+ .principia-mobile-topbar .topright{max-width:100%;flex-wrap:wrap}
+ .principia-mobile-main>#body{padding:0 13px 16px;min-width:0}
+ .principia-mobile-nav{position:fixed;left:0;right:0;bottom:0;z-index:2147483000;display:flex;align-items:stretch;gap:4px;width:100%;min-height:72px;max-height:calc(84px + env(safe-area-inset-bottom));overflow-x:auto;overflow-y:hidden;padding:7px 8px calc(7px + env(safe-area-inset-bottom));background:rgba(16,18,35,.97);border-top:1px solid rgba(210,200,255,.2);box-shadow:0 -10px 30px rgba(0,0,0,.32);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px)}
+ .principia-mobile-nav .brand{display:flex;flex:0 0 42px;width:42px;min-width:42px;height:48px;align-items:center;justify-content:center;padding:0;margin:0;border:0}
+ .principia-mobile-nav .brand-logo-img{width:36px;height:36px;object-fit:contain}
+ .principia-mobile-nav .nav{display:flex;flex:1 0 64px;min-width:64px;max-width:100px;min-height:52px;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:4px 3px;text-align:center;font-size:10px;white-space:nowrap}
+ .principia-mobile-nav .nav>span:last-child{display:block;font-size:10px;line-height:1.15}
+ .principia-mobile-nav .nav-default-icon,.principia-mobile-nav .nav-custom-icon{display:block;width:24px;height:24px;object-fit:contain;font-size:21px}
+ .principia-mobile-nav .navlabel,.principia-mobile-nav .sidebottom{display:none!important}
+ .principia-mobile-nav .nav.active{background:#27213f;color:#c8bcff}
+ body.principia-welcome-active .principia-mobile-nav{display:none!important}
+}

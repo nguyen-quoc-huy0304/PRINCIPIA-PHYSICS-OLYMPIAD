@@ -23,6 +23,7 @@
 
 
 
+<link rel="stylesheet" href="/assets/css/principia-device-layout.css?v=20261123-device-split1">
 </head>
 <body>
 <div id="app"></div>
@@ -356,44 +357,7 @@
 <script defer src="/assets/js/principia-pendulum-lab.js?v=1.0.1"></script>
 <script defer src="/assets/js/principia-collision-lab.js?v=1.5.0"></script>
 <script defer src="/assets/js/download-center.js"></script>
-<script>
-(function(){
-  // Website-only layout patch. Electron desktop app is deliberately untouched.
-  if(window.principiaDesktop) return;
-  const mobileCss=document.createElement('link');
-  mobileCss.rel='stylesheet';
-  mobileCss.href='/assets/css/principia-mobile.css?v=20261123-34pose-random2';
-  document.head.appendChild(mobileCss);
-  // Keep the desktop DOM/layout intact. Portal the nav only on phone/tablet widths.
-  let busy=false,observer,framePending=false;
-  function moveNav(){
-    if(busy)return;
-    const layout=document.querySelector('#app .layout');
-    const nav=document.querySelector('#app .layout>.sidebar')||document.querySelector('body>.sidebar[data-principia-web-nav]');
-    if(!nav||!layout)return;
-    busy=true;
-    if(window.matchMedia('(max-width:900px)').matches){
-      if(nav.parentElement!==document.body){nav.dataset.principiaWebNav='1';document.body.appendChild(nav);}
-    }else if(nav.parentElement===document.body){
-      delete nav.dataset.principiaWebNav;
-      layout.insertBefore(nav,layout.firstChild);
-    }
-    busy=false;
-  }
-  function scheduleMoveNav(){
-    if(framePending)return;
-    framePending=true;
-    requestAnimationFrame(()=>{framePending=false;moveNav();});
-  }
-  function start(){
-    moveNav();
-    observer=new MutationObserver(scheduleMoveNav);
-    observer.observe(document.getElementById('app')||document.body,{childList:true,subtree:true});
-    window.addEventListener('resize',scheduleMoveNav,{passive:true});
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
-})();
-</script>
+
 
 </body>
 </html>
