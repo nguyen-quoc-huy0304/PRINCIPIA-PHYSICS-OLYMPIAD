@@ -17,6 +17,8 @@ window.PRINCIPIA_FIREBASE_CONFIG = {
   measurementId: "G-4BRDM71BGM"
 };
 let GOOGLE_AUTH_READY=false;
+let principiaAuthActionInProgress=false;
+let principiaAuthLastSuccessAt=0;
 function firebaseConfigured(){return !!(window.PRINCIPIA_FIREBASE_CONFIG && window.PRINCIPIA_FIREBASE_CONFIG.apiKey && !window.PRINCIPIA_FIREBASE_CONFIG.apiKey.startsWith('YOUR_') && window.PRINCIPIA_FIREBASE_CONFIG.projectId && !window.PRINCIPIA_FIREBASE_CONFIG.projectId.startsWith('YOUR_'));}
 let principiaFirebaseSdkPromise=null;
 function loadPrincipiaFirebaseSdk(){
@@ -104,6 +106,7 @@ async function submitEmailAuth(event){
  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){if(status)status.textContent='Địa chỉ email chưa hợp lệ.';return;}
  if(password.length<6){if(status)status.textContent='Mật khẩu phải có ít nhất 6 ký tự.';return;}
  if(submitButton)submitButton.disabled=true;
+ principiaAuthActionInProgress=true;
  if(status)status.textContent='Đang kết nối và xác thực…';
  try{
   const auth=await ensureFirebase();
@@ -112,11 +115,13 @@ async function submitEmailAuth(event){
    cred=await auth.createUserWithEmailAndPassword(email,password);
    if(name)await cred.user.updateProfile({displayName:name});
   }else cred=await auth.signInWithEmailAndPassword(email,password);
+  principiaAuthLastSuccessAt=Date.now();
   await syncPrincipiaUser(cred.user);
  }catch(err){
-  if(status)status.textContent=authErrorMessage(err);
+  if(status)status.textContent=authErrorMessage(err)+(err?.code?' ['+err.code+']':'');
   if(typeof window.principiaCompanionReact==='function')window.principiaCompanionReact('wrong',authErrorMessage(err));
  }finally{
+  principiaAuthActionInProgress=false;
   if(submitButton)submitButton.disabled=false;
  }
 }
@@ -187,6 +192,13 @@ async function initPrincipiaAuth(){
    try{
     if(user){await syncPrincipiaUser(user);}
     else{
+     // Firebase may emit its initial null observer event while an email sign-in/sign-up
+     // is still resolving. Do not let that stale event route the app back to Account.
+     if(auth.currentUser){
+      await syncPrincipiaUser(auth.currentUser);
+      return;
+     }
+     if(principiaAuthActionInProgress || Date.now()-principiaAuthLastSuccessAt<8000)return;
      try{localStorage.removeItem('principia_google_account');}catch(_){}
      if(window.getPrincipiaPage()!=='account'){window.setPrincipiaPage('account');window.resetPrincipiaStack();window.renderPrincipiaApp();}
      renderGoogleAccount();
