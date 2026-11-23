@@ -1279,8 +1279,8 @@ input,textarea,select{background:#0b1020!important;border-color:rgba(158,175,215
 
 /* Comic-style character launcher for PRINCIPIA AI */
 .chat-bubble-btn{display:flex!important;align-items:center;gap:10px;min-height:66px;padding:7px 13px 7px 8px!important;border-radius:22px!important;max-width:min(290px,calc(100vw - 28px));}
-.chat-character-portrait{width:54px;height:54px;flex:0 0 54px;display:grid;place-items:center;overflow:hidden;border-radius:50%;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.28);}
-.chat-character-portrait img,.chat-character-portrait span[role="img"]{width:50px!important;height:50px!important;object-fit:contain;}
+.chat-character-portrait{width:76px;height:76px;flex:0 0 76px;display:grid;place-items:center;overflow:hidden;border-radius:50%;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.28);}
+.chat-character-portrait img,.chat-character-portrait span[role="img"]{width:76px!important;height:76px!important;object-fit:contain;}
 .chat-character-portrait.has-character{background:rgba(255,255,255,.2)}
 .chat-character-fallback{font-weight:800;font-size:14px;letter-spacing:.04em}
 .chat-character-speech{position:relative;display:block;max-width:190px;padding:9px 12px;border-radius:15px 15px 15px 5px;background:#fff;color:#25233b;font-size:12px;font-weight:750;line-height:1.25;white-space:normal;text-align:left;box-shadow:0 3px 12px #0002}
