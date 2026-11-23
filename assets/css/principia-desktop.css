@@ -1681,3 +1681,9 @@ body #principiaSearchTrigger,body #principiaDownloadFab,body button.chat-bubble-
  body #principiaDownloadFab{bottom:calc(194px + env(safe-area-inset-bottom,0px))!important}
  body button.chat-bubble-btn.chat-messenger-launcher{bottom:calc(82px + env(safe-area-inset-bottom,0px))!important}
 }
+
+/* Admin content editor affordances. */
+.pro-edit-text{outline:1px dashed rgba(150,190,255,.55)!important;outline-offset:2px!important;border-radius:3px!important;cursor:text!important}
+.pro-edit-image{outline:2px dashed rgba(150,190,255,.8)!important;outline-offset:3px!important;cursor:copy!important}
+#proSiteEditorToolbar [data-status]{max-width:42vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:520px){#proSiteEditorToolbar{left:8px!important;bottom:8px!important;right:8px!important;gap:4px!important}#proSiteEditorToolbar [data-status]{max-width:100%;flex-basis:100%}}
