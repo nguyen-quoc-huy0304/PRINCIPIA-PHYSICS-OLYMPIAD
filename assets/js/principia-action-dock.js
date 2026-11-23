@@ -195,7 +195,7 @@
   const style=document.createElement('style');style.id='principiaDockPositionStyles';
   style.textContent=
    'html>#principiaActionDockRoot{position:fixed!important;inset:0!important;top:0!important;right:0!important;bottom:0!important;left:0!important;width:100vw!important;height:100vh!important;height:100dvh!important;min-width:100vw!important;min-height:100dvh!important;max-width:none!important;max-height:none!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;pointer-events:none!important;z-index:2147483000!important;display:block!important;visibility:visible!important;transform:none!important;contain:none!important;overflow:visible!important}'+
-   ' html>#principiaDockAI,html>#principiaDockBrowser,html>#proSiteEditorFab{position:fixed!important;transform:none!important;margin:0!important;pointer-events:auto!important;visibility:visible!important;display:grid!important;z-index:2147483005!important;touch-action:none!important;cursor:grab!important}'+
+   ' html>button#principiaDockAI,html>button#principiaDockBrowser,html>button#proSiteEditorFab{position:fixed!important;transform:none!important;margin:0!important;pointer-events:auto!important;visibility:visible!important;display:grid!important;z-index:2147483005!important;touch-action:none!important;cursor:grab!important}'+
    'html body #principiaSearchTrigger,html body #principiaDownloadFab{display:none!important;visibility:hidden!important;pointer-events:none!important}'+
    'body.principia-welcome-active #principiaActionDockRoot>#principiaDockAI,body.principia-welcome-active #principiaActionDockRoot>#principiaDockBrowser,body.principia-welcome-active #principiaActionDockRoot>#principiaDockFiles{display:none!important;visibility:hidden!important;pointer-events:none!important}';
   document.head.appendChild(style);
@@ -228,6 +228,25 @@
    node.style.setProperty('bottom',(mobile?'calc('+defaultBottom+'px + env(safe-area-inset-bottom,0px))':defaultBottom+'px'),'important');
   }
   node.style.setProperty('position','fixed','important');
+ }
+ function enforceViewportPins(){
+  const welcomeActive=welcome();
+  const nodes=[
+   document.getElementById(IDS.ai),
+   document.getElementById(IDS.browser),
+   document.getElementById('proSiteEditorFab')
+  ];
+  nodes.forEach(node=>{
+   if(!node)return;
+   if(node.id==='proSiteEditorFab'&&welcomeActive){
+    if(node.parentElement!==document.body)document.body.appendChild(node);
+    return;
+   }
+   if(node.parentElement!==document.documentElement)document.documentElement.appendChild(node);
+   node.style.setProperty('position','fixed','important');
+   node.style.setProperty('transform','none','important');
+   node.style.setProperty('z-index','2147483005','important');
+  });
  }
  function bindLauncherDrag(node,onMove){
   if(node.dataset.dockDragBound==='true')return;
@@ -319,8 +338,10 @@
  }
  function start(){
   mount();
-  new MutationObserver(mount).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class','hidden']});
-  window.addEventListener('resize',mount,{passive:true});
+  enforceViewportPins();
+  new MutationObserver(()=>{mount();enforceViewportPins()}).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class','hidden']});
+  window.addEventListener('scroll',enforceViewportPins,{capture:true,passive:true});
+  window.addEventListener('resize',()=>{mount();enforceViewportPins()},{passive:true});
   document.addEventListener('principia:rendered',mount);
   document.addEventListener('principia:page-changed',mount);
   document.addEventListener('keydown',event=>{if(event.key==='Escape'){closePanel(browserPanel);browserPanel=null}});
