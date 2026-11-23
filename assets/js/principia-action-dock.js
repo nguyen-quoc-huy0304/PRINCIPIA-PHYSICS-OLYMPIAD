@@ -8,7 +8,7 @@
  const readHistory=()=>{try{const v=JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]');return Array.isArray(v)?v.filter(x=>x&&typeof x.url==='string').slice(0,50):[]}catch(_){return[]}};
  const saveHistory=url=>{try{localStorage.setItem(HISTORY_KEY,JSON.stringify([{url,at:Date.now()},...readHistory().filter(x=>x.url!==url)].slice(0,50)))}catch(_){}};
  const isMobile=()=>window.matchMedia('(max-width:900px)').matches;
- const welcome=()=>document.body.classList.contains('principia-welcome-active');
+ const welcome=()=>document.body.classList.contains('principia-welcome-active')||!!document.querySelector('.principia-welcome-screen');
  function button(id,label,glyph,bottom){
   let node=document.getElementById(id);
   if(!node){node=document.createElement('button');node.id=id;node.type='button';node.setAttribute('aria-label',label);node.title=label;node.textContent=glyph;document.body.appendChild(node)}
@@ -195,7 +195,7 @@
   const download=document.getElementById('principiaDownloadFab');if(download){download.style.setProperty('display','none','important');download.style.setProperty('visibility','hidden','important');download.style.setProperty('pointer-events','none','important');download.style.setProperty('width','0','important');download.style.setProperty('height','0','important');download.setAttribute('aria-hidden','true');download.tabIndex=-1;}
   const pencil=document.getElementById('proSiteEditorFab');
   if(pencil&&pencil.parentElement!==root)root.appendChild(pencil);
-  if(pencil)Object.assign(pencil.style,{position:'absolute',right:'18px',bottom:'186px',left:'auto',top:'auto',zIndex:'2',width:'46px',height:'46px',minWidth:'46px',minHeight:'46px',display:welcome()?'none':'grid',placeItems:'center',margin:'0',pointerEvents:'auto'});
+  if(pencil)Object.assign(pencil.style,{position:'absolute',right:'18px',bottom:'130px',left:'auto',top:'auto',zIndex:'2',width:'46px',height:'46px',minWidth:'46px',minHeight:'46px',display:welcome()?'none':'grid',placeItems:'center',margin:'0',pointerEvents:'auto'});
   const editor=document.getElementById('proSiteEditorPanel');if(editor)editor.style.bottom=isMobile()?'306px':'242px';
   if(browserPanel&&browserPanel.isConnected)stylePanel(browserPanel,248);
  }
