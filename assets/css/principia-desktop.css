@@ -1505,3 +1505,10 @@ button.chat-bubble-btn.chat-messenger-launcher:hover{background:var(--card2,#292
 button.chat-bubble-btn.chat-messenger-launcher::before,button.chat-bubble-btn.chat-messenger-launcher::after{display:none!important;content:none!important}
 button.chat-bubble-btn.chat-messenger-launcher>.chat-messenger-logo{display:block!important;position:static!important;grid-area:1/1!important;align-self:center!important;justify-self:center!important;width:29px!important;height:29px!important;min-width:29px!important;min-height:29px!important;max-width:29px!important;max-height:29px!important;margin:0!important;padding:0!important;object-fit:contain!important;transform:none!important}
 @media(max-width:900px){button.chat-bubble-btn.chat-messenger-launcher{right:12px!important;bottom:calc(82px + env(safe-area-inset-bottom))!important;width:46px!important;height:46px!important;min-width:46px!important;min-height:46px!important;max-width:46px!important;max-height:46px!important}button.chat-bubble-btn.chat-messenger-launcher>.chat-messenger-logo{width:29px!important;height:29px!important;min-width:29px!important;min-height:29px!important;max-width:29px!important;max-height:29px!important}}
+
+
+/* Show the PRO wordmark beside the emblem in the desktop sidebar. */
+@media(min-width:901px){
+ #app>.layout>.sidebar>.brand{justify-content:flex-start!important;gap:12px!important;padding-left:8px!important}
+ #app>.layout>.sidebar>.brand .brand-name{font-size:18px!important;letter-spacing:2px!important}
+}

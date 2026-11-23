@@ -506,15 +506,15 @@ function render(){
   app.innerHTML=`<main class="principia-welcome-screen">
    <div class="pw-glow pw-glow-one"></div><div class="pw-glow pw-glow-two"></div><div class="pw-stars"></div>
    <header class="pw-header">
-    <div class="pw-brand"><img src="${PRINCIPIA_LOGO_URI}" alt="PRINCIPIA"><span><b>PRINCIPIA</b><small>PHYSICS OLYMPIAD · PRO</small></span></div>
+    <div class="pw-brand"><img src="${PRINCIPIA_LOGO_URI}" alt="PRO"><span><b>PRO</b><small>PRINCIPIA PHYSICS OLYMPIAD</small></span></div>
     <div class="pw-account"><span class="pw-online-dot"></span><span>${esc(welcomeAccount.email||'Tài khoản đã đăng nhập')}</span></div>
    </header>
    <section class="pw-content pw-welcome-layout">
     <div class="pw-copy">
      <div class="pw-kicker"><span></span> YOUR NEXT CHAPTER STARTS HERE</div>
      <div class="pw-overline">WELCOME TO</div>
-     <h1>PRINCIPIA <span>PRO</span></h1>
-     <h2>Chào mừng <em>${esc(welcomeName)}</em><br>đến với PRINCIPIA!</h2>
+     <h1>PRO</h1>
+     <h2>Chào mừng <em>${esc(welcomeName)}</em><br>đến với PRO!</h2>
      <p>Một không gian học tập được tạo ra để bạn khám phá Vật lý, chinh phục thử thách và tiến bộ theo cách của riêng mình.</p>
      <button class="pw-start-button" type="button" onclick="startPrincipiaJourney()">Bắt đầu hành trình <span aria-hidden="true">→</span></button>
      <div class="pw-note"><span class="pw-note-line"></span> HỌC TẬP · KHÁM PHÁ · BỨT PHÁ</div>
@@ -531,7 +531,7 @@ function render(){
      <div class="pw-floating-chip pw-chip-top">01 · EXPLORE</div><div class="pw-floating-chip pw-chip-bottom">02 · DISCOVER</div>
     </div>
    </section>
-   <footer class="pw-footer"><span>PRINCIPIA • PHYSICS OLYMPIAD</span><span>MADE FOR CURIOUS MINDS</span></footer>
+   <footer class="pw-footer"><span>PRO · PRINCIPIA PHYSICS OLYMPIAD</span><span>MADE FOR CURIOUS MINDS</span></footer>
   </main>`;
   return;
  }
@@ -540,7 +540,7 @@ function render(){
  const outerCoverHtml = `<div class="outer-cover-banner"><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;"><img class="outer-cover-thumb" src="${outerCoverImg}" alt="Ảnh ngoài trang"><div><div class="eyebrow">ẢNH NGOÀI TRANG</div><div class="small muted">Hiển thị ảnh bạn đưa ngay ngoài không gian học tập</div></div></div><div style="display:flex;gap:8px;flex-wrap:wrap;"><button class="secondary" onclick="$('#outerCoverInput').click()">Đổi ảnh ngoài</button><button class="secondary" onclick="resetOuterCover()">Ảnh mặc định</button><input type="file" id="outerCoverInput" accept="image/*" class="hidden" onchange="updateOuterCover(this.files[0])"></div></div>`;
 const isMobileDevice=(()=>{const ua=String(navigator.userAgent||'');const uaMobile=typeof navigator.userAgentData?.mobile==='boolean'?navigator.userAgentData.mobile:/Android|iPhone|iPad|iPod|Mobile|IEMobile|Windows Phone/i.test(ua);return uaMobile;})();
  const navButtons=nav.map(([id,ic,n],idx)=>{const image=navItemImage(id),preset=PRINCIPIA_EMOJI_ICONS[ic]?ic:['home','books','calculator','puzzle','game','trophy'][idx%6],active=page===id||page==='lesson'&&id==='library'||page==='play'&&id===(activeQuiz?.kind==='fun'?'fun':'quiz');return `<button class="nav ${active?'active':''}" data-page="${id}" onclick="setPage('${id}')">${image?`<img class="nav-custom-icon" src="${image}" alt="">`:`<span class="nav-default-icon">${principiaEmojiIcon(preset)}</span>`}<span>${n}</span></button>`}).join('');
- const brandMarkup=`<div class="brand" aria-label="PRINCIPIA"><img class="brand-logo-img" src="${PRINCIPIA_LOGO_URI}" alt="PRINCIPIA"></div>`;
+ const brandMarkup=`<div class="brand" aria-label="PRO — PRINCIPIA PHYSICS OLYMPIAD"><img class="brand-logo-img" src="${PRINCIPIA_LOGO_URI}" alt="PRO"><span class="brand-name">PRO</span></div>`;
  const settingsButton=`<button class="nav ${page==='more'?'active':''}" onclick="setPage('more')"><span class="nav-default-icon">⚙</span><span>Cài đặt</span></button>`;
  if(isMobileDevice){
   app.innerHTML=`<div class="principia-mobile-shell"><main class="principia-mobile-main"><div class="principia-mobile-topbar">${topbar()}</div><div id="body">${body}</div></main><nav class="principia-mobile-nav" aria-label="Điều hướng mobile">${brandMarkup}${navButtons}${settingsButton}</nav></div>`;
