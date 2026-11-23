@@ -516,7 +516,7 @@ function render(){
      <div class="pw-orbit pw-orbit-a"></div><div class="pw-orbit pw-orbit-b"></div>
      <div class="pw-art-panel">
       <div class="pw-art-top"><span>PHYSICS EXPLORER</span><i>● READY TO BEGIN</i></div>
-      <div class="pw-character-halo">${typeof principiaWelcomeCharacterMarkup==='function'?principiaWelcomeCharacterMarkup():'<img class="pw-welcome-character" src="/assets/images/principia-chat-character.png" alt="Nhân vật PRINCIPIA">'}</div>
+      <div class="pw-character-halo">${typeof principiaWelcomeCharacterMarkup==='function'?principiaWelcomeCharacterMarkup():''}</div>
       <div class="pw-speech"><span class="pw-speech-dot"></span><b>Tri thức bắt đầu từ sự tò mò.</b><small>Hãy bắt đầu hành trình của bạn hôm nay.</small></div>
       <div class="pw-formula-row"><span>F = ma</span><span>E = mc²</span><span>v = λf</span></div>
       <div class="pw-art-bottom"><span>LEARN</span><span>DISCOVER</span><span>ACHIEVE</span></div>
