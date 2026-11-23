@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>PRINCIPIA • PHYSICS OLYMPIAD — PRO</title>
-<link rel="stylesheet" href="/assets/css/principia-desktop.css?v=8">
+<link rel="stylesheet" href="/assets/css/principia-desktop.css?v=9-comic-chat">
 
 
 
@@ -274,7 +274,7 @@
 
   <div class="xp-toast" id="xpToast"></div>
 
-  <button class="chat-bubble-btn" onclick="toggleChatBox()" title="Mở trợ lý AI">Trợ lý AI</button>
+  <button class="chat-bubble-btn" onclick="toggleChatBox()" title="Mở trợ lý AI" aria-label="Mở trợ lý AI"><span class="chat-character-portrait" id="chatCharacterPortrait" aria-hidden="true"></span><span class="chat-character-speech">Mình giúp gì được bạn?</span></button>
   <div class="chat-box" id="chatBox">
     <div class="ai-chat-head"><div><strong>Trợ lý AI</strong><div class="ai-chat-sub">Lịch sử riêng theo từng AI</div></div><div style="display:flex;gap:6px"><button class="iconbtn" onclick="clearPrincipiaChatHistory()" title="Xóa lịch sử">⌫</button><button class="iconbtn" onclick="toggleChatBox()" aria-label="Đóng">✕</button></div></div>
     <div class="ai-picker-head"><label for="principiaAISelect"><strong>AI đang dùng</strong></label><div style="display:flex;gap:6px;align-items:center"><select id="principiaAISelect" class="ai-mini-select" onchange="selectPrincipiaAI(this.value)"></select><button class="ai-add-btn" onclick="addPrincipiaAI()" title="Thêm AI">＋</button></div></div>
