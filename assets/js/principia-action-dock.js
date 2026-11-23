@@ -3,7 +3,7 @@
  'use strict';
  const IDS={ai:'principiaDockAI',browser:'principiaDockBrowser',files:'principiaDockFiles'};
  const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
- let browserPanel=null,filesPanel=null;
+ let browserPanel=null;
  const HISTORY_KEY='principia_browser_history_v1';
  const readHistory=()=>{try{const v=JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]');return Array.isArray(v)?v.filter(x=>x&&typeof x.url==='string').slice(0,50):[]}catch(_){return[]}};
  const saveHistory=url=>{try{localStorage.setItem(HISTORY_KEY,JSON.stringify([{url,at:Date.now()},...readHistory().filter(x=>x.url!==url)].slice(0,50)))}catch(_){}};
@@ -115,28 +115,38 @@
   if(!Array.isArray(nav)||!nav.length)nav=[['home','sparkle','Trang chủ'],['library','books','Học tập'],['quiz','calculator','Quiz'],['fun','puzzle','Đố vui'],['lab','flask','Phòng thí nghiệm'],['progress','trophy','Tiến độ']];
   return nav.filter(x=>Array.isArray(x)&&typeof x[0]==='string').map(([id,icon,label])=>({id,label:String(label||id),icon:String(icon||'•')}));
  }
- function openFiles(){
-  closePanel(filesPanel);
-  const panel=document.createElement('section');panel.id='principiaQuickNavigation';panel.setAttribute('role','dialog');panel.setAttribute('aria-label','Điều hướng nhanh PRINCIPIA');
-  panel.innerHTML=header('▦ Tìm tệp & khu vực PRO','principiaFilesClose')+
-   '<div style="padding:16px;border-bottom:1px solid var(--line,#46506a)"><label for="principiaFilesSearch" style="display:block;font-size:15px;font-weight:700;margin:0 0 9px">Tìm vị trí tệp và nội dung</label><input id="principiaFilesSearch" type="search" placeholder="Nhập tên tệp, bài học, chủ đề hoặc khu vực..." style="display:block;width:100%;box-sizing:border-box;padding:17px 16px;min-height:62px;font-size:18px;line-height:1.4;border:2px solid var(--accent,#8b7cff);border-radius:14px;background:var(--bg,#0b1020);color:inherit;outline-offset:3px"><button type="button" id="principiaFilesContentSearch" style="width:100%;margin-top:10px;min-height:48px;padding:12px;font-size:15px">Tìm trong nội dung PRINCIPIA ↗</button></div>'+
-   '<div id="principiaFilesList" style="padding:10px;overflow:auto;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-content:start"></div>';
-  document.body.appendChild(panel);filesPanel=panel;stylePanel(panel,248);makeDraggable(panel);
-  const list=panel.querySelector('#principiaFilesList'),search=panel.querySelector('#principiaFilesSearch');
-  const render=()=>{
-   const term=search.value.trim().toLocaleLowerCase('vi');
-   const items=pageItems().filter(x=>(x.label+' '+x.id).toLocaleLowerCase('vi').includes(term));
-   list.innerHTML=items.map(x=>'<button type="button" data-page="'+esc(x.id)+'" style="min-height:68px;display:flex;align-items:center;gap:9px;text-align:left;padding:10px;border:1px solid var(--line,#46506a);border-radius:12px;background:var(--card2,#20283a);color:inherit"><span style="font-size:22px">'+esc(x.icon)+'</span><b>'+esc(x.label)+'</b></button>').join('')||'<p style="grid-column:1/-1;opacity:.7;text-align:center">Không tìm thấy khu vực.</p>';
-   list.querySelectorAll('button[data-page]').forEach(button=>button.addEventListener('click',()=>{
-    const id=button.dataset.page;
-    if(typeof window.navigatePrincipiaPage==='function')window.navigatePrincipiaPage(id);
-    closePanel(panel);filesPanel=null;
-   }));
-  };
-  search.addEventListener('input',render);render();
-  panel.querySelector('#principiaFilesContentSearch').addEventListener('click',()=>{const query=search.value.trim();closePanel(panel);filesPanel=null;if(typeof window.openPrincipiaGlobalSearch==='function')window.openPrincipiaGlobalSearch(query);else if(typeof window.navigatePrincipiaPage==='function')window.navigatePrincipiaPage('library')});
-  panel.querySelector('#principiaFilesClose').addEventListener('click',()=>{closePanel(panel);filesPanel=null});
-  search.focus();
+ function installFileSearchBar(root){
+  let input=document.getElementById(IDS.files);
+  if(input&&input.tagName!=='INPUT'){input.remove();input=null}
+  if(!input){
+   input=document.createElement('input');input.id=IDS.files;input.type='search';
+   input.placeholder='Tìm tệp / khu vực PRO…';input.autocomplete='off';
+   input.setAttribute('aria-label','Tìm tệp và khu vực PRO');
+  }
+  if(input.parentElement!==root)root.appendChild(input);
+  Object.assign(input.style,{
+   position:'absolute',right:isMobile()?'68px':'74px',bottom:isMobile()?'138px':'130px',
+   left:'auto',top:'auto',width:isMobile()?'min(230px,calc(100vw - 94px))':'min(280px,calc(100vw - 112px))',
+   height:'46px',minHeight:'46px',boxSizing:'border-box',padding:'0 15px',
+   border:'1px solid var(--line,#68708a)',borderRadius:'24px',
+   background:'var(--card,#171a2b)',color:'var(--text,var(--txt,#fff))',
+   fontSize:'14px',outlineOffset:'3px',boxShadow:'0 8px 26px #0005',
+   zIndex:'2',display:welcome()?'none':'block',pointerEvents:'auto'
+  });
+  if(input.dataset.searchBound!=='true'){
+   input.dataset.searchBound='true';
+   input.addEventListener('keydown',event=>{
+    if(event.key!=='Enter')return;
+    const query=input.value.trim();if(!query)return;
+    const normalized=query.toLocaleLowerCase('vi');
+    const match=pageItems().find(item=>(item.label+' '+item.id).toLocaleLowerCase('vi').includes(normalized));
+    if(match&&typeof window.navigatePrincipiaPage==='function')window.navigatePrincipiaPage(match.id);
+    else if(typeof window.openPrincipiaGlobalSearch==='function')window.openPrincipiaGlobalSearch(query);
+    else if(typeof window.navigatePrincipiaPage==='function')window.navigatePrincipiaPage('library');
+    input.blur();
+   });
+  }
+  return input;
  }
  function ensureDockRoot(){
   let root=document.getElementById('principiaActionDockRoot');
@@ -150,7 +160,9 @@
   const style=document.createElement('style');style.id='principiaDockPositionStyles';
   style.textContent=
    'html>#principiaActionDockRoot{position:fixed!important;inset:0!important;top:0!important;right:0!important;bottom:0!important;left:0!important;width:100vw!important;height:100vh!important;height:100dvh!important;pointer-events:none!important;z-index:2147483000!important;display:block!important;visibility:visible!important;transform:none!important;contain:none!important}'+
-   '#principiaActionDockRoot>#principiaDockAI,#principiaActionDockRoot>#principiaDockBrowser,#principiaActionDockRoot>#principiaDockFiles,#principiaActionDockRoot>#proSiteEditorFab{position:absolute!important;left:auto!important;top:auto!important;transform:none!important;margin:0!important;pointer-events:auto!important;visibility:visible!important;display:grid!important;z-index:1!important}'+
+   '#principiaActionDockRoot>#principiaDockAI,#principiaActionDockRoot>#principiaDockBrowser,#principiaActionDockRoot>#proSiteEditorFab{position:absolute!important;left:auto!important;top:auto!important;transform:none!important;margin:0!important;pointer-events:auto!important;visibility:visible!important;display:grid!important;z-index:1!important}'+
+   '#principiaActionDockRoot>#principiaDockFiles{position:absolute!important;right:74px!important;bottom:130px!important;width:min(280px,calc(100vw - 112px))!important;height:46px!important;display:block!important;box-sizing:border-box!important;border-radius:24px!important;z-index:2!important}'+
+   '@media(max-width:900px){#principiaActionDockRoot>#principiaDockFiles{right:68px!important;bottom:138px!important;width:min(230px,calc(100vw - 94px))!important}}'+
    '#principiaActionDockRoot>#principiaDockAI{right:18px!important;bottom:18px!important}'+
    '#principiaActionDockRoot>#principiaDockBrowser{right:18px!important;bottom:74px!important}'+
    '#principiaActionDockRoot>#principiaDockFiles{right:18px!important;bottom:130px!important}'+
@@ -188,7 +200,7 @@
   if(pencil&&pencil.parentElement!==root)root.appendChild(pencil);
   if(pencil)Object.assign(pencil.style,{position:'absolute',right:'18px',bottom:'186px',left:'auto',top:'auto',zIndex:'2',width:'46px',height:'46px',minWidth:'46px',minHeight:'46px',display:welcome()?'none':'grid',placeItems:'center',margin:'0',pointerEvents:'auto'});
   const editor=document.getElementById('proSiteEditorPanel');if(editor)editor.style.bottom=isMobile()?'306px':'242px';
-  [browserPanel,filesPanel].forEach(panel=>{if(panel&&panel.isConnected)stylePanel(panel,248)});
+  if(browserPanel&&browserPanel.isConnected)stylePanel(browserPanel,248);
  }
  function start(){
   mount();
@@ -196,7 +208,7 @@
   window.addEventListener('resize',mount,{passive:true});
   document.addEventListener('principia:rendered',mount);
   document.addEventListener('principia:page-changed',mount);
-  document.addEventListener('keydown',event=>{if(event.key==='Escape'){closePanel(browserPanel);closePanel(filesPanel);browserPanel=filesPanel=null}});
+  document.addEventListener('keydown',event=>{if(event.key==='Escape'){closePanel(browserPanel);browserPanel=null}});
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
