@@ -276,10 +276,9 @@
 
   <button class="chat-bubble-btn" onclick="toggleChatBox()" title="Mở trợ lý AI" aria-label="Mở trợ lý AI"><span class="chat-character-portrait has-character" id="chatCharacterPortrait" aria-hidden="false"><img src="/assets/images/principia-chat-character.png" alt="Nhân vật PRINCIPIA"></span><span class="chat-character-speech">Mình giúp gì được bạn?</span></button>
   <div class="chat-box" id="chatBox">
-    <div class="ai-chat-head"><div><strong>Trợ lý AI</strong><div class="ai-chat-sub">Lịch sử riêng theo từng AI</div></div><div style="display:flex;gap:6px"><button class="iconbtn" onclick="clearPrincipiaChatHistory()" title="Xóa lịch sử">⌫</button><button class="iconbtn" onclick="toggleChatBox()" aria-label="Đóng">✕</button></div></div>
-    <div class="ai-picker-head"><label for="principiaAISelect"><strong>AI đang dùng</strong></label><div style="display:flex;gap:6px;align-items:center"><select id="principiaAISelect" class="ai-mini-select" onchange="selectPrincipiaAI(this.value)"></select><button class="ai-add-btn" onclick="addPrincipiaAI()" title="Thêm AI">＋</button></div></div>
-    <div id="chatMsgs" class="chat-msgs" aria-live="polite"></div>
-    <div class="ai-chat-compose"><div class="ai-chat-sub" style="margin-bottom:7px">Lịch sử trò chuyện được lưu riêng theo từng AI trên thiết bị này.</div><div style="display:flex;gap:7px"><input type="text" id="chatInput" placeholder="Nhập câu hỏi..." onkeydown="if(event.key==='Enter') sendChat()"><button class="primary" onclick="sendChat()">Gửi ↗</button></div></div>
+    <div class="ai-chat-head"><div><strong>PRINCIPIA AI</strong><div class="ai-chat-sub">Gia sư AI chạy trực tiếp trên thiết bị</div></div><button class="iconbtn" onclick="toggleChatBox()" aria-label="Đóng">✕</button></div>
+    <div class="chat-msgs" style="padding:14px"><div class="m-ai">Mình là gia sư PRINCIPIA. Nhấn gửi để mở phiên trò chuyện AI thật. Mô hình sẽ yêu cầu bạn xác nhận trước khi tải lần đầu (khoảng 580 MB), cần trình duyệt hỗ trợ WebGPU.</div></div>
+    <div class="ai-chat-compose"><div class="ai-chat-sub" style="margin-bottom:7px">AI cục bộ · Không cần API key · Nội dung xử lý trên thiết bị</div><div style="display:flex;gap:7px"><input type="text" id="chatInput" placeholder="Hỏi PRINCIPIA AI..." onkeydown="if(event.key==='Enter') sendChat()"><button class="primary" onclick="sendChat()">Trò chuyện ↗</button></div></div>
   </div>
 
 <div id="modal"></div>
@@ -291,7 +290,7 @@
 <script defer src="/assets/js/core/permissions.js"></script>
 <script defer src="/assets/js/core/repository.js"></script>
 <script defer src="/assets/js/core/navigation.js"></script>
-<script defer src="/assets/js/app-part-02.js?v=20261123-chat-avatar1"></script>
+<script defer src="/assets/js/app-part-02.js?v=20261123-local-chat1"></script>
 
 <!-- Firebase SDK được nạp nền sau khi giao diện đã hiển thị; tránh chặn toàn bộ trang nếu CDN chậm. -->
 
@@ -345,7 +344,7 @@
 <script defer src="/assets/js/principia-lab-builder.js?v=1.0.1"></script>
 <script defer src="/assets/js/principia-learning-suite.js?v=20261123.28"></script>
 <script defer src="/assets/js/principia-study-methods.js?v=1.0.0"></script>
-<script defer src="/assets/js/principia-local-ai.js?v=1.0.1"></script>
+<script defer src="/assets/js/principia-local-ai.js?v=20261123-local-chat1"></script>
 <script defer src="/assets/js/principia-level-studio-core.js?v=1.0.1"></script>
 <script defer src="/assets/js/principia-level-studio.js?v=1.0.2"></script>
 <script defer src="/assets/js/principia-research-core.js?v=1.0.2"></script>

@@ -7,7 +7,7 @@
  let engine=null,loading=null,busy=false,history=[],context='';
  const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  function root(){let el=document.getElementById('principiaLocalAI');if(!el){el=document.createElement('div');el.id='principiaLocalAI';el.style.cssText='position:fixed;inset:0;z-index:2147483646;background:rgba(3,7,18,.88);overflow:auto;padding:12px;color:var(--text,#f5f7ff);';document.body.appendChild(el)}return el}
- function open(seed){
+ function open(seed,question){
   context=String(seed||'').slice(0,6000);history=[];
   const el=root();
   el.innerHTML='<section style="max-width:760px;margin:12px auto;background:var(--card,#151a2b);border:1px solid var(--line,#3a4055);border-radius:18px;padding:16px;box-shadow:0 18px 60px #0008">'+
@@ -17,6 +17,7 @@
    '<div id="plaMsgs" aria-live="polite" style="min-height:130px;max-height:42vh;overflow:auto;padding:8px;border-radius:12px;background:var(--bg,#0d1220)"><p style="opacity:.65;font-size:13px">Khi mô hình sẵn sàng, hãy gửi câu hỏi đầu tiên.</p></div>'+
    '<div style="display:flex;gap:8px;margin-top:10px"><textarea id="plaInput" rows="2" placeholder="Hỏi gia sư PRINCIPIA..." style="flex:1;min-width:0;padding:11px;border-radius:10px;background:var(--bg,#0d1220);color:inherit;border:1px solid var(--line,#3a4055)"></textarea><button id="plaSend" onclick="principiaLocalAI.send()" class="primary">Gửi</button></div>'+
    '<p style="font-size:11px;opacity:.65;margin-top:8px">Mẹo: đóng ứng dụng nặng khác nếu GPU thiếu bộ nhớ. Không hỗ trợ WebGPU? Hãy dùng trợ lý AI trực tuyến hiện có.</p></section>';
+  const q=document.getElementById('plaInput');if(q&&question)q.value=String(question).slice(0,4000);
   if(engine)status('AI đã sẵn sàng trên thiết bị.');
  }
  function status(t){const n=document.getElementById('plaStatus');if(n)n.textContent=t}
