@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>PRINCIPIA • PHYSICS OLYMPIAD — PRO</title>
-<link rel="stylesheet" href="/assets/css/principia-desktop.css?v=20261123-syntax-fix4">
+<link rel="stylesheet" href="/assets/css/principia-desktop.css?v=20261123-home-chat-clean5">
 
 
 
@@ -274,7 +274,7 @@
 
   <div class="xp-toast" id="xpToast"></div>
 
-  <button class="chat-bubble-btn" onclick="toggleChatBox()" title="Mở trợ lý AI" aria-label="Mở trợ lý AI"><span class="chat-character-portrait has-character" id="chatCharacterPortrait" aria-hidden="false"><img src="/assets/images/principia-chat-character.png" alt="Nhân vật PRINCIPIA"></span><span class="chat-character-speech">Mình giúp gì được bạn?</span></button>
+  <button class="chat-bubble-btn" onclick="toggleChatBox()" title="Mở trợ lý AI" aria-label="Mở trợ lý AI"><span class="chat-character-portrait" id="chatCharacterPortrait" aria-hidden="true"></span><span class="chat-character-speech">Mình giúp gì được bạn?</span></button>
   <div class="chat-box" id="chatBox">
     <div class="ai-chat-head"><div><strong>Trợ lý AI</strong><div class="ai-chat-sub">Lịch sử riêng theo từng AI</div></div><div style="display:flex;gap:6px"><button class="iconbtn" onclick="clearPrincipiaChatHistory()" title="Xóa lịch sử">⌫</button><button class="iconbtn" onclick="toggleChatBox()" aria-label="Đóng">✕</button></div></div>
     <div class="ai-picker-head"><label for="principiaAISelect"><strong>AI đang dùng</strong></label><div style="display:flex;gap:6px;align-items:center"><select id="principiaAISelect" class="ai-mini-select" onchange="selectPrincipiaAI(this.value)"></select><button class="ai-add-btn" onclick="addPrincipiaAI()" title="Thêm AI">＋</button></div></div>
@@ -285,17 +285,17 @@
 <div id="modal"></div>
 <div id="toast"></div>
 <!-- PRINCIPIA_STARTUP_DIAGNOSTICS_V1 -->
-<script src="/assets/js/app-part-01.js?v=20261123-syntax-fix4"></script>
+<script src="/assets/js/app-part-01.js?v=20261123-home-chat-clean5"></script>
 <script defer src="/assets/js/core/runtime.js?v=1"></script>
 <script defer src="/assets/js/core/performance.js?v=1.1.1"></script>
 <script defer src="/assets/js/core/permissions.js"></script>
 <script defer src="/assets/js/core/repository.js"></script>
 <script defer src="/assets/js/core/navigation.js"></script>
-<script defer src="/assets/js/app-part-02.js?v=20261123-syntax-fix4"></script>
+<script defer src="/assets/js/app-part-02.js?v=20261123-home-chat-clean5"></script>
 
 <!-- Firebase SDK được nạp nền sau khi giao diện đã hiển thị; tránh chặn toàn bộ trang nếu CDN chậm. -->
 
-<script defer src="/assets/js/app-part-03.js?v=20261123-syntax-fix4"></script>
+<script defer src="/assets/js/app-part-03.js?v=20261123-home-chat-clean5"></script>
 
 
 
@@ -311,7 +311,7 @@
  <div class="panel" style="padding:14px;margin-top:12px"><strong>⚡ Tự động xuất hiện theo sự kiện</strong><p class="muted small">Nhân vật và lời nhắn sẽ tự bật lên khi sự kiện xảy ra. Muốn chỉnh gì thì chỉnh tại đây.</p><label style="display:flex;gap:8px;align-items:center"><input id="companionAuto" type="checkbox" checked onchange="saveCompanionEventSettings()"> Bật tự động hiện nhân vật</label><label>Thời gian hiển thị (giây)</label><input id="companionDuration" type="number" min="1" max="15" value="4" onchange="saveCompanionEventSettings()"><div id="companionEventRows" style="display:grid;gap:9px;margin-top:10px"></div><button class="primary" style="margin-top:10px" onclick="saveCompanionEventSettings()">💾 Lưu cài đặt sự kiện</button></div>
  <p class="muted small" id="stickerStatus" aria-live="polite"></p>
  </div></div>
-<script defer src="/assets/js/app-part-04.js?v=20261123-syntax-fix4"></script>
+<script defer src="/assets/js/app-part-04.js?v=20261123-home-chat-clean5"></script>
 
 
 <script defer src="/assets/js/app-part-05.js"></script>
@@ -362,7 +362,7 @@
   if(window.principiaDesktop) return;
   const mobileCss=document.createElement('link');
   mobileCss.rel='stylesheet';
-  mobileCss.href='/assets/css/principia-mobile.css?v=20261123-syntax-fix4';
+  mobileCss.href='/assets/css/principia-mobile.css?v=20261123-home-chat-clean5';
   document.head.appendChild(mobileCss);
   // Keep the desktop DOM/layout intact. Portal the nav only on phone/tablet widths.
   let busy=false,observer,framePending=false;
