@@ -468,7 +468,7 @@ function labPage(){
    <option value="https://phet.colorado.edu/vi/simulations/filter?subjects=earth-science&type=html">Trái đất và Không gian</option>
    <option value="https://phet.colorado.edu/vi/simulations/filter?subjects=biology&type=html">Sinh học</option>
   </select>
-  <iframe id="phetFrame" data-principia-src="https://phet.colorado.edu/vi/simulations/filter?subjects=physics&type=html" title="Thư viện mô phỏng PhET" loading="lazy" style="width:100%;height:430px;border:1px solid var(--line);border-radius:12px"></iframe>
+  <iframe id="phetFrame" data-principia-src="https://phet.colorado.edu/vi/simulations/filter?subjects=physics&type=html" title="Thư viện mô phỏng PhET" loading="lazy" loading="lazy" style="width:100%;height:430px;border:1px solid var(--line);border-radius:12px"></iframe>
   <div id="principiaLabTools"></div>
  </section>
  <section id="principia-collision-lab" style="margin-top:18px;padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--bg-2);">
@@ -1255,7 +1255,8 @@ function toggleClPane(side){
 })();
 
 function changePhetSrc(){
-  document.getElementById('phetFrame').src = document.getElementById('phetSubjectPicker').value;
+  const frame=document.getElementById('phetFrame');if(!frame)return;
+  frame.loading='lazy';frame.src=document.getElementById('phetSubjectPicker').value;
 }
 
 async function addFilesToList(e){
