@@ -22,27 +22,44 @@ let principiaFirebaseSdkPromise=null;
 function loadPrincipiaFirebaseSdk(){
  if(window.firebase?.auth&&window.firebase?.firestore)return Promise.resolve();
  if(principiaFirebaseSdkPromise)return principiaFirebaseSdkPromise;
- const urls=[
-  'https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js',
-  'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js',
-  'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js'
+ const files=['firebase-app-compat.js','firebase-auth-compat.js','firebase-firestore-compat.js'];
+ const mirrors=[
+  file=>'https://www.gstatic.com/firebasejs/10.12.2/'+file,
+  file=>'https://cdnjs.cloudflare.com/ajax/libs/firebase/10.12.2/'+file,
+  file=>'https://cdn.jsdelivr.net/npm/firebase@10.12.2/'+file
  ];
- principiaFirebaseSdkPromise=(async()=>{
-  for(const src of urls){
-   await new Promise((resolve,reject)=>{
-    const existing=[...document.scripts].find(x=>x.src===src);
-    if(existing?.dataset.loaded==='1'){resolve();return;}
-    const script=existing||document.createElement('script');
-    let settled=false;
-    const finish=(err)=>{
-     if(settled)return;settled=true;clearTimeout(timer);
-     if(err)reject(new Error('Không tải được Firebase SDK: '+src));else{script.dataset.loaded='1';resolve();}
-    };
-    script.onload=()=>finish();script.onerror=()=>finish(true);
-    const timer=setTimeout(()=>finish(true),10000);
-    if(!existing){script.src=src;script.async=false;document.head.appendChild(script);}
-   });
+ async function loadOneFirebaseFile(file){
+  const failures=[];
+  for(const makeUrl of mirrors){
+   const src=makeUrl(file);
+   const alreadyLoaded=[...document.scripts].some(s=>s.src===src&&s.dataset.principiaFirebaseLoaded==='1');
+   if(alreadyLoaded)return;
+   try{
+    await new Promise((resolve,reject)=>{
+     const script=document.createElement('script');
+     let settled=false;
+     const finish=err=>{
+      if(settled)return;
+      settled=true;
+      clearTimeout(timer);
+      if(err)reject(err);
+      else{script.dataset.principiaFirebaseLoaded='1';resolve();}
+     };
+     script.onload=()=>finish();
+     script.onerror=()=>finish(new Error('Network error: '+src));
+     const timer=setTimeout(()=>finish(new Error('Timeout: '+src)),8000);
+     script.async=false;
+     script.src=src;
+     document.head.appendChild(script);
+    });
+    return;
+   }catch(err){failures.push(src+' ('+(err?.message||'load failed')+')');}
   }
+  throw new Error('Không tải được Firebase SDK '+file+'. Đã thử các CDN dự phòng: '+failures.join(' ; '));
+ }
+ principiaFirebaseSdkPromise=(async()=>{
+  for(const file of files)await loadOneFirebaseFile(file);
+  if(!window.firebase?.auth||!window.firebase?.firestore)throw new Error('Firebase SDK đã tải nhưng thiếu Auth/Firestore compat.');
  })().catch(err=>{principiaFirebaseSdkPromise=null;throw err;});
  return principiaFirebaseSdkPromise;
 }
