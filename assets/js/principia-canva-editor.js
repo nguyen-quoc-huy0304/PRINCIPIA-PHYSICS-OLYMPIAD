@@ -14,7 +14,7 @@
  const isAdmin=()=>{
   let account=null;
   try{account=JSON.parse(localStorage.getItem('principia_google_account')||'null')}catch(_){}
-  return !!account&&String(account.email||'').toLowerCase()==='huyquocnguyen0304@gmail.com'&&account.uid===window.PRINCIPIA_OWNER_UID_PUBLIC;
+  return !!account&&String(account.email||'').toLowerCase()==='huyquocnguyen03042011@gmail.com'&&account.uid===window.PRINCIPIA_OWNER_UID_PUBLIC;
  };
  const currentPage=()=>String(window.__principiaLastRoute||'home').toLowerCase().replace(/[^a-z0-9_-]/g,'').slice(0,80)||'home';
  const number=(value,fallback,min,max)=>{
