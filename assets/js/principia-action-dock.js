@@ -152,7 +152,8 @@
    'html>#principiaActionDockRoot{position:fixed!important;inset:0!important;top:0!important;right:0!important;bottom:0!important;left:0!important;width:100vw!important;height:100vh!important;height:100dvh!important;pointer-events:none!important;z-index:2147483000!important;display:block!important;visibility:visible!important;transform:none!important;contain:none!important}'+
    '#principiaActionDockRoot>#principiaDockAI,#principiaActionDockRoot>#principiaDockBrowser,#principiaActionDockRoot>#principiaDockFiles,#principiaActionDockRoot>#proSiteEditorFab{position:absolute!important;left:auto!important;top:auto!important;transform:none!important;margin:0!important;pointer-events:auto!important;visibility:visible!important;display:grid!important;z-index:1!important}'+
    '#principiaActionDockRoot>#principiaDockAI{right:18px!important;bottom:18px!important}'+
-   '#principiaActionDockRoot>#principiaDockBrowser{right:18px!important;bottom:74px!important}'+\n   '#principiaActionDockRoot>#principiaDockFiles{right:18px!important;bottom:130px!important}'+
+   '#principiaActionDockRoot>#principiaDockBrowser{right:18px!important;bottom:74px!important}'+
+   '#principiaActionDockRoot>#principiaDockFiles{right:18px!important;bottom:130px!important}'+
    '#principiaActionDockRoot>#proSiteEditorFab{position:absolute!important;right:18px!important;bottom:186px!important;left:auto!important;top:auto!important;z-index:2!important;pointer-events:auto!important;margin:0!important}'+
    'html body #principiaSearchTrigger,html body #principiaDownloadFab{display:none!important;visibility:hidden!important;pointer-events:none!important}'+
    'body.principia-welcome-active #principiaActionDockRoot{display:none!important}';
