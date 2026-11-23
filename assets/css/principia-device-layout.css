@@ -51,3 +51,13 @@ body.principia-welcome-active>.chat-panel,
 body.principia-welcome-active>.principia-ai-overlay,
 body.principia-welcome-active>.principia-mobile-nav{display:none!important;}
 body.principia-welcome-active #app .principia-welcome-screen button:not(.pw-start-button){display:none!important;}
+
+
+/* Device-specific controls and desktop-shell recovery. */
+@media(max-width:900px) and (hover:none) and (pointer:coarse){
+ #principiaDownloadFab,#principiaSuiteTrigger{display:none!important;visibility:hidden!important;pointer-events:none!important;}
+}
+body[data-principia-device="desktop"] #app>.principia-desktop-shell{display:grid!important;grid-template-columns:250px minmax(0,1fr)!important;}
+body[data-principia-device="desktop"] #app>.principia-mobile-shell{display:none!important;}
+body[data-principia-device="desktop"] #app .principia-desktop-shell>.sidebar{display:flex!important;}
+body[data-principia-device="desktop"] #app .principia-desktop-shell>.main{display:block!important;min-width:0!important;}
