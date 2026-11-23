@@ -277,11 +277,11 @@
 
   <button class="chat-bubble-btn chat-messenger-launcher" onclick="toggleChatBox()" title="Mở trợ lý AI" aria-label="Mở trợ lý AI"><svg class="chat-messenger-logo" viewBox="0 0 48 48" role="img" aria-label="Messenger"><defs><linearGradient id="messengerGradient" x1="7" y1="5" x2="40" y2="44" gradientUnits="userSpaceOnUse"><stop stop-color="#00B2FF"/><stop offset="1" stop-color="#006AFF"/></linearGradient></defs><circle cx="24" cy="24" r="23" fill="url(#messengerGradient)"/><path d="M11 25.2c0-7.5 5.8-12.8 13.2-12.8S37.5 17.7 37.5 25.2 31.7 38 24.2 38c-1.8 0-3.5-.3-5.1-1l-5.7 2 1.8-5.5c-2.6-2.3-4.2-5.2-4.2-8.3Z" fill="#fff"/><path d="m15.7 28.7 7.1-7.6 4.7 4.1 5-4.1-7.1 7.6-4.7-4.1-5 4.1Z" fill="#087CFA"/></svg></button>
   <div class="chat-box" id="chatBox">
-    <div class="ai-chat-head"><div><strong>PRINCIPIA AI</strong><div class="ai-chat-sub">Gia sư AI chạy trực tiếp trên thiết bị</div></div><button class="iconbtn" onclick="toggleChatBox()" aria-label="Đóng">✕</button></div>
-    <div class="chat-msgs" style="padding:14px"><div class="m-ai">Mình là gia sư PRINCIPIA. Nhấn gửi để mở phiên trò chuyện AI thật. Mô hình sẽ yêu cầu bạn xác nhận trước khi tải lần đầu (khoảng 580 MB), cần trình duyệt hỗ trợ WebGPU.</div></div>
-    <div class="ai-chat-compose"><div class="ai-chat-sub" style="margin-bottom:7px">AI cục bộ · Không cần API key · Nội dung xử lý trên thiết bị</div><div style="display:flex;gap:7px"><input type="text" id="chatInput" placeholder="Hỏi PRINCIPIA AI..." onkeydown="if(event.key==='Enter') sendChat()"><button class="primary" onclick="sendChat()">Trò chuyện ↗</button></div></div>
+    <div class="ai-chat-head"><div><strong>Trợ lý AI</strong><div class="ai-chat-sub">Lịch sử riêng theo từng AI</div></div><div style="display:flex;gap:6px"><button class="iconbtn" onclick="clearPrincipiaChatHistory()" title="Xóa lịch sử">⌫</button><button class="iconbtn" onclick="toggleChatBox()" aria-label="Đóng">✕</button></div></div>
+    <div class="ai-picker-head"><label for="principiaAISelect"><strong>AI đang dùng</strong></label><div style="display:flex;gap:6px;align-items:center"><select id="principiaAISelect" class="ai-mini-select" onchange="selectPrincipiaAI(this.value)"></select><button class="ai-add-btn" onclick="addPrincipiaAI()" title="Thêm AI">＋</button><button class="secondary" onclick="openSelectedAI()">Mở AI ↗</button></div></div>
+    <div id="chatMsgs" class="chat-msgs" aria-live="polite"></div>
+    <div class="ai-chat-compose"><div class="ai-chat-sub" style="margin-bottom:7px">Tin nhắn được lưu trong PRINCIPIA và sao chép để dán vào AI đang chọn.</div><div style="display:flex;gap:7px"><input type="text" id="chatInput" placeholder="Nhập câu hỏi..." onkeydown="if(event.key==='Enter') sendChat()"><button class="primary" onclick="sendChat()">Gửi ↗</button></div></div>
   </div>
-
 <div id="modal"></div>
 <div id="toast"></div>
 <!-- PRINCIPIA_STARTUP_DIAGNOSTICS_V1 -->

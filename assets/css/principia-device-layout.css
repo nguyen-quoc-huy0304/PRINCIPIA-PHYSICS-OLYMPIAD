@@ -72,3 +72,51 @@ body[data-principia-device="desktop"] #app .principia-desktop-shell>.main{displa
  body[data-principia-device="mobile"] #principiaDownloadFab,
  body[data-principia-device="mobile"] #principiaSuiteTrigger{display:none!important;visibility:hidden!important;pointer-events:none!important;}
 }
+
+
+/* Restore the classic desktop workspace; legacy Home overrides must not collapse it. */
+@media (min-width:901px){
+  #app>.layout{
+    display:grid!important;
+    grid-template-columns:235px minmax(0,1fr)!important;
+    align-items:stretch!important;
+    min-height:100vh!important;
+    width:100%!important;
+    background:var(--bg)!important;
+  }
+  #app>.layout>.sidebar{
+    display:flex!important;
+    flex-direction:column!important;
+    width:auto!important;
+    min-width:0!important;
+    height:100vh!important;
+    min-height:100vh!important;
+    position:sticky!important;
+    top:0!important;
+    padding:22px 14px!important;
+  }
+  #app>.layout>.main{
+    display:block!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:1500px!important;
+    min-height:100vh!important;
+    margin:0 auto!important;
+    padding:27px clamp(15px,4vw,48px)!important;
+  }
+}
+@media (max-width:900px){
+  body[data-principia-device="desktop"] #app>.layout{
+    display:grid!important;
+    grid-template-columns:235px minmax(0,1fr)!important;
+    min-height:100vh!important;
+    width:100%!important;
+  }
+  body[data-principia-device="desktop"] #app>.layout>.sidebar{
+    display:flex!important;width:auto!important;height:100vh!important;position:sticky!important;
+  }
+  body[data-principia-device="desktop"] #app>.layout>.main{
+    display:block!important;min-width:0!important;width:100%!important;max-width:none!important;
+    padding:24px!important;
+  }
+}
