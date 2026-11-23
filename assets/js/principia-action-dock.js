@@ -199,7 +199,7 @@
    const onWelcome=welcome();
    const target=onWelcome?document.body:root;
    if(pencil.parentElement!==target)target.appendChild(pencil);
-   Object.assign(pencil.style,{position:'fixed',right:'18px',bottom:'130px',left:'auto',top:'auto',zIndex:'2147483005',width:'46px',height:'46px',minWidth:'46px',minHeight:'46px',display:'grid',placeItems:'center',margin:'0',pointerEvents:'auto'});
+   Object.assign(pencil.style,{position:'fixed',right:'18px',bottom:isMobile()?'138px':'130px',left:'auto',top:'auto',zIndex:'2147483005',width:'46px',height:'46px',minWidth:'46px',minHeight:'46px',display:'grid',placeItems:'center',margin:'0',pointerEvents:'auto'});
    pencil.setAttribute('aria-hidden','false');
   }
   const editor=document.getElementById('proSiteEditorPanel');if(editor)editor.style.bottom=isMobile()?'306px':'242px';
