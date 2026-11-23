@@ -291,7 +291,7 @@
 <script defer src="/assets/js/core/permissions.js"></script>
 <script defer src="/assets/js/core/repository.js"></script>
 <script defer src="/assets/js/core/navigation.js"></script>
-<script defer src="/assets/js/app-part-02.js?v=20261123-character-fix2"></script>
+<script defer src="/assets/js/app-part-02.js?v=20261123-character-pack1"></script>
 
 <!-- Firebase SDK được nạp nền sau khi giao diện đã hiển thị; tránh chặn toàn bộ trang nếu CDN chậm. -->
 
@@ -303,15 +303,15 @@
 
 <div id="stickerStudio" onclick="if(event.target===this)closeStickerStudio()"><div class="sticker-card">
  <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div><div class="eyebrow">PRINCIPIA COMPANION</div><h2 style="margin:5px 0">🎀 Nhân vật & Sticker</h2></div><button class="secondary" onclick="closeStickerStudio()">✕</button></div>
- <p class="muted small">Chọn sticker xuất hiện ở góc màn hình. Lựa chọn và sticker tải lên được lưu trên thiết bị này.</p>
+ <p class="muted small">Dùng bộ ảnh PRINCIPIA gồm 34 tư thế đã gửi. Tải file bộ ảnh PNG, chọn file trong ô bên dưới; app sẽ tự chọn ngẫu nhiên một tư thế và lưu trên thiết bị này.</p>
  <div class="sticker-grid" id="stickerBuiltins"></div>
- <div class="panel" style="padding:14px"><strong>Thêm sticker của bạn</strong><p class="muted small">Hỗ trợ PNG, JPG, WEBP và GIF. Ảnh được lưu trong trình duyệt hiện tại.</p><input id="stickerUpload" type="file" accept="image/png,image/jpeg,image/webp,image/gif" multiple onchange="addPersonalStickers(this.files)"></div>
+ <div class="panel" style="padding:14px"><strong>Nạp bộ ảnh PRINCIPIA (34 tư thế)</strong><p class="muted small">Chọn file PRINCIPIA-character-poses-34.png đã tải xuống. App sẽ dùng toàn bộ 34 tư thế, không tạo chibi/meme thay thế.</p><input id="stickerUpload" type="file" accept="image/png,image/jpeg,image/webp,image/gif" multiple onchange="addPersonalStickers(this.files)"></div>
  <div id="personalStickerGrid" class="sticker-grid"></div>
  <div class="panel" style="padding:14px"><strong>Lời nhắn khi học</strong><input id="stickerMessage" type="text" maxlength="100" placeholder="Ví dụ: Cố lên, cậu làm được mà!" style="margin-top:9px" onchange="saveStickerMessage(this.value)"><div class="sticker-actions" style="margin-top:12px"><button class="primary" onclick="randomizeSticker()">🎲 Chọn ngẫu nhiên</button><button class="secondary" onclick="toggleStickerCompanion()" id="stickerToggleBtn">Ẩn nhân vật</button><button class="danger" onclick="resetStickerSettings()">Đặt lại</button></div></div>
  <div class="panel" style="padding:14px;margin-top:12px"><strong>⚡ Tự động xuất hiện theo sự kiện</strong><p class="muted small">Nhân vật và lời nhắn sẽ tự bật lên khi sự kiện xảy ra. Muốn chỉnh gì thì chỉnh tại đây.</p><label style="display:flex;gap:8px;align-items:center"><input id="companionAuto" type="checkbox" checked onchange="saveCompanionEventSettings()"> Bật tự động hiện nhân vật</label><label>Thời gian hiển thị (giây)</label><input id="companionDuration" type="number" min="1" max="15" value="4" onchange="saveCompanionEventSettings()"><div id="companionEventRows" style="display:grid;gap:9px;margin-top:10px"></div><button class="primary" style="margin-top:10px" onclick="saveCompanionEventSettings()">💾 Lưu cài đặt sự kiện</button></div>
  <p class="muted small" id="stickerStatus" aria-live="polite"></p>
  </div></div>
-<script defer src="/assets/js/app-part-04.js?v=20261123-character-fix2"></script>
+<script defer src="/assets/js/app-part-04.js?v=20261123-character-pack1"></script>
 
 
 <script defer src="/assets/js/app-part-05.js"></script>
