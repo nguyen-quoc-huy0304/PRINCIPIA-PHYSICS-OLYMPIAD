@@ -341,7 +341,7 @@ html body #principiaDownloadFab{
 }
 
 /* Remove all controls from the welcome screen, including the welcome editor bubble. */
-body.principia-welcome-active .principia-welcome-screen button,
+body.principia-welcome-active .principia-welcome-screen button:not(.pw-start-button),
 body.principia-welcome-active #principiaWelcomeEditorBubble,
 body.principia-welcome-active #principiaWelcomeEditorPanel{display:none!important;visibility:hidden!important;pointer-events:none!important}
 
@@ -349,3 +349,17 @@ body.principia-welcome-active>#principiaWelcomeEditorBubble,body.principia-welco
 
 body.principia-welcome-active>#proSiteEditorFab{display:grid!important;visibility:visible!important;pointer-events:auto!important;position:fixed!important;right:18px!important;bottom:130px!important;z-index:2147483005!important}
 body.principia-welcome-active>#principiaWelcomeEditorBubble,body.principia-welcome-active>#principiaWelcomeEditorPanel,body.principia-welcome-active>#proSiteEditorPanel,body.principia-welcome-active>.chat-bubble-btn,body.principia-welcome-active>.chat-box,body.principia-welcome-active>.chat-panel,body.principia-welcome-active>.principia-ai-overlay,body.principia-welcome-active>.principia-mobile-nav,body.principia-welcome-active>#principiaSearchTrigger,body.principia-welcome-active>#principiaDownloadFab,body.principia-welcome-active>#principiaGlobalSearch{display:none!important;visibility:hidden!important;pointer-events:none!important}
+
+/* Keep the single entry action visible; remove only unwanted floating controls. */
+body.principia-welcome-active .principia-welcome-screen .pw-start-button{
+ display:inline-flex!important;align-items:center;justify-content:center;gap:10px;
+ min-height:48px;padding:12px 22px;margin:18px auto 0;
+ border:1px solid rgba(255,255,255,.28);border-radius:14px;
+ background:linear-gradient(135deg,#7657e8,#4b8bd8);color:#fff;
+ font:700 14px/1.2 system-ui,sans-serif;letter-spacing:.2px;
+ box-shadow:0 8px 24px rgba(72,85,180,.28);cursor:pointer;
+}
+@media(max-width:900px){
+ body.principia-welcome-active .principia-welcome-screen .pw-start-button{min-height:40px;margin-top:8px;padding:9px 17px;font-size:12px}
+ body.principia-welcome-active>#proSiteEditorFab{bottom:138px!important}
+}
