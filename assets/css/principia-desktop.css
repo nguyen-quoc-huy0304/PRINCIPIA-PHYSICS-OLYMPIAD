@@ -1630,3 +1630,31 @@ button.chat-bubble-btn.chat-messenger-launcher>.chat-messenger-logo{
   #principiaSearchTrigger{bottom:calc(132px + env(safe-area-inset-bottom,0px))!important}
   #principiaDownloadFab{bottom:calc(186px + env(safe-area-inset-bottom,0px))!important}
 }
+
+/* One fixed viewport dock; buttons stay at the bottom of the visible screen. */
+#principiaViewportActionDock{
+ position:fixed!important;right:18px!important;bottom:18px!important;top:auto!important;left:auto!important;
+ z-index:2147482999!important;display:flex!important;flex-direction:column-reverse!important;
+ align-items:center!important;gap:10px!important;width:46px!important;padding:0!important;margin:0!important;
+ pointer-events:none!important;
+}
+#principiaViewportActionDock>button{
+ pointer-events:auto!important;position:relative!important;inset:auto!important;box-sizing:border-box!important;
+ flex:0 0 46px!important;width:46px!important;height:46px!important;min-width:46px!important;min-height:46px!important;
+ max-width:46px!important;max-height:46px!important;margin:0!important;padding:0!important;
+ display:grid!important;place-items:center!important;border-radius:50%!important;
+ border:1px solid rgba(255,255,255,.42)!important;
+ background:linear-gradient(145deg,rgba(255,255,255,.23),rgba(255,255,255,.055))!important;
+ color:var(--text,#fff)!important;box-shadow:0 10px 30px rgba(0,0,0,.23),inset 0 1px 0 rgba(255,255,255,.48)!important;
+ -webkit-backdrop-filter:blur(26px) saturate(155%)!important;backdrop-filter:blur(26px) saturate(155%)!important;
+ overflow:hidden!important;
+}
+#principiaViewportActionDock>#principiaSearchTrigger{font-size:27px!important;line-height:1!important;cursor:pointer!important}
+#principiaViewportActionDock>#principiaDownloadFab span{font-size:21px!important;margin:0!important}
+#principiaViewportActionDock>button.chat-messenger-launcher>.chat-messenger-logo{
+ display:block!important;width:29px!important;height:29px!important;min-width:29px!important;min-height:29px!important;
+ max-width:29px!important;max-height:29px!important;margin:0!important;object-fit:contain!important;
+}
+@media(max-width:900px){
+ #principiaViewportActionDock{right:12px!important;bottom:calc(76px + env(safe-area-inset-bottom,0px))!important}
+}
