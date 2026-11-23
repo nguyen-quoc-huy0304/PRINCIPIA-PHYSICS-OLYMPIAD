@@ -269,3 +269,18 @@
 ## Danh mục mở rộng
 
 - 1.000 ý tưởng tính năng mới được lưu tại [`docs/IDEA-CATALOG-1000-NEW.md`](./IDEA-CATALOG-1000-NEW.md). Đây là backlog đề xuất, chưa phải tính năng đã code. Khi chọn triển khai, cần đối chiếu với roadmap hiện tại để tránh trùng và cập nhật trạng thái/kiểm thử/commit tương ứng.
+
+## Các yêu cầu giao diện và vận hành được khôi phục từ trao đổi trước
+
+| # | Ý tưởng / yêu cầu | Trạng thái |
+|---:|---|---|
+| 172 | Ghim cố định ba nút Messenger AI, Tìm kiếm và Tải xuống ở góc dưới bên phải của **khung nhìn hiện tại**, không phụ thuộc cuối tài liệu/trang; trên mobile phải nằm phía trên thanh điều hướng dưới cùng | Có module `principia-action-dock.js`; cần kiểm thử vị trí thực tế trên desktop/mobile và sau mỗi lần render |
+| 173 | Giữ riêng giao diện desktop và mobile; desktop dùng bố cục desktop nhất quán giữa các tab, mobile có thanh điều hướng cố định dưới màn hình | Đang triển khai; cần nghiệm thu từng tab, không chỉ trang Home |
+| 174 | Cho phép ADMIN chỉnh sửa nội dung chữ và hình ảnh trên website; quyền chỉnh sửa không được cấp cho tài khoản thường | Có trình chỉnh sửa nền tảng lưu cục bộ; chưa đáp ứng lưu trữ/chia sẻ đồng bộ bền vững |
+| 175 | Kho dữ liệu PRINCIPIA dùng chung, đồng bộ thay đổi theo thời gian thực giữa các thiết bị/tài khoản được phép; có quy tắc phân quyền và xử lý xung đột | Đang triển khai qua Firebase; cần thiết kế schema, quy tắc truy cập và kiểm thử đồng bộ; không tự ý thay Firebase Rules |
+| 176 | Gom mô phỏng cân bằng lực, phóng vật/quỹ đạo và các thí nghiệm cơ học vào mục **Phòng thí nghiệm**, không để rải rác thành tab độc lập | Có các module mô phỏng; cần rà soát điều hướng và chuyển đúng vị trí mà không xóa dữ liệu/tính năng |
+| 177 | Giữ màn hình chào PRINCIPIA tối giản, chỉ có nút bắt đầu vào ứng dụng; không đưa các nút Messenger/Tìm kiếm/Tải xuống lên màn hình chào | Cần nghiệm thu cả desktop và mobile |
+| 178 | Logo Messenger AI dạng Liquid Glass trong suốt, không dùng nền xanh; nút Tìm kiếm và Messenger có kiểu dáng đồng bộ; không che nút Tải xuống | Có một phần CSS/module; cần nghiệm thu giao diện và thứ tự lớp |
+| 179 | Bộ nhân vật PRINCIPIA chọn ngẫu nhiên từ ảnh do người dùng cung cấp, không cố định một nhân vật | Chờ người dùng gửi đủ ảnh và xác nhận thời điểm random; không tự tạo hoặc tự chọn ảnh thay thế |
+| 180 | Bảo toàn các tính năng và nội dung đã duyệt khi sửa Home, tài khoản, điều hướng hoặc giao diện; không tự ý xóa Giveaway thay thế bằng nội dung khác, màn hình chào hay các module cũ | Ràng buộc bắt buộc cho mọi đợt triển khai |
+
