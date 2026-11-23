@@ -3,7 +3,7 @@
 'use strict';
 const KEY='principia_game_physics_v1',clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 function maxRange(v,g){return v*v/(g||9.80665);}
-function clampTarget(t,v,g){const max=maxRange(v,g);return +clamp(Number(t)||max*.7,max*.51,max*.99).toFixed(1);}
+function clampTarget(t,v,g){const max=maxRange(v,g),low=Math.ceil(max*.51*10)/10,high=Math.floor(max*.99*10)/10;return clamp(Math.round(clamp(Number(t)||max*.7,low,high)*10)/10,low,high);}
 function fresh(){const speed=Math.round(16+Math.random()*12),gravity=[1.62,9.80665,24.79][Math.floor(Math.random()*3)],max=maxRange(speed,gravity);return {target:+ (max*(.52+.40*Math.random())).toFixed(1),speed,gravity,angle:45,score:0,best:0,shots:0,last:'',history:[],perfect:0};}
 function read(){try{const s=JSON.parse(localStorage.getItem(KEY)||'{}');if(s.target>0&&s.speed>0){const restored={...fresh(),...s,history:Array.isArray(s.history)?s.history.slice(-20):[],perfect:Math.max(0,Number(s.perfect)||0),angle:clamp(Number(s.angle)||45,15,75)};restored.target=clampTarget(restored.target,restored.speed,restored.gravity);return restored;}}catch(_){}return fresh();}
 let state=read();let wasmPromise=null;let launching=false;let shotAnimationFrame=0;function rustWasmScore(){if(!wasmPromise)wasmPromise=import('/assets/wasm/pkg/principia_core.js').then(async wasm=>{if(typeof wasm.score_projectile_json!=='function')throw new Error('Rust/WASM chưa có hàm chấm điểm');await wasm.default();return wasm;}).catch(error=>{wasmPromise=null;throw error;});return wasmPromise;}function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(_){}}
