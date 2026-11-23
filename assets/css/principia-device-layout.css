@@ -344,3 +344,6 @@ html body #principiaDownloadFab{
 body.principia-welcome-active .principia-welcome-screen button,
 body.principia-welcome-active #principiaWelcomeEditorBubble,
 body.principia-welcome-active #principiaWelcomeEditorPanel{display:none!important;visibility:hidden!important;pointer-events:none!important}
+
+html:has(body.principia-welcome-active)>#principiaActionDockRoot{display:none!important;visibility:hidden!important;pointer-events:none!important}
+body.principia-welcome-active>#principiaWelcomeEditorBubble,body.principia-welcome-active>#principiaWelcomeEditorPanel,body.principia-welcome-active>#proSiteEditorPanel{display:none!important;visibility:hidden!important;pointer-events:none!important}
