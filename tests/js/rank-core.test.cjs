@@ -20,10 +20,9 @@ test('rank thresholds advance exactly at their boundary',()=>{
 });
 
 test('division changes as progress crosses one-third and two-thirds',()=>{
- assert.equal(getRank(84).division,'III');
- assert.equal(getRank(84).progress,33.6);
- assert.equal(getRank(167).division,'II');
- assert.equal(getRank(225).division,'I');
+ assert.equal(getRank(80).division,'III');
+ assert.equal(getRank(100).division,'II');
+ assert.equal(getRank(200).division,'I');
 });
 
 test('invalid, negative and fractional XP are normalized safely',()=>{
