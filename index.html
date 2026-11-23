@@ -5,6 +5,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>PRO — PRINCIPIA PHYSICS OLYMPIAD</title>
+<script>
+(function(){
+ try{
+  var u=new URL(window.location.href);
+  if(u.searchParams.get('utm_source')==='chatgpt.com'){
+   u.searchParams.delete('utm_source');
+   window.history.replaceState(window.history.state,'',u.pathname+u.search+u.hash);
+  }
+ }catch(error){console.warn('[PRINCIPIA] URL cleanup skipped',error)}
+})();
+</script>
+
 <link rel="stylesheet" href="/assets/css/principia-desktop.css?v=20261123-welcome-clean-brand2">
 
 
@@ -23,7 +35,7 @@
 
 
 
-<link rel="stylesheet" href="/assets/css/principia-device-layout.css?v=20261123-welcome-clean-brand2">
+<link rel="stylesheet" href="/assets/css/principia-device-layout.css?v=20261123-app-logo-glass3">
 </head>
 <body>
 <div id="app"></div>
@@ -291,7 +303,7 @@
 <script defer src="/assets/js/core/permissions.js"></script>
 <script defer src="/assets/js/core/repository.js"></script>
 <script defer src="/assets/js/core/navigation.js"></script>
-<script defer src="/assets/js/app-part-02.js?v=20261123-welcome-clean-brand2"></script>
+<script defer src="/assets/js/app-part-02.js?v=20261123-app-logo-glass3"></script>
 
 <!-- Firebase SDK được nạp nền sau khi giao diện đã hiển thị; tránh chặn toàn bộ trang nếu CDN chậm. -->
 
@@ -356,7 +368,7 @@
  <script defer src="/assets/js/principia-robot-assembly.js?v=1.0.2"></script>
 <script defer src="/assets/js/principia-pendulum-lab.js?v=1.0.1"></script>
 <script defer src="/assets/js/principia-collision-lab.js?v=1.5.0"></script>
-<script defer src="/assets/js/download-center.js?v=20261123-hide-mobile-fabs1"></script>
+<script defer src="/assets/js/download-center.js?v=20261123-restore-mobile-glass2"></script>
 
 
 </body>

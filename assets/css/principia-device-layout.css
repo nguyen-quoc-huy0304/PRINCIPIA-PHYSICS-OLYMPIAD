@@ -55,7 +55,7 @@ body.principia-welcome-active #app .principia-welcome-screen button:not(.pw-star
 
 /* Device-specific controls and desktop-shell recovery. */
 @media(max-width:900px) and (hover:none) and (pointer:coarse){
- #principiaDownloadFab,#principiaSuiteTrigger{display:none!important;visibility:hidden!important;pointer-events:none!important;}
+ #principiaSuiteTrigger{display:none!important;visibility:hidden!important;pointer-events:none!important;}
 }
 body[data-principia-device="desktop"] #app>.principia-desktop-shell{display:grid!important;grid-template-columns:250px minmax(0,1fr)!important;}
 body[data-principia-device="desktop"] #app>.principia-mobile-shell{display:none!important;}
@@ -69,7 +69,6 @@ body[data-principia-device="desktop"] #app .principia-desktop-shell>.main{displa
  body[data-principia-device="desktop"] #app>.principia-mobile-shell{display:none!important;}
  body[data-principia-device="desktop"] #app .principia-desktop-shell>.sidebar{display:flex!important;position:sticky!important;top:0!important;height:100vh!important;min-height:100vh!important;}
  body[data-principia-device="desktop"] #app .principia-desktop-shell>.main{display:block!important;min-width:0!important;width:100%!important;max-width:none!important;padding:28px 24px!important;}
- body[data-principia-device="mobile"] #principiaDownloadFab,
  body[data-principia-device="mobile"] #principiaSuiteTrigger{display:none!important;visibility:hidden!important;pointer-events:none!important;}
 }
 
@@ -274,26 +273,47 @@ body.principia-welcome-active #principiaGlobalSearch{
  pointer-events:none!important;
 }
 
-/* Messenger launcher: transparent canvas; only the Messenger mark remains visible. */
+/* Messenger uses the same circular Liquid Glass control language as search. */
 button.chat-bubble-btn.chat-messenger-launcher{
- background:transparent!important;
- background-color:transparent!important;
- border:0!important;
- border-radius:0!important;
- box-shadow:none!important;
+ background:linear-gradient(145deg,rgba(255,255,255,.20),rgba(137,112,235,.16))!important;
+ background-color:rgba(28,30,48,.58)!important;
+ border:1px solid rgba(255,255,255,.28)!important;
+ border-radius:50%!important;
+ box-shadow:0 8px 26px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.28)!important;
  outline:0!important;
+ -webkit-backdrop-filter:blur(22px) saturate(180%)!important;
+ backdrop-filter:blur(22px) saturate(180%)!important;
 }
 button.chat-bubble-btn.chat-messenger-launcher:hover,
 button.chat-bubble-btn.chat-messenger-launcher:focus{
- background:transparent!important;
- box-shadow:none!important;
+ background:linear-gradient(145deg,rgba(255,255,255,.28),rgba(137,112,235,.23))!important;
+ box-shadow:0 10px 30px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.34)!important;
 }
 button.chat-bubble-btn.chat-messenger-launcher>.chat-messenger-logo{
- width:42px!important;height:42px!important;
- min-width:42px!important;min-height:42px!important;
- max-width:42px!important;max-height:42px!important;
+ width:31px!important;height:31px!important;
+ min-width:31px!important;min-height:31px!important;
+ max-width:31px!important;max-height:31px!important;
 }
 @media(min-width:901px){
  #app>.layout>.sidebar>.brand{display:flex!important;align-items:center!important;gap:12px!important;padding-left:8px!important}
  #app>.layout>.sidebar>.brand .brand-name{display:inline-block!important;color:var(--txt,#fff)!important;font-size:18px!important;font-weight:900!important;letter-spacing:2px!important;line-height:1!important}
+}
+
+
+/* App header identity: restore the PRINCIPIA emblem beside the PRO label. */
+.principia-top-brand{display:flex!important;align-items:center!important;gap:10px!important;margin:3px 0 8px!important;min-height:40px!important}
+.principia-top-logo{display:block!important;width:38px!important;height:38px!important;min-width:38px!important;object-fit:contain!important;border-radius:50%!important;filter:drop-shadow(0 2px 8px rgba(0,0,0,.22))}
+.principia-top-brand .eyebrow{margin:0!important}
+.principia-top-brand .muted{margin-top:1px!important}
+#principiaDownloadFab{
+ right:18px!important;bottom:142px!important;border-radius:50%!important;
+ background:linear-gradient(145deg,rgba(255,255,255,.22),rgba(137,112,235,.18))!important;
+ border:1px solid rgba(255,255,255,.32)!important;
+ -webkit-backdrop-filter:blur(22px) saturate(180%)!important;
+ backdrop-filter:blur(22px) saturate(180%)!important;
+}
+@media(max-width:900px){
+ .principia-top-logo{width:32px!important;height:32px!important;min-width:32px!important}
+ .principia-top-brand{gap:8px!important;margin:2px 0 7px!important}
+ #principiaDownloadFab{right:12px!important;bottom:calc(142px + env(safe-area-inset-bottom))!important}
 }

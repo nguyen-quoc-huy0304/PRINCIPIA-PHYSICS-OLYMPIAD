@@ -19,7 +19,7 @@
   function mount(){
     // Hide the floating download entry point on phones; keep desktop access unchanged.
     const mobileDevice=/Android|iPhone|iPad|iPod|Mobile|IEMobile|Windows Phone/i.test(navigator.userAgent||'');
-    if(mobileDevice){document.getElementById('principiaDownloadFab')?.remove();document.getElementById('principiaDownloadOverlay')?.remove();return;}
+    
     // Download center is only for the public website, never the installed desktop app.
     if(window.principiaDesktop) return;
     if(/\\b(PRINCIPIA_APP|standalone)\\b/i.test(navigator.userAgent)) return;
