@@ -165,7 +165,6 @@
    '@media(max-width:900px){#principiaActionDockRoot>#principiaDockFiles{right:68px!important;bottom:138px!important;width:min(230px,calc(100vw - 94px))!important}}'+
    '#principiaActionDockRoot>#principiaDockAI{right:18px!important;bottom:18px!important}'+
    '#principiaActionDockRoot>#principiaDockBrowser{right:18px!important;bottom:74px!important}'+
-   '#principiaActionDockRoot>#principiaDockFiles{right:18px!important;bottom:130px!important}'+
    '#principiaActionDockRoot>#proSiteEditorFab{position:absolute!important;right:18px!important;bottom:186px!important;left:auto!important;top:auto!important;z-index:2!important;pointer-events:auto!important;margin:0!important}'+
    'html body #principiaSearchTrigger,html body #principiaDownloadFab{display:none!important;visibility:hidden!important;pointer-events:none!important}'+
    'body.principia-welcome-active #principiaActionDockRoot{display:none!important}';
@@ -191,9 +190,7 @@
   const browser=button(IDS.browser,'Tìm kiếm Internet','⌕',isMobile()?82:74);
   if(browser.parentElement!==root)root.appendChild(browser);
   browser.onclick=openBrowser;
-  const files=button(IDS.files,'Tìm tệp và khu vực PRO','▦',isMobile()?138:130);
-  if(files.parentElement!==root)root.appendChild(files);
-  files.onclick=openFiles;
+  installFileSearchBar(root);
   const oldSearch=document.getElementById('principiaSearchTrigger');if(oldSearch){oldSearch.style.setProperty('display','none','important');oldSearch.style.setProperty('visibility','hidden','important');oldSearch.style.setProperty('pointer-events','none','important');oldSearch.setAttribute('aria-hidden','true');oldSearch.tabIndex=-1;}
   const download=document.getElementById('principiaDownloadFab');if(download){download.style.setProperty('display','none','important');download.style.setProperty('visibility','hidden','important');download.style.setProperty('pointer-events','none','important');download.style.setProperty('width','0','important');download.style.setProperty('height','0','important');download.setAttribute('aria-hidden','true');download.tabIndex=-1;}
   const pencil=document.getElementById('proSiteEditorFab');
