@@ -193,9 +193,14 @@ function toggleStudyClock(){
  },1000);
 }
 function resetStudyClock(){if(principiaClock.interval)clearInterval(principiaClock.interval);principiaClock.running=false;principiaClock.left=principiaClock.mode==='countdown'?principiaClock.seconds:0;const d=document.getElementById('studyClockDisplay');if(d)d.textContent=fmtClock(principiaClock.mode==='countdown'?principiaClock.left:0);const b=document.getElementById('studyClockStart');if(b)b.textContent='▶ Bắt đầu';const h=document.getElementById('studyClockHint');if(h)h.textContent=principiaClock.mode==='countdown'?'Sẵn sàng tập trung':'Bấm giờ học tập'}
+function principiaRandomPoseMarkup(size=76){
+ const n=Math.floor(Math.random()*34),cell=Math.max(48,Math.min(520,Number(size)||76)),x=(n%5)*cell,y=Math.floor(n/5)*cell;
+ return '<span class="principia-bundled-pose" role="img" aria-label="Nhân vật PRINCIPIA · tư thế '+(n+1)+'" style="width:'+cell+'px;height:'+cell+'px;background-image:url(\'/assets/images/principia-poses-34.png\');background-size:'+(cell*5)+'px '+(cell*7)+'px;background-position:-'+x+'px -'+y+'px"></span>';
+}
+window.principiaRandomPoseMarkup=principiaRandomPoseMarkup;
 function home(){
- const art=typeof principiaWelcomeCharacterMarkup==='function'?principiaWelcomeCharacterMarkup():'';
- return `<section class="principia-home-only" aria-label="PRINCIPIA"><div class="principia-home-art">${art||'<img src="/assets/images/principia-chat-character.png" alt="Nhân vật PRINCIPIA">'}</div></section>`;
+ const art=principiaRandomPoseMarkup(420);
+ return `<section class="principia-home-only" aria-label="PRINCIPIA"><div class="principia-home-art">${art}</div></section>`;
 }
 function library(){
  let items=currentNodes();
@@ -453,6 +458,7 @@ function accountPage(){
 function setAccountMode(mode){accountMode=mode==='signup'?'signup':'login';render();renderGoogleAccount();}
 
 function principiaWelcomeCharacterMarkup(){
+ try{if(typeof window.principiaRandomPoseMarkup==='function')return window.principiaRandomPoseMarkup(320);}catch(e){}
  try{if(typeof window.getPrincipiaCharacterMarkup==='function')return window.getPrincipiaCharacterMarkup();}catch(e){}
  try{
   const settings=JSON.parse(localStorage.getItem('principia_sticker_settings')||'{}');

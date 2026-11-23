@@ -535,3 +535,5 @@
 @media(max-width:640px){.principia-welcome-screen .pw-character-halo .pw-welcome-character{height:92%!important;width:auto!important;max-width:86%!important}.principia-home-comic .principia-comic-character img{height:130px!important;width:auto!important}}
 
 @media(max-width:520px){.principia-home-art{width:94vw;height:88vh}.principia-home-only{min-height:100dvh}}
+
+@media(max-width:520px){.principia-home-art .principia-bundled-pose{width:min(88vw,420px)!important;height:min(88vw,420px)!important}.pw-character-halo .principia-bundled-pose{width:min(64vw,280px)!important;height:min(64vw,280px)!important}.chat-character-portrait .principia-bundled-pose{width:78px!important;height:78px!important}}

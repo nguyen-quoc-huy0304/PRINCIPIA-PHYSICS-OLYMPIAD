@@ -1356,3 +1356,9 @@ body.principia-home-active #body{min-height:100vh!important;display:grid;place-i
 .chat-character-speech:before{content:""!important;position:absolute!important;right:-9px!important;left:auto!important;bottom:8px!important;width:16px!important;height:16px!important;background:#fffdf8!important;border-right:2px solid #282333!important;border-bottom:2px solid #282333!important;transform:rotate(-25deg) skew(-18deg)!important;border-radius:0 0 3px 0!important}
 @media(max-width:520px){.chat-bubble-btn{right:8px!important;bottom:calc(8px + env(safe-area-inset-bottom))!important;max-width:calc(100vw - 16px)!important}.chat-character-portrait{width:82px!important;height:104px!important;flex-basis:82px!important}.chat-character-portrait img,.chat-character-portrait span,.chat-character-portrait>div{height:100px!important;max-width:82px!important}.chat-character-speech{max-width:150px!important;margin-bottom:25px!important;padding:10px 12px!important;font-size:11px!important}}
 body.principia-welcome-active .chat-bubble-btn,body.principia-home-active .chat-bubble-btn{display:none!important}
+
+/* Bundled 34-pose PRINCIPIA sprite sheet. */
+.principia-bundled-pose{display:inline-block;flex:none;background-repeat:no-repeat;background-color:transparent;vertical-align:middle}
+.principia-home-art .principia-bundled-pose{width:min(72vw,520px)!important;height:min(72vw,520px)!important;max-width:100%!important;max-height:88vh!important;filter:drop-shadow(0 18px 32px rgba(0,0,0,.25))}
+.pw-character-halo .principia-bundled-pose{width:min(34vw,360px)!important;height:min(34vw,360px)!important;max-width:100%!important;max-height:55vh!important;filter:drop-shadow(0 18px 28px rgba(0,0,0,.25))}
+.chat-character-portrait .principia-bundled-pose{width:92px!important;height:92px!important;max-width:100%!important;max-height:100%!important}
