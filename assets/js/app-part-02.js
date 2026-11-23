@@ -546,10 +546,9 @@ const isMobileDevice=(()=>{const ua=String(navigator.userAgent||'');const uaMobi
  const settingsButton=`<button class="nav ${page==='more'?'active':''}" onclick="setPage('more')"><span class="nav-default-icon">⚙</span><span>Cài đặt</span></button>`;
  if(isMobileDevice){
   app.innerHTML=`<div class="principia-mobile-shell"><main class="principia-mobile-main"><div class="principia-mobile-topbar">${topbar()}</div><div id="body">${body}</div></main><nav class="principia-mobile-nav" aria-label="Điều hướng mobile">${brandMarkup}${navButtons}${settingsButton}</nav></div>`;
-  const mobileNav=app.querySelector('.principia-mobile-nav');
-  if(mobileNav)document.body.appendChild(mobileNav);
  }else{
-  app.innerHTML=`<div class="principia-desktop-shell"><aside class="sidebar">${brandMarkup}${navGroupLabelHTML('workspace')}${navButtons}<div class="sidebottom">${navGroupLabelHTML('more')}${settingsButton}</div></aside><main class="main">${topbar()}<div id="body">${body}</div></main></div>`;
+  // Restore the original PRINCIPIA desktop layout: classic sidebar + main workspace.
+  app.innerHTML=`<div class="layout"><aside class="sidebar"><div class="brand" aria-label="PRO"><img class="brand-logo-img" src="${PRINCIPIA_LOGO_URI}" alt="PRO"></div>${navGroupLabelHTML('workspace')}${nav.map(([id,ic,n],idx)=>{const image=navItemImage(id),preset=PRINCIPIA_EMOJI_ICONS[ic]?ic:['home','books','calculator','puzzle','game','trophy'][idx%6];return `<button class="nav ${page===id||page==='lesson'&&id==='library'||page==='play'&&id===(activeQuiz?.kind==='fun'?'fun':'quiz')?'active':''}" onclick="setPage('${id}')">${image?`<img class="nav-custom-icon" src="${image}" alt="">`:`<span class="nav-default-icon">${principiaEmojiIcon(preset)}</span>`}<span>${n}</span></button>`}).join('')}<div class="sidebottom">${navGroupLabelHTML('more')}<button class="nav ${page==='more'?'active':''}" onclick="setPage('more')">More / Settings</button></div></aside><main class="main">${topbar()}<div id="body">${body}</div></main></div>`;
  }
  document.body.dataset.principiaDevice=isMobileDevice?'mobile':'desktop';
  document.body.dataset.principiaRole=principiaRole();
