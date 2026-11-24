@@ -16,8 +16,8 @@ pub fn linear_regression(points:&[(f64,f64)])->Result<LinearFit,RegressionError>
     let sxy=points.iter().map(|p|(p.0-mean_x)*(p.1-mean_y)).sum::<f64>();
     let syy=points.iter().map(|p|(p.1-mean_y).powi(2)).sum::<f64>();
     if !sxx.is_finite()||!sxy.is_finite()||!syy.is_finite(){return Err(RegressionError::NumericOverflow);}
-    let scale=points.iter().map(|p|p.0.abs()).fold(1.0_f64,f64::max);
-    if sxx<=f64::EPSILON*scale*scale*n{return Err(RegressionError::ZeroXVariance);}
+    let spread=points.iter().map(|p|(p.0-mean_x).abs()).fold(0.0_f64,f64::max);
+    if sxx<=f64::EPSILON*spread*spread*n{return Err(RegressionError::ZeroXVariance);}
     let slope=sxy/sxx;
     let intercept=mean_y-slope*mean_x;
     let sse=points.iter().map(|(x,y)|(y-(slope*x+intercept)).powi(2)).sum::<f64>();
