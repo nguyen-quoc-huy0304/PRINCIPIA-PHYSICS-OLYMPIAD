@@ -281,7 +281,8 @@ html[data-theme="light"] .principia-mobile-topbar{background:rgba(245,248,255,.7
 
 #principiaDimensionalWorld{position:fixed!important;inset:0!important;width:100%!important;height:100%!important;z-index:0!important;pointer-events:none!important;display:block!important}
 #app #principia3DAtmosphere{opacity:.2!important;filter:saturate(.72);mix-blend-mode:screen}
-html[data-theme="light"] #principiaDimensionalWorld{opacity:.48!important;filter:saturate(.62) brightness(1.28)}
+html[data-theme="light"].pr-dimensional-world-on #principiaDimensionalWorld{opacity:.48!important;filter:saturate(.62) brightness(1.28)}
+html[data-theme="light"]:not(.pr-dimensional-world-on) #principiaDimensionalWorld{opacity:0!important}
 html[data-theme="light"] #app #principia3DAtmosphere{opacity:.09!important}
 .pr-world-settings{display:grid;gap:10px;margin:14px 0;padding:14px;border:1px solid var(--line,rgba(150,165,220,.2));border-radius:16px;background:var(--card,rgba(255,255,255,.04))}
 .pr-world-settings>strong{font-size:13px;letter-spacing:.02em}
