@@ -34,6 +34,8 @@ test('chat and feature AI prompts route to shared Gemini provider', () => {
   assert.match(chat, /window\.principiaAI\.ask/);
   assert.match(mastery, /principiaLocalAI\.open\(prompt\)/);
   assert.match(adaptive, /principiaLocalAI\.open\(prompt\)/);
+  assert.match(read('assets/js/principia-study-methods.js'), /principiaStudyMethodAI/);
+  assert.match(read('assets/js/principia-study-methods.js'), /Học cùng AI/);
   assert.match(html, /principia-google-ai\.js/);
   assert.ok(html.indexOf('principia-local-ai.js') < html.indexOf('principia-google-ai.js'));
 });
