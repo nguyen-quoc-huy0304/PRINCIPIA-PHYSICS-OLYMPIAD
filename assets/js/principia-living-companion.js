@@ -2,10 +2,18 @@
 (()=> {
  'use strict';
  const STORAGE='principia-living-companion-v1';
- const DEFAULTS={enabled:true,quiet:false,color:'#9b87ff',scale:1};
+ const DEFAULTS={enabled:true,quiet:false,color:'#9b87ff',scale:1,shape:'classic'};
+ const SHAPES=Object.freeze({
+  classic:{body:[.63,.72,.48],head:[.82,.72,.62],ear:[.18,.28,.16],earY:1.1,arm:[1,1,1]},
+  round:{body:[.68,.70,.55],head:[.88,.82,.70],ear:[.14,.20,.13],earY:1.08,arm:[1.05,.95,1.05]},
+  slim:{body:[.52,.83,.43],head:[.75,.64,.56],ear:[.15,.30,.13],earY:1.08,arm:[.9,1.1,.9]},
+  cat:{body:[.63,.72,.48],head:[.82,.72,.62],ear:[.18,.38,.14],earY:1.18,arm:[1,1,1]},
+  robot:{body:[.66,.72,.50],head:[.80,.72,.62],ear:[.12,.14,.12],earY:1.12,arm:[1.1,1,1.1]}
+ });
  let cfg=readSettings(),lastNudge=0,drag=null,shellMaterials=[],nudgeTimer=0;
+ const sceneInstances=[];
  const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
- function readSettings(){try{const saved=JSON.parse(localStorage.getItem(STORAGE)||'{}');return {...DEFAULTS,...saved,color:/^#[0-9a-f]{6}$/i.test(saved.color||'')?saved.color:DEFAULTS.color,scale:Number.isFinite(saved.scale)?clamp(saved.scale,.65,1.4):1}}catch(_){return {...DEFAULTS}}}
+ function readSettings(){try{const saved=JSON.parse(localStorage.getItem(STORAGE)||'{}');return {...DEFAULTS,...saved,color:/^#[0-9a-f]{6}$/i.test(saved.color||'')?saved.color:DEFAULTS.color,scale:Number.isFinite(saved.scale)?clamp(saved.scale,.65,1.4):1,shape:Object.prototype.hasOwnProperty.call(SHAPES,saved.shape)?saved.shape:DEFAULTS.shape}}catch(_){return {...DEFAULTS}}}
  function save(){try{localStorage.setItem(STORAGE,JSON.stringify(cfg))}catch(_){}}
  function welcomeMarkup(){return '<div class="plc-welcome-3d" aria-label="Mascot 3D PRINCIPIA"><div class="plc-fallback">✦</div><canvas class="plc-canvas" aria-hidden="true"></canvas><span class="plc-wave-label">HELLO! · READY?</span></div>'}
  window.principiaWelcomeCharacterMarkup=welcomeMarkup;
@@ -24,7 +32,7 @@
    const mat=(color,metal=0.22,rough=.35)=>new T.MeshStandardMaterial({color,metalness:metal,roughness:rough});
    const shell=mat(cfg.color);shellMaterials.push(shell);const dark=mat('#201a39',.35),eye=mat('#dff8ff',.12,.18),accent=mat('#7ce8ff',.28,.2);
    const sphere=(name,scale,pos,m)=>{const o=new T.Mesh(new T.SphereGeometry(1,32,24),m);o.name=name;o.scale.set(...scale);o.position.set(...pos);root.add(o);return o};
-   sphere('body',[.63,.72,.48],[0,-.35,0],shell);sphere('head',[.82,.72,.62],[0,.55,0],shell);
+   const body=sphere('body',[.63,.72,.48],[0,-.35,0],shell);const head=sphere('head',[.82,.72,.62],[0,.55,0],shell);
    sphere('face',[.63,.46,.12],[0,.52,.54],dark);
    const eyeL=sphere('eyeL',[.12,.15,.07],[-.25,.58,.68],eye),eyeR=sphere('eyeR',[.12,.15,.07],[.25,.58,.68],eye);eyes=[eyeL,eyeR];
    sphere('pupilL',[.045,.07,.03],[-.25,.56,.75],accent);sphere('pupilR',[.045,.07,.03],[.25,.56,.75],accent);
@@ -34,12 +42,13 @@
    hand=new T.Group();hand.position.set(.72,-.16,.04);root.add(hand);
    const right=new T.Mesh(armGeo,shell);right.position.set(.1,-.18,0);right.rotation.z=-.35;hand.add(right);
    sphereIn(hand,'hand',[.17,.17,.17],[.15,.08,0],shell);
-   for(let i=0;i<2;i++){const ear=sphere('ear',[.18,.28,.16],[i? .55:-.55,1.1,0],accent);ear.rotation.z=i?.4:-.4}
+   const ears=[];for(let i=0;i<2;i++){const ear=sphere('ear',[.18,.28,.16],[i? .55:-.55,1.1,0],accent);ear.rotation.z=i?.4:-.4;ears.push(ear)}
    const ring=new T.Mesh(new T.TorusGeometry(1.03,.025,8,96),accent);ring.rotation.x=Math.PI/2;ring.position.y=-.1;root.add(ring);
-   root.scale.setScalar(mode==='welcome'?1.14:cfg.scale);
+   root.scale.setScalar((mode==='welcome'?1.14:1)*cfg.scale);
+   const instance={canvas,root,body,head,ears,leftArm:left,rightArm:right,mode};sceneInstances.push(instance);applyShapeToScene(instance);
    canvas.parentElement.classList.add('plc-webgl-ready');
    const start=performance.now();
-   const loop=()=>{if(!canvas.isConnected){renderer.dispose();renderer=null;cancelAnimationFrame(sceneRaf);return}
+   const loop=()=>{if(!canvas.isConnected){renderer.dispose();renderer=null;cancelAnimationFrame(sceneRaf);const index=sceneInstances.indexOf(instance);if(index>=0)sceneInstances.splice(index,1);return}
     const t=(performance.now()-start)/1000;
     root.position.y=Math.sin(t*1.7)*.08;
     root.rotation.y=Math.sin(t*.6)*.14;
@@ -48,6 +57,21 @@
     renderer.render(scene,camera);sceneRaf=requestAnimationFrame(loop)
    };loop();return true;
   }catch(err){console.warn('[PRINCIPIA Companion] 3D unavailable',err);renderer?.dispose();return false}
+ }
+ function applyShapeToScene(instance){
+  const shape=SHAPES[cfg.shape]||SHAPES.classic;
+  instance.body.scale.set(...shape.body);instance.head.scale.set(...shape.head);
+  instance.ears.forEach((ear,index)=>{ear.scale.set(...shape.ear);ear.position.y=shape.earY;ear.position.x=index?.55:-.55});
+  instance.leftArm.scale.set(...shape.arm);instance.rightArm.scale.set(...shape.arm);
+  instance.root.scale.setScalar((instance.mode==='welcome'?1.14:1)*cfg.scale);
+ }
+ function setShape(name){
+  if(!Object.prototype.hasOwnProperty.call(SHAPES,name))return false;
+  cfg.shape=name;save();sceneInstances.filter(x=>x.canvas.isConnected).forEach(applyShapeToScene);return true;
+ }
+ function setScale(value){
+  const next=Number(value);if(!Number.isFinite(next))return false;
+  cfg.scale=clamp(next,.65,1.4);save();sceneInstances.filter(x=>x.canvas.isConnected).forEach(applyShapeToScene);return true;
  }
  function sphereIn(parent,scale,pos,m){const o=new window.THREE.Mesh(new window.THREE.SphereGeometry(1,20,16),m);o.scale.set(...scale);o.position.set(...pos);parent.add(o)}
  function initWelcome(){document.querySelectorAll('.plc-welcome-3d').forEach(el=>{if(el.dataset.ready)return;el.dataset.ready='1';const canvas=el.querySelector('canvas');loadThree().then(()=>createScene(canvas,'welcome')).catch(()=>{});speakWelcomeOnce()})}
@@ -83,7 +107,7 @@
   initWelcome();
   if(document.body.classList.contains('principia-welcome-active'))return;
   if(!cfg.enabled||document.getElementById('principiaLivingCompanion'))return;
-  const el=document.createElement('aside');el.id='principiaLivingCompanion';el.className='plc-companion'+(cfg.quiet?' is-quiet':'');el.innerHTML='<button class="plc-mascot" type="button" aria-label="Mở trợ lý AI PRINCIPIA" title="Mở trợ lý AI"><div class="plc-fallback">✦</div><canvas class="plc-canvas"></canvas><span class="plc-dot"></span></button><div class="plc-nudge" role="status" aria-live="polite"></div><div class="plc-controls"><button type="button" data-quiet aria-label="Bật hoặc tắt lời nhắc">◐</button><button type="button" data-color aria-label="Đổi màu nhân vật">◈</button><button type="button" data-hide aria-label="Ẩn companion">×</button></div>';
+  const el=document.createElement('aside');el.id='principiaLivingCompanion';el.className='plc-companion'+(cfg.quiet?' is-quiet':'');el.innerHTML='<button class="plc-mascot" type="button" aria-label="Mở trợ lý AI PRINCIPIA" title="Mở trợ lý AI"><div class="plc-fallback">✦</div><canvas class="plc-canvas"></canvas><span class="plc-dot"></span></button><div class="plc-nudge" role="status" aria-live="polite"></div><div class="plc-controls"><button type="button" data-quiet aria-label="Bật hoặc tắt lời nhắc">◐</button><button type="button" data-color aria-label="Đổi màu nhân vật">◈</button><button type="button" data-shape aria-label="Đổi hình dáng nhân vật">◇</button><button type="button" data-hide aria-label="Ẩn companion">×</button></div>';
   document.body.appendChild(el);
   el.querySelector('.plc-mascot').addEventListener('click',e=>{if(e.currentTarget.dataset.suppressClick)return;if(typeof window.toggleChatBox==='function')window.toggleChatBox();else document.querySelector('.chat-bubble-btn')?.click();hideNudge()});el.querySelector('.plc-nudge').addEventListener('click',()=>{if(typeof window.toggleChatBox==='function')window.toggleChatBox();else document.querySelector('.chat-bubble-btn')?.click();hideNudge()});
   el.querySelector('[data-quiet]').addEventListener('click',()=>{cfg.quiet=!cfg.quiet;save();el.classList.toggle('is-quiet',cfg.quiet);toast(cfg.quiet?'Companion im lặng':'Đã bật lời nhắc')});
@@ -108,6 +132,6 @@
  function showNudge(message,title){const n=document.querySelector('.plc-nudge');if(!n||cfg.quiet)return;n.textContent=message;n.classList.add('visible');n.dataset.context=title;clearTimeout(n.hideTimer);n.hideTimer=setTimeout(()=>n.classList.remove('visible'),8500)}
  function hideNudge(){document.querySelector('.plc-nudge')?.classList.remove('visible')}
  function toast(text){const t=document.createElement('div');t.className='plc-toast';t.textContent=text;document.body.appendChild(t);setTimeout(()=>t.remove(),3200)}
- window.principiaLivingCompanion={openAI:()=>document.querySelector('.plc-mascot')?.click(),setQuiet(v){cfg.quiet=!!v;save();document.querySelector('#principiaLivingCompanion')?.classList.toggle('is-quiet',cfg.quiet)},setEnabled(v){cfg.enabled=!!v;save();document.getElementById('principiaLivingCompanion')?.remove();if(v)mount()},showHint:()=>showNudge(hints[Math.floor(Math.random()*hints.length)],context()),hideNudge};
+ window.principiaLivingCompanion={openAI:()=>document.querySelector('.plc-mascot')?.click(),setQuiet(v){cfg.quiet=!!v;save();document.querySelector('#principiaLivingCompanion')?.classList.toggle('is-quiet',cfg.quiet)},setEnabled(v){cfg.enabled=!!v;save();document.getElementById('principiaLivingCompanion')?.remove();if(v)mount()},setShape,getSettings:()=>({...cfg}),setScale,showHint:()=>showNudge(hints[Math.floor(Math.random()*hints.length)],context()),hideNudge};
  document.addEventListener('DOMContentLoaded',mount);window.addEventListener('pageshow',mount);window.addEventListener('pagehide',()=>clearTimeout(nudgeTimer),{once:true});const observer=new MutationObserver(()=>{if(document.body.classList.contains('principia-welcome-active'))initWelcome();else mount()});observer.observe(document.body,{attributes:true,attributeFilter:['class']});
 })();
