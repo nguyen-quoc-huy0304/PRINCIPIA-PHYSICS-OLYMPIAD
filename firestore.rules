@@ -1,0 +1,64 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner() {
+      return signedIn()
+        && request.auth.token.email == 'huyquocnguyen03042011@gmail.com'
+        && request.auth.token.email_verified == true;
+    }
+
+    function validLeaderboardEntry(userId) {
+      return request.resource.data.keys().hasOnly([
+          'uid', 'name', 'xp', 'streak', 'completedCount', 'updatedAt'
+        ])
+        && request.resource.data.uid == userId
+        && request.resource.data.name is string
+        && request.resource.data.name.size() <= 60
+        && request.resource.data.xp is number
+        && request.resource.data.xp >= 0
+        && request.resource.data.xp <= 100000000
+        && request.resource.data.streak is number
+        && request.resource.data.streak >= 0
+        && request.resource.data.streak <= 10000
+        && request.resource.data.completedCount is number
+        && request.resource.data.completedCount >= 0
+        && request.resource.data.completedCount <= 1000000;
+    }
+
+    match /principiaLeaderboard/{userId} {
+      allow read: if true;
+      allow create, update: if isOwner()
+        || (signedIn() && request.auth.uid == userId && validLeaderboardEntry(userId));
+      allow delete: if isOwner();
+    }
+
+    match /principiaContent/{document=**} {
+      allow read: if signedIn();
+      allow write: if isOwner();
+    }
+
+    match /principiaLessons/{document=**} {
+      allow read: if signedIn();
+      allow write: if isOwner();
+    }
+
+    match /principiaQuestionBank/{document=**} {
+      allow read: if signedIn();
+      allow write: if isOwner();
+    }
+
+    match /principiaSettings/{document=**} {
+      allow read: if signedIn();
+      allow write: if isOwner();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
