@@ -46,7 +46,7 @@
     if(concepts.length<4)throw new Error('Cần ít nhất 4 khái niệm để tạo lộ trình.');
     const ids=new Set();
     concepts.forEach((item,index)=>{const base=item.id;let id=base,n=2;while(ids.has(id))id=base+'-'+n++;item.id=id;ids.add(id);});
-    concepts.forEach(item=>{item.dependsOn=item.dependsOn.filter(id=>ids.has(id)&&id!==item.id);});
+    const prior=new Set();concepts.forEach(item=>{item.dependsOn=Array.from(new Set(item.dependsOn.filter(id=>prior.has(id))));prior.add(item.id);});
     const prerequisites=(Array.isArray(raw.prerequisites)?raw.prerequisites:[]).slice(0,5).map(item=>({name:text(item?.name,100),reason:text(item?.reason,260),checkQuestion:text(item?.checkQuestion,300)})).filter(x=>x.name&&x.reason&&x.checkQuestion);
     return{id:'map-'+Date.now().toString(36),topic:text(raw.topic||topic,120),level:text(raw.level||'Chưa xác định',60),overview:text(raw.overview,600),prerequisites,concepts,createdAt:new Date().toISOString()};
   }
