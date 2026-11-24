@@ -143,7 +143,7 @@
       item.assessmentAttempts = Math.min(99, (Number(item.assessmentAttempts) || 0) + 1);
       item.lastAssessmentAt = Date.now();
       item.lastAssessmentScore = result.score;
-      item.lastAssessmentFeedback = result.feedback;
+      item.lastAssessmentFeedback = result.feedback + (result.nextStep ? ' Bước tiếp theo: ' + result.nextStep : '');
       if (!result.passed) {
         item.dueAt = Date.now();
         item.status = 'review';
