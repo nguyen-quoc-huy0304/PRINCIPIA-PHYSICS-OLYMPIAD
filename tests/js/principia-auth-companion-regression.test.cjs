@@ -36,8 +36,8 @@ test('browser cache versions are bumped for every corrected module', () => {
   const html = read('index.html');
   for (const version of [
     'core/permissions.js?v=20261124-auth-policy3',
-    'app-part-03.js?v=20261124-auth-policy3',
-    'principia-site-editor.js?v=20261124-auth-policy3',
+    'app-part-03.js?v=20261124-cloud-sync1',
+    'principia-site-editor.js?v=20261124-cloud-sync2',
     'principia-canva-editor.js?v=20261124-auth-policy3',
     'principia-welcome-editor.js?v=20261124-auth-policy3',
     'principia-living-companion.js?v=20261124-mascot-shape1'
