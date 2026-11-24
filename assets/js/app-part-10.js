@@ -16,14 +16,6 @@
  function show(url,title){const u=safeUrl(url);if(!u)return false;const h=ensureHost(),f=h.querySelector('iframe');state.url=u;state.title=title||new URL(u).hostname;state.visible=true;h.hidden=false;h.querySelector('#pmbTitle').textContent=state.title;if(f.src!==u)f.src=u;return true}
  function hide(){const h=document.getElementById('principiaMiniBrowser');if(h)h.hidden=true;state.visible=false}
  window.principiaMiniBrowser={open:show,close:hide,getState:()=>({...state})};
- const oldToggle=window.toggleChatBox;
- if(typeof oldToggle==='function')window.toggleChatBox=function(){oldToggle.apply(this,arguments);const b=document.getElementById('chatBox');if(b?.classList.contains('open')){const a=window.getSelectedAI?.();if(a)show(a.url,a.name||'AI')}else hide()};
- const oldSelect=window.selectPrincipiaAI;
- if(typeof oldSelect==='function')window.selectPrincipiaAI=function(id){const r=oldSelect.apply(this,arguments),a=window.getSelectedAI?.();if(a&&document.getElementById('chatBox')?.classList.contains('open'))show(a.url,a.name||'AI');return r};
- const oldOpen=window.openSelectedAI;
- window.openSelectedAI=function(){const a=window.getSelectedAI?.();if(a)show(a.url,a.name||'AI');else if(oldOpen)oldOpen.apply(this,arguments)};
- const oldSend=window.sendChat;
- if(typeof oldSend==='function')window.sendChat=function(){const a=window.getSelectedAI?.();if(a)show(a.url,a.name||'AI');return oldSend.apply(this,arguments)};
  const oldLesson=window.lesson;
  if(typeof oldLesson==='function')window.lesson=function(){
   const html=oldLesson.apply(this,arguments);let l=null;
