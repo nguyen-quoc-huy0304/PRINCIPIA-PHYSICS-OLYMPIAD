@@ -2,7 +2,7 @@
 (() => {
  'use strict';
 
- const IDS={trigger:'principiaCommandTrigger',overlay:'principiaCommandOverlay',backTop:'principiaBackToTop'};
+ const IDS={overlay:'principiaCommandOverlay'};
  let activeIndex=0;
  let commands=[];
  let lastFocus=null;
