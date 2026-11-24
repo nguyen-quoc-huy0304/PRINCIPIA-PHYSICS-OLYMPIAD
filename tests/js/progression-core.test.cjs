@@ -12,7 +12,7 @@ test('achievement progress uses actual metrics',()=>{const a=P.achievements({ses
 test('achievement output has stable unique ids',()=>{const a=P.achievements();assert.equal(new Set(a.map(x=>x.id)).size,a.length)});
 
 test('ignores impossible calendar dates in stored activity',()=>{const d=new Date(2026,10,22);assert.deepEqual(P.recordActivity(['2026-02-30','2026-13-01','not-a-date'],d),['2026-11-22'])});
-test('invalid stored dates cannot extend the current streak',()=>{const d=new Date(2026,10,22);assert.equal(P.streak(['2026-11-21','2026-02-30'],d).current,2)});
+test('invalid stored dates cannot extend the current streak',()=>{const d=new Date(2026,10,22);assert.equal(P.streak(['2026-11-21','2026-02-30'],d).current,1)});
 test('invalid stored dates cannot inflate the longest streak',()=>{assert.equal(P.streak(['2026-11-18','2026-11-19','2026-02-30'],new Date(2026,10,22)).longest,2)});
 
 test('accepts well-formed local calendar keys and rejects malformed keys',()=>{assert.deepEqual(P.recordActivity(['2026-11-21'],new Date(2026,10,22)),['2026-11-21','2026-11-22']);assert.deepEqual(P.recordActivity(['2026/11/21','abcd-11-21','2026-11-21x'],new Date(2026,10,22)),['2026-11-22'])});
