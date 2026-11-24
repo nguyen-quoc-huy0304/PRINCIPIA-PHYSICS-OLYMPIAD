@@ -15,6 +15,60 @@
   let toastHost = null;
   let toastSequence = 0;
   let favicon = null;
+  const SETTINGS_KEY = 'principia_experience_settings_v1';
+  let settings = readSettings();
+
+  function readSettings() {
+    const defaults = { motion: true, beams: true, tilt: true };
+    try {
+      const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+      return { motion: saved.motion !== false, beams: saved.beams !== false, tilt: saved.tilt !== false };
+    } catch (_) { return defaults; }
+  }
+
+  function applySettings() {
+    const root = document.documentElement;
+    root.classList.toggle('pr-experience-motion-off', !settings.motion);
+    root.classList.toggle('pr-experience-beams-off', !settings.beams);
+    root.classList.toggle('pr-experience-tilt-off', !settings.tilt);
+  }
+
+  function saveSettings(next) {
+    settings = { ...settings, ...next };
+    try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }
+    catch (_) { notify('Không thể lưu cài đặt hiệu ứng trên thiết bị này.'); }
+    applySettings();
+  }
+
+  function mountEditorSettings() {
+    const panel = document.getElementById('proSiteEditorPanel');
+    if (!panel || panel.querySelector('[data-pr-experience-settings]')) return;
+    const section = document.createElement('section');
+    section.dataset.prExperienceSettings = 'true';
+    section.className = 'pr-experience-settings';
+    const heading = document.createElement('strong');
+    heading.textContent = 'Giao diện & hiệu ứng';
+    section.append(heading);
+    const options = [
+      ['motion', 'Chuyển động mượt và phản hồi nút'],
+      ['beams', 'Viền sáng chuyển động quanh thẻ'],
+      ['tilt', 'Hiệu ứng 3D nghiêng theo chuột']
+    ];
+    options.forEach(([key, labelText]) => {
+      const label = document.createElement('label');
+      const input = document.createElement('input');
+      input.type = 'checkbox';
+      input.checked = settings[key];
+      input.addEventListener('change', () => saveSettings({ [key]: input.checked }));
+      const text = document.createElement('span');
+      text.textContent = labelText;
+      label.append(input, text);
+      section.append(label);
+    });
+    const status = panel.querySelector('[data-status]');
+    if (status) panel.insertBefore(section, status);
+    else panel.append(section);
+  }
 
   function safeElement(node) {
     return node instanceof Element && !node.closest(EXCLUDED);
@@ -77,7 +131,7 @@
       const y = (event.clientY - rect.top) / rect.height;
       card.style.setProperty('--pr-x', Math.round(event.clientX - rect.left) + 'px');
       card.style.setProperty('--pr-y', Math.round(event.clientY - rect.top) + 'px');
-      if (!card.matches('#app .tile,#app .stat')) return;
+      if (!settings.tilt || !card.matches('#app .tile,#app .stat')) return;
       card.style.setProperty('--pr-tilt-x', clamp((0.5 - y) * 3.2, -1.8, 1.8).toFixed(2) + 'deg');
       card.style.setProperty('--pr-tilt-y', clamp((x - 0.5) * 4, -2.2, 2.2).toFixed(2) + 'deg');
     }, { passive: true });
@@ -232,6 +286,7 @@
   }
 
   function init() {
+    applySettings();
     setupReveal();
     enhance();
     if (revealObserver) document.querySelectorAll('#app .pr-motion-item').forEach(node => revealObserver.observe(node));
@@ -246,11 +301,12 @@
           if (node.nodeType === Node.ELEMENT_NODE) enhance(node);
         });
       });
+      mountEditorSettings();
     });
-    const root = document.getElementById('app') || document.body;
-    mutationObserver.observe(root, { childList: true, subtree: true, attributes: true, attributeFilter: ['aria-busy', 'data-ai-state', 'class', 'role'] });
-    document.addEventListener('principia:rendered', () => enhance());
-    document.addEventListener('principia:page-changed', () => enhance());
+    mutationObserver.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['aria-busy', 'data-ai-state', 'class', 'role'] });
+    mountEditorSettings();
+    document.addEventListener('principia:rendered', () => { enhance(); mountEditorSettings(); });
+    document.addEventListener('principia:page-changed', () => { enhance(); mountEditorSettings(); });
     window.addEventListener('pagehide', () => {
       revealObserver?.disconnect();
       mutationObserver?.disconnect();
