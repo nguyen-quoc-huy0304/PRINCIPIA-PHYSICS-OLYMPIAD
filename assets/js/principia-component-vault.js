@@ -74,7 +74,7 @@
   function buildItem(item,index){
     const [name,category,source,html,css]=item;
     const id='pv-'+index;
-    const attributedHTML=source==='LucianLabs'?'<!-- Lucian UX/UI Prompt · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/ -->\\n'+html:html;
+    const attributedHTML=source==='LucianLabs'?'<!-- Lucian UX/UI Prompt · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/ -->\n'+html:html;
     return {id,name,category,source,html:attributedHTML,css:css.replace(/#a995ff/g,'var(--pv-accent)').replace(/#65c8e8/g,'var(--pv-accent2)')};
   }
   const catalog=ITEMS.flatMap((item,index)=>SKINS.map((skin,skinIndex)=>{
@@ -149,7 +149,7 @@
       const preview=make('div',{class:'pr-vault-preview'});
       const frame=make('div',{class:'pr-vault-frame'});
       const previewFrame=make('iframe',{class:'pr-vault-live-frame',title:item.name,loading:'lazy',sandbox:'allow-scripts'});
-      const previewDocument='<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; img-src data: blob:; style-src \'unsafe-inline\'; script-src \'unsafe-inline\'; font-src data:; connect-src \'none\'; form-action \'none\'; base-uri \'none\'"><style>html,body{margin:0;min-height:100%;background:transparent}body{display:grid;place-items:center;padding:8px;box-sizing:border-box;overflow:auto}</style><style>'+(window.PRINCIPIA_LUCIAN_TOKENS||'')+'\\n'+variantCSS[activeVariant]+'\\n'+item.css+'</style></head><body>'+item.html+'</body></html>';
+      const previewDocument='<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; img-src data: blob:; style-src \'unsafe-inline\'; script-src \'unsafe-inline\'; font-src data:; connect-src \'none\'; form-action \'none\'; base-uri \'none\'"><style>html,body{margin:0;min-height:100%;background:transparent}body{display:grid;place-items:center;padding:8px;box-sizing:border-box;overflow:auto}</style><style>'+(window.PRINCIPIA_LUCIAN_TOKENS||'')+'\n'+variantCSS[activeVariant]+'\n'+item.css+'</style></head><body>'+item.html+'</body></html>';
       previewFrame.srcdoc=previewDocument;
       frame.append(previewFrame);
       preview.append(frame);
