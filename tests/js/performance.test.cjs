@@ -5,7 +5,7 @@ const vm = require('node:vm');
 
 const source = fs.readFileSync('assets/js/core/performance.js', 'utf8');
 
-function createHarness(deviceMemory = 4) {
+function createHarness(deviceMemory = 4, pageURL = 'https://principia.example/app') {
   const scripts = [];
   const head = {
     appendChild(script) {
@@ -38,10 +38,10 @@ function createHarness(deviceMemory = 4) {
     console,
     URL,
     setTimeout,
-    MutationObserver: undefined
+    setTimeout
   };
   context.window = context;
-  context.location = { href: 'https://principia.example/app', origin: 'https://principia.example' };
+  context.location = { href: pageURL, origin: new URL(pageURL).origin };
   vm.runInNewContext(source, context, { filename: 'performance.js' });
   return { api: context.PrincipiaPerformance, document, scripts };
 }
@@ -62,10 +62,11 @@ test('allows HTTPS and same-origin HTTP scripts', async () => {
   scripts[0].onload();
   await httpsPromise;
 
-  const localPromise = api.loadScript('/assets/local-module.js');
-  assert.equal(scripts.length, 2);
-  assert.equal(scripts[1].src, '/assets/local-module.js');
-  scripts[1].onload();
+  const httpHarness = createHarness(4, 'http://principia.example/app');
+  const localPromise = httpHarness.api.loadScript('/assets/local-module.js');
+  assert.equal(httpHarness.scripts.length, 1);
+  assert.equal(httpHarness.scripts[0].src, '/assets/local-module.js');
+  httpHarness.scripts[0].onload();
   await localPromise;
 });
 
