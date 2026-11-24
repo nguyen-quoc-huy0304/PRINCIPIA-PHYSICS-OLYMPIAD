@@ -10,7 +10,7 @@
  function read(){
   try{
    const value=JSON.parse(localStorage.getItem(KEY)||'{}');
-   return {enabled:typeof value.enabled==='boolean'?value.enabled:DEFAULTS.enabled,size:clamp(value.size,14,28),color:safeColor(value.color),weight:['normal','bold'].includes(value.weight)?value.weight:DEFAULTS.weight};
+   return {enabled:typeof value.enabled==='boolean'?value.enabled:DEFAULTS.enabled,size:typeof value.size==='number'?clamp(value.size,14,28):DEFAULTS.size,color:safeColor(value.color),weight:['normal','bold'].includes(value.weight)?value.weight:DEFAULTS.weight};
   }catch(_){return {...DEFAULTS}}
  }
  function persist(){try{localStorage.setItem(KEY,JSON.stringify(settings))}catch(_){}}
