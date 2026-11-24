@@ -11,7 +11,7 @@
   const EXCLUDED = '#proSiteEditorPanel,#principiaM3ECanvasWorkspace,[role="dialog"],.modal,.modal-card,.principia-mobile-nav,.chat-box,.cl-shell';
   const SELECTORS = [
     ['.main .panel,.main .stat,.main .tile,.main .feature-card,.main .learning-card,.main .dashboard-card,.main .module-card', 'spotlight'],
-    ['.main button.primary,.main .primary,.main .btn-primary', 'press'],
+    ['.main button.primary,.main button.btn-primary,.main a.primary,.main a.btn-primary', 'press'],
     ['.main .tabs', 'segmented'],
     ['.main details,.main .accordion,.main .faq-item', 'accordion'],
     ['.main [aria-busy="true"],.main [data-ai-state="thinking"],.main .ai-thinking,.main .ai-loading,.main .thinking,.main .typing-indicator', 'thinking'],
@@ -56,9 +56,12 @@
   function resetSpotlight(event) {
     if (!(event.target instanceof Element)) return;
     const card = event.target.closest('#app [data-pr-live-ui="spotlight"]');
-    if (card && !card.contains(event.relatedTarget)) {
+    const nextTarget = event.relatedTarget;
+    if (card && !(nextTarget instanceof Node && card.contains(nextTarget))) {
       card.style.removeProperty('--pr-live-x');
       card.style.removeProperty('--pr-live-y');
+      card.style.removeProperty('--pr-live-rx');
+      card.style.removeProperty('--pr-live-ry');
     }
   }
 
