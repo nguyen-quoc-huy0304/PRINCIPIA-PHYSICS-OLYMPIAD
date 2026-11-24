@@ -35,7 +35,7 @@ test('companion WebGL failure path can access and dispose its renderer safely', 
 test('browser cache versions are bumped for every corrected module', () => {
   const html = read('index.html');
   for (const version of [
-    'core/permissions.js?v=20261124-auth-policy2',
+    'core/permissions.js?v=20261124-auth-policy3',
     'app-part-03.js?v=20261124-auth-policy2',
     'principia-site-editor.js?v=20261124-auth-policy2',
     'principia-canva-editor.js?v=20261124-auth-policy2',
