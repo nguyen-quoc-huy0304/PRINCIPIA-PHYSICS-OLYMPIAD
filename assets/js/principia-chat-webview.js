@@ -40,6 +40,8 @@
   return view;
  }
  function ensureChatOpen(){
+  window.principiaLocalAI?.close?.();
+  document.getElementById('principiaMiniBrowser')?.remove();
   const chat=document.getElementById(IDS.chat);
   if(!chat)return false;
   chat.classList.add('open');
