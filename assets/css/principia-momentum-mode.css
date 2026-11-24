@@ -11,6 +11,8 @@
 .pmm-stats>div{display:grid;gap:4px;padding:12px;border:1px solid var(--line,#46506a);border-radius:13px;background:rgba(120,140,190,.07)}
 .pmm-stats strong{font-size:23px;font-variant-numeric:tabular-nums}
 .pmm-stats span{font-size:11px;opacity:.7}
+.pmm-daily-progress{margin:-7px 0 14px;padding:0 2px}
+.pmm-daily-progress>div:first-child{display:flex;justify-content:space-between;margin-bottom:6px;font-size:11px;opacity:.72}
 .pmm-section{margin-top:14px;padding:16px;border:1px solid var(--line,#46506a);border-radius:15px}
 .pmm-section h3{margin:0 0 10px;font-size:15px}
 .pmm-options,.pmm-actions{display:flex;gap:8px;flex-wrap:wrap}
