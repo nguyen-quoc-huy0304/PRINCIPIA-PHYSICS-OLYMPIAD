@@ -38,9 +38,9 @@ test('logo and app root remain unchanged', () => {
 
 test('press pattern only targets interactive primary controls and pointer tilt resets fully', () => {
   const js = read('assets/js/principia-live-ui-adapter.js');
-  assert.match(js, /button\\.primary,\\.main button\\.btn-primary/);
-  assert.doesNotMatch(js, /\\.main \\.primary,/);
-  assert.match(js, /removeProperty\\('--pr-live-rx'\\)/);
-  assert.match(js, /removeProperty\\('--pr-live-ry'\\)/);
-  assert.match(js, /nextTarget instanceof Node/);
+  assert.ok(js.includes("['.main button.primary,.main button.btn-primary,.main a.primary,.main a.btn-primary', 'press']"));
+  assert.ok(!js.includes("'.main .primary,.main .btn-primary'"));
+  assert.ok(js.includes("removeProperty('--pr-live-rx')"));
+  assert.ok(js.includes("removeProperty('--pr-live-ry')"));
+  assert.ok(js.includes('nextTarget instanceof Node'));
 });
