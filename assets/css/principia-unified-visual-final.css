@@ -1,0 +1,52 @@
+/* PRINCIPIA unified premium visual pass — final cascade layer; DOM/features preserved. */
+:root{
+ --pr-final-bg:#080b16;--pr-final-surface:rgba(17,24,43,.82);--pr-final-surface2:rgba(23,32,57,.9);
+ --pr-final-edge:rgba(163,180,224,.15);--pr-final-edge-active:rgba(167,148,255,.38);
+ --pr-final-text:#f1f4ff;--pr-final-muted:#9eacc9;--pr-final-violet:#a997ff;--pr-final-cyan:#74c8e6;
+ --pr-final-radius:17px;--pr-final-ease:cubic-bezier(.22,1,.36,1);
+}
+html{scroll-behavior:smooth}
+body{background-color:var(--pr-final-bg)}
+#app .main,#app .principia-mobile-main{isolation:isolate}
+#app .main :is(.card,.panel,.box,.section,.widget,.feature-card,.hero,.modal,.dialog,.dropdown,.menu,.ai-cheploi-box,.note-pop-panel,.cl-left-pane,.cl-right-pane){
+ border-radius:var(--pr-final-radius);
+}
+#app .main :is(.card,.panel,.box,.widget,.feature-card,.ai-cheploi-box,.note-pop-panel){
+ border:1px solid var(--pr-final-edge)!important;
+ background:linear-gradient(145deg,rgba(24,33,58,.82),rgba(12,19,36,.76))!important;
+ box-shadow:0 12px 35px rgba(0,0,0,.12),inset 0 1px rgba(255,255,255,.035)!important;
+ transition:transform .24s var(--pr-final-ease),border-color .24s ease,box-shadow .24s ease,background .24s ease!important;
+}
+#app .main :is(.card,.panel,.widget,.feature-card):hover{
+ border-color:var(--pr-final-edge-active)!important;
+ box-shadow:0 18px 42px rgba(0,0,0,.2),0 0 24px rgba(137,119,255,.055)!important;
+}
+#app .main :is(button,.btn,.oli-btn,.tab,.nav,.cl-ico-btn){
+ transition:transform .18s var(--pr-final-ease),filter .2s ease,background .22s ease,border-color .22s ease,box-shadow .22s ease!important;
+}
+#app .main :is(button,.btn,.oli-btn):hover:not(:disabled){filter:brightness(1.08)}
+#app .main :is(button,.btn,.oli-btn):active:not(:disabled){transform:scale(.975)}
+#app .main :is(input,textarea,select,.inp){
+ border-color:var(--pr-final-edge)!important;border-radius:12px!important;
+ background:rgba(9,14,27,.66)!important;color:var(--pr-final-text)!important;
+}
+#app .main :is(input,textarea,select,.inp):focus-visible{
+ outline:2px solid rgba(169,151,255,.62)!important;outline-offset:2px;
+ box-shadow:0 0 0 4px rgba(137,119,255,.08)!important;
+}
+#app .main :is(.tab,.cl-ico-btn){border-radius:11px!important}
+#app .main :is(.tab.active,.cl-ico-btn.active){box-shadow:inset 0 -2px var(--pr-final-violet),0 4px 18px rgba(137,119,255,.08)}
+#app .main :is(.hero,.banner,.welcome){
+ border:1px solid rgba(169,151,255,.22)!important;
+ background:radial-gradient(ellipse at 84% 5%,rgba(91,190,222,.16),transparent 34%),radial-gradient(ellipse at 8% 100%,rgba(137,119,255,.2),transparent 46%),linear-gradient(130deg,rgba(29,28,67,.94),rgba(15,28,48,.94))!important;
+}
+#app .main :is(h1,h2,h3,h4){letter-spacing:-.035em}
+#app .main :is(.card,.panel,.widget,.feature-card) [class*="icon"]{transition:transform .25s var(--pr-final-ease),filter .25s ease}
+#app .main :is(.card,.panel,.widget,.feature-card):hover [class*="icon"]{transform:translateY(-1px);filter:drop-shadow(0 0 6px rgba(146,132,255,.2))}
+.pr-final-reveal{opacity:0;transform:translateY(12px);transition:opacity .5s ease,transform .5s var(--pr-final-ease)}
+.pr-final-reveal.pr-final-visible{opacity:1;transform:translateY(0)}
+#app .main [data-pr-final-motion="stagger"]>*{animation:pr-final-in .42s var(--pr-final-ease) both;animation-delay:calc(var(--pr-final-index,0)*45ms)}
+@keyframes pr-final-in{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
+@media(hover:hover){#app .main :is(.card,.panel,.widget,.feature-card):hover{transform:translateY(-2px)}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.pr-final-reveal,#app .main *{animation-duration:.01ms!important;transition-duration:.01ms!important;animation-iteration-count:1!important}.pr-final-reveal{opacity:1;transform:none}}
+@media(max-width:900px){#app .main :is(.card,.panel,.widget,.feature-card){border-radius:14px}}
