@@ -1,0 +1,5 @@
+/* Icon pack: consistent SVG stroke, optical alignment and micro-motion. */
+#app [data-pr-icon],#app [data-pr-icon] svg{display:inline-flex;vertical-align:middle;align-items:center;justify-content:center;flex-shrink:0}
+#app [data-pr-icon] svg{transition:transform .2s cubic-bezier(.22,1,.36,1),filter .2s ease}
+@media(hover:hover){#app button:hover [data-pr-icon] svg,#app a:hover [data-pr-icon] svg{transform:translateY(-1px);filter:drop-shadow(0 0 4px currentColor)}}
+@media(prefers-reduced-motion:reduce){#app [data-pr-icon] svg{transition:none}}
