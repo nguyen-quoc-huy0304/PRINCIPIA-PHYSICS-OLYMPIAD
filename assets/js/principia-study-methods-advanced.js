@@ -1,5 +1,5 @@
-/* PRINCIPIA — 1,600 advanced, topic-specific learning playbooks.
- * 40 distinct problem-solving / self-regulation strategies × 40 physics topics.
+/* PRINCIPIA — 1,640 advanced, topic-specific learning playbooks.
+ * 41 distinct problem-solving / self-regulation strategies × 40 physics topics.
  * These are contextual applications, not 1,600 independent scientific methods.
  */
 (() => {
@@ -76,7 +76,7 @@
       });
     }
   }
-  if (methods.length !== 40 || out.length !== 1600) throw new Error('Advanced study catalog count mismatch.');
+  if (methods.length !== 41 || out.length !== 1640) throw new Error('Advanced study catalog count mismatch.');
   if (new Set(out.map(item => item.title)).size !== out.length) throw new Error('Advanced study titles must be unique.');
   window.PRINCIPIA_STUDY_METHOD_ADVANCED_PLAYBOOKS = out;
   window.PRINCIPIA_STUDY_METHOD_ADVANCED_COUNT = out.length;
