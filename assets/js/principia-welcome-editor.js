@@ -97,6 +97,7 @@
   observer=new MutationObserver(()=>{if(!screen())return;applyState();});
   observer.observe(document.body,{childList:true,subtree:true});
   document.addEventListener('principia:rendered',mount);
+  document.addEventListener('principia:auth-state-changed',mount);
   document.addEventListener('principia:page-changed',mount);
   window.addEventListener('resize',mount,{passive:true});
  }
