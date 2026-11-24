@@ -21,13 +21,16 @@ function createEngine() {
 test('learning science engine exposes the complete strategy registry', () => {
   const engine = createEngine();
   const methods = engine.methods();
-  assert.equal(methods.length, 51);
+  assert.equal(methods.length, 58);
   assert.ok(engine.stats().groups >= 15);
   for (const id of ['retrieval', 'spacing', 'interleaving', 'elaborative-interrogation',
     'self-explanation', 'worked-examples', 'dual-coding', 'chunking',
     'analogical-learning', 'sleep-recovery', 'self-determination', 'goal-gradient',
     'implementation-intentions', 'pomodoro-flexible', 'deep-work',
-    'chinese-error-notebook', 'chinese-dictation', 'polya-problem-solving']) {
+    'chinese-error-notebook', 'chinese-dictation', 'polya-problem-solving',
+    'cognitive-load-management', 'schema-building', 'embodied-learning',
+    'achievement-motivation', 'social-comparison', 'unfinished-task-resume',
+    'chinese-timed-practice']) {
     assert.ok(methods.some(method => method.id === id), 'missing strategy: ' + id);
   }
 });
@@ -47,7 +50,7 @@ test('learner-facing directive hides method identifiers and avoids overload', ()
   const directive = engine.directive({ goal: 'teach', topic: 'định luật Newton', energy: 2 });
   assert.match(directive, /không hiển thị tên kỹ thuật/);
   assert.match(directive, /Chỉ phối hợp các cách/);
-  assert.doesNotMatch(directive, /feynman-teachback|retrieval|spacing|deep-work/);
+  assert.doesNotMatch(directive, /feynman-teachback|retrieval|spacing|deep-work|social-comparison/);
 });
 
 test('focus plan adapts to energy and duration', () => {
@@ -71,4 +74,13 @@ test('science engine is wired into the full learning journey', () => {
   assert.match(orchestrator, /PrincipiaLearningScience\?\.directive/);
   assert.match(pathways, /PrincipiaLearningScience\?\.directive/);
   assert.match(momentum, /PrincipiaLearningScience\?\.focusPlan/);
+});
+
+test('social comparison is opt-in and remains focused on strategies, not public ranking', () => {
+  const engine = createEngine();
+  const ordinary = engine.select({ goal: 'teach', topic: 'group', energy: 2 });
+  const optIn = engine.select({ goal: 'teach', topic: 'group', energy: 2, socialLearning: true });
+  assert.ok(!ordinary.some(item => item.id === 'social-comparison'));
+  assert.ok(engine.methods().some(item => item.id === 'social-comparison'));
+  assert.ok(optIn.every(item => typeof item.guide === 'string'));
 });
