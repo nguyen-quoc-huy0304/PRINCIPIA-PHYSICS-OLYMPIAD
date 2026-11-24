@@ -21,7 +21,7 @@ This inventory separates published source counts from components actually vendor
 
 ## Existing PRINCIPIA vault
 
-The vault now contains 520 base structures: 40 original/adapted PRINCIPIA patterns plus all 480 source components imported from Lucian UX/UI Prompt IDs 001–480. Each can be displayed with 25 selectable skins, for 13,000 selectable visual variants. The 13,000 figure is not 13,000 distinct source components. Imported Lucian source code retains its MIT attribution in the exported HTML. Live previews run in sandboxed iframes with scripts enabled but network access and same-origin access denied.
+The vault now contains 537 base structures: 40 original/adapted PRINCIPIA patterns, all 480 Lucian UX/UI Prompt elements (001–480), and 17 vanilla-CSS Uiverse Galaxy elements. Each can be displayed with 25 selectable skins, for 13,425 selectable visual variants. The 13,425 figure is not 13,425 distinct source components. Imported Lucian source code retains its MIT attribution in the exported HTML. Live previews run in sandboxed iframes with scripts enabled but network access and same-origin access denied.
 
 ## Import policy
 
@@ -31,3 +31,6 @@ The vault now contains 520 base structures: 40 original/adapted PRINCIPIA patter
 4. Keep source credits beside imported code.
 5. Keep mascot assets out until the user confirms the character submission set is complete.
 6. Import in batches, deduplicate, isolate CSS, preserve keyboard accessibility and reduced-motion behavior, and verify mobile layouts before calling an item integrated.
+
+
+Uiverse import note: 17 components with embedded vanilla CSS were copied from the MIT-licensed `uiverse-io/galaxy` archive. Tailwind-only snippets and entries without self-contained CSS were excluded from this batch. Original creator comments and explicit Uiverse/MIT attribution are retained. The upstream live site advertises 7,475 community elements; that count is not the number imported into PRINCIPIA.
