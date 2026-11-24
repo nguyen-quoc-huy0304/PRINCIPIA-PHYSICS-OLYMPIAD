@@ -158,7 +158,7 @@
     return Object.freeze({
       focusMinutes,
       breakMinutes,
-      cycles: Math.max(1, Math.min(4, Math.floor(context.minutes / Math.max(1, focusMinutes + breakMinutes)) || 1)),
+      cycles: Math.max(1, Math.min(4, Math.ceil(context.minutes / Math.max(1, focusMinutes)))),
       mode: context.energy === 1 ? 'gentle' : context.energy === 3 ? 'deep' : 'steady',
       instruction: context.energy === 3
         ? 'Tắt xao nhãng, làm một nhiệm vụ khó có đầu ra rõ, sau đó nghỉ phục hồi.'
