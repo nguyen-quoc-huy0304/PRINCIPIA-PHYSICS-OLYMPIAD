@@ -26,16 +26,11 @@
 .pr-command-shortcut{color:#a9a4c4;font-size:10px;white-space:nowrap}
 .pr-command-empty{padding:28px 12px;text-align:center;color:#aaa8bd;font-size:13px}
 #principiaCommandFooter{display:flex;gap:14px;justify-content:flex-end;padding:10px 15px;border-top:1px solid rgba(196,181,255,.14);color:#aaa8bd;font-size:10px}
-body.principia-welcome-active #principiaCommandTrigger,
-body.principia-welcome-active #principiaBackToTop{display:none!important}
 @media(max-width:900px){
- #principiaCommandTrigger{width:36px;height:36px;min-width:36px}
- #principiaBackToTop{left:12px;bottom:calc(91px + env(safe-area-inset-bottom,0px));width:42px;height:42px}
  #principiaCommandOverlay{padding:9vh 10px 14px}
  #principiaCommandDialog{border-radius:18px;max-height:78vh}
  #principiaCommandList{max-height:calc(78vh - 112px)}
 }
 @media(prefers-reduced-motion:reduce){
  #principiaCommandOverlay,#principiaCommandDialog{animation:none}
- #principiaBackToTop,#principiaCommandTrigger{transition:none}
 }
