@@ -114,6 +114,12 @@
    if(typeof window.selectPrincipiaAI==='function')window.selectPrincipiaAI(event.target.value);
    else openSelected();
   },true);
+  if(typeof window.toggleChatBox==='function'&&!window.toggleChatBox.__principiaSingleWebView){
+   const toggle=window.toggleChatBox;
+   const replacement=function(){toggle.apply(this,arguments);if(document.getElementById(IDS.chat)?.classList.contains('open'))openSelected();else showChat();};
+   replacement.__principiaSingleWebView=true;
+   window.toggleChatBox=replacement;
+  }
   window.principiaChatWebView=Object.freeze({openGoogle,openSelected,showChat,navigate});
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
