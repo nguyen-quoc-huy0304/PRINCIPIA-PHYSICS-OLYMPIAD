@@ -36,12 +36,12 @@
    const db=await window.principiaLeaderboardDb();
    remoteRef=db.collection('principiaContent').doc('siteEdits');
    remoteUnsubscribe=remoteRef.onSnapshot(snapshot=>{
+    remoteReady=true;remoteLoading=false;
     if(snapshot.exists){
      state=normalizeState(snapshot.data());
      try{localStorage.setItem(STORAGE,JSON.stringify(state))}catch(_){}
      applyStoredEdits();if(isAdmin())scan();
     }else if(isAdmin())syncRemote();
-    remoteReady=true;remoteLoading=false;
     const toggle=toolbar?.querySelector('[data-toggle]');if(toggle)toggle.disabled=false;
     const importer=toolbar?.querySelector('[data-import]');if(importer)importer.disabled=false;
     if(isAdmin())setStatus('Đã đồng bộ nội dung PRINCIPIA trên các thiết bị.');
@@ -120,6 +120,7 @@
   Object.assign(panel.style,{position:'fixed',right:'18px',bottom:'186px',zIndex:'2147483005',width:'min(270px,calc(100vw - 36px))',padding:'12px',borderRadius:'14px',background:'rgba(18,20,34,.96)',border:'1px solid rgba(255,255,255,.22)',boxShadow:'0 8px 28px #0006',color:'#fff',font:'13px system-ui'});
   panel.querySelectorAll('button').forEach(button=>Object.assign(button.style,{border:'1px solid rgba(255,255,255,.22)',borderRadius:'9px',padding:'8px 10px',background:'rgba(255,255,255,.1)',color:'#fff',font:'inherit',cursor:'pointer'}));
   toolbar=panel;
+  if(remoteLoading){panel.querySelector('[data-toggle]').disabled=true;panel.querySelector('[data-import]').disabled=true;}
   fab.addEventListener('click',()=>{
    panel.hidden=!panel.hidden;
    document.dispatchEvent(new CustomEvent('principia:layout-edit-toggle',{detail:{enabled:!panel.hidden}}));
