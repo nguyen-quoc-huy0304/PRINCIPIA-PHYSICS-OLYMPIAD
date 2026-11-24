@@ -50,6 +50,7 @@
    finally{button.disabled=false;output.scrollTop=output.scrollHeight;}
   });
   input.focus();
+  if(context)panel.querySelector('[data-form]').requestSubmit();
  }
  window.principiaAI=Object.freeze({ask,open,isBusy:()=>pending,provider:'Google Gemini'});
  window.principiaLocalAI=Object.freeze({open:(prompt,question)=>open(prompt,{initialQuestion:question}),close:()=>document.getElementById('principiaGeminiPanel')?.remove()});
