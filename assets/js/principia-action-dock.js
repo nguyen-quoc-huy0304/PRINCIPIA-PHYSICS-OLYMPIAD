@@ -7,14 +7,6 @@
  const HISTORY_KEY='principia_browser_history_v1';
  const POSITION_KEY='principia_action_dock_positions_v1';
  let dockPositions=readDockPositions();
- const POSITION_RESET_KEY='principia_action_dock_positions_reset_20261124';
- try{
-  if(localStorage.getItem(POSITION_RESET_KEY)!=='1'){
-   localStorage.removeItem(POSITION_KEY);
-   dockPositions={};
-   localStorage.setItem(POSITION_RESET_KEY,'1');
-  }
- }catch(_){dockPositions={}}
  function readDockPositions(){try{const value=JSON.parse(localStorage.getItem(POSITION_KEY)||'{}');return value&&typeof value==='object'?value:{}}catch(_){return{}}}
  function saveDockPositions(){try{localStorage.setItem(POSITION_KEY,JSON.stringify(dockPositions))}catch(_){}}
  const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
@@ -219,11 +211,22 @@
   positionPanelFromAnchor(panel,ai);
  }
  function applyLauncherPosition(node,defaultBottom){
+  const saved=dockPositions[node.id];
   const mobile=isMobile();
-  node.style.setProperty('left','auto','important');
-  node.style.setProperty('top','auto','important');
-  node.style.setProperty('right',(mobile?'12px':'18px'),'important');
-  node.style.setProperty('bottom',(mobile?'calc('+defaultBottom+'px + env(safe-area-inset-bottom,0px))':defaultBottom+'px'),'important');
+  if(saved&&Number.isFinite(Number(saved.x))&&Number.isFinite(Number(saved.y))){
+   const x=clamp(Number(saved.x),8,Math.max(8,window.innerWidth-54));
+   const y=clamp(Number(saved.y),8,Math.max(8,window.innerHeight-54));
+   node.style.setProperty('left',x+'px','important');
+   node.style.setProperty('top',y+'px','important');
+   node.style.setProperty('right','auto','important');
+   node.style.setProperty('bottom','auto','important');
+   dockPositions[node.id]={x,y};
+  }else{
+   node.style.setProperty('left','auto','important');
+   node.style.setProperty('top','auto','important');
+   node.style.setProperty('right',(mobile?'12px':'18px'),'important');
+   node.style.setProperty('bottom',(mobile?'calc('+defaultBottom+'px + env(safe-area-inset-bottom,0px))':defaultBottom+'px'),'important');
+  }
   node.style.setProperty('position','fixed','important');
  }
  function enforceViewportPins(){
@@ -304,7 +307,7 @@
   }
   ai.id=IDS.ai;ai.title='Mở trợ lý AI';ai.setAttribute('aria-label','Mở trợ lý AI');
   if(ai.parentElement!==document.body)document.body.appendChild(ai);
-  Object.assign(ai.style,{position:'fixed',right:'18px',bottom:'18px',left:'auto',top:'auto',zIndex:'1',width:'46px',height:'46px',minWidth:'46px',minHeight:'46px',maxWidth:'46px',maxHeight:'46px',display:welcome()?'none':'grid',placeItems:'center',borderRadius:'16px',transform:'none',margin:'0',pointerEvents:'auto'});
+  Object.assign(ai.style,{position:'fixed',right:'18px',bottom:'18px',left:'auto',top:'auto',zIndex:'2147483005',width:'46px',height:'46px',minWidth:'46px',minHeight:'46px',maxWidth:'46px',maxHeight:'46px',display:welcome()?'none':'grid',placeItems:'center',borderRadius:'16px',transform:'none',margin:'0',pointerEvents:'auto',touchAction:'none',userSelect:'none',cursor:'grab'});
   ai.style.display=welcome()?'none':'grid';
   ai.setAttribute('aria-hidden',welcome()?'true':'false');
   const browser=button(IDS.browser,'Tìm kiếm Internet','⌕',isMobile()?138:74);
@@ -315,17 +318,19 @@
   const download=document.getElementById('principiaDownloadFab');if(download){download.style.setProperty('display','none','important');download.style.setProperty('visibility','hidden','important');download.style.setProperty('pointer-events','none','important');download.style.setProperty('width','0','important');download.style.setProperty('height','0','important');download.setAttribute('aria-hidden','true');download.tabIndex=-1;}
   const pencil=document.getElementById('proSiteEditorFab');
   if(pencil){
-   const onWelcome=welcome();
    const target=document.body;
    if(pencil.parentElement!==target)target.appendChild(pencil);
-   Object.assign(pencil.style,{position:'fixed',right:'18px',bottom:isMobile()?'194px':'130px',left:'auto',top:'auto',zIndex:'2147483005',width:'46px',height:'46px',minWidth:'46px',minHeight:'46px',display:'grid',placeItems:'center',margin:'0',pointerEvents:'auto'});
+   Object.assign(pencil.style,{position:'fixed',right:'18px',bottom:isMobile()?'194px':'130px',left:'auto',top:'auto',zIndex:'2147483005',width:'46px',height:'46px',minWidth:'46px',minHeight:'46px',display:'grid',placeItems:'center',margin:'0',pointerEvents:'auto',touchAction:'none',userSelect:'none',cursor:'grab'});
    pencil.setAttribute('aria-hidden','false');
    applyLauncherPosition(pencil,isMobile()?194:130);
+   bindLauncherDrag(pencil,()=>syncEditorPanelPosition(pencil));
   }
   applyLauncherPosition(browser,isMobile()?138:74);
-  // Launchers stay pinned to their original viewport positions; dragging is disabled.
+  bindLauncherDrag(browser,()=>{
+   if(browserPanel&&browserPanel.isConnected)positionPanelFromAnchor(browserPanel,browser);
+  });
   applyLauncherPosition(ai,isMobile()?82:18);
-  // AI launcher remains pinned; its chat panel is positioned relative to it.
+  bindLauncherDrag(ai,()=>syncChatPanelPosition(ai));
   syncEditorPanelPosition(pencil);
   syncChatPanelPosition(ai);
   if(browserPanel&&browserPanel.isConnected)stylePanel(browserPanel,248,browser);
