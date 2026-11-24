@@ -13,7 +13,7 @@
  function learningSystem(prompt, baseSystem) {
   const base=String(baseSystem||SYSTEM);
   const context=(base+'\n'+String(prompt||'')).slice(0,10000);
-  if(!window.PrincipiaLearningScience?.directive || context.includes('HƯỚNG DẪN HỌC CÁ NHÂN HÓA NỘI BỘ') || base.length>4200) return base.slice(0,6000);
+  if(!window.PrincipiaLearningScience?.directive || base.includes('HƯỚNG DẪN HỌC CÁ NHÂN HÓA NỘI BỘ') || base.length>4200) return base.slice(0,6000);
   const goal=/olympiad|olympic|thi hsg|chứng minh/i.test(context)?'olympiad':
    /ôn tập|ghi nhớ|flashcard|nhớ lại|tự nhớ/i.test(context)?'remember':
    /lỗi sai|sửa lỗi|không hiểu|đang yếu|retry/i.test(context)?'recover':
