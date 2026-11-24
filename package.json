@@ -49,7 +49,7 @@
     "publish": {
       "provider": "github",
       "owner": "nguyen-quoc-huy0304",
-      "repo": "PRINCIPIA-PHYSICS-OLYMPIAD.ghithub.io"
+      "repo": "PRINCIPIA-PHYSICS-OLYMPIAD"
     },
     "linux": {
       "target": [
