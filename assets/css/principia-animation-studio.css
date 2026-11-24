@@ -1,0 +1,32 @@
+/* PRINCIPIA Animation Studio — separate animation management and live previews. */
+.pr-animation-studio{display:grid;gap:10px;margin:14px 0;padding:12px;border:1px solid var(--line,rgba(150,165,220,.2));border-radius:16px;background:var(--card,rgba(255,255,255,.04))}
+.pr-animation-studio-toggle{width:100%;min-height:42px;padding:9px 12px;border:1px solid rgba(169,151,255,.24);border-radius:12px;background:linear-gradient(115deg,rgba(130,106,239,.14),rgba(61,144,190,.08));color:var(--text,var(--txt,#f4f1ff));font:650 13px/1.3 system-ui;text-align:left;cursor:pointer}
+.pr-animation-studio-body{display:grid;gap:12px;padding-top:8px}
+.pr-animation-controls{display:grid;gap:9px}
+.pr-animation-control{display:flex;align-items:center;gap:9px;color:var(--text,var(--txt,#eee));font:12px/1.4 system-ui;cursor:pointer}
+.pr-animation-control input{width:16px;height:16px;accent-color:#9d88ff}
+.pr-animation-note{margin:0;color:var(--muted,#9ca4bc);font:11px/1.5 system-ui}
+.pr-animation-gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.pr-animation-demo{position:relative;display:grid;align-content:center;gap:6px;min-height:82px;padding:12px;overflow:hidden;border:1px solid rgba(169,151,255,.2);border-radius:12px;background:linear-gradient(145deg,rgba(42,39,79,.8),rgba(16,28,47,.9));color:#f2efff;font:11px system-ui}
+.pr-animation-demo span{color:#b9c3dd;font-size:10px;line-height:1.4}
+.pr-demo-entrance{animation:pr-studio-enter 2.4s cubic-bezier(.2,.8,.2,1) infinite}
+@keyframes pr-studio-enter{0%,100%{transform:translateY(0);opacity:1}45%{transform:translateY(-5px);opacity:.82}}
+.pr-demo-beam:after{content:"";position:absolute;inset:0;border:1px solid transparent;border-radius:inherit;background:conic-gradient(from 0deg,transparent 0 70%,#a995ff,#62c8e7,transparent 90%) border-box;mask:linear-gradient(#000 0 0) padding-box,linear-gradient(#000 0 0);mask-composite:exclude;animation:pr-studio-spin 4s linear infinite;pointer-events:none}
+@keyframes pr-studio-spin{to{transform:rotate(360deg)}}
+.pr-demo-spotlight{background:radial-gradient(130px circle at 70% 20%,rgba(169,151,255,.36),transparent 70%),linear-gradient(145deg,#2a274f,#101c30)}
+.pr-demo-orb:before{content:"";position:absolute;right:14px;top:16px;width:20px;height:20px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#a995ff 35%,#315eae 75%);box-shadow:0 0 18px #8d80ff;animation:pr-studio-orb 1.8s ease-in-out infinite alternate}
+@keyframes pr-studio-orb{to{transform:scale(.72);filter:hue-rotate(40deg)}}
+.pr-demo-hairline:before,.pr-demo-hairline:after{content:"";position:absolute;right:22px;top:18px;width:30px;height:30px;border:1px solid #a995ff99;transform:rotate(45deg) skew(-12deg);animation:pr-studio-draw 2s ease-in-out infinite alternate}
+.pr-demo-hairline:after{transform:rotate(45deg) skew(-12deg) scale(1.7);animation-delay:.3s}
+@keyframes pr-studio-draw{to{opacity:.3;transform:rotate(45deg) skew(-12deg) scale(1.15)}}
+.pr-demo-press{box-shadow:inset 0 -3px rgba(0,0,0,.24);transition:transform .2s,box-shadow .2s}
+.pr-demo-press:hover{transform:translateY(2px);box-shadow:inset 0 -1px rgba(0,0,0,.24)}
+html.pr-animation-entrance-off #app .pr-ref-enter,html.pr-animation-entrance-off #app .pr-delight-reveal{animation:none!important;opacity:1!important;transform:none!important;transition:none!important}
+html.pr-animation-hover-off #app .pr-ref-surface:hover,html.pr-animation-hover-off #app .pr-ref-button:hover,html.pr-animation-hover-off #app .pr-magnetic-active{transform:none!important;translate:none!important;filter:none!important;box-shadow:none!important}
+html.pr-animation-beam-off .pr-kinetic-beam-light,html.pr-animation-beam-off #app .pr-ref-surface:after{display:none!important}
+html.pr-animation-spotlight-off #app :is(.panel,.tile,.stat,.feature-card):before{display:none!important}
+html.pr-animation-mascot-off #app .principia-bundled-pose{transform:none!important}
+html.pr-animation-progress-off #prDelightProgress{display:none!important}
+html.pr-animation-stagger-off #app .pr-delight-reveal{transition-delay:0ms!important}
+@media(max-width:520px){.pr-animation-gallery{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){.pr-animation-demo{animation:none!important}.pr-animation-demo:before,.pr-animation-demo:after{animation:none!important}}
