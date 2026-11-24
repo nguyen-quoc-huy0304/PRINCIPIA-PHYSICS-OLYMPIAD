@@ -341,3 +341,20 @@ html[data-theme="light"] #app .m-ai{color:#2c3a58!important;background:linear-gr
 html[data-theme="light"] #app .chat-box,html[data-theme="light"] #app .ai-chat-panel,html[data-theme="light"] #app .ai-chat-window{background:rgba(248,251,255,.97)!important}
 html[data-theme="light"] #proSiteEditorPanel{background:rgba(248,251,255,.98)!important;color:#23304b!important}
 html[data-theme="light"] #proSiteEditorPanel :is(input,textarea,select){background:#fff!important;color:#23304b!important}
+
+/* Pointer-lit surfaces and icon micro-motion. */
+#app :is(.panel,.tile,.stat){
+ background-image:
+  radial-gradient(250px circle at var(--pr-x,50%) var(--pr-y,50%),rgba(151,163,255,.105),transparent 72%),
+  linear-gradient(145deg,rgba(23,36,68,.82),rgba(13,24,48,.72))!important;
+}
+#app .nav.active .ni{animation:pr-active-icon 3.2s ease-in-out infinite;filter:drop-shadow(0 0 7px rgba(177,162,255,.42))}
+@keyframes pr-active-icon{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-1px) scale(1.07)}}
+#app .tile:hover .tileicon{filter:drop-shadow(0 5px 12px rgba(139,139,255,.24))}
+#app .tab.active{box-shadow:inset 0 1px rgba(255,255,255,.12),0 8px 24px rgba(95,86,195,.16)}
+html[data-theme="light"] #app :is(.panel,.tile,.stat){
+ background-image:
+  radial-gradient(250px circle at var(--pr-x,50%) var(--pr-y,50%),rgba(129,139,230,.08),transparent 72%),
+  linear-gradient(145deg,rgba(255,255,255,.9),rgba(239,245,255,.8))!important;
+}
+@media(prefers-reduced-motion:reduce){#app .nav.active .ni{animation:none!important}}
