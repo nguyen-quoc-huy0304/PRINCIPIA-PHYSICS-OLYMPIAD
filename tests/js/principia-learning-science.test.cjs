@@ -61,3 +61,14 @@ test('focus plan adapts to energy and duration', () => {
   assert.equal(deep.breakMinutes, 10);
   assert.equal(deep.cycles, 2);
 });
+
+test('science engine is wired into the full learning journey', () => {
+  const html = fs.readFileSync(path.resolve(__dirname, '../../index.html'), 'utf8');
+  const orchestrator = fs.readFileSync(path.resolve(__dirname, '../../assets/js/principia-learning-orchestrator.js'), 'utf8');
+  const pathways = fs.readFileSync(path.resolve(__dirname, '../../assets/js/principia-study-pathways.js'), 'utf8');
+  const momentum = fs.readFileSync(path.resolve(__dirname, '../../assets/js/principia-momentum-mode.js'), 'utf8');
+  assert.ok(html.indexOf('principia-learning-science.js') < html.indexOf('principia-learning-orchestrator.js'));
+  assert.match(orchestrator, /PrincipiaLearningScience\?\.directive/);
+  assert.match(pathways, /PrincipiaLearningScience\?\.directive/);
+  assert.match(momentum, /PrincipiaLearningScience\?\.focusPlan/);
+});
