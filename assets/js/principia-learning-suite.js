@@ -274,6 +274,8 @@
   const finishedAt=Date.now(),durationSeconds=Math.max(0,Math.round((finishedAt-(exam.startedAt||finishedAt))/1000));
   const attempt={date:new Date(finishedAt).toISOString(),score:score,total:qs.length,percent:Math.round(score/qs.length*100),mode:'olympic',durationSeconds};
   state.attempts.push(attempt);qs.forEach((q,i)=>{if(exam.answers[i]!==q.correct){state.errors.unshift({title:q.q,body:'Bạn chọn: '+(q.a[exam.answers[i]]||'Chưa trả lời')+'\\nĐáp án đúng: '+q.a[q.correct]+'\\nNguồn: '+q.path,date:new Date().toISOString()})}});if(state.errors.length>300)state.errors=state.errors.slice(0,300);if(state.attempts.length>300)state.attempts=state.attempts.slice(-300);save();
+      const mistakes=qs.map((q,i)=>ans[i]===q.correct?null:{question:String(q.q||''),selectedIndex:ans[i],selectedText:String(q.a?.[ans[i]]||'Chưa trả lời'),correctIndex:q.correct,correctText:String(q.a?.[q.correct]||''),source:String(node.name||active.id),timestamp:new Date().toISOString()}).filter(Boolean);
+      window.dispatchEvent(new CustomEvent('principia:quiz-completed',{detail:{source:String(node.name||active.id),mode:active.kind,score,total:qs.length,percent:Math.round(score/qs.length*100),mistakes}}));
   try{if(typeof xp!=='undefined'&&typeof saveAll==='function'){xp+=Math.max(5,score*5);saveAll()}}catch(_){}
   lastExamReview=qs.map((q,i)=>({q,choice:exam.answers[i],correct:exam.answers[i]===q.correct,index:i}));lastExamDurationSeconds=durationSeconds;clearExamDraft();exam=null;renderExamResult(false,score,qs.length,auto,durationSeconds);
   try{if(state.notifications&&'Notification'in window&&Notification.permission==='granted')new Notification('PRINCIPIA · Kết quả luyện tập',{body:'Bạn đạt '+score+'/'+qs.length+' câu.'})}catch(_){}
