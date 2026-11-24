@@ -66,7 +66,8 @@
     cyan:':root{--pv-accent:#56d6d0;--pv-accent2:#72aaff}',
     mono:':root{--pv-accent:#d9d9e6;--pv-accent2:#8c8ca3}'
   };
-  let activeCategory='All', activeVariant='violet', searchTerm='';
+  let activeCategory='All', activeVariant='violet', searchTerm='', currentPage=0;
+  const pageSize=30;
   const rootId='principia-component-vault';
   const escapeHTML = value => String(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   function buildItem(item,index){
@@ -113,20 +114,24 @@
     controls.append(search,select,variant);
     const count=make('p',{class:'pr-vault-count','aria-live':'polite'});
     const grid=make('div',{class:'pr-vault-grid'});
-    body.append(sourceRow,controls,count,grid);
+    const pager=make('nav',{class:'pr-vault-pager','aria-label':'Phân trang component'});
+    body.append(sourceRow,controls,count,grid,pager);
     section.append(header,body);
     const status=panel.querySelector('[data-status]');
     if(status)panel.insertBefore(section,status);else panel.append(section);
     header.addEventListener('click',()=>{const open=body.hidden;body.hidden=!open;header.setAttribute('aria-expanded',String(open))});
-    search.addEventListener('input',()=>{searchTerm=search.value.trim().toLowerCase();render(grid,count)});
-    select.addEventListener('change',()=>{activeCategory=select.value;render(grid,count)});
-    variant.addEventListener('change',()=>{activeVariant=variant.value;render(grid,count)});
-    render(grid,count);
+    search.addEventListener('input',()=>{searchTerm=search.value.trim().toLowerCase();currentPage=0;render(grid,count,pager)});
+    select.addEventListener('change',()=>{activeCategory=select.value;currentPage=0;render(grid,count,pager)});
+    variant.addEventListener('change',()=>{activeVariant=variant.value;currentPage=0;render(grid,count,pager)});
+    render(grid,count,pager);
   }
-  function render(grid,count){
+  function render(grid,count,pager){
     const visible=catalog.filter(item=>(activeCategory==='All'||item.category===activeCategory)&&(!searchTerm||[item.name,item.category,item.source].join(' ').toLowerCase().includes(searchTerm)));
+    const pageCount=Math.max(1,Math.ceil(visible.length/pageSize));
+    currentPage=Math.min(currentPage,pageCount-1);
+    const pageItems=visible.slice(currentPage*pageSize,(currentPage+1)*pageSize);
     grid.replaceChildren();
-    visible.forEach(item=>{
+    pageItems.forEach(item=>{
       const card=make('article',{class:'pr-vault-item'});
       const title=make('strong',{},item.name);
       const meta=make('small',{},item.category+' · '+item.source+' · '+item.skin);
@@ -151,7 +156,14 @@
       card.append(title,meta,preview,actions,sourceLink);
       grid.append(card);
     });
-    count.textContent=visible.length+' / '+catalog.length+' mẫu · '+ITEMS.length+' cấu trúc × '+SKINS.length+' skin';
+    count.textContent=visible.length+' / '+catalog.length+' mẫu · trang '+(currentPage+1)+'/'+pageCount+' · '+ITEMS.length+' cấu trúc × '+SKINS.length+' skin';
+    pager.replaceChildren();
+    const previous=make('button',{type:'button',disabled:String(currentPage===0)},'← Trước');
+    const next=make('button',{type:'button',disabled:String(currentPage>=pageCount-1)},'Tiếp →');
+    const pageLabel=make('span',{},'Trang '+(currentPage+1)+' / '+pageCount);
+    previous.addEventListener('click',()=>{currentPage=Math.max(0,currentPage-1);render(grid,count,pager)});
+    next.addEventListener('click',()=>{currentPage=Math.min(pageCount-1,currentPage+1);render(grid,count,pager)});
+    pager.append(previous,pageLabel,next);
   }
   async function copy(value,button){
     try{await navigator.clipboard.writeText(value);const old=button.textContent;button.textContent='Copied';setTimeout(()=>button.textContent=old,1100)}
