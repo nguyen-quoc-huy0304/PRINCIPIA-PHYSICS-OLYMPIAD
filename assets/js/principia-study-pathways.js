@@ -53,11 +53,11 @@
       return keywords.some(keyword => text.includes(keyword));
     }).slice(0, 12);
     const candidates = [...new Map([...topicMethods, ...coreMethods].map(item => [item.id, item])).values()].slice(0, 18);
-    const methodContext = candidates.map(item => '- ' + item.title + ' [' + item.category + ']: ' + item.desc).join('\\n');
+    const methodContext = candidates.map(item => '- ' + item.title + ' [' + item.category + ']: ' + item.desc).join('\n');
     const prompt = [
       'Thiết kế lộ trình học Vật lý thực tế trong ' + duration + ' phút.',
       'Chủ đề: ' + topic + '. Mục tiêu: ' + goalNames[goal] + '.',
-      'PRINCIPIA có thư viện ' + (catalog.total || 3111) + ' mục. Đây là danh sách phương pháp thật có sẵn để lựa chọn:\\n' + methodContext + '\\nChỉ chọn tối đa 4 phương pháp từ danh sách trên, ghi đúng tên và giải thích vì sao hợp mục tiêu; không tự bịa tên phương pháp mới.',
+      'PRINCIPIA có thư viện ' + (catalog.total || 3111) + ' mục. Đây là danh sách phương pháp thật có sẵn để lựa chọn:\n' + methodContext + '\nChỉ chọn tối đa 4 phương pháp từ danh sách trên, ghi đúng tên và giải thích vì sao hợp mục tiêu; không tự bịa tên phương pháp mới.',
       'Cấu trúc bắt buộc: (1) mục tiêu đo được, (2) chia thời gian từng chặng, (3) phương pháp và thao tác cụ thể, (4) một bài tự kiểm tra không gợi ý, (5) tiêu chí đạt/chưa đạt và bước ôn lại, (6) phần dạy lại cho AI Student nếu phù hợp.',
       'Nếu mục tiêu là học bằng cách giảng dạy, ưu tiên chuẩn bị bài giảng và câu hỏi cho AI Student. Nếu cần tập trung, đề xuất bật Study With Me và hẹn giờ; không giả định video đã được chọn.',
       'Không bịa nguồn khoa học, không hứa đảm bảo điểm số. Dùng tiếng Việt rõ ràng, ưu tiên hành động cụ thể.'
