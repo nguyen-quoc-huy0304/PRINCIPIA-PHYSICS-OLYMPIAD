@@ -23,6 +23,8 @@ test('shared Gemini client uses same-origin API and Firebase ID token', () => {
   assert.match(source, /fetch\('\/api\/ai'/);
   assert.match(source, /window\.principiaLocalAI=/);
   assert.match(source, /requestSubmit\(\)/);
+  assert.match(source, /PrincipiaLearningScience\?\.directive/);
+  assert.match(source, /learningSystem\(text, options\.system\|\|SYSTEM\)/);
   assert.doesNotMatch(source, /AIza[0-9A-Za-z_-]{30,}/);
 });
 
