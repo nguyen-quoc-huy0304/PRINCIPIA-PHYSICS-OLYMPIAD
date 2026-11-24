@@ -23,8 +23,9 @@ test('mascot customization is an isolated accessible UI module', () => {
   assert.match(studio, /role: 'dialog'/);
   assert.match(studio, /data-shape-choice/);
   assert.match(studio, /data-mascot-scale/);
-  assert.match(studio, /api\\?\\.setShape/);
+  assert.match(studio, /api\?\.setShape/);
   assert.match(html, /principia-mascot-studio\.css/);
   assert.match(html, /principia-mascot-studio\.js/);
+  assert.match(html, /principia-living-companion\.js\?v=20261124-mascot-shape1/);
   assert.match(css, /prefers-reduced-motion:reduce/);
 });
