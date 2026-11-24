@@ -219,22 +219,11 @@
   positionPanelFromAnchor(panel,ai);
  }
  function applyLauncherPosition(node,defaultBottom){
-  const saved=dockPositions[node.id];
   const mobile=isMobile();
-  if(saved&&Number.isFinite(Number(saved.x))&&Number.isFinite(Number(saved.y))){
-   const x=clamp(Number(saved.x),8,Math.max(8,window.innerWidth-54));
-   const y=clamp(Number(saved.y),8,Math.max(8,window.innerHeight-54));
-   node.style.setProperty('left',x+'px','important');
-   node.style.setProperty('top',y+'px','important');
-   node.style.setProperty('right','auto','important');
-   node.style.setProperty('bottom','auto','important');
-   dockPositions[node.id]={x,y};
-  }else{
-   node.style.setProperty('left','auto','important');
-   node.style.setProperty('top','auto','important');
-   node.style.setProperty('right',(mobile?'12px':'18px'),'important');
-   node.style.setProperty('bottom',(mobile?'calc('+defaultBottom+'px + env(safe-area-inset-bottom,0px))':defaultBottom+'px'),'important');
-  }
+  node.style.setProperty('left','auto','important');
+  node.style.setProperty('top','auto','important');
+  node.style.setProperty('right',(mobile?'12px':'18px'),'important');
+  node.style.setProperty('bottom',(mobile?'calc('+defaultBottom+'px + env(safe-area-inset-bottom,0px))':defaultBottom+'px'),'important');
   node.style.setProperty('position','fixed','important');
  }
  function enforceViewportPins(){
@@ -334,11 +323,9 @@
    applyLauncherPosition(pencil,isMobile()?194:130);
   }
   applyLauncherPosition(browser,isMobile()?138:74);
-  bindLauncherDrag(browser,()=>{
-   if(browserPanel&&browserPanel.isConnected)positionPanelFromAnchor(browserPanel,browser);
-  });
+  // Launchers stay pinned to their original viewport positions; dragging is disabled.
   applyLauncherPosition(ai,isMobile()?82:18);
-  bindLauncherDrag(ai,()=>syncChatPanelPosition(ai));
+  // AI launcher remains pinned; its chat panel is positioned relative to it.
   syncEditorPanelPosition(pencil);
   syncChatPanelPosition(ai);
   if(browserPanel&&browserPanel.isConnected)stylePanel(browserPanel,248,browser);
