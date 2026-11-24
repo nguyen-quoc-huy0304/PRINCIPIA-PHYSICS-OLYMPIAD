@@ -129,7 +129,9 @@
   }
   function study() {
     const embed = videoEmbed(state.videoUrl);
-    return '<section class="ppm-card"><h3>Study With Me · góc học tập</h3><p class="ppm-muted">Dán liên kết video YouTube của phiên học cùng người khác. Video chỉ phát khi bạn chủ động mở.</p><label>Liên kết YouTube<input id="ppmVideoUrl" type="url" maxlength="500" placeholder="https://www.youtube.com/watch?v=... " value="' + esc(state.videoUrl) + '"></label><div class="ppm-actions"><button class="ppm-primary" data-load-video>Mở video</button><button data-hide-video>Ẩn video</button></div><div id="ppmVideo">' + (embed ? '<iframe src="' + embed + '" title="Study With Me" loading="lazy" allow="autoplay; encrypted-media; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>' : '<p class="ppm-muted">Chưa chọn video.</p>') + '</div></section><section class="ppm-card" style="margin-top:12px"><h3>Không gian tập trung</h3><p class="ppm-muted">Kết hợp video với một mục tiêu duy nhất, hẹn giờ và nghỉ giữa phiên. Có thể thu nhỏ/ẩn video bằng nút phía trên.</p><div class="ppm-actions"><button data-go="habits">Bắt đầu bộ đếm</button><button data-existing="focus">Chế độ tập trung PRINCIPIA</button></div></section>';
+    const guidance = window.PrincipiaLearningOrchestrator?.recommend({ goal: 'remember', phase: 'study' });
+    const guidanceCard = '<section class="ppm-card" style="margin-bottom:12px"><h3>Phiên học phù hợp với bạn</h3><p class="ppm-muted">' + esc(guidance?.description || 'PRINCIPIA sẽ điều chỉnh nhịp học theo tiến độ và mức độ tập trung của bạn.') + '</p><div class="ppm-actions"><button class="ppm-primary" data-guided-study>Bắt đầu học có hướng dẫn</button><button data-go="habits">Đặt phiên tập trung</button></div></section>';
+    return guidanceCard + '<section class="ppm-card"><h3>Study With Me · góc học tập</h3><p class="ppm-muted">Dán liên kết video YouTube của phiên học cùng người khác. Video chỉ phát khi bạn chủ động mở.</p><label>Liên kết YouTube<input id="ppmVideoUrl" type="url" maxlength="500" placeholder="https://www.youtube.com/watch?v=... " value="' + esc(state.videoUrl) + '"></label><div class="ppm-actions"><button class="ppm-primary" data-load-video>Mở video</button><button data-hide-video>Ẩn video</button></div><div id="ppmVideo">' + (embed ? '<iframe src="' + embed + '" title="Study With Me" loading="lazy" allow="autoplay; encrypted-media; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>' : '<p class="ppm-muted">Chưa chọn video.</p>') + '</div></section><section class="ppm-card" style="margin-top:12px"><h3>Không gian tập trung</h3><p class="ppm-muted">Kết hợp video với một mục tiêu duy nhất, hẹn giờ và nghỉ giữa phiên. Có thể thu nhỏ/ẩn video bằng nút phía trên.</p><div class="ppm-actions"><button data-go="habits">Bắt đầu bộ đếm</button><button data-existing="focus">Chế độ tập trung PRINCIPIA</button></div></section>';
   }
   function videoEmbed(value) {
     try {
@@ -165,6 +167,7 @@
     root.querySelector('[data-timer-reset]')?.addEventListener('click', () => { stopTimer(false); timer.remaining = 1500; paintTimer(); });
     root.querySelector('[data-habit-done]')?.addEventListener('click', markHabit);
     root.querySelector('[data-coach]')?.addEventListener('click', sendCoach);
+    root.querySelector('[data-guided-study]')?.addEventListener('click', () => { const topic = state.notes.slice(0, 120) || document.querySelector('#app h1,#app h2,.page-title')?.textContent || 'Vật lý'; close(); window.PrincipiaLearningOrchestrator?.begin({ topic, goal: 'remember', phase: 'study' }); });
     root.querySelector('[data-save-notes]')?.addEventListener('click', saveNotes);
     root.querySelector('[data-export-notes]')?.addEventListener('click', exportNotes);
     root.querySelector('[data-print-notes]')?.addEventListener('click', () => window.print());
@@ -292,6 +295,7 @@
       'Bạn là AI Student trong lớp học PRINCIPIA. Người dùng là giáo viên đang dạy bạn Vật lý.',
       'Nhân cách: ' + personaNames[persona] + '. Độ khó: ' + difficulty + '. ' + pace[frequency] ,
       'NỘI DUNG BÀI GIẢNG:\n' + lesson.slice(0, 12000),
+      'Hướng dẫn sư phạm nội bộ: ' + (window.PrincipiaLearningOrchestrator?.directive({ topic: lesson.slice(0, 120), goal: 'teach', phase: 'classroom' }) || 'Hỏi từng câu, chờ câu trả lời, điều chỉnh độ khó và yêu cầu giáo viên giải thích bằng lời của mình.'),
       'BẮT BUỘC: đọc nội dung bài giảng, xác định một ý quan trọng hoặc chỗ dễ hiểu nhầm rồi mở đầu bằng một câu hỏi cụ thể bám sát nội dung đó; không dùng câu hỏi chung chung có sẵn.',
       'Sau mỗi câu trả lời của giáo viên: đánh giá ngắn xem đã đúng và đủ chưa; nếu thiếu, hỏi tiếp đúng vào lỗ hổng đó; nếu tốt, chuyển sang một câu hỏi sâu hơn hoặc một tình huống áp dụng mới.',
       'Duy trì vai học sinh và cuộc hội thoại nhiều lượt. Không tự giảng thay giáo viên, không tự đưa đáp án ngay. Chỉ xin gợi ý khi thật sự bí. Khi giáo viên yêu cầu kết thúc, tóm tắt điều bạn đã hiểu và điểm còn chưa rõ.',
