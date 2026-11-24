@@ -94,14 +94,14 @@
     const next = recommendation();
     const current = due[0];
     const list = due.slice(0, 5).map(x => '<li><b>' + escapeHtml(x.source) + '</b> · ' + escapeHtml(x.question.slice(0, 180)) + ' <span>· ' + x.misses + ' lần sai</span></li>').join('');
-    const active = current ? '<div class="ppa-task"><b>Câu cần tự giải lại</b><p>' + escapeHtml(current.question) + '</p><label>Viết lại cách giải độc lập<textarea id="ppaRetry" maxlength="5000" placeholder="Ghi dữ kiện, nguyên lý, từng bước và kết quả kiểm tra..."></textarea></label><label class="ppa-check"><input id="ppaVerified" type="checkbox"> Tôi đã tự giải không xem đáp án và kiểm tra lại kết quả.</label><div class="ppa-actions"><button type="button" data-ppa-submit>Ghi nhận lần tự giải</button><button type="button" data-ppa-hint>Nhận gợi ý từng bước</button></div></div>' : '<p class="ppa-muted">Không có lỗi đến hạn. Tiếp tục làm bài mới để hệ thống cập nhật lộ trình.</p>';
+    const active = current ? '<div class="ppa-task"><b>Câu cần tự giải lại</b><p>' + escapeHtml(current.question) + '</p><label>Viết lại cách giải độc lập<textarea id="ppaRetry" maxlength="3000" placeholder="Ghi dữ kiện, nguyên lý, từng bước và kết quả kiểm tra..."></textarea></label>' + (current.lastAssessmentFeedback ? '<p class="ppa-feedback"><b>Phản hồi lần trước (' + Number(current.lastAssessmentScore || 0) + '/100):</b> ' + escapeHtml(current.lastAssessmentFeedback) + '</p>' : '') + '<p class="ppa-muted">Khi bấm đánh giá, chỉ đề bài, đáp án tham chiếu và lời giải bạn viết được gửi tới Gemini. Không gửi tên hoặc email.</p><div class="ppa-actions"><button type="button" data-ppa-submit>Đánh giá lời giải bằng Gemini</button><button type="button" data-ppa-hint>Nhận gợi ý từng bước</button></div></div>' : '<p class="ppa-muted">Không có lỗi đến hạn. Tiếp tục làm bài mới để hệ thống cập nhật lộ trình.</p>';
     return '<section id="principiaAdaptiveCard" class="ppm-card ppa-card"><h3>PRINCIPIA đang điều chỉnh cách học</h3><p class="ppa-muted"><b>' + escapeHtml(next.title) + '</b><br>' + escapeHtml(next.reason) + '</p><div class="ppa-actions"><button type="button" data-ppa-guided>Hướng dẫn tôi bước tiếp theo</button></div><div class="ppa-metrics"><span><b>' + due.length + '</b> lỗi đến hạn</span><span><b>' + state.errors.filter(x => x.status !== 'mastered').length + '</b> lỗi cần ôn</span><span><b>' + state.completed.length + '</b> lần tự giải đã ghi</span></div>' + active + (list ? '<details><summary>Các lỗi đang đến hạn</summary><ol>' + list + '</ol></details>' : '') + '<p class="ppa-muted">Lịch gợi ý tăng dần 1 → 3 → 7 → 14 → 30 ngày khi tự giải thành công. Việc xác nhận thành thạo là tự đánh giá của người học, không phải kết quả chấm tự động của AI.</p></section>';
   }
   function style() {
     if (document.getElementById('principiaAdaptiveStyles')) return;
     const css = document.createElement('style');
     css.id = 'principiaAdaptiveStyles';
-    css.textContent = '#principiaAdaptiveCard{margin-top:12px}#principiaAdaptiveCard .ppa-muted{opacity:.75;font-size:13px;line-height:1.55}#principiaAdaptiveCard .ppa-metrics{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}#principiaAdaptiveCard .ppa-metrics span{padding:8px 10px;border:1px solid var(--line,#39435b);border-radius:9px;font-size:12px}#principiaAdaptiveCard .ppa-task{padding:12px;border:1px solid var(--line,#39435b);border-radius:12px;margin-top:10px}#principiaAdaptiveCard textarea{display:block;box-sizing:border-box;width:100%;min-height:100px;margin:7px 0;padding:10px;border:1px solid var(--line,#39435b);border-radius:9px;background:var(--bg,#101626);color:inherit}#principiaAdaptiveCard .ppa-check{display:flex;align-items:center;gap:8px;font-size:12px}#principiaAdaptiveCard .ppa-check input{width:auto}#principiaAdaptiveCard .ppa-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}#principiaAdaptiveCard button{padding:9px 12px;border:1px solid var(--line,#39435b);border-radius:9px;background:transparent;color:inherit}#principiaAdaptiveCard button:first-child{background:var(--primary,#6557dc);color:white;border-color:transparent}#principiaAdaptiveCard details{margin-top:10px;font-size:13px}#principiaAdaptiveCard li{margin:6px 0}';
+    css.textContent = '#principiaAdaptiveCard{margin-top:12px}#principiaAdaptiveCard .ppa-muted{opacity:.75;font-size:13px;line-height:1.55}#principiaAdaptiveCard .ppa-metrics{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}#principiaAdaptiveCard .ppa-metrics span{padding:8px 10px;border:1px solid var(--line,#39435b);border-radius:9px;font-size:12px}#principiaAdaptiveCard .ppa-task{padding:12px;border:1px solid var(--line,#39435b);border-radius:12px;margin-top:10px}#principiaAdaptiveCard .ppa-feedback{padding:10px;border-left:3px solid var(--primary,#6557dc);background:rgba(120,120,180,.08);border-radius:8px;font-size:13px;line-height:1.5}#principiaAdaptiveCard textarea{display:block;box-sizing:border-box;width:100%;min-height:100px;margin:7px 0;padding:10px;border:1px solid var(--line,#39435b);border-radius:9px;background:var(--bg,#101626);color:inherit}#principiaAdaptiveCard .ppa-check{display:flex;align-items:center;gap:8px;font-size:12px}#principiaAdaptiveCard .ppa-check input{width:auto}#principiaAdaptiveCard .ppa-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}#principiaAdaptiveCard button{padding:9px 12px;border:1px solid var(--line,#39435b);border-radius:9px;background:transparent;color:inherit}#principiaAdaptiveCard button:first-child{background:var(--primary,#6557dc);color:white;border-color:transparent}#principiaAdaptiveCard details{margin-top:10px;font-size:13px}#principiaAdaptiveCard li{margin:6px 0}';
     document.head.appendChild(css);
   }
   function refreshCard(force) {
@@ -123,28 +123,60 @@
     card.querySelector('[data-ppa-hint]')?.addEventListener('click', requestHint);
     card.querySelector('[data-ppa-guided]')?.addEventListener('click', beginGuidedStep);
   }
-  function submitRetry() {
+  async function submitRetry() {
     const card = document.getElementById('principiaAdaptiveCard');
     const answer = card?.querySelector('#ppaRetry')?.value.trim() || '';
-    const verified = !!card?.querySelector('#ppaVerified')?.checked;
     const item = state.errors.filter(x => x.status !== 'mastered' && Number(x.dueAt) <= Date.now()).sort((a, b) => a.dueAt - b.dueAt)[0];
     if (!item) return refreshCard();
     if (answer.length < 30) return alert('Hãy trình bày cách giải độc lập ít nhất 30 ký tự.');
-    if (!verified) return alert('Hãy tự kiểm tra lời giải trước khi ghi nhận thành thạo.');
-    const days = [1, 3, 7, 14, 30];
-    const index = Math.min(days.length - 1, Math.max(0, Number(item.intervalIndex) || 0));
-    const next = days[index];
-    item.intervalIndex = Math.min(days.length - 1, index + 1);
-    item.intervalDays = next;
-    item.dueAt = Date.now() + next * DAY;
-    item.status = 'review';
-    item.lastIndependentRetry = Date.now();
-    item.lastRetryLength = answer.length;
-    state.completed.unshift({ id: item.id, at: Date.now(), intervalDays: next });
-    state.completed = state.completed.slice(0, MAX_ITEMS);
-    save();
-    refreshCard(true);
-    alert('Đã ghi nhận lần tự giải. Câu này sẽ quay lại sau ' + next + ' ngày.');
+    const button = card.querySelector('[data-ppa-submit]');
+    if (!window.PrincipiaRetryAssessor?.assess) return alert('Bộ đánh giá Gemini chưa sẵn sàng. Hãy tải lại trang.');
+    button.disabled = true;
+    button.textContent = 'Gemini đang đánh giá…';
+    try {
+      const result = await window.PrincipiaRetryAssessor.assess({
+        question: item.question,
+        correctText: item.correctText,
+        answer,
+        source: item.source
+      });
+      item.assessmentAttempts = Math.min(99, (Number(item.assessmentAttempts) || 0) + 1);
+      item.lastAssessmentAt = Date.now();
+      item.lastAssessmentScore = result.score;
+      item.lastAssessmentFeedback = result.feedback;
+      if (!result.passed) {
+        item.dueAt = Date.now();
+        item.status = 'review';
+        save();
+        refreshCard(true);
+        alert('Chưa đạt mức thành thạo (' + result.score + '/100). Đọc phản hồi rồi tự thử lại.');
+        window.dispatchEvent(new CustomEvent('principia:adaptive-retry-assessed', {
+          detail: { passed: false, score: result.score, source: item.source }
+        }));
+        return;
+      }
+      const days = [1, 3, 7, 14, 30];
+      const index = Math.min(days.length - 1, Math.max(0, Number(item.intervalIndex) || 0));
+      const next = days[index];
+      item.intervalIndex = Math.min(days.length - 1, index + 1);
+      item.intervalDays = next;
+      item.dueAt = Date.now() + next * DAY;
+      item.status = 'review';
+      item.lastIndependentRetry = Date.now();
+      item.lastRetryLength = answer.length;
+      state.completed.unshift({ id: item.id, at: Date.now(), intervalDays: next, score: result.score });
+      state.completed = state.completed.slice(0, MAX_ITEMS);
+      save();
+      refreshCard(true);
+      alert('Lời giải đạt ' + result.score + '/100. Đã lên lịch ôn lại sau ' + next + ' ngày.');
+      window.dispatchEvent(new CustomEvent('principia:adaptive-retry-assessed', {
+        detail: { passed: true, score: result.score, source: item.source, intervalDays: next }
+      }));
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Không thể đánh giá lời giải. Hãy thử lại.');
+      button.disabled = false;
+      button.textContent = 'Đánh giá lời giải bằng Gemini';
+    }
   }
   function beginGuidedStep() {
     const next = recommendation();
