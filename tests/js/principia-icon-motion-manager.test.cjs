@@ -28,7 +28,7 @@ test('motion library only changes effects on existing elements', () => {
   assert.match(script, /data-pr-motion-kind/);
   assert.match(script, /EXCLUDED='#proSiteEditorPanel/);
   assert.match(script, /localStorage/);
-  assert.match(script, /prefers-reduced-motion/);
+  assert.match(css, /prefers-reduced-motion:reduce/);
   assert.match(css, /data-pr-motion-effect="press"/);
   assert.match(css, /prefers-reduced-motion:reduce/);
 });
