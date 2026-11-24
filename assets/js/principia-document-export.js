@@ -123,6 +123,43 @@
     link.remove();
     window.setTimeout(() => URL.revokeObjectURL(url), 60000);
   }
+  function printNotes() {
+    const notes = document.getElementById('ppmNotes');
+    const section = notes?.closest('section');
+    if (!notes || !section) return;
+    const content = document.createElement('div');
+    content.className = 'principia-print-content';
+    content.textContent = notes.value || 'Chưa có ghi chú.';
+    section.classList.add('principia-print-target');
+    section.appendChild(content);
+    document.body.classList.add('principia-print-notes');
+    let cleaned = false;
+    const cleanup = () => {
+      if (cleaned) return;
+      cleaned = true;
+      section.classList.remove('principia-print-target');
+      content.remove();
+      document.body.classList.remove('principia-print-notes');
+      window.removeEventListener('afterprint', cleanup);
+    };
+    window.addEventListener('afterprint', cleanup, { once: true });
+    window.print();
+    window.setTimeout(cleanup, 120000);
+  }
+  function installPrintMode() {
+    if (document.getElementById('principiaPrintNotesStyles')) return;
+    const style = document.createElement('style');
+    style.id = 'principiaPrintNotesStyles';
+    style.textContent = '@media print{body.principia-print-notes *{visibility:hidden!important}body.principia-print-notes #principiaProMastery,body.principia-print-notes #principiaProMastery .ppm-shell,body.principia-print-notes #principiaProMastery .ppm-content,body.principia-print-notes #principiaProMastery .principia-print-target,body.principia-print-notes #principiaProMastery .principia-print-target .principia-print-content{visibility:visible!important}body.principia-print-notes #principiaProMastery{position:absolute!important;inset:0!important;display:block!important;padding:0!important;background:#fff!important;color:#111!important;overflow:visible!important}body.principia-print-notes #principiaProMastery .ppm-shell{max-width:none!important;min-height:0!important;margin:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;background:#fff!important;color:#111!important}body.principia-print-notes #principiaProMastery .ppm-head,body.principia-print-notes #principiaProMastery .ppm-tabs,body.principia-print-notes #principiaProMastery .principia-print-target textarea,body.principia-print-notes #principiaProMastery .principia-print-target .ppm-actions{display:none!important}body.principia-print-notes #principiaProMastery .ppm-content{padding:0!important}body.principia-print-notes #principiaProMastery .ppm-content>section:not(.principia-print-target){display:none!important}body.principia-print-notes #principiaProMastery .principia-print-target{display:block!important;padding:18px!important;border:0!important;background:#fff!important;color:#111!important}body.principia-print-notes .principia-print-content{display:block!important;white-space:pre-wrap!important;overflow-wrap:anywhere!important;font:11pt/1.65 Arial,sans-serif!important;color:#111!important}}.principia-print-content{display:none}';
+    document.head.appendChild(style);
+    document.addEventListener('click', event => {
+      const button = event.target.closest('[data-print-notes]');
+      if (!button) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      printNotes();
+    }, true);
+  }
   function addButton() {
     const notes = document.querySelector('#principiaProMastery #ppmNotes');
     const actions = notes?.closest('section')?.querySelector('.ppm-actions');
@@ -135,6 +172,7 @@
     actions.appendChild(button);
   }
   function init() {
+    installPrintMode();
     addButton();
     const observer = new MutationObserver(addButton);
     observer.observe(document.body, { childList: true, subtree: true });
