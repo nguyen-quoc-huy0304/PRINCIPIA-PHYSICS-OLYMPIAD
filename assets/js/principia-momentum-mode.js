@@ -261,7 +261,7 @@
     ].join('\n');
     close();
     if (window.PrincipiaLearningOrchestrator?.begin) {
-      window.PrincipiaLearningOrchestrator.begin({ goal: mode === 'gentle' ? 'understand' : 'solve', phase: 'momentum', extra });
+      window.PrincipiaLearningOrchestrator.begin({ goal: mode === 'gentle' ? 'understand' : 'solve', phase: 'momentum', energy: selectedEnergy, extra });
     } else if (window.principiaLocalAI?.open) {
       window.principiaLocalAI.open('Bạn là gia sư PRINCIPIA. ' + extra);
     } else if (window.notify) {
