@@ -92,7 +92,9 @@ test('guided pathways connect Gemini, virtual classroom and Study With Me', () =
   assert.match(read('index.html'), /principia-study-pathways\.js/);
   const mastery = read('assets/js/principia-pro-mastery.js');
   assert.match(mastery, /data-pathways/);
-  assert.match(mastery, /Mở thư viện phương pháp/);
+  assert.match(mastery, /Lộ trình học của bạn/);
+  assert.doesNotMatch(mastery, /Thư viện phương pháp/);
+  assert.doesNotMatch(mastery, /3111 mục học tập/);
   assert.doesNotMatch(mastery, /Mở 231 phương pháp/);
 });
 
@@ -121,6 +123,8 @@ test('invisible learning orchestrator adapts to learner results without exposing
   assert.match(source, /function choose/);
   assert.match(source, /function promptFor/);
   assert.match(source, /tuyệt đối không nêu tên phương pháp/);
+  assert.match(source, /function showNextStep/);
+  assert.match(source, /principia:next-step-updated/);
   assert.match(read('index.html'), /principia-learning-orchestrator\.js/);
   assert.match(read('assets/js/principia-adaptive-learning.js'), /data-ppa-guided/);
   assert.match(read('assets/js/principia-pro-mastery.js'), /data-guided-study/);
