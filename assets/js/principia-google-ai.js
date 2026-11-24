@@ -10,6 +10,22 @@
   if(!user)throw new Error('Hãy đăng nhập PRINCIPIA để sử dụng AI trực tuyến.');
   return user.getIdToken();
  }
+ function learningSystem(prompt, baseSystem) {
+  const base=String(baseSystem||SYSTEM);
+  const context=(base+'\n'+String(prompt||'')).slice(0,10000);
+  if(!window.PrincipiaLearningScience?.directive || context.includes('HƯỚNG DẪN HỌC CÁ NHÂN HÓA NỘI BỘ') || base.length>4200) return base.slice(0,6000);
+  const goal=/olympiad|olympic|thi hsg|chứng minh/i.test(context)?'olympiad':
+   /ôn tập|ghi nhớ|flashcard|nhớ lại|tự nhớ/i.test(context)?'remember':
+   /lỗi sai|sửa lỗi|không hiểu|đang yếu|retry/i.test(context)?'recover':
+   /giảng|dạy lại|học sinh ai|teach/i.test(context)?'teach':
+   /giải bài|bài tập|luyện tập|problem/i.test(context)?'solve':'understand';
+  const topicMatch=context.match(/(?:chủ đề|topic)\s*[:：]\s*([^\n.]{2,120})/i);
+  const guidance=window.PrincipiaLearningScience.directive({
+   goal,topic:topicMatch?topicMatch[1].trim():'Vật lý',phase:'shared-gemini-request'
+  });
+  const suffix='\n\n'+guidance+'\n\nGiữ nguyên định dạng, JSON schema và giới hạn đầu ra mà yêu cầu tác vụ chỉ định. Nếu đang tạo dữ liệu có cấu trúc, không chèn lời dẫn hoặc câu hỏi ngoài schema.';
+  return base.slice(0,Math.max(0,6000-suffix.length))+suffix;
+ }
  async function ask(prompt, options={}) {
   const text=String(prompt||'').trim();
   if(!text||text.length>8000)throw new Error('Nội dung cần hỏi phải từ 1 đến 8.000 ký tự.');
@@ -18,7 +34,7 @@
   try {
    const token=await idToken();
    const response=await fetch('/api/ai',{method:'POST',headers:{'content-type':'application/json','authorization':'Bearer '+token},body:JSON.stringify({
-    system:String(options.system||SYSTEM).slice(0,6000),
+    system:learningSystem(text, options.system||SYSTEM),
     messages:(Array.isArray(options.history)?options.history:[]).slice(-16).concat([{role:'user',content:text}])
    })});
    const data=await response.json().catch(()=>({}));
