@@ -70,3 +70,7 @@ html[data-pr-theme="light"] .pr-experience-toast{color:#1c2742;background:rgba(2
   .pr-theme-switch,.pr-theme-icon{transition:none!important}
   ::view-transition-old(root),::view-transition-new(root){animation:none!important}
 }
+
+/* Make switch usable even when top navigation layers overlap. */
+#principiaThemeSwitch{position:fixed!important;top:max(14px,env(safe-area-inset-top))!important;right:max(14px,env(safe-area-inset-right))!important;z-index:2147483647!important;display:inline-flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important}
+#principiaThemeSwitch .pr-theme-label{display:inline!important}
