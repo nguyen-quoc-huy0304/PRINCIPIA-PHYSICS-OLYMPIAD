@@ -32,13 +32,17 @@ test('study library contains every numbered method and core requested learning t
     assert.ok(titles.some(title => title.includes(term)), 'missing method: ' + term);
   }
 });
-test('study playbook expansion creates 1,200 contextual guides without inflating the core-method count', () => {
+test('study playbook expansion creates 1,240 contextual guides without inflating the core-method count', () => {
   const source = read('assets/js/principia-study-methods-expansion.js');
   assert.match(source, /const methods = \[/);
   assert.match(source, /const topics = \[/);
   assert.match(source, /window\.PRINCIPIA_STUDY_METHOD_PLAYBOOKS = out/);
   assert.match(source, /window\.PRINCIPIA_STUDY_METHOD_PLAYBOOK_COUNT = out\.length/);
   assert.match(source, /kind: 'playbook'/);
+  assert.equal((source.match(/\\{ name: '/g) || []).length, 31);
+  assert.equal((source.match(/\\['[^']+','[^']+'\\]/g) || []).length, 40);
+  assert.match(source, /out.length !== methods.length \\* topics.length/);
+  assert.match(source, /new Set\\(out.map\\(item => item.title\\)\\)/);
   assert.match(read('index.html'), /principia-study-methods-expansion\.js/);
   assert.match(read('assets/js/principia-study-methods.js'), /CORE_METHOD_COUNT=methods\.length/);
   assert.match(read('assets/js/principia-study-methods.js'), /methods\.push\(\.\.\.window\.PRINCIPIA_STUDY_METHOD_PLAYBOOKS\)/);
