@@ -120,6 +120,7 @@
  }
  function apply(){
   document.documentElement.classList.toggle('pr-dimensional-world-on',settings.enabled&&!failed);
+  if(canvas)canvas.style.opacity=settings.enabled?(REDUCED?'.48':'.92'):'0';
   document.documentElement.dataset.prWorldScene=settings.scene;
   if(!gl)return;
   if(settings.enabled&&!REDUCED&&!document.hidden){if(!raf)raf=requestAnimationFrame(render)}
@@ -152,8 +153,8 @@
   if(matchMedia('(pointer:fine)').matches)addEventListener('pointermove',event=>{pointer.x=clamp((event.clientX/innerWidth-.5)*2,-1,1);pointer.y=clamp((.5-event.clientY/innerHeight)*2,-1,1)},{passive:true});
   document.addEventListener('visibilitychange',()=>{if(document.hidden){if(raf)cancelAnimationFrame(raf);raf=0}else apply()});
   const observer=new MutationObserver(mountSettings);observer.observe(document.body,{childList:true,subtree:true});
-  mountSettings();apply();canvas.style.opacity=settings.enabled&&!REDUCED?'.92':'.5';
-  window.PrincipiaWorld3D=Object.freeze({setEnabled(value){settings.enabled=Boolean(value);persist();apply();canvas.style.opacity=settings.enabled&&!REDUCED?'.92':'.5'},setScene(value){if(!scenes.includes(value))return false;settings.scene=value;persist();mountSettings();apply();return true},getSettings:()=>({...settings})});
+  mountSettings();apply();
+  window.PrincipiaWorld3D=Object.freeze({setEnabled(value){settings.enabled=Boolean(value);persist();apply()},setScene(value){if(!scenes.includes(value))return false;settings.scene=value;persist();mountSettings();apply();return true},getSettings:()=>({...settings})});
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
