@@ -69,7 +69,7 @@ export async function onRequestPost({ request, env }) {
     const result = await upstream.json().catch(() => ({}));
     if (!upstream.ok) {
       if (upstream.status === 429) {
-        return json({ error: "Gemini Free Tier đã đạt giới hạn lượt gọi. Hãy đợi quota làm mới rồi thử lại." }, 429);
+        return json({ error: "Gemini đã đạt giới hạn quota/lượt gọi của dự án. Kiểm tra mức sử dụng trong Google AI Studio rồi thử lại sau." }, 429);
       }
       return json({ error: upstream.status >= 500 ? "Gemini đang tạm thời quá tải. Hãy thử lại sau ít phút." : "Cấu hình Gemini model hoặc API key chưa hợp lệ." }, 502);
     }
