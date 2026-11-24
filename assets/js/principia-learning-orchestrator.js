@@ -185,6 +185,44 @@
     return false;
   }
 
+  function showNextStep(event) {
+    const detail = event?.detail || {};
+    const title = clean(detail.title || 'Bước học tiếp theo', 100);
+    const description = clean(detail.description || 'PRINCIPIA đã chọn hoạt động tiếp theo dựa trên kết quả vừa làm.', 260);
+    document.getElementById('principiaNextStepToast')?.remove();
+    if (!document.getElementById('principiaNextStepToastStyles')) {
+      const style = document.createElement('style');
+      style.id = 'principiaNextStepToastStyles';
+      style.textContent = '#principiaNextStepToast{position:fixed;z-index:2147483000;left:50%;bottom:max(16px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(560px,calc(100vw - 28px));padding:14px 16px;border:1px solid var(--line,#46506a);border-radius:15px;background:var(--card,#171e30);color:var(--text,#f4f6ff);box-shadow:0 16px 48px #0008;font:inherit}#principiaNextStepToast p{margin:6px 0 12px;opacity:.78;font-size:13px;line-height:1.5}#principiaNextStepToast .pno-actions{display:flex;gap:8px;flex-wrap:wrap}#principiaNextStepToast button{border:1px solid var(--line,#46506a);border-radius:9px;padding:8px 11px;background:transparent;color:inherit}#principiaNextStepToast [data-start]{background:var(--primary,#6557dc);border-color:transparent;color:#fff}';
+      document.head.appendChild(style);
+    }
+    const toast = document.createElement('aside');
+    toast.id = 'principiaNextStepToast';
+    toast.setAttribute('role', 'status');
+    toast.setAttribute('aria-live', 'polite');
+    const heading = document.createElement('strong');
+    heading.textContent = title;
+    const text = document.createElement('p');
+    text.textContent = description;
+    const actions = document.createElement('div');
+    actions.className = 'pno-actions';
+    const start = document.createElement('button');
+    start.type = 'button';
+    start.dataset.start = '1';
+    start.textContent = 'Tiếp tục với hướng dẫn';
+    start.addEventListener('click', () => {
+      toast.remove();
+      begin({ topic: clean(detail.topic || state.profile.topic || 'Vật lý', 120), goal: GOALS[detail.goal] ? detail.goal : 'understand' });
+    });
+    const dismiss = document.createElement('button');
+    dismiss.type = 'button';
+    dismiss.textContent = 'Để sau';
+    dismiss.addEventListener('click', () => toast.remove());
+    actions.append(start, dismiss);
+    toast.append(heading, text, actions);
+    document.body.appendChild(toast);
+  }
+
   window.PrincipiaLearningOrchestrator = Object.freeze({
     recommend: getNext, begin, directive, startFocus,
     getProfile: () => JSON.parse(JSON.stringify(state.profile)),
@@ -192,4 +230,5 @@
   });
 
   window.addEventListener('principia:quiz-completed', recordQuiz);
+  window.addEventListener('principia:next-step-updated', showNextStep);
 })();
