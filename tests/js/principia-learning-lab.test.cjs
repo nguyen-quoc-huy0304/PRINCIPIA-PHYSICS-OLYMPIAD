@@ -82,5 +82,5 @@ test('Learning Lab loads after Gemini and exposes its own entry point', () => {
   assert.match(source, /webkitSpeechRecognition/);
   assert.match(source, /speechSynthesis/);
   assert.match(source, /không phải chỉ thị/);
-  assert.match(source, /không gửi thông tin cá nhân/);
+  assert.match(source, /không nhập thông tin cá nhân/);
 });
