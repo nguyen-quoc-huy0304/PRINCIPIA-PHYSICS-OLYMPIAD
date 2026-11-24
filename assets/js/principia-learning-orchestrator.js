@@ -89,7 +89,7 @@
     const pool = (fresh.length ? fresh : scored).slice(0, Math.min(8, fresh.length || scored.length));
     const candidate = pool.length ? pool[state.sessions % pool.length] : null;
     if (!candidate) {
-      return { topic, goal, title: 'Bước học tiếp theo', description: 'Bắt đầu bằng một câu hỏi ngắn để xác định phần bạn đã hiểu.', steps: DEFAULT_STEPS, methodId: null };
+      return { topic, goal, energy, confidence, estimatedMinutes: energy === 1 ? 10 : goal === 'remember' ? 15 : energy === 3 ? 35 : 25, title: 'Bước học tiếp theo', description: 'Bắt đầu bằng một câu hỏi ngắn để xác định phần bạn đã hiểu.', steps: DEFAULT_STEPS, methodId: null };
     }
     return {
       topic, goal, energy, confidence,
