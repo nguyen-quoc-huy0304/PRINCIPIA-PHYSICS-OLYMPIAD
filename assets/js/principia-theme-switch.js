@@ -25,6 +25,7 @@
     const update = () => {
       mode = next;
       root.dataset.prTheme = mode;
+      root.dataset.theme = mode;
       root.style.colorScheme = mode;
       const button = document.getElementById('principiaThemeSwitch');
       if (button) {
@@ -60,6 +61,7 @@
   }
 
   root.dataset.prTheme = mode;
+  root.dataset.theme = mode;
   root.style.colorScheme = mode;
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mount, { once: true });
   else mount();
