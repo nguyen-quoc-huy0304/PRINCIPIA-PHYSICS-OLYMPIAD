@@ -76,17 +76,17 @@ for (const device of [
         vaultSkins: vault?.skins ?? null,
         expansionComponents: expansion?.components ?? null,
         expansionSkins: expansion?.skins ?? null,
-        antLogo: Boolean(logo && /principia-ant-logo\.svg/.test(logo.getAttribute('src') || '')),
+        principiaLogo: Boolean(logo && /principia-logo-round\.svg/.test(logo.getAttribute('src') || '')),
         motionPolishLoaded: [...document.styleSheets].some(sheet => sheet.href?.includes('principia-reference-polish.css')),
         proMasteryReady: typeof window.PrincipiaProMastery?.open === 'function',
         studyPlayerReady: typeof window.PrincipiaStudyPlayer?.pin === 'function'
       };
     });
     pageState.learningCheck = learningCheck;
-    if (learningCheck.studyMethodCount !== 231 || learningCheck.vaultVariants !== 104468 ||
-        learningCheck.vaultStructures !== 574 || learningCheck.vaultSkins !== 182 ||
+    if (learningCheck.studyMethodCount !== 231 || learningCheck.vaultVariants !== 105378 ||
+        learningCheck.vaultStructures !== 579 || learningCheck.vaultSkins !== 182 ||
         learningCheck.expansionComponents !== 22 || learningCheck.expansionSkins !== 157 ||
-        !learningCheck.antLogo || !learningCheck.motionPolishLoaded || !learningCheck.proMasteryReady || !learningCheck.studyPlayerReady) {
+        !learningCheck.principiaLogo || !learningCheck.motionPolishLoaded || !learningCheck.proMasteryReady || !learningCheck.studyPlayerReady) {
       hasFailure = true;
     }
 
