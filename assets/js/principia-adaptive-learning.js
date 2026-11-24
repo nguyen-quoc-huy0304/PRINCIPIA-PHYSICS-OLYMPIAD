@@ -67,13 +67,25 @@
   }
   function recommendation() {
     const recent = attempts();
-    const average = recent.length ? recent.reduce((sum, x) => sum + (Number(x.percent) || 0), 0) / recent.length : null;
-    const due = state.errors.filter(x => x.status !== 'mastered' && Number(x.dueAt) <= Date.now()).length;
-    if (due >= 3) return { title: 'Ưu tiên sửa lỗi trước', method: '错题本 · Sổ lỗi sai + Active Recall', reason: due + ' lỗi đang đến hạn. Tập trung vào nguyên nhân và tự giải lại từng câu.' };
-    if (average !== null && average < 50) return { title: 'Củng cố nền tảng', method: 'Worked Examples + Feynman', reason: 'Điểm trung bình 10 lượt gần nhất là ' + Math.round(average) + '%. Học một ví dụ mẫu, giải thích từng bước rồi tự làm bài tương tự.' };
-    if (average !== null && average < 75) return { title: 'Luyện có hướng dẫn', method: 'Problem Decomposition + Retrieval Practice', reason: 'Điểm trung bình gần đây là ' + Math.round(average) + '%. Chia bài thành bước nhỏ và tự nhớ lại nguyên lý trước khi xem gợi ý.' };
-    if (average !== null) return { title: 'Tăng khả năng chuyển giao', method: 'Interleaving + Transfer Practice', reason: 'Kết quả gần đây đạt ' + Math.round(average) + '%. Trộn dạng bài và thử tình huống mới để kiểm tra hiểu sâu.' };
-    return { title: 'Bắt đầu bằng phiên ngắn', method: 'Active Recall + Spaced Repetition', reason: 'Chưa có đủ dữ liệu Quiz. Học 5–10 phút, tự nhớ lại rồi làm một bài kiểm tra ngắn.' };
+    const average = recent.length ? recent.reduce((sum, item) => sum + (Number(item.percent) || 0), 0) / recent.length : null;
+    const due = state.errors.filter(item => item.status !== 'mastered' && Number(item.dueAt) <= Date.now()).length;
+    const profile = window.PrincipiaLearningOrchestrator?.recommend({
+      topic: state.errors[0]?.source || recent.at(-1)?.topic || 'Vật lý',
+      percent: average,
+      errorCount: due,
+      goal: due >= 3 || (average !== null && average < 50) ? 'recover' : undefined
+    });
+    if (profile) return {
+      title: profile.title,
+      reason: profile.description,
+      plan: profile,
+      due
+    };
+    if (due >= 3) return { title: 'Ưu tiên sửa lỗi trước', reason: 'Có ' + due + ' lỗi đang đến hạn. Hãy tự giải lại từng câu.', due };
+    if (average !== null && average < 50) return { title: 'Củng cố nền tảng', reason: 'Độ chính xác gần đây là ' + Math.round(average) + '%. Hãy học chậm lại và tự giải từng bước.', due };
+    if (average !== null && average < 75) return { title: 'Luyện có hướng dẫn', reason: 'Chia bài thành bước nhỏ và tự nhớ lại nguyên lý trước khi xem gợi ý.', due };
+    if (average !== null) return { title: 'Tăng khả năng vận dụng', reason: 'Thử tình huống mới và đổi cách biểu diễn để kiểm tra hiểu sâu.', due };
+    return { title: 'Bắt đầu bằng phiên ngắn', reason: 'Học 5–10 phút, tự nhớ lại rồi làm một bài kiểm tra ngắn.', due };
   }
   function render() {
     const due = state.errors.filter(x => x.status !== 'mastered' && Number(x.dueAt) <= Date.now()).sort((a, b) => a.dueAt - b.dueAt);
@@ -81,7 +93,7 @@
     const current = due[0];
     const list = due.slice(0, 5).map(x => '<li><b>' + escapeHtml(x.source) + '</b> · ' + escapeHtml(x.question.slice(0, 180)) + ' <span>· ' + x.misses + ' lần sai</span></li>').join('');
     const active = current ? '<div class="ppa-task"><b>Câu cần tự giải lại</b><p>' + escapeHtml(current.question) + '</p><label>Viết lại cách giải độc lập<textarea id="ppaRetry" maxlength="5000" placeholder="Ghi dữ kiện, nguyên lý, từng bước và kết quả kiểm tra..."></textarea></label><label class="ppa-check"><input id="ppaVerified" type="checkbox"> Tôi đã tự giải không xem đáp án và kiểm tra lại kết quả.</label><div class="ppa-actions"><button type="button" data-ppa-submit>Ghi nhận lần tự giải</button><button type="button" data-ppa-hint>Nhận gợi ý từng bước</button></div></div>' : '<p class="ppa-muted">Không có lỗi đến hạn. Tiếp tục làm bài mới để hệ thống cập nhật lộ trình.</p>';
-    return '<section id="principiaAdaptiveCard" class="ppm-card ppa-card"><h3>Adaptive Engine · lộ trình theo năng lực</h3><p class="ppa-muted">Đề xuất hiện tại: <b>' + escapeHtml(next.title) + '</b><br>' + escapeHtml(next.method) + '<br>' + escapeHtml(next.reason) + '</p><div class="ppa-metrics"><span><b>' + due.length + '</b> lỗi đến hạn</span><span><b>' + state.errors.filter(x => x.status !== 'mastered').length + '</b> lỗi cần ôn</span><span><b>' + state.completed.length + '</b> lần tự giải đã ghi</span></div>' + active + (list ? '<details><summary>Các lỗi đang đến hạn</summary><ol>' + list + '</ol></details>' : '') + '<p class="ppa-muted">Lịch gợi ý tăng dần 1 → 3 → 7 → 14 → 30 ngày khi tự giải thành công. Việc xác nhận thành thạo là tự đánh giá của người học, không phải kết quả chấm tự động của AI.</p></section>';
+    return '<section id="principiaAdaptiveCard" class="ppm-card ppa-card"><h3>PRINCIPIA đang điều chỉnh cách học</h3><p class="ppa-muted"><b>' + escapeHtml(next.title) + '</b><br>' + escapeHtml(next.reason) + '</p><div class="ppa-actions"><button type="button" data-ppa-guided>Hướng dẫn tôi bước tiếp theo</button></div><div class="ppa-metrics"><span><b>' + due.length + '</b> lỗi đến hạn</span><span><b>' + state.errors.filter(x => x.status !== 'mastered').length + '</b> lỗi cần ôn</span><span><b>' + state.completed.length + '</b> lần tự giải đã ghi</span></div>' + active + (list ? '<details><summary>Các lỗi đang đến hạn</summary><ol>' + list + '</ol></details>' : '') + '<p class="ppa-muted">Lịch gợi ý tăng dần 1 → 3 → 7 → 14 → 30 ngày khi tự giải thành công. Việc xác nhận thành thạo là tự đánh giá của người học, không phải kết quả chấm tự động của AI.</p></section>';
   }
   function style() {
     if (document.getElementById('principiaAdaptiveStyles')) return;
@@ -107,6 +119,7 @@
     card.dataset.bound = '1';
     card.querySelector('[data-ppa-submit]')?.addEventListener('click', submitRetry);
     card.querySelector('[data-ppa-hint]')?.addEventListener('click', requestHint);
+    card.querySelector('[data-ppa-guided]')?.addEventListener('click', beginGuidedStep);
   }
   function submitRetry() {
     const card = document.getElementById('principiaAdaptiveCard');
@@ -131,10 +144,24 @@
     refreshCard(true);
     alert('Đã ghi nhận lần tự giải. Câu này sẽ quay lại sau ' + next + ' ngày.');
   }
+  function beginGuidedStep() {
+    const next = recommendation();
+    if (window.PrincipiaLearningOrchestrator?.begin) {
+      window.PrincipiaLearningOrchestrator.begin({
+        topic: next.plan?.topic || state.errors[0]?.source || 'Vật lý',
+        goal: next.plan?.goal || 'understand',
+        errorCount: next.due || 0,
+        extra: 'Hãy bắt đầu bằng một câu hỏi ngắn. Không trình bày danh sách phương pháp hay tên kỹ thuật cho người học.'
+      });
+      return;
+    }
+    requestHint();
+  }
   function requestHint() {
     const item = state.errors.filter(x => x.status !== 'mastered' && Number(x.dueAt) <= Date.now()).sort((a, b) => a.dueAt - b.dueAt)[0];
     if (!item) return;
-    const prompt = 'Bạn là PRINCIPIA AI Coach. Không đưa đáp án cuối. Hãy hỏi người học đã thử bước nào, sau đó đưa một gợi ý vừa đủ và yêu cầu họ tự giải lại. Câu hỏi: ' + item.question + '. Đáp án chuẩn (chỉ dùng để định hướng, không tiết lộ trực tiếp): ' + item.correctText;
+    const directive = window.PrincipiaLearningOrchestrator?.directive({ topic: item.source, goal: 'recover', extra: 'Câu hỏi cần sửa: ' + item.question + '. Đáp án chuẩn chỉ dùng nội bộ: ' + item.correctText });
+    const prompt = 'Bạn là PRINCIPIA AI Coach. Không đưa đáp án cuối. Hãy hỏi người học đã thử bước nào, sau đó đưa một gợi ý vừa đủ và yêu cầu họ tự giải lại. ' + (directive || '') + ' Câu hỏi: ' + item.question + '. Đáp án chuẩn (chỉ dùng để định hướng, không tiết lộ trực tiếp): ' + item.correctText;
     if (window.principiaLocalAI && typeof window.principiaLocalAI.open === 'function') window.principiaLocalAI.open(prompt);
     else if (typeof window.principiaSuiteAI === 'function') window.principiaSuiteAI();
     else alert('AI Coach chưa sẵn sàng. Hãy tự thử lại câu hỏi trước.');
