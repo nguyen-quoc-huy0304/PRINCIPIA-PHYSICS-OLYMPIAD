@@ -278,3 +278,17 @@ html[data-theme="light"] .principia-mobile-topbar{background:rgba(245,248,255,.7
 @media(prefers-reduced-motion:reduce){
  #app *,#app *::before,#app *::after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important}
 }
+
+#principiaDimensionalWorld{position:fixed!important;inset:0!important;width:100%!important;height:100%!important;z-index:0!important;pointer-events:none!important;display:block!important}
+#app #principia3DAtmosphere{opacity:.2!important;filter:saturate(.72);mix-blend-mode:screen}
+html[data-theme="light"] #principiaDimensionalWorld{opacity:.48!important;filter:saturate(.62) brightness(1.28)}
+html[data-theme="light"] #app #principia3DAtmosphere{opacity:.09!important}
+.pr-world-settings{display:grid;gap:10px;margin:14px 0;padding:14px;border:1px solid var(--line,rgba(150,165,220,.2));border-radius:16px;background:var(--card,rgba(255,255,255,.04))}
+.pr-world-settings>strong{font-size:13px;letter-spacing:.02em}
+.pr-world-settings label{display:grid;gap:7px;font-size:12px;line-height:1.4}
+.pr-world-settings label:first-of-type{display:flex;align-items:center;gap:9px;cursor:pointer}
+.pr-world-settings input[type="checkbox"]{width:16px;height:16px;accent-color:#9c87f5}
+.pr-world-settings input[type="range"]{width:100%;accent-color:#9c87f5}
+.pr-world-settings select{width:100%;min-height:38px;padding:8px 10px}
+.pr-world-settings small{color:var(--muted);font-size:11px;line-height:1.5}
+@media(prefers-reduced-motion:reduce){#principiaDimensionalWorld{display:none!important}}
