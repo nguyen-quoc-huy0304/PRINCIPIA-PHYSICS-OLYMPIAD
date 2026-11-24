@@ -358,3 +358,8 @@ html[data-theme="light"] #app :is(.panel,.tile,.stat){
   linear-gradient(145deg,rgba(255,255,255,.9),rgba(239,245,255,.8))!important;
 }
 @media(prefers-reduced-motion:reduce){#app .nav.active .ni{animation:none!important}}
+
+
+/* The actual desktop root is .layout, not .principia-desktop-shell. */
+@media(min-width:901px){#app>.layout{grid-template-columns:clamp(236px,19vw,286px) minmax(0,1fr)!important;background:transparent!important}#app>.layout>.sidebar{position:sticky!important;top:0!important;height:100vh!important}#app>.layout>.main{max-width:1700px!important;padding:clamp(22px,3vw,46px) clamp(20px,3.5vw,56px)!important}}
+#app>.layout,#app>.layout>.main,#app>.layout>.sidebar{background-color:transparent}
