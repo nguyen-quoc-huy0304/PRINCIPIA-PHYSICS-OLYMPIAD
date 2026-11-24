@@ -3,7 +3,7 @@
  'use strict';
  const STORAGE='principia-living-companion-v1';
  const DEFAULTS={enabled:true,quiet:false,color:'#9b87ff',scale:1};
- let cfg=readSettings(),sceneState='idle',renderer=null,scene=null,camera=null,root=null,raf=0,hand=null,eyes=[],lastNudge=0,drag=null;
+ let cfg=readSettings(),lastNudge=0,drag=null,shellMaterials=[];
  const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
  function readSettings(){try{return {...DEFAULTS,...JSON.parse(localStorage.getItem(STORAGE)||'{}')}}catch(_){return {...DEFAULTS}}}
  function save(){try{localStorage.setItem(STORAGE,JSON.stringify(cfg))}catch(_){}}
@@ -13,15 +13,15 @@
   if(!canvas||!window.THREE)return false;
   try{
    const T=window.THREE;
-   renderer=new T.WebGLRenderer({canvas,alpha:true,antialias:true});
+   const renderer=new T.WebGLRenderer({canvas,alpha:true,antialias:true});
    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.7));
    renderer.setSize(canvas.clientWidth||300,canvas.clientHeight||300,false);
-   scene=new T.Scene();camera=new T.PerspectiveCamera(32,Math.max(.1,(canvas.clientWidth||300)/(canvas.clientHeight||300)),.1,100);camera.position.set(0,0,5.6);
+   const scene=new T.Scene(),camera=new T.PerspectiveCamera(32,Math.max(.1,(canvas.clientWidth||300)/(canvas.clientHeight||300)),.1,100);camera.position.set(0,0,5.6);
    scene.add(new T.HemisphereLight(0xffffff,0x392456,2.1));
    const light=new T.DirectionalLight(0xffffff,2.4);light.position.set(3,4,5);scene.add(light);
-   root=new T.Group();scene.add(root);
+   const root=new T.Group();scene.add(root);let hand=null,eyes=[];
    const mat=(color,metal=0.22,rough=.35)=>new T.MeshStandardMaterial({color,metalness:metal,roughness:rough});
-   const shell=mat(cfg.color),dark=mat('#201a39',.35),eye=mat('#dff8ff',.12,.18),accent=mat('#7ce8ff',.28,.2);
+   const shell=mat(cfg.color);shellMaterials.push(shell);const dark=mat('#201a39',.35),eye=mat('#dff8ff',.12,.18),accent=mat('#7ce8ff',.28,.2);
    const sphere=(name,scale,pos,m)=>{const o=new T.Mesh(new T.SphereGeometry(1,32,24),m);o.name=name;o.scale.set(...scale);o.position.set(...pos);root.add(o);return o};
    sphere('body',[.63,.72,.48],[0,-.35,0],shell);sphere('head',[.82,.72,.62],[0,.55,0],shell);
    sphere('face',[.63,.46,.12],[0,.52,.54],dark);
@@ -46,7 +46,7 @@
     if(eyes.length&&Math.sin(t*2.1)>0.994){eyes.forEach(e=>e.scale.y=.025)}else eyes.forEach(e=>e.scale.y=.15);
     renderer.render(scene,camera);raf=requestAnimationFrame(loop)
    };loop();return true;
-  }catch(err){console.warn('[PRINCIPIA Companion] 3D unavailable',err);renderer?.dispose();renderer=null;return false}
+  }catch(err){console.warn('[PRINCIPIA Companion] 3D unavailable',err);renderer?.dispose();return false}
  }
  function sphereIn(parent,scale,pos,m){const o=new window.THREE.Mesh(new window.THREE.SphereGeometry(1,20,16),m);o.scale.set(...scale);o.position.set(...pos);parent.add(o)}
  function initWelcome(){document.querySelectorAll('.plc-welcome-3d').forEach(el=>{if(el.dataset.ready)return;el.dataset.ready='1';const canvas=el.querySelector('canvas');loadThree().then(()=>createScene(canvas,'welcome')).catch(()=>{})})}
@@ -65,7 +65,7 @@
   dragElement(el);loadThree().then(()=>createScene(el.querySelector('canvas'),'floating')).catch(()=>{});
   scheduleNudge();
  }
- function openColorPicker(){const old=document.getElementById('plc-color-picker');if(old){old.remove();return}const p=document.createElement('div');p.id='plc-color-picker';p.className='plc-color-picker';['#9b87ff','#65d9ff','#79f0b4','#ffb86b','#ff80b7','#f1f5ff'].forEach(c=>{const b=document.createElement('button');b.style.background=c;b.title=c;b.setAttribute('aria-label','Màu '+c);b.addEventListener('click',()=>{cfg.color=c;save();p.remove();toast('Màu mới sẽ áp dụng sau khi tải lại companion')});p.appendChild(b)});document.body.appendChild(p)}
+ function openColorPicker(){const old=document.getElementById('plc-color-picker');if(old){old.remove();return}const p=document.createElement('div');p.id='plc-color-picker';p.className='plc-color-picker';['#9b87ff','#65d9ff','#79f0b4','#ffb86b','#ff80b7','#f1f5ff'].forEach(c=>{const b=document.createElement('button');b.style.background=c;b.title=c;b.setAttribute('aria-label','Màu '+c);b.addEventListener('click',()=>{cfg.color=c;shellMaterials.forEach(m=>m.color.set(c));save();p.remove();toast('Đã đổi màu companion')});p.appendChild(b)});document.body.appendChild(p)}
  function dragElement(el){const btn=el.querySelector('.plc-mascot');btn.addEventListener('pointerdown',e=>{if(e.target!==btn&& !e.target.closest('.plc-canvas'))return;drag={x:e.clientX,y:e.clientY,left:el.offsetLeft,top:el.offsetTop,moved:false};btn.setPointerCapture(e.pointerId});btn.addEventListener('pointermove',e=>{if(!drag)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.abs(dx)+Math.abs(dy)>7)drag.moved=true;if(!drag.moved)return;el.style.left=clamp(drag.left+dx,4,innerWidth-el.offsetWidth-4)+'px';el.style.top=clamp(drag.top+dy,4,innerHeight-el.offsetHeight-4)+'px';el.style.right='auto';el.style.bottom='auto'});btn.addEventListener('pointerup',()=>{if(drag?.moved){try{localStorage.setItem('principia_companion_position',JSON.stringify({left:el.style.left,top:el.style.top}))}catch(_){} }drag=null})}
  const hints=[
   'Thử chia bài toán thành dữ kiện, đại lượng cần tìm và định luật liên quan.',
