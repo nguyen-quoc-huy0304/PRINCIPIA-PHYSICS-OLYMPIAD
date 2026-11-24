@@ -65,6 +65,30 @@ for (const device of [
       startupError: document.getElementById('principiaStartupError')?.innerText || null,
       scripts: [...document.scripts].map(s => s.src).filter(Boolean)
     }));
+    const learningCheck = await page.evaluate(() => {
+      const logo = document.querySelector('.brand-logo-img,.principia-top-logo,.account-brand-logo');
+      const vault = window.PrincipiaComponentVault;
+      const expansion = window.PRINCIPIAVaultExpansion;
+      return {
+        studyMethodCount: window.principiaStudyMethodsCount?.().total ?? null,
+        vaultVariants: vault?.count ?? null,
+        vaultStructures: vault?.structures ?? null,
+        vaultSkins: vault?.skins ?? null,
+        expansionComponents: expansion?.components ?? null,
+        expansionSkins: expansion?.skins ?? null,
+        antLogo: Boolean(logo && /principia-ant-logo\.svg/.test(logo.getAttribute('src') || '')),
+        proMasteryReady: typeof window.PrincipiaProMastery?.open === 'function',
+        studyPlayerReady: typeof window.PrincipiaStudyPlayer?.pin === 'function'
+      };
+    });
+    pageState.learningCheck = learningCheck;
+    if (learningCheck.studyMethodCount !== 231 || learningCheck.vaultVariants !== 104468 ||
+        learningCheck.vaultStructures !== 574 || learningCheck.vaultSkins !== 182 ||
+        learningCheck.expansionComponents !== 22 || learningCheck.expansionSkins !== 157 ||
+        !learningCheck.antLogo || !learningCheck.proMasteryReady || !learningCheck.studyPlayerReady) {
+      hasFailure = true;
+    }
+
     const runtimeCheck = await page.evaluate(async () => {
       if (typeof window.principiaLaunchGame !== 'function') {
         return { available: false, reason: 'principiaLaunchGame is not loaded' };
