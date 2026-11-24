@@ -7,7 +7,7 @@
   const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
   const defaults={enabled:true,scene:'cosmos',intensity:0.72};
   let settings=readSettings(),canvas,ctx,raf=0,last=0,width=0,height=0,dpr=1,stars=[],pointer={x:0,y:0};
-  const scenes=['cosmos','aurora','grid','nebula','vortex','tunnel','particles','waves'];
+  const scenes=['cosmos','aurora','grid','nebula','vortex','tunnel','particles','waves','planet','moon','crystal','stardust','horizon','galaxy','rings','fluid'];
   function readSettings(){
     try{const v=JSON.parse(localStorage.getItem(KEY)||'{}');return{enabled:v.enabled!==false,scene:scenes.includes(v.scene)?v.scene:'cosmos',intensity:clamp(Number(v.intensity)||0.72,0.15,1)}}
     catch(_){return{...defaults}}
@@ -24,7 +24,7 @@
     check.addEventListener('change',()=>{settings.enabled=check.checked;persist();apply();});enabled.append(check,label);section.append(enabled);
     const selectLabel=document.createElement('label');selectLabel.textContent='Phong cách nền';
     const select=document.createElement('select');select.className='pr-3d-select';
-    [['cosmos','Vũ trụ quỹ đạo'],['aurora','Cực quang 3D'],['grid','Lưới không gian'],['nebula','Tinh vân chiều sâu'],['vortex','Hố đen hấp dẫn'],['tunnel','Đường hầm warp'],['particles','Mạng hạt 3D'],['waves','Sóng không gian 3D']].forEach(([value,text])=>{const o=document.createElement('option');o.value=value;o.textContent=text;select.append(o)});
+    [['cosmos','Vũ trụ quỹ đạo'],['aurora','Cực quang 3D'],['grid','Lưới không gian'],['nebula','Tinh vân chiều sâu'],['vortex','Hố đen hấp dẫn'],['tunnel','Đường hầm warp'],['particles','Mạng hạt 3D'],['waves','Sóng không gian 3D'],['planet','Hành tinh 3D'],['moon','Nguyệt thực'],['crystal','Tinh thể phát sáng'],['stardust','Mưa sao'],['horizon','Chân trời neon'],['galaxy','Thiên hà xoắn ốc'],['rings','Vành đai hành tinh'],['fluid','Dòng năng lượng']].forEach(([value,text])=>{const o=document.createElement('option');o.value=value;o.textContent=text;select.append(o)});
     select.value=settings.scene;select.addEventListener('change',()=>{settings.scene=select.value;persist();draw(performance.now(),true)});selectLabel.append(select);section.append(selectLabel);
     const intensityLabel=document.createElement('label');intensityLabel.textContent='Cường độ hiệu ứng';
     const range=document.createElement('input');range.type='range';range.min='0.15';range.max='1';range.step='0.05';range.value=String(settings.intensity);
@@ -128,9 +128,84 @@
       ctx.strokeStyle='rgba(104,205,226,'+(.08*settings.intensity)+')';ctx.lineWidth=.6;ctx.stroke();
     }
   }
+  function drawPlanet(t){
+    const cx=width*.72,cy=height*.46,r=Math.min(width,height)*.19;
+    glow(cx,cy,r*2.3,'rgba(75,135,255,ALPHA)',.17*settings.intensity);
+    const g=ctx.createRadialGradient(cx-r*.35,cy-r*.38,r*.08,cx,cy,r);
+    g.addColorStop(0,'rgba(105,198,229,.96)');g.addColorStop(.55,'rgba(49,99,183,.96)');g.addColorStop(1,'rgba(9,17,56,.98)');
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fill();
+    ctx.save();ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.clip();
+    for(let i=0;i<8;i++){const y=cy-r+i*r*.29+Math.sin(t*.0002+i)*8;ctx.strokeStyle='rgba(125,218,224,.12)';ctx.lineWidth=7+i%3*4;ctx.beginPath();ctx.moveTo(cx-r,y);ctx.bezierCurveTo(cx-r*.2,y-18,cx+r*.15,y+24,cx+r,y-8);ctx.stroke()}
+    ctx.restore();ctx.strokeStyle='rgba(158,199,255,.3)';ctx.lineWidth=1;ctx.beginPath();ctx.arc(cx,cy,r+2,0,Math.PI*2);ctx.stroke();
+    ctx.save();ctx.translate(cx,cy);ctx.rotate(-.28+t*.00004);ctx.strokeStyle='rgba(177,196,255,.55)';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(0,0,r*1.7,r*.43,0,0,Math.PI*2);ctx.stroke();ctx.restore();
+    stars.forEach(s=>{ctx.fillStyle='rgba(222,232,255,'+(.6*s.z*settings.intensity)+')';ctx.fillRect(s.x,s.y,s.r,s.r)});
+  }
+  function drawMoon(t){
+    const cx=width*.53,cy=height*.48,r=Math.min(width,height)*.2;
+    glow(cx,cy,r*2.1,'rgba(139,157,255,ALPHA)',.13*settings.intensity);
+    const g=ctx.createRadialGradient(cx-r*.45,cy-r*.38,r*.05,cx,cy,r);
+    g.addColorStop(0,'#e5e9f6');g.addColorStop(.7,'#8b91aa');g.addColorStop(1,'#24283e');
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fill();
+    ctx.save();ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.clip();
+    for(let i=0;i<18;i++){const x=cx+Math.sin(i*17.3)*r*.78,y=cy+Math.cos(i*9.1)*r*.78,cr=2+(i%5)*2;ctx.fillStyle='rgba(34,40,64,.13)';ctx.beginPath();ctx.arc(x,y,cr,0,Math.PI*2);ctx.fill();ctx.strokeStyle='rgba(255,255,255,.09)';ctx.stroke()}
+    ctx.restore();
+    const phase=(Math.sin(t*.00012)+1)/2;ctx.fillStyle='rgba(5,8,22,'+(.72*(1-phase)) +')';ctx.beginPath();ctx.arc(cx+r*(phase-.5)*1.4,cy,r*1.02,0,Math.PI*2);ctx.fill();
+    stars.forEach(s=>{ctx.fillStyle='rgba(226,232,255,'+(.5*s.z*settings.intensity)+')';ctx.fillRect(s.x,s.y,s.r,s.r)});
+  }
+  function drawCrystal(t){
+    const cx=width*.5,cy=height*.48,scale=Math.min(width,height)*.2;
+    glow(cx,cy,scale*2,'rgba(101,139,255,ALPHA)',.13*settings.intensity);
+    for(let i=0;i<9;i++){
+      const x=cx+(i-4)*scale*.2,top=cy-scale*(.65+(i%3)*.18),bottom=cy+scale*(.55+(i%2)*.1),w=scale*(.08+(i%3)*.025);
+      ctx.beginPath();ctx.moveTo(x,top);ctx.lineTo(x+w,bottom);ctx.lineTo(x-w,bottom);ctx.closePath();
+      const g=ctx.createLinearGradient(x-w,top,x+w,bottom);g.addColorStop(0,'rgba(91,193,255,.05)');g.addColorStop(.5,'rgba(179,158,255,'+(.3*settings.intensity)+')');g.addColorStop(1,'rgba(99,225,232,.08)');
+      ctx.fillStyle=g;ctx.fill();ctx.strokeStyle='rgba(194,205,255,.35)';ctx.stroke();
+    }
+    ctx.strokeStyle='rgba(137,180,255,.22)';ctx.beginPath();ctx.ellipse(cx,cy+scale*.58,scale*.65,scale*.16,0,0,Math.PI*2);ctx.stroke();
+  }
+  function drawStardust(t){
+    stars.forEach((s,i)=>{const speed=22+s.z*80,y=(s.y+t*.001*speed)%(height+20),x=s.x+Math.sin(t*.0003+s.phase)*18;
+      ctx.strokeStyle='rgba(190,213,255,'+(.18+s.z*.52)*settings.intensity+')';ctx.lineWidth=.5+s.z;
+      ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-2,y-5-s.z*12);ctx.stroke();
+    });
+  }
+  function drawHorizon(t){
+    const horizon=height*.58;
+    const g=ctx.createLinearGradient(0,horizon-80,0,height);g.addColorStop(0,'rgba(103,73,190,0)');g.addColorStop(.35,'rgba(99,108,255,'+(.13*settings.intensity)+')');g.addColorStop(1,'rgba(8,15,42,.2)');
+    ctx.fillStyle=g;ctx.fillRect(0,horizon-100,width,height-horizon+100);
+    ctx.strokeStyle='rgba(155,135,255,'+(.3*settings.intensity)+')';ctx.lineWidth=1.3;ctx.beginPath();
+    for(let x=0;x<=width;x+=8){const y=horizon+Math.sin(x*.006+t*.0005)*13+Math.sin(x*.013-t*.0003)*7;if(x===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)}ctx.stroke();
+    for(let i=0;i<16;i++){const p=(i/16+(t*.00008)%1)%1,y=horizon+p*p*(height-horizon);ctx.strokeStyle='rgba(111,155,255,'+((1-p)*.18*settings.intensity)+')';ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(width,y);ctx.stroke()}
+  }
+  function drawGalaxy(t){
+    const cx=width*.5,cy=height*.48,arms=4,spin=t*.00012;
+    glow(cx,cy,Math.min(width,height)*.34,'rgba(127,101,255,ALPHA)',.17*settings.intensity);
+    for(let i=0;i<420;i++){const arm=i%arms,progress=i/420,angle=progress*15+arm*Math.PI*2/arms+spin,r=progress*Math.min(width,height)*.38;
+      const spread=(Math.random()-.5)*Math.max(2,r*.08),x=cx+Math.cos(angle)*r+Math.cos(angle+Math.PI/2)*spread,y=cy+Math.sin(angle)*r+Math.sin(angle+Math.PI/2)*spread;
+      ctx.fillStyle='rgba('+(i%3?'171,183,255':'255,204,235')+','+((1-progress)*.6*settings.intensity)+')';ctx.fillRect(x,y,.8+progress*1.2,.8+progress*1.2);
+    }
+  }
+  function drawRings(t){
+    const cx=width*.58,cy=height*.5,r=Math.min(width,height)*.2;
+    glow(cx,cy,r*2.2,'rgba(95,139,255,ALPHA)',.12*settings.intensity);
+    ctx.fillStyle='rgba(52,81,153,.88)';ctx.beginPath();ctx.arc(cx,cy,r*.52,0,Math.PI*2);ctx.fill();
+    const bands=12;
+    for(let i=0;i<bands;i++){ctx.save();ctx.translate(cx,cy);ctx.rotate(-.3);ctx.scale(1,.28);
+      ctx.strokeStyle='rgba('+(i%2?'147,178,255':'208,190,255')+','+(.12+i*.018)*settings.intensity+')';ctx.lineWidth=2+i%3;
+      ctx.beginPath();ctx.arc(0,0,r*(.72+i*.075),0,Math.PI*2);ctx.stroke();ctx.restore()}
+    ctx.save();ctx.translate(cx,cy);ctx.scale(1,.28);ctx.fillStyle='rgba(4,8,23,.92)';ctx.beginPath();ctx.arc(0,0,r*.5,0,Math.PI*2);ctx.fill();ctx.restore();
+  }
+  function drawFluid(t){
+    const bands=22;
+    for(let i=0;i<bands;i++){const y=height*(i/(bands-1)),phase=t*.00035+i*.24;ctx.beginPath();
+      for(let x=0;x<=width;x+=8){const yy=y+Math.sin(x*.004+phase)*18+Math.cos(x*.009-phase*1.3)*9;if(x===0)ctx.moveTo(x,yy);else ctx.lineTo(x,yy)}
+      ctx.strokeStyle='rgba('+(i%2?'91,178,229':'160,132,255')+','+(.07+i/bands*.12)*settings.intensity+')';ctx.lineWidth=.8+i/bands;ctx.stroke();
+    }
+    glow(width*.32,height*.42,Math.min(width,height)*.3,'rgba(86,169,235,ALPHA)',.08*settings.intensity);
+  }
   function draw(t=0,staticFrame=false){
     if(!ctx)return;ctx.clearRect(0,0,width,height);
-    if(settings.enabled){if(settings.scene==='cosmos')drawCosmos(t);else if(settings.scene==='aurora')drawAurora(t);else if(settings.scene==='grid')drawGrid(t);else if(settings.scene==='vortex')drawVortex(t);else if(settings.scene==='tunnel')drawTunnel(t);else if(settings.scene==='particles')drawParticles(t);else if(settings.scene==='waves')drawWaves(t);else drawNebula(t)}
+    if(settings.enabled){if(settings.scene==='cosmos')drawCosmos(t);else if(settings.scene==='aurora')drawAurora(t);else if(settings.scene==='grid')drawGrid(t);else if(settings.scene==='vortex')drawVortex(t);else if(settings.scene==='tunnel')drawTunnel(t);else if(settings.scene==='particles')drawParticles(t);else if(settings.scene==='waves')drawWaves(t);else if(settings.scene==='planet')drawPlanet(t);else if(settings.scene==='moon')drawMoon(t);else if(settings.scene==='crystal')drawCrystal(t);else if(settings.scene==='stardust')drawStardust(t);else if(settings.scene==='horizon')drawHorizon(t);else if(settings.scene==='galaxy')drawGalaxy(t);else if(settings.scene==='rings')drawRings(t);else if(settings.scene==='fluid')drawFluid(t);else drawNebula(t)}
     if(!staticFrame&&settings.enabled&&!reduced&&!document.hidden)raf=requestAnimationFrame(draw);
   }
   function stop(){if(raf)cancelAnimationFrame(raf);raf=0}
