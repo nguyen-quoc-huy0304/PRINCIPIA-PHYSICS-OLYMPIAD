@@ -75,3 +75,9 @@
  #app button[data-pr-ui-button]::before,.pr-ref-thinking::after,.pr-ref-progress::after{animation:none!important;transition:none!important}
  #app .tile[data-pr-ui-card],#app .stat[data-pr-ui-card]{transform:none!important}
 }
+
+/* Scroll reveal for cards marked by the reference UI layer. */
+@media(prefers-reduced-motion:no-preference){
+ #app .pr-motion-item{opacity:0;transform:translate3d(0,14px,0);transition:opacity .55s var(--pr-ref-motion),transform .55s var(--pr-ref-motion)}
+ #app .pr-motion-item.pr-in-view{opacity:1;transform:translate3d(0,0,0)}
+}
