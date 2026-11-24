@@ -427,6 +427,7 @@
  window.PrincipiaCanvaEditor={importState,exportState,addText,addImageFile,setMode};
  load();
  connectSiteEditor();
+ document.addEventListener('principia:auth-state-changed',()=>{if(isAdmin()){connectSiteEditor();installToolbarControls();applyPageLayout();renderObjects()}else setMode(false)});
  document.addEventListener('principia:rendered',()=>{
   setTimeout(()=>{connectSiteEditor();installToolbarControls();applyPageLayout();renderObjects()},0);
  });
