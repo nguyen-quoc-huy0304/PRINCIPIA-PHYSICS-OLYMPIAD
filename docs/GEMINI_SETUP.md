@@ -28,10 +28,10 @@ Enter each value when prompted. Do not commit either value to Git.
 
 1. The signed-in Firebase user obtains an ID token.
 2. `POST /api/ai` verifies that token through Firebase Identity Toolkit.
-3. Cloudflare Pages Function sends the prompt to `gemini-2.5-flash` using the server-side `GEMINI_API_KEY`.
-4. The response is returned to the browser. The key is never sent to the client.
+3. Cloudflare Pages Function sends the prompt to `gemini-3.5-flash-lite` using the server-side `GEMINI_API_KEY`.
+4. The response is returned to the browser. The key is never sent to the client. Gemini 3.5 Flash-Lite is selected for its published Free Tier text input/output availability; Free Tier quotas are limited and can change.
 
-The API rejects anonymous requests, cross-origin browser requests, oversized payloads, malformed messages and unsupported roles. Apply Cloudflare rate limiting/WAF rules to `/api/ai` before opening broad public usage. Monitor Google AI Studio quotas and billing.
+The API rejects anonymous requests, cross-origin browser requests, oversized payloads, malformed messages and unsupported roles. Apply Cloudflare rate limiting/WAF rules to `/api/ai` before opening broad public usage. Monitor Google AI Studio quotas and billing. Free Tier prompts may be used by Google to improve products. Never submit student names, email addresses, account identifiers, health information or other sensitive/personal data. Send only the minimum study content needed for a task.
 
 ## Features routed through the shared provider
 
