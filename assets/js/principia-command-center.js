@@ -163,8 +163,32 @@
   button.classList.toggle('is-visible',visible);
  }
 
+ function mountEditorTools(){
+  const panel=document.getElementById('proSiteEditorPanel');
+  if(!panel||panel.querySelector('[data-principia-extra-tools]'))return;
+  const section=document.createElement('section');
+  section.dataset.principiaExtraTools='true';
+  section.style.cssText='margin-top:10px;padding-top:9px;border-top:1px solid rgba(255,255,255,.16)';
+  const heading=document.createElement('strong');
+  heading.textContent='Tiện ích bổ sung';
+  heading.style.cssText='display:block;margin-bottom:7px;font-size:12px';
+  const palette=document.createElement('button');
+  palette.type='button';palette.textContent='⌘ Trung tâm lệnh';
+  palette.title='Tìm nhanh khu vực và thao tác trong PRINCIPIA';
+  palette.style.cssText='display:block;width:100%;margin:0 0 6px';
+  palette.addEventListener('click',openPalette);
+  const top=document.createElement('button');
+  top.type='button';top.textContent='↑ Lên đầu trang';
+  top.title='Cuộn về đầu trang';
+  top.style.cssText='display:block;width:100%';
+  top.addEventListener('click',scrollToTop);
+  section.append(heading,palette,top);
+  const status=panel.querySelector('[data-status]');
+  if(status)panel.insertBefore(section,status);else panel.appendChild(section);
+ }
+
  function mount(){
-  mountTrigger();mountBackTop();updateBackTop();
+  mountEditorTools();
  }
 
  document.addEventListener('keydown',event=>{
@@ -173,8 +197,6 @@
   }
   if(event.key==='Escape')closePalette();
  });
- window.addEventListener('scroll',updateBackTop,{passive:true});
- document.addEventListener('scroll',updateBackTop,{passive:true,capture:true});
  document.addEventListener('principia:page-changed',mount);
  document.addEventListener('principia:rendered',mount);
  const observer=new MutationObserver(mount);
