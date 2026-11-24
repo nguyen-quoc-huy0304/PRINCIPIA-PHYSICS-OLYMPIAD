@@ -1,0 +1,18 @@
+/* PRINCIPIA procedural 3D atmosphere. Canvas is decorative and never intercepts input. */
+#principia3DAtmosphere{
+ position:fixed;inset:0;z-index:0;display:block;width:100%;height:100%;
+ pointer-events:none;opacity:0;transition:opacity .8s ease;
+}
+html.pr-3d-background-on #principia3DAtmosphere{opacity:1}
+#app{position:relative;z-index:1}
+#app #principia3DAtmosphere{position:fixed;z-index:-1}
+.pr-3d-settings{display:grid;gap:9px;margin-top:12px;padding:12px 0 5px;border-top:1px solid rgba(174,155,255,.22);font-size:12px}
+.pr-3d-settings>strong{font-size:12px;letter-spacing:.02em}
+.pr-3d-settings label{display:grid;gap:6px;line-height:1.4}
+.pr-3d-settings .pr-3d-toggle{display:flex;align-items:center;gap:9px;cursor:pointer}
+.pr-3d-settings input[type=checkbox]{width:16px;height:16px;accent-color:#9c87f5}
+.pr-3d-settings input[type=range]{width:100%;accent-color:#9c87f5}
+.pr-3d-select{width:100%;min-height:36px;padding:7px 9px;border:1px solid rgba(174,155,255,.3);border-radius:9px;background:var(--bg-2,#191a2a);color:inherit}
+.pr-3d-settings small{opacity:.7;line-height:1.5}
+@media(max-width:760px){#principia3DAtmosphere{opacity:.72}#app #principia3DAtmosphere{z-index:-1}}
+@media(prefers-reduced-motion:reduce){#principia3DAtmosphere{transition:none}}
