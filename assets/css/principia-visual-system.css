@@ -293,3 +293,51 @@ html[data-theme="light"] #app #principia3DAtmosphere{opacity:.09!important}
 .pr-world-settings select{width:100%;min-height:38px;padding:8px 10px}
 .pr-world-settings small{color:var(--muted);font-size:11px;line-height:1.5}
 @media(prefers-reduced-motion:reduce){#principiaDimensionalWorld{display:none!important}}
+
+/* AI workspaces and rich controls — Kokonut/Libraries.dev-inspired patterns. */
+#app .chat-box,#app .ai-chat-panel,#app .ai-chat-window{
+ background:linear-gradient(155deg,rgba(17,29,57,.97),rgba(7,15,32,.97))!important;
+ border:1px solid rgba(164,179,241,.25)!important;border-radius:22px!important;
+ box-shadow:0 28px 85px rgba(0,0,0,.42),inset 0 1px rgba(255,255,255,.07)!important;
+ -webkit-backdrop-filter:blur(28px) saturate(145%);backdrop-filter:blur(28px) saturate(145%);
+}
+#app .chat-msgs{gap:12px!important;padding:16px!important}
+#app .m-user{
+ color:#fff!important;background:linear-gradient(125deg,#7969df,#477fb4)!important;
+ border:1px solid rgba(202,196,255,.2);border-radius:17px 17px 5px 17px!important;
+ box-shadow:0 8px 22px rgba(71,91,190,.18);line-height:1.6;
+}
+#app .m-ai{
+ color:#e7efff!important;background:linear-gradient(145deg,rgba(37,52,84,.78),rgba(19,33,61,.88))!important;
+ border:1px solid rgba(158,180,239,.17)!important;border-radius:17px 17px 17px 5px!important;line-height:1.65;
+}
+#app .ai-cheploi-box{background:linear-gradient(145deg,rgba(29,44,79,.8),rgba(14,27,53,.78))!important;border-color:rgba(164,181,240,.22)!important;border-radius:16px!important}
+#app .chat-box input,#app .chat-box textarea{background:rgba(5,13,29,.8)!important}
+#app .chat-box button,#app .ai-chat-panel button{border-radius:11px}
+#app .pr-ref-thinking{color:#d8d2ff}
+#app .pr-ref-thinking::after{filter:drop-shadow(0 0 5px rgba(158,153,255,.7))}
+#proSiteEditorPanel{
+ background:linear-gradient(155deg,rgba(17,27,53,.97),rgba(7,14,30,.98))!important;
+ border:1px solid rgba(167,177,245,.28)!important;border-radius:20px!important;
+ box-shadow:0 28px 85px rgba(0,0,0,.48),inset 0 1px rgba(255,255,255,.08)!important;
+ -webkit-backdrop-filter:blur(26px) saturate(145%)!important;backdrop-filter:blur(26px) saturate(145%)!important;
+}
+#proSiteEditorPanel :is(button,input,select,textarea){border-radius:10px}
+#app :is(.badge,.tag,.chip,.status-chip,.filter-chip){
+ border:1px solid rgba(159,180,239,.2);border-radius:999px;
+ background:rgba(90,103,163,.14);color:#cbd8f4;
+}
+#app :is(.accordion,details,.faq-item){border-color:rgba(153,177,236,.18);border-radius:14px}
+#app :is(.accordion,details,.faq-item)>summary{cursor:pointer;padding:12px 14px}
+#app :is(.profile-card,.user-card,.timeline-surface,.calendar-surface,.chart-surface){
+ border:1px solid rgba(153,177,236,.18);border-radius:17px;
+ background:linear-gradient(145deg,rgba(21,35,66,.78),rgba(12,23,46,.76));
+}
+#app table{border-collapse:separate;border-spacing:0;overflow:hidden;border:1px solid rgba(153,177,236,.18);border-radius:14px}
+#app th{background:rgba(104,113,185,.16);color:#e3eaff}
+#app td,#app th{padding:10px 12px;border-bottom:1px solid rgba(153,177,236,.12)}
+html[data-theme="light"] #app .m-user{color:#fff!important}
+html[data-theme="light"] #app .m-ai{color:#2c3a58!important;background:linear-gradient(145deg,rgba(255,255,255,.95),rgba(234,241,253,.95))!important;border-color:rgba(90,114,165,.2)!important}
+html[data-theme="light"] #app .chat-box,html[data-theme="light"] #app .ai-chat-panel,html[data-theme="light"] #app .ai-chat-window{background:rgba(248,251,255,.97)!important}
+html[data-theme="light"] #proSiteEditorPanel{background:rgba(248,251,255,.98)!important;color:#23304b!important}
+html[data-theme="light"] #proSiteEditorPanel :is(input,textarea,select){background:#fff!important;color:#23304b!important}
