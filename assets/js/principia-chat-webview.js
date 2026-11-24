@@ -99,7 +99,7 @@
   }
   if(typeof window.selectPrincipiaAI==='function'&&!window.selectPrincipiaAI.__principiaEmbedded){
    const select=window.selectPrincipiaAI;
-   const replacement=function(id){select(id);openSelected();};
+   const replacement=function(id){const result=select(id);if(document.getElementById(IDS.chat)?.classList.contains('open'))openSelected();return result;};
    replacement.__principiaEmbedded=true;
    window.selectPrincipiaAI=replacement;
   }
