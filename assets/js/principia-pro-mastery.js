@@ -83,7 +83,7 @@
   function close() {
     const root = document.getElementById('principiaProMastery');
     if (root) root.style.display = 'none';
-    stopTimer(false);
+    if (timer.running) { timer.remaining = Math.max(0, Math.ceil((timer.endAt - Date.now()) / 1000)); stopTimer(true); }
     document.removeEventListener('keydown', escapeHandler);
   }
   function escapeHandler(event) { if (event.key === 'Escape') close(); }
@@ -294,10 +294,13 @@
     canvas.width = Math.round(rect.width * ratio); canvas.height = Math.round(rect.height * ratio);
     const ctx = canvas.getContext('2d');
     ctx.scale(ratio, ratio); ctx.lineWidth = 2.5; ctx.lineCap = 'round'; ctx.strokeStyle = '#172033';
-    canvas.addEventListener('pointerdown', startDraw);
-    canvas.addEventListener('pointermove', draw);
-    canvas.addEventListener('pointerup', endDraw);
-    canvas.addEventListener('pointercancel', endDraw);
+    if (canvas.dataset.bound !== '1') {
+      canvas.addEventListener('pointerdown', startDraw);
+      canvas.addEventListener('pointermove', draw);
+      canvas.addEventListener('pointerup', endDraw);
+      canvas.addEventListener('pointercancel', endDraw);
+      canvas.dataset.bound = '1';
+    }
   }
   function point(event) {
     const rect = canvas.getBoundingClientRect();
