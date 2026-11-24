@@ -17,6 +17,7 @@
   nodes.forEach(node=>{
    if(node.closest(EXCLUDED)||node.dataset.prUiCard==='1')return;
    node.dataset.prUiCard='1';
+   if(!reduce)node.classList.add('pr-motion-item');
   });
   root.querySelectorAll?.('#app button:not([data-pr-ui-button])').forEach(button=>{
    if(button.closest(EXCLUDED)||button.closest('.principia-mobile-nav'))return;
