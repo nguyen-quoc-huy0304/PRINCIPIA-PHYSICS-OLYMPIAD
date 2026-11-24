@@ -20,3 +20,8 @@
 #principia-component-vault .pr-vault-item>a{justify-self:start}
 @media(max-width:560px){#principia-component-vault .pr-vault-controls{grid-template-columns:1fr 1fr}#principia-component-vault .pr-vault-controls input{grid-column:1/-1}#principia-component-vault .pr-vault-grid{grid-template-columns:1fr;max-height:48vh}}
 @media(prefers-reduced-motion:reduce){#principia-component-vault *{animation:none!important;transition:none!important}}
+
+#principia-component-vault .pr-vault-pager{display:flex;align-items:center;justify-content:center;gap:12px;padding:8px 0}
+#principia-component-vault .pr-vault-pager button{padding:7px 12px;border:1px solid rgba(169,149,255,.28);border-radius:8px;color:inherit;background:rgba(145,125,255,.12);font:11px system-ui;cursor:pointer}
+#principia-component-vault .pr-vault-pager button:disabled{opacity:.38;cursor:not-allowed}
+#principia-component-vault .pr-vault-pager span{color:var(--muted,#999);font-size:10px;font-variant-numeric:tabular-nums}
