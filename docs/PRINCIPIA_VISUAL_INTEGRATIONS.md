@@ -13,7 +13,7 @@ This repository is a static HTML/CSS/JavaScript application. The reference proje
 | [UI/UX Pro Max](https://devanshutak25.github.io/ui-ux-ref/) | Design tokens, color hierarchy, responsive layouts, typography and accessibility rules. |
 | [FeralUI](https://feralui.dev/) | Magnetic pointer response and spring-like interaction on desktop; touch and reduced-motion fallbacks. |
 | [Anime.js](https://animejs.com/) | Vendored Anime.js 4.5.0 UMD runtime used directly for route transitions and button press feedback. |
-| [favico.js](https://lab.ejci.net/favico.js/) | Dynamic favicon badge/status API reuses PRINCIPIA’s existing SVG data-URI badge implementation. No favico.js package is bundled. |
+| [favico.js](https://lab.ejci.net/favico.js/) | Vendored favico.js 0.3.10 is used directly for animated notification badges, with the existing SVG fallback. |
 | [Hairline](https://hairline.lucasmarkes.com/) | Pointer-responsive isometric SVG figure in the lab header, using native SVG/CSS. |
 | [Koboyo page-mascot](https://koboyo.com/page-mascot) | Pointer gaze response is attached only to the existing PRINCIPIA bundled pose element; no character sheets are replaced. |
 | [Lucian UX/UI Prompt](https://lucianlabs.dev/en/uxui-prompt/) | Interactive, self-contained workbench patterns, light/dark mapping and save/copy/export actions. |
@@ -28,12 +28,12 @@ The preview uses an iframe with sandbox=allow-scripts and no allow-same-origin. 
 ## Runtime and compatibility
 
 - No React or Tailwind migration.
-- No new external runtime dependencies.
+- Anime.js 4.5.0 and favico.js 0.3.10 are vendored locally; no runtime CDN dependency.
 - WebGL and pointer effects are progressive enhancements.
 - Mobile layouts avoid hover-only controls.
 - prefers-reduced-motion is respected.
 - Existing three-button launcher, editor, M3E workspace, lab solvers and theme switch remain separate.
-- The reference sites are design/behavior references; not every upstream component or asset is imported.
+- The reference sites are design/behavior references; directly compatible open-source source is vendored, while React-only components are adapted rather than importing an incompatible framework stack.
 
 ## Directly vendored libraries
 
