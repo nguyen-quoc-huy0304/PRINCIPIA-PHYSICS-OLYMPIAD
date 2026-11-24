@@ -92,7 +92,9 @@
  function initGL(){
   gl=canvas.getContext('webgl',{alpha:true,antialias:false,powerPreference:'low-power',depth:false,stencil:false,premultipliedAlpha:false});
   if(!gl)return false;
-  const vs=compile(gl.VERTEX_SHADER,vertex),fs=compile(gl.FRAGMENT_SHADER,fragment);
+  const precision=gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER,gl.HIGH_FLOAT);
+  const fragmentSource=precision&&precision.precision>0?fragment:fragment.replace('precision highp float;','precision mediump float;');
+  const vs=compile(gl.VERTEX_SHADER,vertex),fs=compile(gl.FRAGMENT_SHADER,fragmentSource);
   program=gl.createProgram();gl.attachShader(program,vs);gl.attachShader(program,fs);gl.linkProgram(program);
   if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw new Error(gl.getProgramInfoLog(program)||'WebGL program link failed');
   gl.useProgram(program);buffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buffer);
@@ -150,6 +152,8 @@
   document.body.prepend(canvas);
   try{if(!initGL())throw new Error('WebGL unavailable')}catch(error){failed=true;canvas.remove();console.warn('[PRINCIPIA] 3D WebGL fallback:',error.message);return}
   resize();addEventListener('resize',resize,{passive:true});
+  canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();if(raf)cancelAnimationFrame(raf);raf=0;canvas.style.opacity='0'},{passive:false});
+  canvas.addEventListener('webglcontextrestored',()=>{try{initGL();resize();apply()}catch(error){failed=true;canvas.style.opacity='0';console.warn('[PRINCIPIA] 3D context restore failed',error.message)}},{passive:true});
   if(matchMedia('(pointer:fine)').matches)addEventListener('pointermove',event=>{pointer.x=clamp((event.clientX/innerWidth-.5)*2,-1,1);pointer.y=clamp((.5-event.clientY/innerHeight)*2,-1,1)},{passive:true});
   document.addEventListener('visibilitychange',()=>{if(document.hidden){if(raf)cancelAnimationFrame(raf);raf=0}else apply()});
   const observer=new MutationObserver(mountSettings);observer.observe(document.body,{childList:true,subtree:true});
