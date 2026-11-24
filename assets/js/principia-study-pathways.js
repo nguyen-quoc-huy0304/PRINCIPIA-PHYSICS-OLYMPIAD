@@ -60,7 +60,7 @@
       return keywords.some(keyword => text.includes(keyword));
     }).slice(0, 12);
     const candidates = [...new Map([...topicMethods, ...coreMethods].map(item => [item.id, item])).values()].slice(0, 18);
-    const methodContext = candidates.map(item => '- ' + item.title + ' [' + item.category + ']: ' + item.desc).join('\n');
+    const methodContext = candidates.map(item => '- ' + item.title + ' [' + item.category + ']: ' + item.desc).join('\n').slice(0, 3500);
     const prompt = [
       'Thiết kế lộ trình học Vật lý thực tế trong ' + duration + ' phút.',
       'Chủ đề: ' + topic + '. Mục tiêu: ' + goalNames[goal] + '.',
@@ -70,6 +70,8 @@
       'Nếu mục tiêu là Olympic, có ít nhất một nhiệm vụ nhận diện cấu trúc, chọn định luật, kiểm tra giả thiết hoặc chứng minh. Nếu mục tiêu là học bằng cách giảng dạy, có một nhiệm vụ chuẩn bị lời giảng và câu hỏi cho AI Student.',
       'Không tiết lộ tên phương pháp. Không bịa nguồn khoa học, không hứa đảm bảo điểm số. Trả về DUY NHẤT JSON hợp lệ theo schema: {"summary":"mô tả ngắn","tasks":[{"title":"...","topic":"...","minutes":15,"dayOffset":0,"note":"đầu ra cần hoàn thành"}]}. Không thêm markdown.'
     ].join('\n');
+    generatedPlan = null;
+    panel.querySelector('[data-save-plan]').disabled = true;
     button.disabled = true; setStatus('Đang gửi yêu cầu tới Google Gemini…'); output.textContent = 'PRINCIPIA đang xây dựng lộ trình…';
     try {
       const answer = await window.principiaAI.ask(prompt);
