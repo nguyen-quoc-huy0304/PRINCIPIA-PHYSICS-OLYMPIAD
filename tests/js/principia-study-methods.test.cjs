@@ -77,11 +77,15 @@ test('advanced catalog adds 1,640 topic-specific playbooks from 41 strategies ac
   assert.match(source, /methods.length !== 41 \|\| out.length !== 1640/);
   assert.match(source, /window\.PRINCIPIA_STUDY_METHOD_ADVANCED_PLAYBOOKS = out/);
   assert.match(read('assets/js/principia-study-methods.js'), /methods\.push\(\.\.\.window\.PRINCIPIA_STUDY_METHOD_ADVANCED_PLAYBOOKS\)/);
+  assert.match(read('assets/js/principia-study-methods.js'), /window\.PRINCIPIA_STUDY_METHOD_CATALOG = methods/);
+  assert.match(source, /const id = 1472 \+ out\.length/);
   assert.match(read('index.html'), /principia-study-methods-advanced\.js/);
 });
 test('guided pathways connect Gemini, virtual classroom and Study With Me', () => {
   const source = read('assets/js/principia-study-pathways.js');
   assert.match(source, /window\.principiaAI\?\.ask/);
+  assert.match(source, /window\.PRINCIPIA_STUDY_METHOD_CATALOG/);
+  assert.match(source, /methodContext = candidates\.map/);
   assert.match(source, /PrincipiaProMastery\.open\('classroom'\)/);
   assert.match(source, /PrincipiaProMastery\.open\('study'\)/);
   assert.match(read('index.html'), /principia-study-pathways\.js/);
