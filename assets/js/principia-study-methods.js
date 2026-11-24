@@ -9,6 +9,7 @@ if(Array.isArray(window.PRINCIPIA_STUDY_METHOD_PLAYBOOKS)){
 if(Array.isArray(window.PRINCIPIA_STUDY_METHOD_ADVANCED_PLAYBOOKS)){
   methods.push(...window.PRINCIPIA_STUDY_METHOD_ADVANCED_PLAYBOOKS);
 }
+window.PRINCIPIA_STUDY_METHOD_CATALOG = methods;
 const KEY='principia_study_methods_v1';
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let state={done:[],saved:[]};try{state=Object.assign(state,JSON.parse(localStorage.getItem(KEY)||'{}'))}catch(_){}
