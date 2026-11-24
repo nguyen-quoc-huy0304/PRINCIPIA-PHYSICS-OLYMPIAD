@@ -128,5 +128,6 @@ test('invisible learning orchestrator adapts to learner results without exposing
   assert.match(read('index.html'), /principia-learning-orchestrator\.js/);
   assert.match(read('assets/js/principia-adaptive-learning.js'), /data-ppa-guided/);
   assert.match(read('assets/js/principia-pro-mastery.js'), /data-guided-study/);
+  assert.match(read('assets/js/principia-pro-mastery.js'), /data-guided-next/);
   assert.match(read('assets/js/principia-pro-mastery.js'), /Hướng dẫn sư phạm nội bộ/);
 });
