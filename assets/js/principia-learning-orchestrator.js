@@ -121,12 +121,18 @@
     return 'Bắt đầu bằng hình dung hiện tượng, xác định giả thiết rồi mới đi vào công thức.';
   }
 
-  function promptFor(plan, extra = '') {
+  function promptFor(plan, extra = '', context = {}) {
     const steps = plan.steps.map((step, index) => (index + 1) + '. ' + step).join('\n');
+    const science = window.PrincipiaLearningScience?.directive?.({
+      topic: plan.topic, goal: plan.goal, energy: plan.energy, confidence: plan.confidence,
+      percent: context.percent, errorCount: context.errorCount, fatigue: context.fatigue,
+      distracted: context.distracted, minutes: plan.estimatedMinutes, phase: context.phase
+    }) || '';
     return [
       'Bạn là gia sư PRINCIPIA. Hãy áp dụng quy trình sư phạm sau một cách tự nhiên, tuyệt đối không nêu tên phương pháp hay nói về thuật toán chọn phương pháp.',
       'Chủ đề: ' + plan.topic + '. Mục tiêu: ' + plan.goal + '. Thời lượng khởi điểm: ' + plan.estimatedMinutes + ' phút. Mức năng lượng: ' + plan.energy + '/3.',
       'Các bước hướng dẫn nội bộ:\n' + steps,
+      science,
       'Dẫn dắt từng bước, chỉ hỏi một câu tại một thời điểm. Chờ người học trả lời rồi mới phản hồi. Không tiết lộ đáp án cuối trước khi người học tự thử. Khi người học sai, xác định chính xác lỗ hổng và giảm độ khó; khi làm tốt, tăng thử thách hoặc đổi cách biểu diễn.',
       clean(extra, 1800)
     ].filter(Boolean).join('\n\n');
@@ -182,7 +188,7 @@
       state.recent = state.recent.slice(-MAX_RECENT);
     }
     save();
-    const prompt = promptFor(plan, context.extra || '');
+    const prompt = promptFor(plan, context.extra || '', context);
     if (window.principiaLocalAI?.open) window.principiaLocalAI.open(prompt);
     else if (window.principiaSuiteAI) window.principiaSuiteAI();
     else if (window.notify) window.notify('Trợ lý học tập đang khởi động. Hãy thử lại sau.');
@@ -192,7 +198,7 @@
 
   function directive(context = {}) {
     const plan = getNext(context);
-    return promptFor(plan, 'Tích hợp cách dẫn dắt này vào vai trò hiện tại mà không nhắc tên kỹ thuật học tập.');
+    return promptFor(plan, 'Tích hợp cách dẫn dắt này vào vai trò hiện tại mà không nhắc tên kỹ thuật học tập.', context);
   }
 
   function startFocus() {
