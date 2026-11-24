@@ -77,7 +77,7 @@
   function readOverrides(){
     try{
       const saved=JSON.parse(localStorage.getItem(OVERRIDE_KEY)||'{}');
-      return Object.fromEntries(Object.entries(saved).filter(([slot,icon])=>SLOT_KEYS.includes(slot)&&ICONS[icon]));
+      return Object.fromEntries(Object.entries(saved).filter(([slot,icon])=>SLOT_KEYS.includes(slot)&&Object.prototype.hasOwnProperty.call(ICONS,icon)));
     }catch(_){return {}}
   }
   let overrides=readOverrides();
@@ -92,7 +92,7 @@
   function applyOverrides(){
     document.querySelectorAll('#app [data-pr-icon-done="1"]').forEach(node=>{
       const icon=choose(labelOf(node));
-      if(!icon||!ICONS[icon])return;
+      if(!icon||!Object.prototype.hasOwnProperty.call(ICONS,icon))return;
       const svg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+ICONS[icon]+'</svg>';
       const holder=node.querySelector(':scope > .nav-default-icon');
       const live=node.querySelector(':scope > .pr-live-icon');
@@ -104,7 +104,7 @@
     const safe={};
     if(next&&typeof next==='object'){
       Object.entries(next).forEach(([slot,icon])=>{
-        if(SLOT_KEYS.includes(slot)&&ICONS[icon]&&icon!==slot)safe[slot]=icon;
+        if(SLOT_KEYS.includes(slot)&&Object.prototype.hasOwnProperty.call(ICONS,icon)&&icon!==slot)safe[slot]=icon;
       });
     }
     overrides=safe;
@@ -119,7 +119,7 @@
     for (const node of nodes) {
       if (node.dataset.prIconDone || node.closest('#proSiteEditorPanel,.principia-mobile-nav,[data-pr-no-icon]')) continue;
       const icon = choose(labelOf(node));
-      if (!icon || !ICONS[icon]) continue;
+      if (!icon || !Object.prototype.hasOwnProperty.call(ICONS,icon)) continue;
       const svg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+ICONS[icon]+'</svg>';
       const navHolder=node.querySelector(':scope > .nav-default-icon');
       if(navHolder){
@@ -163,7 +163,7 @@
       slots:Object.freeze(SLOT_KEYS.map(key=>Object.freeze({key,label:key}))),
       getOverrides(){return {...overrides}},
       setOverrides,
-      getSvg(name){return ICONS[name]?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+ICONS[name]+'</svg>':'';}
+      getSvg(name){return Object.prototype.hasOwnProperty.call(ICONS,name)?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+ICONS[name]+'</svg>':'';}
     });
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
