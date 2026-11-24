@@ -40,7 +40,7 @@ function renderResults(){
 window.principiaStudyMethodAI=id=>{
  const item=methods.find(method=>method.id===Number(id));
  if(!item)return;
- const steps=Array.isArray(item.steps)?item.steps.join('\\n- '):'';
+ const steps=Array.isArray(item.steps)?item.steps.join('\n- '):'';
  const prompt='Bạn là gia sư PRINCIPIA. Hãy hướng dẫn người học áp dụng phương pháp '+item.title+'. Mô tả: '+item.desc+'. Các bước: '+steps+'. Hãy cá nhân hóa theo chủ đề Vật lý người học đang học, hỏi họ mục tiêu và trình độ nếu thiếu, đưa một bài thực hành nhỏ, chờ họ làm rồi phản hồi. Không làm thay.';
  if(window.principiaLocalAI?.open)window.principiaLocalAI.open(prompt);
  else window.notify?.('AI đang khởi tạo. Hãy thử lại sau.');
