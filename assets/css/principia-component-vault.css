@@ -1,0 +1,22 @@
+/* Component Vault — contained inside the existing admin editor panel. */
+#principia-component-vault{display:grid;gap:9px;margin:12px 0;padding:10px 0;border-top:1px solid rgba(169,149,255,.22);color:inherit;font:12px/1.45 system-ui}
+#principia-component-vault .pr-vault-toggle{width:100%;display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border:1px solid rgba(169,149,255,.3);border-radius:11px;color:inherit;background:linear-gradient(110deg,rgba(153,132,255,.15),rgba(93,193,222,.08));font:700 12px system-ui;text-align:left;cursor:pointer}
+#principia-component-vault .pr-vault-body{display:grid;gap:10px}
+#principia-component-vault .pr-vault-body[hidden]{display:none}
+#principia-component-vault .pr-vault-sources{display:flex;gap:6px;flex-wrap:wrap}
+#principia-component-vault .pr-vault-sources a,#principia-component-vault .pr-vault-item>a{padding:5px 8px;border:1px solid rgba(169,149,255,.2);border-radius:8px;color:inherit;text-decoration:none;font-size:10px}
+#principia-component-vault .pr-vault-controls{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:6px}
+#principia-component-vault input,#principia-component-vault select{min-width:0;width:100%;padding:8px;border:1px solid rgba(169,149,255,.24);border-radius:8px;background:var(--bg-2,#17172a);color:inherit;font:11px system-ui}
+#principia-component-vault .pr-vault-count{margin:0;color:var(--muted,#999);font-size:10px}
+#principia-component-vault .pr-vault-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:8px;max-height:54vh;overflow:auto;overscroll-behavior:contain;padding:2px}
+#principia-component-vault .pr-vault-item{display:grid;align-content:start;gap:6px;min-width:0;padding:9px;border:1px solid rgba(169,149,255,.2);border-radius:11px;background:rgba(130,120,180,.045)}
+#principia-component-vault .pr-vault-item>strong{font-size:11px}
+#principia-component-vault .pr-vault-item>small{color:var(--muted,#999);font-size:9px}
+#principia-component-vault .pr-vault-preview{display:grid;place-items:center;min-height:90px;overflow:hidden;padding:8px;border:1px dashed rgba(169,149,255,.18);border-radius:8px;background:rgba(10,10,24,.16)}
+#principia-component-vault .pr-vault-frame{max-width:100%;overflow:auto}
+#principia-component-vault .pr-vault-actions{display:flex;gap:4px;flex-wrap:wrap}
+#principia-component-vault .pr-vault-actions button{padding:6px 7px;border:1px solid rgba(169,149,255,.28);border-radius:7px;color:inherit;background:rgba(145,125,255,.12);font:10px system-ui;cursor:pointer}
+#principia-component-vault .pr-vault-actions button:hover{background:rgba(145,125,255,.24)}
+#principia-component-vault .pr-vault-item>a{justify-self:start}
+@media(max-width:560px){#principia-component-vault .pr-vault-controls{grid-template-columns:1fr 1fr}#principia-component-vault .pr-vault-controls input{grid-column:1/-1}#principia-component-vault .pr-vault-grid{grid-template-columns:1fr;max-height:48vh}}
+@media(prefers-reduced-motion:reduce){#principia-component-vault *{animation:none!important;transition:none!important}}
