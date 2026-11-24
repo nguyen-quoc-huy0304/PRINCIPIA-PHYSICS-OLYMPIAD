@@ -13,7 +13,7 @@
   const text=(value,max=1200)=>String(value==null?'':value).replace(/\s+/g,' ').trim().slice(0,max);
   const esc=value=>String(value==null?'':value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   function read(){
-    try{const value=JSON.parse(localStorage.getItem(STORE)||'{}');return{maps:Array.isArray(value.maps)?value.maps.slice(0,MAX_MAPS):[]};}
+    try{const value=JSON.parse(localStorage.getItem(STORE)||'{}');return{maps:Array.isArray(value.maps)?value.maps.filter(map=>map&&typeof map.id==='string'&&typeof map.topic==='string'&&Array.isArray(map.concepts)&&Array.isArray(map.prerequisites)).slice(0,MAX_MAPS):[]};}
     catch(_){return{maps:[]};}
   }
   function save(state){
@@ -174,7 +174,7 @@
     try{
       const raw=await client().ask('Đánh giá câu trả lời gần nhất. Phản hồi đúng schema và đặt một câu hỏi tiếp theo.',{system:systemTutor(),history:tutor.history.slice(-MAX_HISTORY)});
       const reply=validateReply(raw);tutor.history.push({role:'assistant',content:raw});tutor.history=tutor.history.slice(-MAX_HISTORY);tutor.turns++;appendReply(reply);render();status('Đã phân tích lượt '+tutor.turns+'. Tiếp tục tự lập luận.');speak(reply.question);
-    }catch(error){tutor.transcript.push({role:'ai',text:'Không phân tích được lượt này: '+(error instanceof Error?error.message:'Lỗi không xác định')});render();status('Không gửi được câu trả lời. Hãy thử lại.',true);}
+    }catch(error){if(tutor.history[tutor.history.length-1]?.role==='user')tutor.history.pop();tutor.transcript.push({role:'ai',text:'Không phân tích được lượt này: '+(error instanceof Error?error.message:'Lỗi không xác định')});render();const retryInput=overlay.querySelector('#pllAnswer');if(retryInput)retryInput.value=answer;status('Không gửi được câu trả lời. Nội dung đã được giữ lại để thử lại.',true);}
     finally{busy=false;}
   }
   function speak(value){
