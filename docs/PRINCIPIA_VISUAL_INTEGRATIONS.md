@@ -8,11 +8,11 @@ This repository is a static HTML/CSS/JavaScript application. The reference proje
 |---|---|
 | [Animate UI](https://animate-ui.com/) | Short route transitions, transform/opacity motion, staggered entrances and reduced-motion behavior. |
 | [Kokonut UI](https://kokonutui.com/docs) | Glass panels, AI-oriented surfaces, controls, responsive cards and layered backgrounds. |
-| [Uiverse](https://uiverse.io/) | Interactive button, input, status, hover and feedback treatments. |
+| [Uiverse](https://uiverse.io/) | MIT button source pattern from Web-Potato is copied into `principia-uiverse-copy.css` and attached to main content actions. |
 | [Libraries.dev](https://libraries.dev/introduction) | Border-beam surfaces and thinking-orb feedback; effects are implemented without its React-only package runtime. |
 | [UI/UX Pro Max](https://devanshutak25.github.io/ui-ux-ref/) | Design tokens, color hierarchy, responsive layouts, typography and accessibility rules. |
 | [FeralUI](https://feralui.dev/) | Magnetic pointer response and spring-like interaction on desktop; touch and reduced-motion fallbacks. |
-| [Anime.js](https://animejs.com/) | Timeline-like sequencing and easing using the browser Web Animations API; no second animation runtime. |
+| [Anime.js](https://animejs.com/) | Vendored Anime.js 4.5.0 UMD runtime used directly for route transitions and button press feedback. |
 | [favico.js](https://lab.ejci.net/favico.js/) | Dynamic favicon badge/status API reuses PRINCIPIA’s existing SVG data-URI badge implementation. No favico.js package is bundled. |
 | [Hairline](https://hairline.lucasmarkes.com/) | Pointer-responsive isometric SVG figure in the lab header, using native SVG/CSS. |
 | [Koboyo page-mascot](https://koboyo.com/page-mascot) | Pointer gaze response is attached only to the existing PRINCIPIA bundled pose element; no character sheets are replaced. |
@@ -34,3 +34,11 @@ The preview uses an iframe with sandbox=allow-scripts and no allow-same-origin. 
 - prefers-reduced-motion is respected.
 - Existing three-button launcher, editor, M3E workspace, lab solvers and theme switch remain separate.
 - The reference sites are design/behavior references; not every upstream component or asset is imported.
+
+## Directly vendored libraries
+
+- `assets/vendor/anime-4.5.0.umd.min.js` — official Anime.js UMD bundle, MIT license. Loaded before `principia-kinetic-ui.js`; used for route entrance and press feedback.
+- `assets/vendor/favico-0.3.10.min.js` — official favico.js bundle, MIT license. Loaded before `principia-experience-system.js`; used for animated unread badges.
+- `assets/css/principia-uiverse-copy.css` and `assets/js/principia-uiverse-copy.js` — scoped Uiverse MIT button pattern by Web-Potato, adapted to PRINCIPIA action buttons. Source attribution and license notice are retained.
+
+The React-only Animate UI, Kokonut UI and FeralUI components are not directly executable in this static vanilla-JS app. Their component patterns are adapted without introducing a full React/Tailwind migration. Devanshu UI/UX Pro Max is a design reference, not a runtime component package. Libraries.dev and LucianLabs are reference/collection sites rather than one drop-in browser script. Koboyo mascot behavior is limited to the existing PRINCIPIA character assets. ThreeUI-style spatial rendering remains in the existing WebGL scene system.
