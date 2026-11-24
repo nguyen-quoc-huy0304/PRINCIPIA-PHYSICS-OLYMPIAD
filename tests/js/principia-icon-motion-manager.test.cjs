@@ -11,7 +11,7 @@ test('icon manager exposes safe per-slot overrides and persists them', () => {
   const css = read('assets/css/principia-icon-studio.css');
   assert.match(live, /const SLOT_KEYS=Object\.freeze/);
   assert.match(live, /function setOverrides\(next\)/);
-  assert.match(live, /SLOT_KEYS\.includes\(slot\)&&ICONS\[icon\]/);
+  assert.match(live, /SLOT_KEYS\.includes\(slot\)&&Object\.prototype\.hasOwnProperty\.call\(ICONS,icon\)/);
   assert.match(live, /function applyOverrides\(\)/);
   assert.match(studio, /Ánh xạ icon theo chức năng/);
   assert.match(studio, /registry\.setOverrides\(next\)/);
