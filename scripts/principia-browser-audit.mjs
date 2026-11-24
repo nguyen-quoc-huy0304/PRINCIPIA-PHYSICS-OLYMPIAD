@@ -85,7 +85,7 @@ for (const device of [
     if (learningCheck.studyMethodCount !== 231 || learningCheck.vaultVariants !== 104468 ||
         learningCheck.vaultStructures !== 574 || learningCheck.vaultSkins !== 182 ||
         learningCheck.expansionComponents !== 22 || learningCheck.expansionSkins !== 157 ||
-        !learningCheck.antLogo || !learningCheck.proMasteryReady || !learningCheck.studyPlayerReady) {
+        !learningCheck.antLogo || !learningCheck.motionPolishLoaded || !learningCheck.proMasteryReady || !learningCheck.studyPlayerReady) {
       hasFailure = true;
     }
 
