@@ -17,7 +17,7 @@ test('momentum mode is opt-in, private by default, and integrated with adaptive 
   assert.match(source, /PrincipiaLearningOrchestrator\.begin/);
   assert.match(source, /principia:momentum-session-completed/);
   assert.match(source, /MAX_SESSIONS = 200/);
-  assert.match(source, /prefers-reduced-motion/ .test(css) ? /./ : /prefers-reduced-motion/);
+  assert.match(css, /prefers-reduced-motion/);
   assert.match(html, /principia-momentum-mode\.js\?v=20261124-momentum1/);
   assert.match(html, /principia-momentum-mode\.css\?v=20261124-momentum1/);
 });
