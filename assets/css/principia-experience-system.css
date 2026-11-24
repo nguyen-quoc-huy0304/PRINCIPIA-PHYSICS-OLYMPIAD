@@ -1,0 +1,94 @@
+/* PRINCIPIA unified experience layer — curated patterns adapted from the reference libraries. */
+:root{
+ --pr-ref-accent:var(--primary,#9c87f5);
+ --pr-ref-accent-2:#6eb9e9;
+ --pr-ref-motion:cubic-bezier(.22,1,.36,1);
+}
+#app .panel[data-pr-experience-card],#app .stat[data-pr-experience-card],#app .tile[data-pr-experience-card]{
+ isolation:isolate;
+ transform-style:preserve-3d;
+ backface-visibility:hidden;
+}
+#app .panel[data-pr-experience-card]::after,#app .stat[data-pr-experience-card]::after,#app .tile[data-pr-experience-card]::after{
+ content:"";position:absolute;inset:0;z-index:2;pointer-events:none;border-radius:inherit;padding:1px;
+ background:conic-gradient(from var(--pr-beam-angle,0deg),transparent 0 68%,rgba(173,151,255,.62) 78%,rgba(110,185,233,.52) 84%,transparent 94% 100%);
+ -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+ -webkit-mask-composite:xor;mask-composite:exclude;
+ opacity:0;transition:opacity .3s ease;
+}
+@property --pr-beam-angle{syntax:"<angle>";inherits:false;initial-value:0deg}
+@keyframes pr-experience-beam{to{--pr-beam-angle:360deg}}
+#app .panel[data-pr-experience-card]:hover::after,#app .stat[data-pr-experience-card]:hover::after,#app .tile[data-pr-experience-card]:hover::after{
+ opacity:1;animation:pr-experience-beam 5s linear infinite;
+}
+#app .tile[data-pr-experience-card]:hover{
+ transform:perspective(900px) rotateX(var(--pr-tilt-x,0deg)) rotateY(var(--pr-tilt-y,0deg)) translateY(-5px);
+}
+#app .stat[data-pr-experience-card]:hover{
+ transform:perspective(900px) rotateX(var(--pr-tilt-x,0deg)) rotateY(var(--pr-tilt-y,0deg)) translateY(-2px);
+}
+#app button[data-pr-experience-button]{
+ isolation:isolate;overflow:hidden;
+ transition:transform .24s var(--pr-ref-motion),box-shadow .24s ease,filter .24s ease;
+}
+#app button[data-pr-experience-button]::before{
+ content:"";position:absolute;inset:-80% auto -80% -45%;width:32%;
+ transform:translateX(-180%) rotate(22deg);
+ background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent);
+ transition:transform .65s var(--pr-ref-motion);pointer-events:none;z-index:-1;
+}
+#app button[data-pr-experience-button]:hover::before{transform:translateX(520%) rotate(22deg)}
+#app button[data-pr-experience-button]:active{transform:scale(.965)}
+#app .nav.active,#app .tab.active,#app [aria-selected="true"]{
+ transition:background-color .28s var(--pr-ref-motion),color .28s ease,box-shadow .28s ease;
+}
+#app .nav.active{box-shadow:inset 0 0 0 1px rgba(174,154,255,.15),0 4px 18px rgba(110,91,194,.1)}
+#app input[type="checkbox"],#app input[type="radio"]{accent-color:var(--pr-ref-accent)}
+#app :focus-visible{outline:2px solid #b9a8ff;outline-offset:3px}
+.pr-motion-item{opacity:0;transform:translate3d(0,16px,0) scale(.992);transition:opacity .58s var(--pr-ref-motion),transform .58s var(--pr-ref-motion)}
+.pr-motion-item.pr-in-view{opacity:1;transform:translate3d(0,0,0) scale(1)}
+.pr-ref-thinking{position:relative!important}
+.pr-ref-thinking::after{
+ content:"";display:inline-block;width:24px;height:8px;margin-left:8px;vertical-align:middle;
+ background:radial-gradient(circle at 4px 4px,#c6b7ff 0 3px,transparent 3.5px),radial-gradient(circle at 12px 4px,#8dceef 0 3px,transparent 3.5px),radial-gradient(circle at 20px 4px,#c6b7ff 0 3px,transparent 3.5px);
+ animation:pr-experience-orbs 1.05s ease-in-out infinite;
+}
+@keyframes pr-experience-orbs{0%,100%{opacity:.45;transform:translateY(1px) scale(.88)}50%{opacity:1;transform:translateY(-2px) scale(1.04)}}
+.pr-ref-progress{position:relative;overflow:hidden}
+.pr-ref-progress::after{
+ content:"";position:absolute;inset:0 auto 0 -45%;width:42%;
+ background:linear-gradient(90deg,transparent,rgba(255,255,255,.24),transparent);
+ animation:pr-experience-sheen 1.7s ease-in-out infinite;
+}
+@keyframes pr-experience-sheen{to{transform:translateX(360%)}}
+.pr-experience-toast-host,#principiaExperienceToasts{
+ position:fixed;z-index:2147483605;right:max(16px,env(safe-area-inset-right));bottom:max(16px,env(safe-area-inset-bottom));
+ display:grid;gap:9px;width:min(390px,calc(100vw - 28px));pointer-events:none;
+}
+.pr-experience-toast{
+ display:flex;align-items:center;gap:10px;min-width:0;padding:12px 13px;
+ border:1px solid rgba(190,174,255,.28);border-radius:15px;
+ color:var(--text,#f7f5ff);background:rgba(28,27,48,.94);
+ box-shadow:0 16px 48px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.09);
+ -webkit-backdrop-filter:blur(20px) saturate(150%);backdrop-filter:blur(20px) saturate(150%);
+ opacity:0;transform:translate3d(0,12px,0) scale(.985);transition:opacity .22s ease,transform .22s var(--pr-ref-motion);
+ pointer-events:auto;font-size:13px;line-height:1.45;
+}
+.pr-experience-toast.is-visible{opacity:1;transform:translate3d(0,0,0) scale(1)}
+.pr-experience-toast-message{flex:1;min-width:0;overflow-wrap:anywhere}
+.pr-experience-toast-action,.pr-experience-toast-close{
+ flex:0 0 auto;border:0;border-radius:9px;padding:6px 9px;color:#fff;background:rgba(164,143,255,.18);font:inherit;cursor:pointer;
+}
+.pr-experience-toast-close{padding:3px 8px;background:transparent;font-size:19px;line-height:1}
+@media(max-width:760px){
+ #app .panel[data-pr-experience-card]::after,#app .stat[data-pr-experience-card]::after,#app .tile[data-pr-experience-card]::after{display:none}
+ #app .tile[data-pr-experience-card]:hover,#app .stat[data-pr-experience-card]:hover{transform:translateY(-2px)}
+ #principiaExperienceToasts{right:12px;bottom:max(12px,env(safe-area-inset-bottom));width:calc(100vw - 24px)}
+}
+@media(prefers-reduced-motion:reduce){
+ .pr-motion-item{opacity:1!important;transform:none!important}
+ #app .panel[data-pr-experience-card]::after,#app .stat[data-pr-experience-card]::after,#app .tile[data-pr-experience-card]::after,
+ #app button[data-pr-experience-button]::before,.pr-ref-thinking::after,.pr-ref-progress::after{animation:none!important;transition:none!important}
+ #app .tile[data-pr-experience-card],#app .stat[data-pr-experience-card]{transform:none!important}
+ .pr-experience-toast{opacity:1;transform:none;transition:none}
+}
