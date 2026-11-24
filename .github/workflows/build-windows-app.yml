@@ -1,6 +1,14 @@
 name: Build PRINCIPIA desktop apps
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - "rust/**"
+      - "desktop/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/build-windows-app.yml"
   workflow_dispatch:
     inputs:
       publish_release:
