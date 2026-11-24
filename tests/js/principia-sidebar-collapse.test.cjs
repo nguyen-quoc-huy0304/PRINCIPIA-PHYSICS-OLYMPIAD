@@ -34,6 +34,6 @@ test('keyboard shortcut and persistent preference are available', () => {
 });
 
 test('index loads the dedicated stylesheet and controller after the existing visual stack', () => {
-  assert.match(html, /principia-sidebar-collapse\.css\?v=20261124-sidebar1/);
-  assert.match(html, /principia-sidebar-collapse\.js\?v=20261124-sidebar1/);
+  assert.match(html, /principia-sidebar-collapse\.css\?v=20261124-sidebar2/);
+  assert.match(html, /principia-sidebar-collapse\.js\?v=20261124-sidebar2/);
 });
