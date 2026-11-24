@@ -8,7 +8,7 @@
  const EXCLUDED='#proSiteEditorPanel,.principia-mobile-nav,.principia-action-dock,[role="dialog"]';
  function enhance(root=document){
   root.querySelectorAll?.(SELECTOR).forEach(button=>{
-   if(button.dataset.prUiverseCopied||button.disabled||button.closest(EXCLUDED))return;
+   if(button.dataset.prUiverseCopied||button.disabled||!button.textContent.trim()||button.closest(EXCLUDED))return;
    const label=document.createElement('span');
    label.className='pr-uiverse-label';
    while(button.firstChild)label.append(button.firstChild);
