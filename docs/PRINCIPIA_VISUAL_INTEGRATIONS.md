@@ -27,6 +27,8 @@ The preview uses an iframe with sandbox=allow-scripts and no allow-same-origin. 
 
 ## Runtime and compatibility
 
+`assets/css/principia-reference-polish.css` applies the adapted motion patterns to the actual app surfaces: navigation indicators, card lift, button sheen, soft panel borders and staggered page entrances. Touch layouts disable hover lift and `prefers-reduced-motion` disables the motion layer.
+
 - No React or Tailwind migration.
 - Anime.js 4.5.0 and favico.js 0.3.10 are vendored locally; no runtime CDN dependency.
 - WebGL and pointer effects are progressive enhancements.
