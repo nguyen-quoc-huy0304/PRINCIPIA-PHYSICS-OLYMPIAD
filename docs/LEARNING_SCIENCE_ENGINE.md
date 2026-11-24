@@ -1,6 +1,6 @@
 # PRINCIPIA Learning Science Engine
 
-The learning science engine is a separate module loaded before the learning orchestrator. It provides 58 context-aware strategy profiles across 19 groups. It does not expose strategy names in the learner interface. The orchestrator selects a small compatible set for the current task instead of applying every technique in one session.
+The learning science engine is a separate module loaded before the learning orchestrator. It provides 58 context-aware strategy profiles across 18 groups. It does not expose strategy names in the learner interface. The orchestrator selects a small compatible set for the current task instead of applying every technique in one session.
 
 ## Strategy registry
 
