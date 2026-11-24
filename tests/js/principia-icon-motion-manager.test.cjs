@@ -38,3 +38,17 @@ test('existing PRINCIPIA logo and application mount point remain unchanged', () 
   assert.match(index, /href="\/assets\/images\/principia-logo-round\.svg"/);
   assert.match(index, /<div id="app"><\/div>/);
 });
+
+
+test('motion library exposes independent presets for forms, tabs, progress and AI states', () => {
+  const script = read('assets/js/principia-motion-library.js');
+  const css = read('assets/css/principia-motion-library.css');
+  for (const group of ['forms', 'tabs', 'progress', 'ai']) {
+    assert.ok(script.includes(group + ':'));
+    assert.ok(script.includes("data-pr-motion-kind=\"" + group + "\"") || script.includes("kind=\"" + group + "\""));
+  }
+  assert.match(css, /data-pr-motion-kind="forms"/);
+  assert.match(css, /data-pr-motion-kind="tabs"/);
+  assert.match(css, /data-pr-motion-kind="progress"/);
+  assert.match(css, /data-pr-motion-kind="ai"/);
+});
