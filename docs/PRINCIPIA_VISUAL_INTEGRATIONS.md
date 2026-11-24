@@ -42,3 +42,10 @@ The preview uses an iframe with sandbox=allow-scripts and no allow-same-origin. 
 - `assets/css/principia-uiverse-copy.css` and `assets/js/principia-uiverse-copy.js` — scoped Uiverse MIT button pattern by Web-Potato, adapted to PRINCIPIA action buttons. Source attribution and license notice are retained.
 
 The React-only Animate UI, Kokonut UI and FeralUI components are not directly executable in this static vanilla-JS app. Their component patterns are adapted without introducing a full React/Tailwind migration. Devanshu UI/UX Pro Max is a design reference, not a runtime component package. Libraries.dev and LucianLabs are reference/collection sites rather than one drop-in browser script. Koboyo mascot behavior is limited to the existing PRINCIPIA character assets. ThreeUI-style spatial rendering remains in the existing WebGL scene system.
+
+
+## Component Vault
+
+The editor panel now contains a collapsible local Component Vault (`assets/js/principia-component-vault.js` and `assets/css/principia-component-vault.css`). It contains 40 previewable HTML/CSS patterns, grouped by component category, with live search, color variants, source links and copy actions. The patterns are locally bundled and do not require runtime network access.
+
+The vault is a curated adapter collection, not a mirror of every upstream item. Uiverse's exact MIT button pattern is separately attributed in `principia-uiverse-copy.css`; the other examples are compatibility adaptations of the supplied libraries' documented interaction patterns. React/Next/Tailwind packages remain unsuitable for direct loading into the current static application without a framework migration. The upstream catalog counts are not equal to the number of components bundled in PRINCIPIA.
