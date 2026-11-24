@@ -225,7 +225,7 @@ function library(){
   <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:9px">
    <button class="secondary" onclick="principiaSuiteKnowledgeMap()">🗺️ Bản đồ tri thức</button><button class="secondary" onclick="principiaSuiteStudyPlanner()">🗓️ Kế hoạch học tập</button>
    <button class="secondary" onclick="principiaSuiteDailyJourney()">🚀 Hành trình mỗi ngày</button><button class="secondary" onclick="principiaSuiteWeeklyReport()">📊 Báo cáo 7 ngày</button>
-   <button class="secondary" onclick="principiaSuiteThinkingProfile()">🧠 Hồ sơ tư duy</button><button class="secondary" onclick="principiaStudyMethods()">💡 100 phương pháp học</button>
+   <button class="secondary" onclick="principiaSuiteThinkingProfile()">🧠 Hồ sơ tư duy</button><button class="secondary" onclick="principiaStudyMethods()">💡 213 phương pháp học</button>
    <button class="secondary" onclick="principiaSuiteAccessibility()">♿ Trợ năng</button><button class="secondary" onclick="principiaSuiteQuestionBank()">🔎 Ngân hàng câu hỏi</button>
   </div>
  </section><section class="panel" style="margin-top:20px"><div class="sectionhead"><div><div class="eyebrow">PERSONAL LIBRARY</div><h2>📚 Sách & tài liệu</h2><p class="muted small">Các tệp đã thêm sẽ xuất hiện tại đây.</p></div><div class="toolbar"><button class="secondary" onclick="openLibraryPicker('book')">＋ Thêm sách</button><button class="primary" onclick="openLibraryPicker('file')">＋ Thêm tài liệu</button></div></div><div id="principiaLibraryItems"><p class="muted small">Đang tải danh sách…</p></div></section>`}`;
