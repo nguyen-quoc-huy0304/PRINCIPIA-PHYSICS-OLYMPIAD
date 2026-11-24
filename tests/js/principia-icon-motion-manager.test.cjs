@@ -43,12 +43,10 @@ test('existing PRINCIPIA logo and application mount point remain unchanged', () 
 test('motion library exposes independent presets for forms, tabs, progress and AI states', () => {
   const script = read('assets/js/principia-motion-library.js');
   const css = read('assets/css/principia-motion-library.css');
-  for (const group of ['forms', 'tabs', 'progress', 'ai']) {
-    assert.ok(script.includes(group + ':'));
-    assert.ok(script.includes("data-pr-motion-kind=\"" + group + "\"") || script.includes("kind=\"" + group + "\""));
+  for (const token of ["forms:{label:'Ô nhập liệu'", "tabs:{label:'Tab và bộ lọc'", "progress:{label:'Thanh tiến độ / XP'", "ai:{label:'Trạng thái AI'"]) {
+    assert.ok(script.includes(token), 'missing motion group: ' + token);
   }
-  assert.match(css, /data-pr-motion-kind="forms"/);
-  assert.match(css, /data-pr-motion-kind="tabs"/);
-  assert.match(css, /data-pr-motion-kind="progress"/);
-  assert.match(css, /data-pr-motion-kind="ai"/);
+  for (const group of ['forms', 'tabs', 'progress', 'ai']) {
+    assert.ok(css.includes('data-pr-motion-kind="' + group + '"'), 'missing CSS for ' + group);
+  }
 });
