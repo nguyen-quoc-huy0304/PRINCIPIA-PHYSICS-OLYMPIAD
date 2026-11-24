@@ -37,7 +37,6 @@ function createHarness(deviceMemory = 4, pageURL = 'https://principia.example/ap
     performance: {},
     console,
     URL,
-    setTimeout,
     setTimeout
   };
   context.window = context;
