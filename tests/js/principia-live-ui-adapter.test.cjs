@@ -34,3 +34,13 @@ test('logo and app root remain unchanged', () => {
   assert.match(html, /href="\/assets\/images\/principia-logo-round\.svg"/);
   assert.match(html, /<div id="app"><\/div>/);
 });
+
+
+test('press pattern only targets interactive primary controls and pointer tilt resets fully', () => {
+  const js = read('assets/js/principia-live-ui-adapter.js');
+  assert.match(js, /button\\.primary,\\.main button\\.btn-primary/);
+  assert.doesNotMatch(js, /\\.main \\.primary,/);
+  assert.match(js, /removeProperty\\('--pr-live-rx'\\)/);
+  assert.match(js, /removeProperty\\('--pr-live-ry'\\)/);
+  assert.match(js, /nextTarget instanceof Node/);
+});
