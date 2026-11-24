@@ -55,7 +55,7 @@ test('concept identifiers are unique and dependency links only target known node
   const normalized = lab.normalizeMap(duplicate, 'Vật lý');
   const ids = normalized.concepts.map(item => item.id);
   assert.equal(new Set(ids).size, ids.length);
-  assert.ok(normalized.concepts[2].dependsOn.every(id => ids.includes(id)));
+  assert.deepEqual(Array.from(normalized.concepts[2].dependsOn), ['same']);
 });
 
 test('tutor reply clamps understanding and requires a next question', () => {
