@@ -72,9 +72,45 @@
   function labelOf(node) {
     return (node.getAttribute('aria-label') || node.getAttribute('title') || node.innerText || node.textContent || '').replace(/\s+/g,' ').trim().slice(0,140);
   }
-  function choose(label) {
+  const SLOT_KEYS=Object.freeze([...new Set(RULES.map(([,icon])=>icon))]);
+  const OVERRIDE_KEY='principia_icon_slot_overrides_v1';
+  function readOverrides(){
+    try{
+      const saved=JSON.parse(localStorage.getItem(OVERRIDE_KEY)||'{}');
+      return Object.fromEntries(Object.entries(saved).filter(([slot,icon])=>SLOT_KEYS.includes(slot)&&ICONS[icon]));
+    }catch(_){return {}}
+  }
+  let overrides=readOverrides();
+  function baseIcon(label) {
     for (const [pattern, icon] of RULES) if (pattern.test(label)) return icon;
     return null;
+  }
+  function choose(label) {
+    const base=baseIcon(label);
+    return base?(overrides[base]||base):null;
+  }
+  function applyOverrides(){
+    document.querySelectorAll('#app [data-pr-icon-done="1"]').forEach(node=>{
+      const icon=choose(labelOf(node));
+      if(!icon||!ICONS[icon])return;
+      const svg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+ICONS[icon]+'</svg>';
+      const holder=node.querySelector(':scope > .nav-default-icon');
+      const live=node.querySelector(':scope > .pr-live-icon');
+      if(holder)holder.innerHTML=svg;
+      else if(live){live.className='pr-live-icon pr-live-icon-'+icon;live.innerHTML=svg;}
+    });
+  }
+  function setOverrides(next){
+    const safe={};
+    if(next&&typeof next==='object'){
+      Object.entries(next).forEach(([slot,icon])=>{
+        if(SLOT_KEYS.includes(slot)&&ICONS[icon]&&icon!==slot)safe[slot]=icon;
+      });
+    }
+    overrides=safe;
+    try{localStorage.setItem(OVERRIDE_KEY,JSON.stringify(overrides))}catch(_){}
+    applyOverrides();
+    return {...overrides};
   }
   function decorate(root=document) {
     const nodes = [];
@@ -124,6 +160,9 @@
       refresh:decorate,
       icons:Object.keys(ICONS).length,
       names:Object.freeze(Object.keys(ICONS)),
+      slots:Object.freeze(SLOT_KEYS.map(key=>Object.freeze({key,label:key}))),
+      getOverrides(){return {...overrides}},
+      setOverrides,
       getSvg(name){return ICONS[name]?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+ICONS[name]+'</svg>':'';}
     });
   }
