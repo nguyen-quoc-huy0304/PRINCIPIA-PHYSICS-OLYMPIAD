@@ -7,6 +7,7 @@
  const HISTORY_KEY='principia_browser_history_v1';
  const POSITION_KEY='principia_action_dock_positions_v1';
  let dockPositions=readDockPositions();
+ let layoutEditMode=false;
  const POSITION_RESET_KEY='principia_action_dock_positions_reset_20261124';
  try{
   if(localStorage.getItem(POSITION_RESET_KEY)!=='1'){
@@ -231,12 +232,18 @@
   positionPanelFromAnchor(panel,ai);
  }
  function applyLauncherPosition(node,defaultBottom){
-  const mobile=isMobile();
-  node.style.setProperty('left','auto','important');
-  node.style.setProperty('top','auto','important');
-  node.style.setProperty('right',(mobile?'12px':'18px'),'important');
-  node.style.setProperty('bottom',(mobile?'calc('+defaultBottom+'px + env(safe-area-inset-bottom,0px))':defaultBottom+'px'),'important');
+  const mobile=isMobile(),saved=dockPositions[node.id];
   node.style.setProperty('position','absolute','important');
+  if(saved&&Number.isFinite(saved.x)&&Number.isFinite(saved.y)){
+   const x=clamp(saved.x,8,Math.max(8,window.innerWidth-node.offsetWidth-8));
+   const y=clamp(saved.y,8,Math.max(8,window.innerHeight-node.offsetHeight-8));
+   node.style.setProperty('left',x+'px','important');node.style.setProperty('top',y+'px','important');
+   node.style.setProperty('right','auto','important');node.style.setProperty('bottom','auto','important');
+  }else{
+   node.style.setProperty('left','auto','important');node.style.setProperty('top','auto','important');
+   node.style.setProperty('right',(mobile?'12px':'18px'),'important');
+   node.style.setProperty('bottom',(mobile?'calc('+defaultBottom+'px + env(safe-area-inset-bottom,0px))':defaultBottom+'px'),'important');
+  }
  }
  function enforceViewportPins(){
   const welcomeActive=welcome();
@@ -250,24 +257,40 @@
    const root=ensureDockRoot();
    if(node.parentElement!==root)root.appendChild(node);
    node.style.setProperty('position','absolute','important');
-   node.style.setProperty('left','auto','important');
-   node.style.setProperty('top','auto','important');
+   const saved=dockPositions[node.id];
+   if(saved&&Number.isFinite(saved.x)&&Number.isFinite(saved.y)){
+    const x=clamp(saved.x,8,Math.max(8,window.innerWidth-node.offsetWidth-8));
+    const y=clamp(saved.y,8,Math.max(8,window.innerHeight-node.offsetHeight-8));
+    node.style.setProperty('left',x+'px','important');node.style.setProperty('top',y+'px','important');
+    node.style.setProperty('right','auto','important');node.style.setProperty('bottom','auto','important');
+   }else{node.style.setProperty('left','auto','important');node.style.setProperty('top','auto','important');}
    node.style.setProperty('transform','none','important');
    node.style.setProperty('display',welcomeActive&&node.id!=='proSiteEditorFab'?'none':'grid','important');
    node.style.setProperty('z-index','2147483005','important');
   });
  }
+ function setLayoutEditMode(enabled){
+  layoutEditMode=!!enabled;
+  [IDS.ai,IDS.browser,'proSiteEditorFab'].forEach(id=>{
+   const node=document.getElementById(id);if(!node)return;
+   node.style.setProperty('outline',layoutEditMode?'2px dashed #a78bfa':'none','important');
+   node.style.setProperty('outline-offset','3px','important');
+   node.style.setProperty('cursor',layoutEditMode?'grab':'pointer','important');
+  });
+  document.dispatchEvent(new CustomEvent('principia:layout-edit-changed',{detail:{enabled:layoutEditMode}}));
+ }
+ document.addEventListener('principia:layout-edit-toggle',event=>setLayoutEditMode(event.detail?.enabled));
  function bindLauncherDrag(node,onMove){
   if(node.dataset.dockDragBound==='true')return;
   node.dataset.dockDragBound='true';
   node.addEventListener('pointerdown',event=>{
-   if(event.button!==0||event.target.closest('input,select,textarea'))return;
+   if(!layoutEditMode||event.button!==0||event.target.closest('input,select,textarea'))return;
    const rect=node.getBoundingClientRect();
    node._principiaDrag={startX:event.clientX,startY:event.clientY,left:rect.left,top:rect.top,moved:false};
    try{node.setPointerCapture(event.pointerId)}catch(_){}
   });
   node.addEventListener('pointermove',event=>{
-   const drag=node._principiaDrag;if(!drag)return;
+   const drag=node._principiaDrag;if(!drag||!layoutEditMode)return;
    const dx=event.clientX-drag.startX,dy=event.clientY-drag.startY;
    if(!drag.moved&&Math.hypot(dx,dy)<5)return;
    drag.moved=true;
@@ -331,11 +354,12 @@
    Object.assign(pencil.style,{position:'absolute',right:'18px',bottom:isMobile()?'194px':'130px',left:'auto',top:'auto',zIndex:'2147483005',width:'46px',height:'46px',minWidth:'46px',minHeight:'46px',display:'grid',placeItems:'center',margin:'0',pointerEvents:'auto'});
    pencil.setAttribute('aria-hidden','false');
    applyLauncherPosition(pencil,isMobile()?194:130);
+   bindLauncherDrag(pencil,()=>syncEditorPanelPosition(pencil));
   }
   applyLauncherPosition(browser,isMobile()?138:74);
-  // Launchers stay pinned to their original viewport positions; dragging is disabled.
+  bindLauncherDrag(browser,()=>browserPanel&&stylePanel(browserPanel,248,browser));
   applyLauncherPosition(ai,isMobile()?82:18);
-  // AI launcher remains pinned; its chat panel is positioned relative to it.
+  bindLauncherDrag(ai,()=>syncChatPanelPosition(ai));
   syncEditorPanelPosition(pencil);
   syncChatPanelPosition(ai);
   if(browserPanel&&browserPanel.isConnected)stylePanel(browserPanel,248,browser);
