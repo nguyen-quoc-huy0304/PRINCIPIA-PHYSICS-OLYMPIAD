@@ -50,7 +50,7 @@ button.primary,.ppm-primary{
 button.primary:after,.ppm-primary:after{
  content:"";
  position:absolute;
- z-index:-1;
+ z-index:1;
  top:-60%;bottom:-60%;left:-38%;
  width:24%;
  background:linear-gradient(90deg,transparent,rgba(255,255,255,.28),transparent);
