@@ -77,6 +77,7 @@ for (const device of [
         expansionComponents: expansion?.components ?? null,
         expansionSkins: expansion?.skins ?? null,
         antLogo: Boolean(logo && /principia-ant-logo\.svg/.test(logo.getAttribute('src') || '')),
+        motionPolishLoaded: [...document.styleSheets].some(sheet => sheet.href?.includes('principia-reference-polish.css')),
         proMasteryReady: typeof window.PrincipiaProMastery?.open === 'function',
         studyPlayerReady: typeof window.PrincipiaStudyPlayer?.pin === 'function'
       };
