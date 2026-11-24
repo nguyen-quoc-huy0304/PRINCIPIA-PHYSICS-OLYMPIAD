@@ -1,4 +1,4 @@
-/* PRINCIPIA Chat WebView — one panel for AI sites and Google search. */
+/* PRINCIPIA AI handoff — one chat panel, one embedded web view, no popup tabs. */
 (()=> {
  'use strict';
  const IDS={chat:'chatBox',view:'principiaChatWebView',frame:'principiaChatWebFrame',input:'principiaChatWebInput'};
@@ -6,7 +6,6 @@
   try{const url=new URL(String(value||''),location.href);return ['http:','https:'].includes(url.protocol)?url.href:''}catch(_){return ''}
  };
  const selectedAI=()=>typeof window.getSelectedAI==='function'?window.getSelectedAI():null;
- let mode='chat';
  function ensure(){
   const chat=document.getElementById(IDS.chat);
   if(!chat)return null;
@@ -15,7 +14,7 @@
   view=document.createElement('section');
   view.id=IDS.view;
   view.hidden=true;
-  view.style.cssText='display:none;flex:1 1 auto;min-height:240px;min-width:0;flex-direction:column;overflow:hidden;border-top:1px solid var(--line,#46506a);';
+  view.style.cssText='display:none;flex:1 1 auto;min-height:240px;min-width:0;flex-direction:column;overflow:hidden;border-top:1px solid var(--line,#46506a)';
   view.innerHTML=
    '<div style="display:flex;gap:6px;align-items:center;padding:8px;flex-wrap:wrap">'+
     '<button type="button" id="principiaChatWebBack">← Chat</button>'+
@@ -24,8 +23,8 @@
      '<button type="submit">Đi</button>'+
     '</form>'+
    '</div>'+
-   '<div id="principiaChatWebStatus" role="status" aria-live="polite" style="padding:0 10px 7px;font-size:11px;opacity:.75">Nội dung web hiển thị trong khung chat này nếu website cho phép nhúng.</div>'+
-   '<iframe id="'+IDS.frame+'" title="Website trong khung chat PRINCIPIA" referrerpolicy="strict-origin-when-cross-origin" style="display:block;flex:1 1 auto;width:100%;min-height:0;border:0;background:#fff"></iframe>';
+   '<div id="principiaChatWebStatus" role="status" aria-live="polite" style="padding:0 10px 7px;font-size:11px;opacity:.75">Trang web được mở trong khung này nếu nhà cung cấp cho phép nhúng.</div>'+
+   '<iframe id="'+IDS.frame+'" title="Website AI trong PRINCIPIA" referrerpolicy="strict-origin-when-cross-origin" allow="clipboard-read; clipboard-write" style="display:block;flex:1 1 auto;width:100%;min-height:0;border:0;background:#fff"></iframe>';
   const picker=chat.querySelector('.ai-picker-head');
   if(picker)picker.insertAdjacentElement('afterend',view);else chat.appendChild(view);
   view.querySelector('#principiaChatWebBack').addEventListener('click',showChat);
@@ -33,9 +32,8 @@
    event.preventDefault();
    const query=view.querySelector('#'+IDS.input).value.trim();
    if(!query)return;
-   const direct=safeUrl(query);
-   const url=direct&&/^https?:\/\//i.test(query)?direct:'https://www.google.com/search?igu=1&q='+encodeURIComponent(query);
-   navigate(url,'Đang mở kết quả Google / website trong khung chat.');
+   const direct=/^https?:\/\//i.test(query)?safeUrl(query):'';
+   navigate(direct||'https://www.google.com/search?igu=1&q='+encodeURIComponent(query),direct?'Đang mở website trong khung chat.':'Đang mở kết quả Google trong khung chat.');
   });
   return view;
  }
@@ -49,20 +47,19 @@
   return true;
  }
  function navigate(url,message){
-  const valid=safeUrl(url);
-  const view=ensure();
+  const valid=safeUrl(url),view=ensure();
   if(!valid||!view)return false;
-  ensureChatOpen();
-  mode='web';
+  if(!ensureChatOpen())return false;
   const msgs=document.getElementById('chatMsgs');
   const compose=document.querySelector('#chatBox .ai-chat-compose');
   if(msgs)msgs.style.display='none';
   if(compose)compose.style.display='none';
   view.hidden=false;
   view.style.display='flex';
-  view.querySelector('#'+IDS.frame).src=valid;
+  const frame=view.querySelector('#'+IDS.frame);
+  if(frame.src!==valid)frame.src=valid;
   view.querySelector('#'+IDS.input).value=valid.includes('google.com/')?'':valid;
-  view.querySelector('#principiaChatWebStatus').textContent=message||'Đang tải trang. Một số website chặn hiển thị trong iframe.';
+  view.querySelector('#principiaChatWebStatus').textContent=message||'Đang tải trang. Website bên ngoài có thể chặn iframe.';
   return true;
  }
  function showChat(){
@@ -72,56 +69,70 @@
   if(view){view.hidden=true;view.style.display='none'}
   if(msgs)msgs.style.display='';
   if(compose)compose.style.display='';
-  mode='chat';
- }
- function openGoogle(){
-  if(!ensureChatOpen())return;
-  navigate('https://www.google.com/webhp?igu=1','Google đang được mở bên trong khung chat. Một số nội dung có thể bị Google giới hạn nhúng.');
  }
  function openSelected(){
   const ai=selectedAI();
-  if(!ai?.url){if(typeof window.notify==='function')window.notify('Hãy chọn một AI hợp lệ trước.');return}
-  navigate(ai.url,'Đang mở '+String(ai.name||'AI')+' trong khung chat. Nếu website chặn iframe, PRINCIPIA không thể ép website cho phép nhúng.');
+  if(!ai?.url){window.notify?.('Hãy chọn một AI hợp lệ trước.');return false}
+  const url=safeUrl(ai.url);
+  if(!url){window.notify?.('Địa chỉ AI không hợp lệ.');return false}
+  return navigate(url,'Đang mở '+String(ai.name||'AI')+' trong khung chat PRINCIPIA. Nếu nhà cung cấp chặn iframe, trang đó sẽ không thể hiển thị tại đây.');
  }
- function bind(){
-  const view=ensure();
-  if(!view)return;
-  const button=document.querySelector('#chatBox .ai-picker-head button[onclick="openSelectedAI()"]');
-  if(button){button.textContent='Mở trong chat';button.title='Mở website AI trong khung chat PRINCIPIA'}
+ async function copyText(value){
+  try{await navigator.clipboard.writeText(value);return true}catch(_){}
+  try{
+   const field=document.createElement('textarea');
+   field.value=value;field.setAttribute('readonly','');
+   field.style.cssText='position:fixed;left:-9999px;top:0;opacity:0';
+   document.body.appendChild(field);field.select();
+   const copied=document.execCommand('copy');field.remove();return copied;
+  }catch(_){return false}
+ }
+ async function handoffMessage(){
+  const input=document.getElementById('chatInput');
+  const message=input?.value.trim()||'';
+  if(!message){window.notify?.('Nhập câu hỏi trước khi gửi.');return}
+  const ai=selectedAI();
+  if(!ai){window.notify?.('Hãy chọn một AI trước.');return}
+  const copied=await copyText(message);
+  if(typeof window.principiaChatHistory==='function'&&typeof window.savePrincipiaChatHistory==='function'){
+   const history=window.principiaChatHistory();
+   history.push({role:'user',text:message,at:Date.now()});
+   window.savePrincipiaChatHistory(history);
+   window.renderPrincipiaChatHistory?.();
+  }
+  if(input)input.value='';
+  openSelected();
+  const status=document.getElementById('principiaChatWebStatus');
+  if(status)status.textContent=copied?'Câu hỏi đã được sao chép. Dán vào ô nhập của '+String(ai.name||'AI')+' trong khung này.':'Không thể sao chép tự động. Hãy quay lại Chat để sao chép câu hỏi.';
+  if(!copied)window.notify?.('Trình duyệt không cho phép sao chép tự động. Hãy thử lại bằng thao tác sao chép thủ công.');
  }
  function install(){
-  bind();
-  if(typeof window.openSelectedAI==='function'&&!window.openSelectedAI.__principiaEmbedded){
-   const open=window.openSelectedAI;
-   const replacement=function(){openSelected();};
-   replacement.__principiaEmbedded=true;
+  ensure();
+  const openButton=document.querySelector('#chatBox .ai-picker-head button[onclick="openSelectedAI()"]');
+  if(openButton){openButton.textContent='Mở trong chat';openButton.title='Mở AI trong khung chat hiện tại';}
+  if(typeof window.openSelectedAI==='function'&&!window.openSelectedAI.__principiaSingleView){
+   const replacement=function(){return openSelected()};
+   replacement.__principiaSingleView=true;
    window.openSelectedAI=replacement;
   }
-  if(typeof window.selectPrincipiaAI==='function'&&!window.selectPrincipiaAI.__principiaEmbedded){
-   const select=window.selectPrincipiaAI;
-   const replacement=function(id){const result=select(id);if(document.getElementById(IDS.chat)?.classList.contains('open'))openSelected();return result;};
-   replacement.__principiaEmbedded=true;
+  if(typeof window.selectPrincipiaAI==='function'&&!window.selectPrincipiaAI.__principiaSingleView){
+   const original=window.selectPrincipiaAI;
+   const replacement=function(id){
+    const result=original.call(this,id);
+    if(document.getElementById(IDS.chat)?.classList.contains('open'))openSelected();
+    return result;
+   };
+   replacement.__principiaSingleView=true;
    window.selectPrincipiaAI=replacement;
   }
-  document.addEventListener('click',event=>{
-   const trigger=event.target.closest?.('#chatBox .ai-picker-head button[onclick*="openSelectedAI"]');
-   if(!trigger)return;
-   event.preventDefault();event.stopImmediatePropagation();openSelected();
-  },true);
-  document.addEventListener('change',event=>{
-   if(event.target?.id!=='principiaAISelect')return;
-   event.preventDefault();event.stopImmediatePropagation();
-   if(typeof window.selectPrincipiaAI==='function')window.selectPrincipiaAI(event.target.value);
-   else openSelected();
-  },true);
-  if(typeof window.toggleChatBox==='function'&&!window.toggleChatBox.__principiaSingleWebView){
-   const toggle=window.toggleChatBox;
-   const replacement=function(){toggle.apply(this,arguments);if(document.getElementById(IDS.chat)?.classList.contains('open'))openSelected();else showChat();};
-   replacement.__principiaSingleWebView=true;
-   window.toggleChatBox=replacement;
+  if(typeof window.sendChat==='function'&&!window.sendChat.__principiaSingleView){
+   handoffMessage.__principiaSingleView=true;
+   window.sendChat=handoffMessage;
   }
-  window.principiaChatWebView=Object.freeze({openGoogle,openSelected,showChat,navigate});
+  const compose=document.querySelector('#chatBox .ai-chat-compose .ai-chat-sub');
+  if(compose)compose.textContent='Gửi sẽ sao chép câu hỏi và mở AI đang chọn ngay trong khung chat này. Dán câu hỏi vào ô nhập của AI.';
+  window.principiaChatWebView=Object.freeze({openGoogle:()=>navigate('https://www.google.com/webhp?igu=1','Google đang mở trong khung chat.'),openSelected,showChat,navigate});
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
- document.addEventListener('principia:rendered',bind);
+ document.addEventListener('principia:rendered',install);
 })();
