@@ -5,7 +5,8 @@
  core.register('permissions',function(){
   const OWNER_EMAIL='huyquocnguyen03042011@gmail.com';
   function account(){try{return JSON.parse(localStorage.getItem('principia_google_account')||'null')}catch(_){return null}}
-  function isOwner(){const a=account();return !!a&&String(a.email||'').toLowerCase()===OWNER_EMAIL&&!!w.PRINCIPIA_OWNER_UID_PUBLIC&&a.uid===w.PRINCIPIA_OWNER_UID_PUBLIC}
+  function authenticatedUser(){try{return w.firebase?.apps?.length&&typeof w.firebase.auth==='function'?w.firebase.auth().currentUser:null}catch(_){return null}}
+  function isOwner(){const user=authenticatedUser();return !!user&&String(user.email||'').toLowerCase()===OWNER_EMAIL}
   function role(){return isOwner()?'admin':'viewer'}
   function can(action){return isOwner()&&['content:write','media:write','settings:write','users:manage','release:publish'].includes(action)}
   function require(action){if(can(action))return true;w.principiaNotify?.('Tài khoản hiện tại chỉ có quyền xem.');return false}
