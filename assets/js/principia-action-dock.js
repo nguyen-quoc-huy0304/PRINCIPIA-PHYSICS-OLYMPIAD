@@ -318,7 +318,7 @@
   node.addEventListener('pointerup',finish);
   node.addEventListener('pointercancel',finish);
   node.addEventListener('click',event=>{
-   if(!node._principiaSuppressClick)return;
+   if(!layoutEditMode&&!node._principiaSuppressClick)return;
    event.preventDefault();event.stopImmediatePropagation();node._principiaSuppressClick=false;
   },true);
  }
