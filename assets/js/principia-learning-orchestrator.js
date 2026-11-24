@@ -6,7 +6,8 @@
   const GOALS = {
     understand: ['hiểu khái niệm', 'giải thích bằng hình', 'mô hình hóa', 'ví dụ cụ thể', 'hiểu sâu', 'feynman', 'concept'],
     remember: ['ghi nhớ', 'truy xuất', 'ôn tập', 'flashcard', 'nhắc lại', 'spaced', 'retrieval'],
-    solve: ['giải bài', 'phân tích', 'chiến lược', 'luyện tập', 'olympiad', 'problem solving'],
+    solve: ['giải bài', 'phân tích', 'chiến lược', 'luyện tập', 'problem solving'],
+    olympiad: ['olympiad', 'bài tổng hợp', 'bảo toàn', 'đối xứng', 'bất biến', 'chứng minh', 'trường hợp biên', 'ước lượng'],
     teach: ['giảng', 'dạy', 'giải thích', 'phản biện', 'teach', 'peer instruction'],
     recover: ['lỗi', 'sửa lỗi', 'thành thạo', 'tự kiểm tra', 'error', 'deliberate practice']
   };
@@ -104,6 +105,7 @@
     if (goal === 'recover') return 'Gỡ đúng chỗ đang vướng';
     if (goal === 'remember') return 'Kiểm tra trí nhớ trước khi xem lại';
     if (goal === 'solve') return 'Thử thách vận dụng tiếp theo';
+    if (goal === 'olympiad') return 'Thử thách tư duy Olympic';
     if (goal === 'teach') return 'Giải thích lại để kiểm tra hiểu sâu';
     if (Number(context.percent) >= 80) return 'Mở rộng sang tình huống mới';
     return 'Xây nền tảng rồi tự thử';
@@ -113,6 +115,7 @@
     if (goal === 'recover') return 'PRINCIPIA ưu tiên tìm lỗ hổng kiến thức và đưa bạn quay lại đúng bước cần sửa.';
     if (goal === 'remember') return 'Hãy thử nhớ lại từ đầu. Chỉ mở tài liệu sau khi đã tự trả lời.';
     if (goal === 'solve') return 'Bạn đã có nền tảng. Tiếp theo là bài có cách biểu diễn hoặc dữ kiện khác.';
+    if (goal === 'olympiad') return 'Ưu tiên nhận diện cấu trúc, tìm bất biến, kiểm tra trường hợp biên và chứng minh từng bước.';
     if (goal === 'teach') return 'Hãy giảng bằng lời của mình. Học sinh AI sẽ hỏi tiếp ở chỗ còn thiếu căn cứ.';
     if (Number(context.percent) >= 80) return 'Kết quả gần đây cho thấy bạn có thể thử bài chuyển giao khó hơn.';
     return 'Bắt đầu bằng hình dung hiện tượng, xác định giả thiết rồi mới đi vào công thức.';
