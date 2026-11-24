@@ -122,6 +122,7 @@
   picker.click();
  },true);
  document.addEventListener('principia:rendered',()=>queueMicrotask(()=>{makeToolbar();scan();}));
+ document.addEventListener('principia:auth-state-changed',()=>{if(isAdmin()){makeToolbar();scan();return;}enabled=false;toolbar?.remove();toolbar=null;document.getElementById('proSiteEditorFab')?.remove();document.querySelectorAll('[data-pro-edit-key]').forEach(el=>{el.contentEditable='false';el.classList.remove('pro-edit-text')});});
  load();
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{makeToolbar();scan();},{once:true});else{makeToolbar();scan();}
  window.PrincipiaSiteEditor={setEnabled,export:()=>JSON.stringify(state),getState:()=>JSON.parse(JSON.stringify(state))};
