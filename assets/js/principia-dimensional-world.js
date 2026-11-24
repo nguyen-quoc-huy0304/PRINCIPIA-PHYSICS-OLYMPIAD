@@ -3,12 +3,12 @@
  'use strict';
  const KEY='principia_dimensional_world_v1';
  const REDUCED=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches??false;
- const defaults={enabled:true,scene:'planet',intensity:.82};
+ const defaults={enabled:false,scene:'planet',intensity:.82};
  const scenes=['planet','nebula','wireframe','aurora'];
  const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
  let settings=readSettings(),canvas,gl,program,raf=0,last=0,uniforms={},buffer;
  let pointer={x:0,y:0},dpr=1,failed=false;
- function readSettings(){try{const s=JSON.parse(localStorage.getItem(KEY)||'{}');return{enabled:s.enabled!==false,scene:scenes.includes(s.scene)?s.scene:'planet',intensity:clamp(Number(s.intensity)||.82,.2,1)}}catch(_){return{...defaults}}}
+ function readSettings(){try{const s=JSON.parse(localStorage.getItem(KEY)||'{}');return{enabled:s.enabled===true,scene:scenes.includes(s.scene)?s.scene:'planet',intensity:clamp(Number(s.intensity)||.82,.2,1)}}catch(_){return{...defaults}}}
  function persist(){try{localStorage.setItem(KEY,JSON.stringify(settings))}catch(_){/* Storage is optional. */}}
  const vertex=`attribute vec2 aPosition; varying vec2 vUv; void main(){vUv=aPosition*.5+.5;gl_Position=vec4(aPosition,0.,1.);}`;
  const fragment=`precision highp float;
@@ -52,7 +52,7 @@
    vec3 ro=vec3(uPointer.x*.16,uPointer.y*.12,3.5);
    vec3 rd=normalize(vec3(uv,-1.75));
    float t=0.,material=0.;
-   for(int i=0;i<46;i++){vec3 p=ro+rd*t;vec2 h=mapScene(p);if(h.x<.002){material=h.y;break;}t+=h.x*.78;if(t>7.)break;}
+   for(int i=0;i<32;i++){vec3 p=ro+rd*t;vec2 h=mapScene(p);if(h.x<.002){material=h.y;break;}t+=h.x*.86;if(t>7.)break;}
    if(t<7.){
     vec3 p=ro+rd*t,n=normalAt(p),light=normalize(vec3(-.7,.8,1.2));
     float diff=max(dot(n,light),0.);
@@ -106,13 +106,13 @@
  function resize(){
   if(!canvas||!gl)return;
   const mobile=matchMedia('(max-width:760px)').matches;
-  dpr=Math.min(devicePixelRatio||1,mobile?.72:1.15);
+  dpr=Math.min(devicePixelRatio||1,mobile?.56:.82);
   const w=Math.max(1,Math.floor(innerWidth*dpr)),h=Math.max(1,Math.floor(innerHeight*dpr));
   if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;gl.viewport(0,0,w,h);gl.uniform2f(uniforms.resolution,w,h)}
  }
  function render(now){
   raf=0;if(!settings.enabled||document.hidden||!gl)return;
-  if(now-last<38){raf=requestAnimationFrame(render);return}
+  if(now-last<42){raf=requestAnimationFrame(render);return}
   last=now;resize();
   gl.useProgram(program);gl.uniform1f(uniforms.time,now*.001);gl.uniform2f(uniforms.pointer,pointer.x,pointer.y);
   gl.uniform1f(uniforms.intensity,settings.intensity);
@@ -121,6 +121,7 @@
   raf=requestAnimationFrame(render);
  }
  function apply(){
+  if(settings.enabled&&window.Principia3D?.getSettings().enabled)window.Principia3D.setEnabled(false);
   document.documentElement.classList.toggle('pr-dimensional-world-on',settings.enabled&&!failed);
   if(canvas)canvas.style.opacity=settings.enabled?(REDUCED?'.48':'.92'):'0';
   document.documentElement.dataset.prWorldScene=settings.scene;
@@ -156,9 +157,10 @@
   canvas.addEventListener('webglcontextrestored',()=>{try{initGL();resize();apply()}catch(error){failed=true;canvas.style.opacity='0';console.warn('[PRINCIPIA] 3D context restore failed',error.message)}},{passive:true});
   if(matchMedia('(pointer:fine)').matches)addEventListener('pointermove',event=>{pointer.x=clamp((event.clientX/innerWidth-.5)*2,-1,1);pointer.y=clamp((.5-event.clientY/innerHeight)*2,-1,1)},{passive:true});
   document.addEventListener('visibilitychange',()=>{if(document.hidden){if(raf)cancelAnimationFrame(raf);raf=0}else apply()});
-  const observer=new MutationObserver(mountSettings);observer.observe(document.body,{childList:true,subtree:true});
+  const root=document.getElementById('app')||document.body;
+  const observer=new MutationObserver(mountSettings);observer.observe(root,{childList:true,subtree:true});
   mountSettings();apply();
-  window.PrincipiaWorld3D=Object.freeze({setEnabled(value){settings.enabled=Boolean(value);persist();apply()},setScene(value){if(!scenes.includes(value))return false;settings.scene=value;persist();mountSettings();apply();return true},getSettings:()=>({...settings})});
+  window.PrincipiaWorld3D=Object.freeze({setEnabled(value){settings.enabled=Boolean(value);persist();const control=document.querySelector('[data-pr-world-settings] input[type=checkbox]');if(control)control.checked=settings.enabled;apply()},setScene(value){if(!scenes.includes(value))return false;settings.scene=value;persist();mountSettings();apply();return true},getSettings:()=>({...settings})});
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
