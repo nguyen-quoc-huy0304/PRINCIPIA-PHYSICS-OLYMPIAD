@@ -66,3 +66,16 @@ test('AI Student uses the actual lesson context and continues Socratic dialogue'
   assert.match(mastery, /principiaLocalAI\.open\(prompt\)/);
   assert.match(mastery, /Nhịp cao: hỏi liên tục theo chuỗi tối đa ba câu ngắn/);
 });
+
+
+test('site editor synchronizes validated edits through the shared Firestore document', () => {
+  const site = read('assets/js/principia-site-editor.js');
+  const auth = read('assets/js/app-part-03.js');
+  const rules = read('firestore.rules');
+  assert.match(site, /principiaContent'\)\.doc\('siteEdits'\)/);
+  assert.match(site, /onSnapshot\(snapshot/);
+  assert.match(site, /applyStoredEdits\(\)/);
+  assert.match(site, /new Blob\(\[JSON\.stringify\(payload\)\]\)\.size>800000/);
+  assert.match(auth, /window\.principiaLeaderboardDb=principiaLeaderboardDb/);
+  assert.match(rules, /match \/principiaContent\/\{document=\*\*\}/);
+});
