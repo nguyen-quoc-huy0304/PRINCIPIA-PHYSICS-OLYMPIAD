@@ -3,6 +3,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const vm = require('node:vm');
 const root = path.resolve(__dirname, '../..');
 function read(relative) { return fs.readFileSync(path.join(root, relative), 'utf8'); }
 function extractArray(source, marker) {
@@ -93,4 +94,20 @@ test('guided pathways connect Gemini, virtual classroom and Study With Me', () =
   assert.match(mastery, /data-pathways/);
   assert.match(mastery, /Mở thư viện phương pháp/);
   assert.doesNotMatch(mastery, /Mở 231 phương pháp/);
+});
+
+test('study playbook generators execute and produce 3,111 uniquely titled catalog entries', () => {
+  const context = { window: {} };
+  vm.runInNewContext(read('assets/js/principia-study-methods-expansion.js'), context);
+  vm.runInNewContext(read('assets/js/principia-study-methods-advanced.js'), context);
+  const base = context.window.PRINCIPIA_STUDY_METHOD_PLAYBOOKS;
+  const advanced = context.window.PRINCIPIA_STUDY_METHOD_ADVANCED_PLAYBOOKS;
+  const core = extractArray(read('assets/js/principia-study-methods.js'), 'const methods=');
+  assert.equal(core.length, 231);
+  assert.equal(base.length, 1240);
+  assert.equal(advanced.length, 1640);
+  assert.equal(core.length + base.length + advanced.length, 3111);
+  assert.equal(new Set(base.concat(advanced).map(item => item.title)).size, 2880);
+  assert.equal(advanced[0].id, 1472);
+  assert.equal(advanced.at(-1).id, 3111);
 });
