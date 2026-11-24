@@ -1,22 +1,22 @@
 /* PRINCIPIA Component Vault
  * Local copy/export workbench for reusable patterns adapted from the supplied UI references.
- * Original-source code is retained only where explicitly attributed (Uiverse button in its own module).
+ * Source snippets are retained only with attribution and reuse permission; other libraries are adapted as vanilla UI patterns.
  */
 (() => {
   'use strict';
   const SOURCES = [
     ['Animate UI','https://animate-ui.com/','48 animated primitives and UI elements; React-based'],
     ['Kokonut UI','https://kokonutui.com/docs','116 public components; React + Tailwind; Pro collection separate'],
-    ['Uiverse','https://uiverse.io/','7,475 community UI elements; inspect each item attribution/license'],
+    ['Uiverse','https://uiverse.io/','7,411 community UI elements on the observed live page; inspect each item attribution/license'],
     ['Libraries.dev','https://libraries.dev/introduction','5 React effect libraries; not a component catalog'],
     ['UI/UX Pro Max','https://devanshutak25.github.io/ui-ux-ref/','757 reference entries across styles, palettes, charts and rules'],
     ['FeralUI','https://feralui.dev/','13 public components; license must be verified before copying'],
     ['Anime.js','https://animejs.com/','1 animation library; already vendored locally'],
     ['favico.js','http://lab.ejci.net/favico.js/','1 favicon library; already vendored locally'],
-    ['Hairline UI','https://hairlineui.com/ui','224 React components; MIT; requires vanilla-JS adaptation'],
+    ['Hairline UI','https://hairline.lucasmarkes.com/','224 React components; adapt each component to vanilla HTML/CSS/JS'],
     ['Koboyo Mascot','https://koboyo.com/page-mascot','52 mascot designs; held pending completion of character submissions'],
     ['LucianLabs','https://lucianlabs.dev/uxui-prompt/','480 interactive elements; MIT; supports plain HTML/CSS/JS'],
-    ['ThreeUI','https://threeui.com/ui-elements','51 interactive UI elements; includes PRO items and 3D dependencies']
+    ['ThreeUI','https://threeui.com/browse','51 interactive UI elements; includes PRO items and 3D dependencies']
   ];
   const BASE_ITEMS = [
     ['Glass action button','Buttons','Kokonut UI','<button class="pv-glass">Launch workspace <span>↗</span></button>','.pv-glass{display:inline-flex;gap:12px;align-items:center;padding:12px 18px;border:1px solid rgba(255,255,255,.24);border-radius:14px;color:#fff;background:linear-gradient(135deg,rgba(145,125,255,.5),rgba(55,160,210,.28));box-shadow:inset 0 1px rgba(255,255,255,.25),0 12px 30px rgba(20,20,50,.2);backdrop-filter:blur(16px);cursor:pointer;transition:transform .25s,filter .25s}.pv-glass:hover{transform:translateY(-2px);filter:brightness(1.15)}'],
