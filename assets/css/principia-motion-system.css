@@ -1,0 +1,104 @@
+/* PRINCIPIA Motion System — additive visual layer; no framework or runtime dependency. */
+:root{
+  --pr-glass:rgba(255,255,255,.055);
+  --pr-glass-strong:rgba(255,255,255,.09);
+  --pr-border:rgba(207,197,255,.16);
+  --pr-glow:rgba(161,138,255,.18);
+  --pr-ease:cubic-bezier(.22,1,.36,1);
+}
+html{scroll-behavior:smooth}
+body{isolation:isolate;background:
+  radial-gradient(ellipse at 8% 0%,rgba(111,82,190,.14),transparent 34%),
+  radial-gradient(ellipse at 92% 18%,rgba(55,112,166,.10),transparent 30%),
+  var(--bg,#0c0d16)}
+body::before{
+  content:"";position:fixed;inset:-18%;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(ellipse at 20% 25%,rgba(127,92,220,.13),transparent 28%),
+    radial-gradient(ellipse at 78% 42%,rgba(61,139,180,.10),transparent 25%),
+    radial-gradient(ellipse at 52% 88%,rgba(122,86,185,.09),transparent 30%);
+  filter:blur(26px);opacity:.85;transform:translate3d(0,0,0);
+  animation:pr-ambient-drift 26s ease-in-out infinite alternate;
+}
+@keyframes pr-ambient-drift{from{transform:translate3d(-1.5%,0,0) scale(1)}to{transform:translate3d(1.5%,-1%,0) scale(1.035)}}
+#app .main{position:relative}
+#app .top{
+  position:relative;overflow:hidden;
+  border:1px solid var(--pr-border);
+  background:linear-gradient(120deg,rgba(255,255,255,.075),rgba(132,105,210,.065) 48%,rgba(255,255,255,.025));
+  box-shadow:0 14px 42px rgba(0,0,0,.16),inset 0 1px 0 rgba(255,255,255,.08);
+  -webkit-backdrop-filter:blur(22px) saturate(145%);backdrop-filter:blur(22px) saturate(145%);
+}
+#app .hero{
+  position:relative;isolation:isolate;overflow:hidden;
+  border:1px solid rgba(190,168,255,.28);
+  background:linear-gradient(118deg,rgba(58,42,91,.96),rgba(24,27,48,.96) 64%,rgba(24,48,66,.9));
+  box-shadow:0 20px 55px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.12);
+}
+#app .hero::after{
+  content:"";position:absolute;z-index:-1;width:280px;height:280px;right:-70px;top:-155px;
+  border-radius:50%;background:rgba(173,148,255,.24);filter:blur(35px);
+  animation:pr-hero-float 9s ease-in-out infinite alternate;
+}
+@keyframes pr-hero-float{to{transform:translate3d(-35px,55px,0) scale(1.18)}}
+#app .panel,#app .stat,#app .tile{
+  position:relative;isolation:isolate;overflow:hidden;
+  border-color:rgba(196,187,238,.13);
+  background-color:rgba(24,26,43,.84);
+  box-shadow:0 8px 26px rgba(0,0,0,.12),inset 0 1px 0 rgba(255,255,255,.035);
+  transition:transform .32s var(--pr-ease),border-color .32s ease,box-shadow .32s ease,background-color .32s ease;
+}
+#app .panel::before,#app .stat::before,#app .tile::before{
+  content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:0;
+  background:radial-gradient(260px circle at var(--pr-x,50%) var(--pr-y,50%),rgba(164,143,255,.13),transparent 72%);
+  transition:opacity .3s ease;
+}
+#app .panel:hover,#app .stat:hover,#app .tile:hover{
+  border-color:rgba(177,154,255,.34);
+  box-shadow:0 16px 38px rgba(0,0,0,.2),0 0 0 1px rgba(160,135,255,.045),inset 0 1px 0 rgba(255,255,255,.06);
+}
+#app .panel:hover::before,#app .stat:hover::before,#app .tile:hover::before{opacity:1}
+#app .tile:hover{transform:translateY(-5px)}
+#app .stat{border-radius:17px}
+#app .stat strong{letter-spacing:-.035em;background:linear-gradient(100deg,#fff,#c7baff 70%,#9fcdf5);-webkit-background-clip:text;background-clip:text;color:transparent}
+#app .sectionhead h2{letter-spacing:-.025em}
+#app .main h1{letter-spacing:-.045em}
+#app button.primary,#app button.secondary,#app button.danger,#app .tab,#app .nav{
+  transition:transform .22s var(--pr-ease),box-shadow .22s ease,border-color .22s ease,background-color .22s ease,filter .22s ease;
+}
+#app button.primary{
+  border-color:rgba(206,193,255,.35);
+  background:linear-gradient(115deg,#8065ed,#5f70d9 58%,#4f91c7);
+  box-shadow:0 7px 20px rgba(103,85,205,.22),inset 0 1px 0 rgba(255,255,255,.2);
+}
+#app button.primary:hover{transform:translateY(-2px);filter:brightness(1.09);box-shadow:0 11px 26px rgba(103,85,205,.3),inset 0 1px 0 rgba(255,255,255,.25)}
+#app button.secondary:hover,#app button.danger:hover,#app .tab:hover{transform:translateY(-1px);border-color:rgba(177,154,255,.38)}
+#app button:active,#app .tab:active{transform:scale(.975)}
+#app input:not([type=checkbox]):not([type=radio]),#app textarea,#app select{
+  transition:border-color .2s ease,box-shadow .2s ease,background-color .2s ease;
+}
+#app input:focus,#app textarea:focus,#app select:focus{
+  border-color:rgba(169,145,255,.72);
+  box-shadow:0 0 0 3px rgba(144,119,240,.13);
+}
+#app .progress div,#app .xpbar div{transition:width .65s var(--pr-ease)}
+.pr-motion-item{opacity:0;transform:translate3d(0,18px,0) scale(.99);transition:opacity .65s var(--pr-ease),transform .65s var(--pr-ease)}
+.pr-motion-item.pr-in-view{opacity:1;transform:translate3d(0,0,0) scale(1)}
+.pr-ripple{
+  position:absolute;width:12px;height:12px;border-radius:50%;pointer-events:none;
+  background:rgba(255,255,255,.36);transform:translate(-50%,-50%) scale(0);
+  animation:pr-ripple .55s ease-out forwards;
+}
+@keyframes pr-ripple{to{transform:translate(-50%,-50%) scale(15);opacity:0}}
+#app button{position:relative;overflow:hidden}
+#app button:focus-visible,.tile:focus-visible{outline:2px solid #b9a8ff;outline-offset:3px}
+@media(max-width:760px){
+  body::before{opacity:.55;filter:blur(38px);animation-duration:34s}
+  #app .panel,#app .stat,#app .tile{box-shadow:0 7px 20px rgba(0,0,0,.13),inset 0 1px 0 rgba(255,255,255,.035)}
+  #app .tile:hover{transform:translateY(-2px)}
+}
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}
+  .pr-motion-item{opacity:1!important;transform:none!important}
+}
