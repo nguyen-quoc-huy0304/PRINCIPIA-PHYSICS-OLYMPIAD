@@ -9,6 +9,8 @@
  let dockPositions=readDockPositions();
  let layoutEditMode=false;
  const POSITION_RESET_KEY='principia_action_dock_positions_reset_20261124';
+ const EDITOR_TOP_RESET_KEY='principia_editor_pencil_top_reset_20261124';
+ try{if(localStorage.getItem(EDITOR_TOP_RESET_KEY)!=='1'){delete dockPositions.proSiteEditorFab;saveDockPositions();localStorage.setItem(EDITOR_TOP_RESET_KEY,'1')}}catch(_){}
  try{
   if(localStorage.getItem(POSITION_RESET_KEY)!=='1'){
    localStorage.removeItem(POSITION_KEY);
@@ -258,7 +260,10 @@
    if(node.parentElement!==root)root.appendChild(node);
    node.style.setProperty('position','absolute','important');
    const saved=dockPositions[node.id];
-   if(saved&&Number.isFinite(saved.x)&&Number.isFinite(saved.y)){
+   if(node.id==='proSiteEditorFab'&&!saved){
+    node.style.setProperty('left','auto','important');node.style.setProperty('right','18px','important');
+    node.style.setProperty('top','calc(12px + env(safe-area-inset-top,0px))','important');node.style.setProperty('bottom','auto','important');
+   }else if(saved&&Number.isFinite(saved.x)&&Number.isFinite(saved.y)){
     const x=clamp(saved.x,8,Math.max(8,window.innerWidth-node.offsetWidth-8));
     const y=clamp(saved.y,8,Math.max(8,window.innerHeight-node.offsetHeight-8));
     node.style.setProperty('left',x+'px','important');node.style.setProperty('top',y+'px','important');
@@ -351,9 +356,10 @@
    const onWelcome=welcome();
    const target=root;
    if(pencil.parentElement!==target)target.appendChild(pencil);
-   Object.assign(pencil.style,{position:'absolute',right:'18px',bottom:isMobile()?'194px':'130px',left:'auto',top:'auto',zIndex:'2147483005',width:'46px',height:'46px',minWidth:'46px',minHeight:'46px',display:'grid',placeItems:'center',margin:'0',pointerEvents:'auto'});
+   Object.assign(pencil.style,{position:'absolute',right:'18px',top:'calc(12px + env(safe-area-inset-top,0px))',bottom:'auto',left:'auto',zIndex:'2147483005',width:'46px',height:'46px',minWidth:'46px',minHeight:'46px',display:'grid',placeItems:'center',margin:'0',pointerEvents:'auto'});
    pencil.setAttribute('aria-hidden','false');
-   applyLauncherPosition(pencil,isMobile()?194:130);
+   const savedPencil=dockPositions.proSiteEditorFab;
+   if(savedPencil&&Number.isFinite(savedPencil.x)&&Number.isFinite(savedPencil.y))applyLauncherPosition(pencil,130);
    bindLauncherDrag(pencil,()=>syncEditorPanelPosition(pencil));
   }
   applyLauncherPosition(browser,isMobile()?138:74);
