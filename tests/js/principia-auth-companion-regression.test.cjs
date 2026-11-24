@@ -43,3 +43,15 @@ test('browser cache versions are bumped for every corrected module', () => {
     'principia-living-companion.js?v=20261124-three-cdn-fix2'
   ]) assert.ok(html.includes(version), 'missing cache version: ' + version);
 });
+
+
+test('admin tools refresh after Firebase restores or clears the authenticated session', () => {
+  const auth = read('assets/js/app-part-03.js');
+  const site = read('assets/js/principia-site-editor.js');
+  const welcome = read('assets/js/principia-welcome-editor.js');
+  const canva = read('assets/js/principia-canva-editor.js');
+  assert.match(auth, /principia:auth-state-changed/);
+  for (const source of [site, welcome, canva]) {
+    assert.match(source, /addEventListener\('principia:auth-state-changed'/);
+  }
+});
