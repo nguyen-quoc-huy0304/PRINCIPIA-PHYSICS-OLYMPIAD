@@ -18,7 +18,7 @@
    '<div id="plaMsgs" aria-live="polite" style="min-height:130px;max-height:42vh;overflow:auto;padding:8px;border-radius:12px;background:var(--bg,#0d1220)"><p style="opacity:.65;font-size:13px">Khi mô hình sẵn sàng, hãy gửi câu hỏi đầu tiên.</p></div>'+
    '<div style="display:flex;gap:8px;margin-top:10px"><textarea id="plaInput" rows="2" placeholder="Hỏi gia sư PRINCIPIA..." style="flex:1;min-width:0;padding:11px;border-radius:10px;background:var(--bg,#0d1220);color:inherit;border:1px solid var(--line,#3a4055)"></textarea><button id="plaSend" onclick="principiaLocalAI.send()" class="primary">Gửi</button></div>'+
    '<p style="font-size:11px;opacity:.65;margin-top:8px">Mẹo: đóng ứng dụng nặng khác nếu GPU thiếu bộ nhớ. Không hỗ trợ WebGPU? Hãy dùng trợ lý AI trực tuyến hiện có.</p></section>';
-  const q=document.getElementById('plaInput');if(q&&question)q.value=String(question).slice(0,4000);
+  const q=document.getElementById('plaInput');if(q){const initial=question|| (context?'Hãy bắt đầu thực hiện vai trò và hướng dẫn trong ngữ cảnh trên. Đưa ra gợi ý hoặc câu hỏi đầu tiên, không giải hộ người học.':'');q.value=String(initial).slice(0,4000)}
   if(engine)status('AI đã sẵn sàng trên thiết bị.');
  }
  function status(t){const n=document.getElementById('plaStatus');if(n)n.textContent=t}
