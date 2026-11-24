@@ -346,6 +346,7 @@ async function principiaLeaderboardDb(){
  if(!firebase.apps.length)firebase.initializeApp(window.PRINCIPIA_FIREBASE_CONFIG);
  return firebase.firestore();
 }
+window.principiaLeaderboardDb=principiaLeaderboardDb;
 window.syncPrincipiaLeaderboard=function(){
  const acc=getPrincipiaAccount();if(!acc?.uid)return;
  clearTimeout(principiaLeaderboardSyncTimer);
