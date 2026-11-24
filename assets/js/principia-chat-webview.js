@@ -95,7 +95,8 @@
   const send=document.querySelector('#chatBox .ai-chat-compose button');
   if(send)send.disabled=true;
   if(input)input.value='';
-  const history=typeof window.principiaChatHistory==='function'?window.principiaChatHistory():[];
+  const stored=typeof window.principiaChatHistory==='function'?window.principiaChatHistory():[];
+  const history=Array.isArray(stored)?stored:[];
   const prior=history.filter(item=>['user','assistant'].includes(item.role)).slice(-12).map(item=>({role:item.role,content:String(item.text||'').slice(0,4000)}));
   history.push({role:'user',text:message,at:Date.now()});
   if(typeof window.savePrincipiaChatHistory==='function')window.savePrincipiaChatHistory(history);
@@ -139,7 +140,7 @@
    window.sendChat=handoffMessage;
   }
   const compose=document.querySelector('#chatBox .ai-chat-compose .ai-chat-sub');
-  if(compose)compose.textContent='Gửi sẽ sao chép câu hỏi và mở AI đang chọn ngay trong khung chat này. Dán câu hỏi vào ô nhập của AI.';
+  if(compose)compose.textContent='Gửi để chuyển câu hỏi tới Google Gemini và nhận câu trả lời ngay trong PRINCIPIA.';
   window.principiaChatWebView=Object.freeze({openGoogle:()=>navigate('https://www.google.com/webhp?igu=1','Google đang mở trong khung chat.'),openSelected,showChat,navigate});
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
