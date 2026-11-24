@@ -18,7 +18,7 @@
     ['LucianLabs','https://lucianlabs.dev/uxui-prompt/','480 interactive elements; MIT; supports plain HTML/CSS/JS'],
     ['ThreeUI','https://threeui.com/ui-elements','51 interactive UI elements; includes PRO items and 3D dependencies']
   ];
-  const ITEMS = [
+  const BASE_ITEMS = [
     ['Glass action button','Buttons','Kokonut UI','<button class="pv-glass">Launch workspace <span>↗</span></button>','.pv-glass{display:inline-flex;gap:12px;align-items:center;padding:12px 18px;border:1px solid rgba(255,255,255,.24);border-radius:14px;color:#fff;background:linear-gradient(135deg,rgba(145,125,255,.5),rgba(55,160,210,.28));box-shadow:inset 0 1px rgba(255,255,255,.25),0 12px 30px rgba(20,20,50,.2);backdrop-filter:blur(16px);cursor:pointer;transition:transform .25s,filter .25s}.pv-glass:hover{transform:translateY(-2px);filter:brightness(1.15)}'],
     ['Magnetic action','Buttons','FeralUI','<button class="pv-magnetic">Explore <span>✦</span></button>','.pv-magnetic{padding:13px 22px;border:0;border-radius:999px;color:#fff;background:#6554d9;box-shadow:0 8px 24px #6554d944;transition:transform .2s cubic-bezier(.2,.8,.2,1)}.pv-magnetic:hover{transform:translateY(-3px) scale(1.03)}'],
     ['Liquid press button','Buttons','Animate UI','<button class="pv-liquid">Continue</button>','.pv-liquid{padding:12px 22px;border:1px solid #a99aff;border-radius:13px;color:white;background:linear-gradient(120deg,#6554d9,#328eb5);box-shadow:0 5px 0 #34276f;transition:transform .16s,box-shadow .16s}.pv-liquid:active{transform:translateY(4px);box-shadow:0 1px 0 #34276f}'],
@@ -60,13 +60,14 @@
     ['Scroll progress marker','Progress','Animate UI','<div class="pv-scroll"><span></span></div>','.pv-scroll{height:3px;background:#ffffff20;overflow:hidden}.pv-scroll span{display:block;width:62%;height:100%;background:linear-gradient(90deg,#a995ff,#62c8e7);box-shadow:0 0 10px #a995ff}'],
     ['Favicon badge API','Developer','favico.js','<code class="pv-code">new Favico({ animation: "popFade" }).badge(3);</code>','.pv-code{display:block;padding:10px;border-radius:9px;background:#111528;color:#bfe7ff;font:12px ui-monospace,monospace}']
   ];
+  const ITEMS = [...BASE_ITEMS, ...(window.PRINCIPIA_COMPONENT_BATCHES || [])];
   const SKINS = [["Aurora","#9d8cff","#58d6df"],["Nebula","#bb83ff","#ff86c8"],["Solar","#ffad4d","#ffe27a"],["Glacier","#68c9ff","#a2f2ff"],["Emerald","#46d6a2","#a6efc8"],["Rose Quartz","#ff83ad","#ffc1d6"],["Amethyst","#9b72ed","#d0a7ff"],["Cyberpunk","#f35dff","#35e6ff"],["Midnight","#8295ff","#63c7f4"],["Obsidian","#d1d5e8","#858ca8"],["Copper","#d58b63","#f2c49a"],["Sakura","#ff9dbd","#c4a1ff"],["Arctic","#75e1d4","#91baff"],["Volcanic","#ff765e","#ffbf69"],["Forest","#62bd83","#b3dc8a"],["Royal","#7779ff","#d19cff"],["Ocean","#368fe0","#55d8d0"],["Lavender","#b4a0ff","#e4b6ff"],["Candy","#ff73ce","#8f83ff"],["Lime","#9bd64b","#e0ee7b"],["Sandstone","#d5b47c","#f1dfb0"],["Steel","#91a9c5","#d2e0f1"],["Ruby","#e34f72","#ff9b9b"],["Topaz","#e6ad37","#8dd9dc"],["Monochrome","#d8dce8","#8b94aa"]];\n  const VARIANTS = ['violet','cyan','mono'];
   const variantCSS = {
     violet:':root{--pv-accent:#a995ff;--pv-accent2:#65c8e8}',
     cyan:':root{--pv-accent:#56d6d0;--pv-accent2:#72aaff}',
     mono:':root{--pv-accent:#d9d9e6;--pv-accent2:#8c8ca3}'
   };
-  let activeCategory='All', activeVariant='violet', searchTerm='', currentPage=0;
+  let activeCategory='All', activeVariant='violet', activeSkin='Aurora', searchTerm='', currentPage=0;
   const pageSize=30;
   const rootId='principia-component-vault';
   const escapeHTML = value => String(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
@@ -86,7 +87,7 @@
       '#9b83ff':accent,'#328eb5':accent2,'#56d6d0':accent,'#72aaff':accent2
     };
     const css=base.css.replace(/#[0-9a-f]{6}/gi,color=>colorMap[color.toLowerCase()]||color);
-    const skinCSS='.'+wrapper+'{--pv-accent:'+accent+';--pv-accent2:'+accent2+';--pv-skin-shadow:0 12px 32px '+accent+'22}';
+    const skinCSS='.'+wrapper+'{--pv-accent:'+accent+';--pv-accent2:'+accent2+';--pv-skin-shadow:0 12px 32px '+accent+'22;--ux-accent:'+accent+';--ux-accent-2:'+accent2+';--ux-accent-soft:'+accent+'22;--ux-accent-ink:#10121c;--ux-mint:'+accent2+';--ux-page:#10121c;--ux-surface:#191b2b;--ux-surface-2:#22253a;--ux-surface-3:#30344c;--ux-ink:#f5f4ff;--ux-ink-2:#c1bfd2;--ux-ink-3:#9290a8;--ux-line:'+accent+'33;--ux-line-2:'+accent+'66;--ux-glass:'+accent+'18;--ux-glass-line:'+accent+'55;--ux-shadow:'+accent+'22;--ux-shadow-strong:'+accent+'55;--ux-grad:linear-gradient(120deg,'+accent+','+accent2+')}';
     return {...base,id,name:base.name+' — '+skinName,skin:skinName,html:'<div class="'+wrapper+'">'+base.html+'</div>',css:css+'\n'+skinCSS};
   }));
   function make(tag,attrs={},text=''){
@@ -114,9 +115,12 @@
     const categories=['All',...new Set(catalog.map(item=>item.category))];
     const select=make('select',{'aria-label':'Lọc danh mục'});
     categories.forEach(category=>select.append(make('option',{value:category},category)));
-    const variant=make('select',{'aria-label':'Biến thể màu'});
-    VARIANTS.forEach(value=>variant.append(make('option',{value},value)));
-    controls.append(search,select,variant);
+    const variant=make('select',{'aria-label':'Accent màu'});
+    VARIANTS.forEach(value=>variant.append(make('option',{value},'Accent: '+value)));
+    const skin=make('select',{'aria-label':'Đổi skin giao diện'});
+    SKINS.forEach(([name])=>skin.append(make('option',{value:name},'Skin: '+name)));
+    skin.value=activeSkin;
+    controls.append(search,select,skin,variant);
     const count=make('p',{class:'pr-vault-count','aria-live':'polite'});
     const grid=make('div',{class:'pr-vault-grid'});
     const pager=make('nav',{class:'pr-vault-pager','aria-label':'Phân trang component'});
@@ -127,11 +131,12 @@
     header.addEventListener('click',()=>{const open=body.hidden;body.hidden=!open;header.setAttribute('aria-expanded',String(open))});
     search.addEventListener('input',()=>{searchTerm=search.value.trim().toLowerCase();currentPage=0;render(grid,count,pager)});
     select.addEventListener('change',()=>{activeCategory=select.value;currentPage=0;render(grid,count,pager)});
+    skin.addEventListener('change',()=>{activeSkin=skin.value;currentPage=0;render(grid,count,pager)});
     variant.addEventListener('change',()=>{activeVariant=variant.value;currentPage=0;render(grid,count,pager)});
     render(grid,count,pager);
   }
   function render(grid,count,pager){
-    const visible=catalog.filter(item=>(activeCategory==='All'||item.category===activeCategory)&&(!searchTerm||[item.name,item.category,item.source].join(' ').toLowerCase().includes(searchTerm)));
+    const visible=catalog.filter(item=>item.skin===activeSkin&&(activeCategory==='All'||item.category===activeCategory)&&(!searchTerm||[item.name,item.category,item.source].join(' ').toLowerCase().includes(searchTerm)));
     const pageCount=Math.max(1,Math.ceil(visible.length/pageSize));
     currentPage=Math.min(currentPage,pageCount-1);
     const pageItems=visible.slice(currentPage*pageSize,(currentPage+1)*pageSize);
@@ -143,7 +148,7 @@
       const preview=make('div',{class:'pr-vault-preview'});
       const frame=make('div',{class:'pr-vault-frame'});
       const previewStyle=make('style');
-      previewStyle.textContent=variantCSS[activeVariant]+'\n'+item.css;
+      previewStyle.textContent=variantCSS[activeVariant]+'\n'+(window.PRINCIPIA_LUCIAN_TOKENS||'')+'\n'+item.css;
       const previewContent=make('div',{class:'pr-vault-content'});
       previewContent.innerHTML=item.html;
       frame.append(previewStyle,previewContent);
@@ -153,15 +158,15 @@
       const copyCSS=make('button',{type:'button'},'Copy CSS');
       const copyBoth=make('button',{type:'button'},'Copy HTML + CSS');
       copyHTML.addEventListener('click',()=>copy(item.html,copyHTML));
-      copyCSS.addEventListener('click',()=>copy(variantCSS[activeVariant]+'\n'+item.css,copyCSS));
-      copyBoth.addEventListener('click',()=>copy(item.html+'\n<style>\n'+variantCSS[activeVariant]+'\n'+item.css+'\n</style>',copyBoth));
+      copyCSS.addEventListener('click',()=>copy((window.PRINCIPIA_LUCIAN_TOKENS||'')+'\n'+variantCSS[activeVariant]+'\n'+item.css,copyCSS));
+      copyBoth.addEventListener('click',()=>copy(item.html+'\n<style>\n'+(window.PRINCIPIA_LUCIAN_TOKENS||'')+'\n'+variantCSS[activeVariant]+'\n'+item.css+'\n</style>',copyBoth));
       actions.append(copyHTML,copyCSS,copyBoth);
       const link=SOURCES.find(source=>source[0]===item.source);
       const sourceLink=make('a',{href:link?.[1]||'https://uiverse.io/',target:'_blank',rel:'noopener noreferrer'},'Source ↗');
       card.append(title,meta,preview,actions,sourceLink);
       grid.append(card);
     });
-    count.textContent=visible.length+' / '+catalog.length+' mẫu · trang '+(currentPage+1)+'/'+pageCount+' · '+ITEMS.length+' cấu trúc × '+SKINS.length+' skin';
+    count.textContent=visible.length+' mẫu · skin '+activeSkin+' · '+ITEMS.length+' cấu trúc gốc × '+SKINS.length+' skin = '+catalog.length+' biến thể · trang '+(currentPage+1)+'/'+pageCount;
     pager.replaceChildren();
     const previous=make('button',{type:'button'},'← Trước');
     const next=make('button',{type:'button'},'Tiếp →');
