@@ -65,6 +65,28 @@ for (const device of [
       startupError: document.getElementById('principiaStartupError')?.innerText || null,
       scripts: [...document.scripts].map(s => s.src).filter(Boolean)
     }));
+    const runtimeCheck = await page.evaluate(async () => {
+      if (typeof window.principiaLaunchGame !== 'function') {
+        return { available: false, reason: 'principiaLaunchGame is not loaded' };
+      }
+      await window.principiaLaunchGame();
+      const saved = JSON.parse(localStorage.getItem('principia_game_physics_v1') || '{}');
+      const lastShot = Array.isArray(saved.history) ? saved.history.at(-1) : null;
+      const wasmResource = performance.getEntriesByType('resource')
+        .find(entry => entry.name.includes('/assets/wasm/pkg/principia_core_bg.wasm'));
+      return {
+        available: true,
+        backend: lastShot?.backend || null,
+        score: lastShot?.points ?? null,
+        rangeM: lastShot?.rangeM ?? null,
+        wasmResourceLoaded: Boolean(wasmResource),
+        wasmResourceUrl: wasmResource?.name || null
+      };
+    });
+    pageState.runtimeCheck = runtimeCheck;
+    if (!runtimeCheck.available || runtimeCheck.backend !== 'Rust/WASM' || !runtimeCheck.wasmResourceLoaded) {
+      hasFailure = true;
+    }
   } catch (error) {
     pageState = { evaluationError: error.message };
     hasFailure = true;
