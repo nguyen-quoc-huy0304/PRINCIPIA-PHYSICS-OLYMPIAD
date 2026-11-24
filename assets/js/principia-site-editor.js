@@ -4,10 +4,7 @@
  const STORAGE='principia_site_edits_v1';
  let state={text:{},images:{}},enabled=false,toolbar=null;
  const escapeHtml=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
- function isAdmin(){
-  let account=null;try{account=JSON.parse(localStorage.getItem('principia_google_account')||'null')}catch(_){}
-  return !!account&&String(account.email||'').toLowerCase()==='huyquocnguyen03042011@gmail.com'&&account.uid===window.PRINCIPIA_OWNER_UID_PUBLIC;
- }
+ function isAdmin(){return !!window.PrincipiaAccess?.isOwner?.();}
  function load(){try{const parsed=JSON.parse(localStorage.getItem(STORAGE)||'{}');state={text:parsed.text||{},images:parsed.images||{}}}catch(_){state={text:{},images:{}}}}
  function persist(){try{localStorage.setItem(STORAGE,JSON.stringify(state));setStatus('Đã lưu trên thiết bị này.')}catch(error){setStatus('Không đủ dung lượng lưu. Hãy xuất bản sao hoặc giảm dung lượng ảnh.');}}
  function setStatus(message){const el=toolbar?.querySelector('[data-status]');if(el)el.textContent=message;}
