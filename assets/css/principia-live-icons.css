@@ -1,0 +1,17 @@
+/* Semantic SVG icons and tactile animation for PRINCIPIA's actual interface. */
+#app .pr-icon-enhanced{display:inline-flex;align-items:center;justify-content:center;gap:8px}
+#app .pr-live-icon{display:inline-flex;align-items:center;justify-content:center;flex:0 0 1.12em;width:1.12em;height:1.12em;line-height:1;color:var(--pr-icon-color,var(--accent,#a995ff));transition:transform .28s cubic-bezier(.2,.8,.2,1),color .2s ease,filter .2s ease;pointer-events:none}
+#app .pr-live-icon svg{display:block;width:100%;height:100%;overflow:visible}
+#app .pr-icon-enhanced:hover .pr-live-icon{transform:translateY(-1.5px) scale(1.08);filter:drop-shadow(0 0 5px currentColor)}
+#app .pr-icon-enhanced:active .pr-live-icon{transform:scale(.88)}
+#app .pr-live-icon-challenge,#app .pr-live-icon-ai{color:#b8a5ff}
+#app .pr-live-icon-rank,#app .pr-live-icon-trophy{color:#e7bd70}
+#app .pr-live-icon-check{color:#69d6a5}
+#app .pr-live-icon-lab{color:#71c9e8}
+#app .pr-tactile-press{animation:pr-tactile-press .34s cubic-bezier(.2,.8,.25,1)}
+@keyframes pr-tactile-press{0%{transform:scale(1)}35%{transform:scale(.975)}72%{transform:scale(1.012)}100%{transform:scale(1)}}
+#app button,#app a,[role="button"]{-webkit-tap-highlight-color:transparent}
+@media(prefers-reduced-motion:reduce){
+ #app .pr-live-icon,#app .pr-icon-enhanced:hover .pr-live-icon{transition:none;transform:none;filter:none}
+ #app .pr-tactile-press{animation:none}
+}
