@@ -217,7 +217,7 @@
   }
   function boot(){installEntry();new MutationObserver(installEntry).observe(document.body,{childList:true,subtree:true});}
   window.PrincipiaLearningLab=Object.freeze({
-    open,close,generateMap,normalizeMap,parseStructured:parse,validateTutorReply,
+    open,close,generateMap,normalizeMap,parseStructured:parse,validateTutorReply:validateReply,
     savedMaps:()=>read().maps.map(map=>({id:map.id,topic:map.topic,createdAt:map.createdAt})),
     stats:()=>({savedMaps:read().maps.length,activeTab:tab,tutorTurns:tutor?.turns||0})
   });
