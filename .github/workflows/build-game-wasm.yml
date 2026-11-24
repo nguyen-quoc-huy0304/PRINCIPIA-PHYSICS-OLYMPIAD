@@ -27,7 +27,7 @@ jobs:
       - name: Force-stage generated browser package
         run: git add -f assets/wasm/pkg/*
       - name: Commit generated browser package
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: "Build optimized PRINCIPIA Rust game WASM"
           file_pattern: assets/wasm/pkg/*
