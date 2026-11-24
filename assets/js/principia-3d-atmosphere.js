@@ -7,7 +7,7 @@
   const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
   const defaults={enabled:true,scene:'cosmos',intensity:0.72};
   let settings=readSettings(),canvas,ctx,raf=0,last=0,width=0,height=0,dpr=1,stars=[],pointer={x:0,y:0};
-  const scenes=['cosmos','aurora','grid','nebula','vortex','tunnel','particles','waves','planet','moon','crystal','stardust','horizon','galaxy','rings','fluid'];
+  const scenes=['cosmos','aurora','grid','nebula','vortex','tunnel','particles','waves','planet','moon','crystal','stardust','horizon','galaxy','rings','fluid','matrix','lava','topography','city'];
   function readSettings(){
     try{const v=JSON.parse(localStorage.getItem(KEY)||'{}');return{enabled:v.enabled!==false,scene:scenes.includes(v.scene)?v.scene:'cosmos',intensity:clamp(Number(v.intensity)||0.72,0.15,1)}}
     catch(_){return{...defaults}}
@@ -24,7 +24,7 @@
     check.addEventListener('change',()=>{settings.enabled=check.checked;persist();apply();});enabled.append(check,label);section.append(enabled);
     const selectLabel=document.createElement('label');selectLabel.textContent='Phong cách nền';
     const select=document.createElement('select');select.className='pr-3d-select';
-    [['cosmos','Vũ trụ quỹ đạo'],['aurora','Cực quang 3D'],['grid','Lưới không gian'],['nebula','Tinh vân chiều sâu'],['vortex','Hố đen hấp dẫn'],['tunnel','Đường hầm warp'],['particles','Mạng hạt 3D'],['waves','Sóng không gian 3D'],['planet','Hành tinh 3D'],['moon','Nguyệt thực'],['crystal','Tinh thể phát sáng'],['stardust','Mưa sao'],['horizon','Chân trời neon'],['galaxy','Thiên hà xoắn ốc'],['rings','Vành đai hành tinh'],['fluid','Dòng năng lượng']].forEach(([value,text])=>{const o=document.createElement('option');o.value=value;o.textContent=text;select.append(o)});
+    [['cosmos','Vũ trụ quỹ đạo'],['aurora','Cực quang 3D'],['grid','Lưới không gian'],['nebula','Tinh vân chiều sâu'],['vortex','Hố đen hấp dẫn'],['tunnel','Đường hầm warp'],['particles','Mạng hạt 3D'],['waves','Sóng không gian 3D'],['planet','Hành tinh 3D'],['moon','Nguyệt thực'],['crystal','Tinh thể phát sáng'],['stardust','Mưa sao'],['horizon','Chân trời neon'],['galaxy','Thiên hà xoắn ốc'],['rings','Vành đai hành tinh'],['fluid','Dòng năng lượng'],['matrix','Ma trận kỹ thuật số'],['lava','Đèn dung nham 3D'],['topography','Địa hình đồng mức'],['city','Thành phố tương lai']].forEach(([value,text])=>{const o=document.createElement('option');o.value=value;o.textContent=text;select.append(o)});
     select.value=settings.scene;select.addEventListener('change',()=>{settings.scene=select.value;persist();apply()});selectLabel.append(select);section.append(selectLabel);
     const intensityLabel=document.createElement('label');intensityLabel.textContent='Cường độ hiệu ứng';
     const range=document.createElement('input');range.type='range';range.min='0.15';range.max='1';range.step='0.05';range.value=String(settings.intensity);
@@ -203,9 +203,39 @@
     }
     glow(width*.32,height*.42,Math.min(width,height)*.3,'rgba(86,169,235,ALPHA)',.08*settings.intensity);
   }
+  function drawMatrix(t){
+    const cols=Math.ceil(width/22);ctx.font='13px monospace';
+    for(let i=0;i<cols;i++){const head=(i*73.7)%height,step=(t*.045+i*31)% (height+220),y=(head+step)%(height+220)-110;
+      for(let j=0;j<8;j++){const yy=y-j*17;if(yy<0||yy>height)continue;ctx.fillStyle='rgba(90,220,190,'+((1-j/9)*.42*settings.intensity)+')';ctx.fillText(String.fromCharCode(0x30A0+((i*17+j*13)%96)),i*22,yy)}
+    }
+  }
+  function drawLava(t){
+    const blobs=[[-.2,.25,.28,'104,101,255'],[.25,.65,.24,'65,190,220'],[.72,.32,.3,'180,110,255'],[1.05,.72,.25,'92,120,235']];
+    blobs.forEach(([x,y,r,color],i)=>{const cx=width*(x+.035*Math.sin(t*.00022+i)),cy=height*(y+.07*Math.cos(t*.00018+i*2)),radius=Math.min(width,height)*r;
+      const g=ctx.createRadialGradient(cx-radius*.25,cy-radius*.3,radius*.04,cx,cy,radius);g.addColorStop(0,'rgba('+color+','+(.27*settings.intensity)+')');g.addColorStop(.55,'rgba('+color+','+(.13*settings.intensity)+')');g.addColorStop(1,'rgba('+color+',0)');
+      ctx.fillStyle=g;ctx.beginPath();ctx.arc(cx,cy,radius,0,Math.PI*2);ctx.fill();
+    });
+  }
+  function drawTopography(t){
+    const step=48,phase=t*.00012;
+    for(let layer=0;layer<11;layer++){ctx.beginPath();
+      for(let x=-step;x<=width+step;x+=step/2){const nx=x/width,yy=height*(.2+layer*.075)+Math.sin(nx*8+phase+layer*.42)*28+Math.cos(nx*17-phase*.7+layer)*12;if(x===-step)ctx.moveTo(x,yy);else ctx.lineTo(x,yy)}
+      ctx.strokeStyle='rgba('+(layer%2?'111,175,233':'163,142,255')+','+(.1+layer*.012)*settings.intensity+')';ctx.lineWidth=1;ctx.stroke();
+    }
+    glow(width*.52,height*.54,Math.min(width,height)*.32,'rgba(98,128,255,ALPHA)',.08*settings.intensity);
+  }
+  function drawCity(t){
+    const horizon=height*.52,base=height-horizon;
+    ctx.strokeStyle='rgba(111,161,255,'+(.22*settings.intensity)+')';ctx.lineWidth=1;
+    for(let i=-12;i<=12;i++){const x=width*.5+i*width*.045;ctx.beginPath();ctx.moveTo(width*.5+(x-width*.5)*.08,horizon);ctx.lineTo(x,height);ctx.stroke()}
+    for(let i=0;i<18;i++){const p=(i/18+(t*.00006)%1)%1,y=horizon+p*p*base;ctx.globalAlpha=(.08+p*.2)*settings.intensity;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(width,y);ctx.stroke()}ctx.globalAlpha=1;
+    for(let i=0;i<25;i++){const x=(i/25)*width,w=width*.018+(i%4)*3,h=base*(.12+(Math.sin(i*9.3)*.5+.5)*.68),y=horizon-h;ctx.fillStyle='rgba(18,28,62,.7)';ctx.fillRect(x,y,w,h);ctx.strokeStyle='rgba(115,157,255,.18)';ctx.strokeRect(x,y,w,h);
+      ctx.fillStyle='rgba(151,204,255,'+(.28*settings.intensity)+')';for(let wy=y+8;wy<horizon-5;wy+=12)for(let wx=x+4;wx<x+w-2;wx+=8)ctx.fillRect(wx,wy,2,3);
+    }
+  }
   function draw(t=0,staticFrame=false){
     if(!ctx)return;ctx.clearRect(0,0,width,height);
-    if(settings.enabled){if(settings.scene==='cosmos')drawCosmos(t);else if(settings.scene==='aurora')drawAurora(t);else if(settings.scene==='grid')drawGrid(t);else if(settings.scene==='vortex')drawVortex(t);else if(settings.scene==='tunnel')drawTunnel(t);else if(settings.scene==='particles')drawParticles(t);else if(settings.scene==='waves')drawWaves(t);else if(settings.scene==='planet')drawPlanet(t);else if(settings.scene==='moon')drawMoon(t);else if(settings.scene==='crystal')drawCrystal(t);else if(settings.scene==='stardust')drawStardust(t);else if(settings.scene==='horizon')drawHorizon(t);else if(settings.scene==='galaxy')drawGalaxy(t);else if(settings.scene==='rings')drawRings(t);else if(settings.scene==='fluid')drawFluid(t);else drawNebula(t)}
+    if(settings.enabled){if(settings.scene==='cosmos')drawCosmos(t);else if(settings.scene==='aurora')drawAurora(t);else if(settings.scene==='grid')drawGrid(t);else if(settings.scene==='vortex')drawVortex(t);else if(settings.scene==='tunnel')drawTunnel(t);else if(settings.scene==='particles')drawParticles(t);else if(settings.scene==='waves')drawWaves(t);else if(settings.scene==='planet')drawPlanet(t);else if(settings.scene==='moon')drawMoon(t);else if(settings.scene==='crystal')drawCrystal(t);else if(settings.scene==='stardust')drawStardust(t);else if(settings.scene==='horizon')drawHorizon(t);else if(settings.scene==='galaxy')drawGalaxy(t);else if(settings.scene==='rings')drawRings(t);else if(settings.scene==='fluid')drawFluid(t);else if(settings.scene==='matrix')drawMatrix(t);else if(settings.scene==='lava')drawLava(t);else if(settings.scene==='topography')drawTopography(t);else if(settings.scene==='city')drawCity(t);else drawNebula(t)}
     if(!staticFrame&&settings.enabled&&!reduced&&!document.hidden)raf=requestAnimationFrame(draw);
   }
   function stop(){if(raf)cancelAnimationFrame(raf);raf=0}
