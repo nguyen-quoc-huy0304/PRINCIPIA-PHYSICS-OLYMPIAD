@@ -64,16 +64,16 @@
     const prompt = [
       'Thiết kế lộ trình học Vật lý thực tế trong ' + duration + ' phút.',
       'Chủ đề: ' + topic + '. Mục tiêu: ' + goalNames[goal] + '.',
-      'PRINCIPIA có thư viện ' + (catalog.total || 3111) + ' mục học tập. Các mục sau là dữ liệu nội bộ để chọn chiến lược phù hợp, tuyệt đối không hiển thị tên phương pháp hoặc giải thích thuật toán cho người học:\\n' + methodContext,
+      'PRINCIPIA có thư viện ' + (catalog.total || 3111) + ' mục học tập. Các mục sau là dữ liệu nội bộ để chọn chiến lược phù hợp, tuyệt đối không hiển thị tên phương pháp hoặc giải thích thuật toán cho người học:\n' + methodContext,
       'Áp dụng cách học âm thầm: truy xuất trí nhớ, ví dụ mẫu giảm dần, luyện tập có chủ đích, xen kẽ dạng bài, giải thích bằng lời, kiểm tra trường hợp biên, ôn giãn cách và tự đánh giá tùy mục tiêu. Chỉ dùng những cách thật sự phù hợp.',
       'Tạo 3–6 nhiệm vụ cụ thể theo trình tự. Mỗi nhiệm vụ phải có title, topic, minutes (5–60), dayOffset (0–30 tính từ hôm nay), note và đầu ra kiểm chứng được. Tổng thời lượng không vượt quá ' + duration + ' phút.',
       'Nếu mục tiêu là Olympic, có ít nhất một nhiệm vụ nhận diện cấu trúc, chọn định luật, kiểm tra giả thiết hoặc chứng minh. Nếu mục tiêu là học bằng cách giảng dạy, có một nhiệm vụ chuẩn bị lời giảng và câu hỏi cho AI Student.',
       'Không tiết lộ tên phương pháp. Không bịa nguồn khoa học, không hứa đảm bảo điểm số. Trả về DUY NHẤT JSON hợp lệ theo schema: {"summary":"mô tả ngắn","tasks":[{"title":"...","topic":"...","minutes":15,"dayOffset":0,"note":"đầu ra cần hoàn thành"}]}. Không thêm markdown.'
-    ].join('\\n');
+    ].join('\n');
     button.disabled = true; setStatus('Đang gửi yêu cầu tới Google Gemini…'); output.textContent = 'PRINCIPIA đang xây dựng lộ trình…';
     try {
       const answer = await window.principiaAI.ask(prompt);
-      generatedPlan = parsePlan(answer, topic);
+      generatedPlan = parsePlan(answer, topic, duration);
       output.textContent = formatPlan(generatedPlan);
       panel.querySelector('[data-save-plan]').disabled = false;
       setStatus('Đã tạo lộ trình. Kiểm tra các nhiệm vụ rồi bấm Lưu vào kế hoạch học tập.');
@@ -84,15 +84,15 @@
       if (button.isConnected) button.disabled = false;
     }
   }
-  function parsePlan(raw, fallbackTopic) {
-    const text = String(raw || '').trim().replace(/^\`\`\`(?:json)?\\s*/i, '').replace(/\\s*\`\`\`$/, '');
+  function parsePlan(raw, fallbackTopic, maxMinutes = 240) {
+    const text = String(raw || '').trim().replace(/^\`\`\`(?:json)?\s*/i, '').replace(/\s*\`\`\`$/, '');
     const start = text.indexOf('{');
     const end = text.lastIndexOf('}');
     if (start < 0 || end <= start) throw new Error('Gemini không trả về lộ trình JSON hợp lệ. Hãy tạo lại.');
     let data;
     try { data = JSON.parse(text.slice(start, end + 1)); }
     catch (_) { throw new Error('Không đọc được cấu trúc lộ trình. Hãy tạo lại.'); }
-    if (!data || typeof data.summary !== 'string' || !Array.isArray(data.tasks) || data.tasks.length < 3 || data.tasks.length > 6) {
+    if (!data || typeof data.summary !== 'string' || !data.summary.trim() || !Array.isArray(data.tasks) || data.tasks.length < 3 || data.tasks.length > 6) {
       throw new Error('Lộ trình phải có mô tả và từ 3 đến 6 nhiệm vụ.');
     }
     const tasks = data.tasks.map(task => {
@@ -107,16 +107,16 @@
       }
       return { title, topic, minutes, dayOffset, note };
     });
-    if (tasks.reduce((sum, task) => sum + task.minutes, 0) > 240) {
+    if (tasks.reduce((sum, task) => sum + task.minutes, 0) > maxMinutes) {
       throw new Error('Tổng thời lượng lộ trình quá dài. Hãy tạo lại.');
     }
     return { summary: data.summary.trim().slice(0, 600), tasks };
   }
 
   function formatPlan(plan) {
-    return plan.summary + '\\n\\n' + plan.tasks.map((task, index) =>
-      (index + 1) + '. ' + task.title + '\\n   ' + task.topic + ' · ' + task.minutes + ' phút · sau ' + task.dayOffset + ' ngày\\n   ' + task.note
-    ).join('\\n\\n');
+    return plan.summary + '\n\n' + plan.tasks.map((task, index) =>
+      (index + 1) + '. ' + task.title + '\n   ' + task.topic + ' · ' + task.minutes + ' phút · sau ' + task.dayOffset + ' ngày\n   ' + task.note
+    ).join('\n\n');
   }
 
   function localDate(offset) {
@@ -172,7 +172,7 @@
     observer.observe(document.body, { childList: true, subtree: true });
     window.addEventListener('pagehide', () => observer.disconnect(), { once: true });
   }
-  window.PrincipiaStudyPathways = Object.freeze({ open, close });
+  window.PrincipiaStudyPathways = Object.freeze({ open, close, parsePlan });
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once: true });
   else boot();
 })();
