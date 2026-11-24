@@ -7,14 +7,14 @@
   const SOURCES = [
     ['Animate UI','https://animate-ui.com/','48 animated primitives and UI elements; React-based'],
     ['Kokonut UI','https://kokonutui.com/docs','116 public components; React + Tailwind; Pro collection separate'],
-    ['Uiverse','https://uiverse.io/','7,411 community UI elements on the observed live page; inspect each item attribution/license'],
+    ['Uiverse','https://uiverse.io/','Community-made UI elements; each imported element retains its creator and license information'],
     ['Libraries.dev','https://libraries.dev/introduction','5 React effect libraries; not a component catalog'],
     ['UI/UX Pro Max','https://devanshutak25.github.io/ui-ux-ref/','757 reference entries across styles, palettes, charts and rules'],
     ['FeralUI','https://feralui.dev/','13 public components; license must be verified before copying'],
     ['Anime.js','https://animejs.com/','1 animation library; already vendored locally'],
     ['favico.js','http://lab.ejci.net/favico.js/','1 favicon library; already vendored locally'],
-    ['Hairline UI','https://hairline.lucasmarkes.com/','224 React components; adapt each component to vanilla HTML/CSS/JS'],
-    ['Koboyo Mascot','https://koboyo.com/page-mascot','52 mascot designs; held pending completion of character submissions'],
+    ['Hairline UI','https://hairline.lucasmarkes.com/','33 pointer-responsive SVG figures; adapt interaction patterns to vanilla HTML/CSS/JS'],
+    ['Koboyo Mascot','https://koboyo.com/page-mascot','52 mascot designs; only pointer-response behavior is adapted to the existing PRINCIPIA character set'],
     ['LucianLabs','https://lucianlabs.dev/uxui-prompt/','480 interactive elements; MIT; supports plain HTML/CSS/JS'],
     ['ThreeUI','https://threeui.com/browse','51 interactive UI elements; includes PRO items and 3D dependencies']
   ];
