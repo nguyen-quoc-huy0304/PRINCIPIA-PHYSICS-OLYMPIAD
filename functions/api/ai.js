@@ -21,7 +21,7 @@ async function verifyFirebaseUser(request, env) {
   const data = await response.json();
   const user = data.users?.[0];
   if (!user?.localId || user.disabled) throw new Error("UNAUTHORIZED");
-  return { uid: user.localId, email: user.email || "" };
+  return true;
 }
 function normalizeMessages(messages) {
   if (!Array.isArray(messages) || messages.length < 1 || messages.length > MAX_MESSAGES) {
@@ -42,15 +42,16 @@ export async function onRequestPost({ request, env }) {
   const length = Number(request.headers.get("content-length") || 0);
   if (length > MAX_BODY) return json({ error: "Yêu cầu quá lớn." }, 413);
   try {
-    const user = await verifyFirebaseUser(request, env);
+    await verifyFirebaseUser(request, env);
     if (!env.GEMINI_API_KEY) return json({ error: "Máy chủ chưa cấu hình Gemini API key." }, 503);
     const raw = await request.text();
     if (raw.length > MAX_BODY) return json({ error: "Yêu cầu quá lớn." }, 413);
     const input = JSON.parse(raw);
     if (!validText(input.system, 6000)) return json({ error: "Thiếu hướng dẫn hệ thống hợp lệ." }, 400);
     const contents = normalizeMessages(input.messages);
-    const model = "gemini-2.5-flash";
-    const upstream = await fetch("https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent", {
+    const model = "gemini-3.5-flash-lite";
+    const endpoint = "https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent";
+    const init = {
       method: "POST",
       headers: { "content-type": "application/json", "x-goog-api-key": env.GEMINI_API_KEY },
       body: JSON.stringify({
@@ -58,15 +59,23 @@ export async function onRequestPost({ request, env }) {
         contents,
         generationConfig: { temperature: 0.5, maxOutputTokens: 1400 }
       })
-    });
+    };
+    let upstream;
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      if (attempt > 0) await new Promise(resolve => setTimeout(resolve, attempt * 450));
+      upstream = await fetch(endpoint, init);
+      if (upstream.ok || upstream.status === 429 || upstream.status < 500 || attempt === 2) break;
+    }
     const result = await upstream.json().catch(() => ({}));
     if (!upstream.ok) {
-      const status = upstream.status === 429 ? 429 : 502;
-      return json({ error: upstream.status === 429 ? "AI đang quá tải hoặc đã đạt giới hạn lượt gọi." : "Google Gemini không thể xử lý yêu cầu lúc này." }, status);
+      if (upstream.status === 429) {
+        return json({ error: "Gemini Free Tier đã đạt giới hạn lượt gọi. Hãy đợi quota làm mới rồi thử lại." }, 429);
+      }
+      return json({ error: upstream.status >= 500 ? "Gemini đang tạm thời quá tải. Hãy thử lại sau ít phút." : "Cấu hình Gemini model hoặc API key chưa hợp lệ." }, 502);
     }
     const answer = (result.candidates?.[0]?.content?.parts || []).map(part => part.text || "").join("").trim();
     if (!answer) return json({ error: "Gemini không trả về nội dung. Hãy thử gửi lại." }, 502);
-    return json({ answer, provider: "Google Gemini", model, requestId: crypto.randomUUID(), user: user.uid });
+    return json({ answer, provider: "Google Gemini", model, requestId: crypto.randomUUID() });
   } catch (error) {
     const code = error?.message || "";
     if (code === "UNAUTHORIZED") return json({ error: "Phiên đăng nhập hết hạn. Hãy đăng nhập lại." }, 401);
