@@ -15,6 +15,7 @@
   let toastHost = null;
   let toastSequence = 0;
   let favicon = null;
+  let faviconBadgeCount = 0;
   const SETTINGS_KEY = 'principia_experience_settings_v1';
   let settings = readSettings();
 
@@ -175,6 +176,7 @@
   function notify(message, options = {}) {
     const text = String(message ?? '').trim().slice(0, 500);
     if (!text) return null;
+    if (document.visibilityState === 'hidden') setFaviconBadge(++faviconBadgeCount);
     const host = ensureToastHost();
     const toast = document.createElement('div');
     const id = ++toastSequence;
@@ -293,6 +295,9 @@
     setupPointerEffects();
     setupRipple();
     setupFavicon();
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) { faviconBadgeCount = 0; setFaviconBadge(0); }
+    });
 
     mutationObserver = new MutationObserver(records => {
       records.forEach(record => {
