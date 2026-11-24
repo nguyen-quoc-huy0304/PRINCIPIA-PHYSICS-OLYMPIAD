@@ -21,7 +21,7 @@ This inventory separates published source counts from components actually vendor
 
 ## Existing PRINCIPIA vault
 
-The vault now contains 537 base structures: 40 original/adapted PRINCIPIA patterns, all 480 Lucian UX/UI Prompt elements (001–480), and 17 vanilla-CSS Uiverse Galaxy elements. Each can be displayed with 25 selectable skins, for 13,800 selectable visual variants. The 13,800 figure is not 13,800 distinct source components. Imported Lucian source code retains its MIT attribution in the exported HTML. Live previews run in sandboxed iframes with scripts enabled but network access and same-origin access denied.
+The vault now contains 552 base structures: 40 original/adapted PRINCIPIA patterns, all 480 Lucian UX/UI Prompt elements (001–480), and 32 vanilla-CSS Uiverse Galaxy elements. Each can be displayed with 25 selectable skins, for 13,800 selectable visual variants. The 13,800 figure is not 13,800 distinct source components. Imported Lucian source code retains its MIT attribution in the exported HTML. Live previews run in sandboxed iframes with scripts enabled but network access and same-origin access denied.
 
 ## Import policy
 
@@ -33,7 +33,7 @@ The vault now contains 537 base structures: 40 original/adapted PRINCIPIA patter
 6. Import in batches, deduplicate, isolate CSS, preserve keyboard accessibility and reduced-motion behavior, and verify mobile layouts before calling an item integrated.
 
 
-Uiverse import note: 17 components with embedded vanilla CSS were copied from the MIT-licensed `uiverse-io/galaxy` archive. Tailwind-only snippets and entries without self-contained CSS were excluded from this batch. Original creator comments and explicit Uiverse/MIT attribution are retained. The upstream live site advertises 7,475 community elements; that count is not the number imported into PRINCIPIA.
+Uiverse import note: 32 components with embedded vanilla CSS were copied from the MIT-licensed `uiverse-io/galaxy` archive. Tailwind-only snippets and entries without self-contained CSS were excluded from this batch. Original creator comments and explicit Uiverse/MIT attribution are retained. The upstream live site advertises 7,475 community elements; that count is not the number imported into PRINCIPIA.
 
 Additional Uiverse batch: 6 more self-contained HTML/CSS elements were imported from the MIT-licensed `uiverse-io/galaxy` archive. Items without embedded CSS, Tailwind-only snippets, and inaccessible source paths were skipped rather than guessed.
 
