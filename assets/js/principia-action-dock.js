@@ -91,6 +91,7 @@
  }
  function closePanel(panel){if(panel){panel.remove()} }
  function openBrowser(){
+  if(window.principiaChatWebView?.openGoogle){window.principiaChatWebView.openGoogle();return;}
   closePanel(browserPanel);
   const panel=document.createElement('section');panel.id='principiaMiniBrowser';panel.setAttribute('role','dialog');panel.setAttribute('aria-label','Tìm kiếm Internet');
   panel.innerHTML=header('⌕ Tìm kiếm Internet','principiaBrowserClose','<button type="button" id="principiaBrowserBack" title="Quay lại">←</button><button type="button" id="principiaBrowserForward" title="Tiến">→</button><button type="button" id="principiaBrowserReload" title="Tải lại">↻</button>')+
