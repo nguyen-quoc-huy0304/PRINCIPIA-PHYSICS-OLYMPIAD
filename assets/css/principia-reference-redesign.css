@@ -1,7 +1,8 @@
 /* PRINCIPIA Reference Redesign — visual skin only.
  * Keeps every existing page, DOM region, navigation target, component behavior and brand asset.
- * Visual language adapted from Animate UI, Kokonut UI, Uiverse, Libraries.dev,
- * UI/UX Pro Max, FeralUI, Anime.js, Hairline and ThreeUI patterns.
+ * Visual language references all 12 supplied sources: Animate UI, Kokonut UI, Uiverse,
+ * Libraries.dev, UI/UX Pro Max, FeralUI, Anime.js, favico.js, Hairline, Koboyo Mascot,
+ * LucianLabs and ThreeUI. Runtime adapters and catalog entries live in dedicated modules.
  * Direct third-party snippets retain their own source/license notices in their dedicated files.
  */
 :root{
