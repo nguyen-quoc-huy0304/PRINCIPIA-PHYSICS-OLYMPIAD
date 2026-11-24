@@ -24,8 +24,12 @@ jobs:
           version: latest
       - name: Build optimized Rust WebAssembly package
         run: wasm-pack build rust --target web --release --out-dir ../assets/wasm/pkg --out-name principia_core
+      - name: Force-stage generated browser package
+        run: git add -f assets/wasm/pkg/*
       - name: Commit generated browser package
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "Build optimized PRINCIPIA Rust game WASM"
           file_pattern: assets/wasm/pkg/*
+          add_options: "-f"
+          disable_globbing: true
