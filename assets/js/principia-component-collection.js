@@ -26,18 +26,6 @@
       });
     });
   }
-  function setupTabs() {
-    document.addEventListener('click', event => {
-      const tab = event.target instanceof Element ? event.target.closest('.tabs .tab') : null;
-      if (!tab || tab.closest(excluded)) return;
-      const group = tab.closest('.tabs');
-      if (!group) return;
-      group.querySelectorAll('.tab').forEach(item => {
-        const active = item === tab || item.classList.contains('active');
-        item.setAttribute('aria-selected', String(active));
-      });
-    }, true);
-  }
   function setupQuizFeedback() {
     document.addEventListener('click', event => {
       const option = event.target instanceof Element ? event.target.closest('.quiz .option,.quiz .answer') : null;
@@ -49,7 +37,6 @@
   }
   function init() {
     mark();
-    setupTabs();
     setupQuizFeedback();
     const observer = new MutationObserver(records => records.forEach(record => {
       record.addedNodes.forEach(node => { if (node.nodeType === Node.ELEMENT_NODE) mark(node); });
