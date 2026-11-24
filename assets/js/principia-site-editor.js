@@ -68,8 +68,14 @@
   Object.assign(panel.style,{position:'fixed',right:'18px',bottom:'186px',zIndex:'2147483005',width:'min(270px,calc(100vw - 36px))',padding:'12px',borderRadius:'14px',background:'rgba(18,20,34,.96)',border:'1px solid rgba(255,255,255,.22)',boxShadow:'0 8px 28px #0006',color:'#fff',font:'13px system-ui'});
   panel.querySelectorAll('button').forEach(button=>Object.assign(button.style,{border:'1px solid rgba(255,255,255,.22)',borderRadius:'9px',padding:'8px 10px',background:'rgba(255,255,255,.1)',color:'#fff',font:'inherit',cursor:'pointer'}));
   toolbar=panel;
-  fab.addEventListener('click',()=>{panel.hidden=!panel.hidden;});
-  panel.querySelector('[data-close]').addEventListener('click',()=>{panel.hidden=true;});
+  fab.addEventListener('click',()=>{
+   panel.hidden=!panel.hidden;
+   document.dispatchEvent(new CustomEvent('principia:layout-edit-toggle',{detail:{enabled:!panel.hidden}}));
+  });
+  panel.querySelector('[data-close]').addEventListener('click',()=>{
+   panel.hidden=true;
+   document.dispatchEvent(new CustomEvent('principia:layout-edit-toggle',{detail:{enabled:false}}));
+  });
   panel.querySelector('[data-toggle]').addEventListener('click',()=>setEnabled(!enabled));
   panel.querySelector('[data-export]').addEventListener('click',()=>{
    const exported=typeof window.PrincipiaSiteEditor?.export==='function'?window.PrincipiaSiteEditor.export():JSON.stringify(state,null,2);
