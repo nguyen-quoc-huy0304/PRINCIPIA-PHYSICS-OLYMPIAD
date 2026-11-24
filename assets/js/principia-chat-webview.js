@@ -118,8 +118,15 @@
  }
  function install(){
   ensure();
+  const picker=document.querySelector('#chatBox .ai-picker-head');
+  if(picker){
+   const label=picker.querySelector('label');
+   if(label)label.textContent='Nhà cung cấp AI · Google Gemini';
+   picker.querySelector('select')?.setAttribute('hidden','');
+   picker.querySelector('.ai-add-btn')?.setAttribute('hidden','');
+  }
   const openButton=document.querySelector('#chatBox .ai-picker-head button[onclick="openSelectedAI()"]');
-  if(openButton){openButton.textContent='Mở trong chat';openButton.title='Mở AI trong khung chat hiện tại';}
+  if(openButton){openButton.hidden=true;}
   if(typeof window.openSelectedAI==='function'&&!window.openSelectedAI.__principiaSingleView){
    const replacement=function(){return openSelected()};
    replacement.__principiaSingleView=true;
