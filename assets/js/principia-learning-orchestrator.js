@@ -1,0 +1,195 @@
+/* PRINCIPIA Learning Orchestrator — applies learning science invisibly in the learner journey. */
+(() => {
+  'use strict';
+  const STORE = 'principia_learning_orchestrator_v1';
+  const MAX_RECENT = 12;
+  const GOALS = {
+    understand: ['hiểu khái niệm', 'giải thích bằng hình', 'mô hình hóa', 'ví dụ cụ thể'],
+    remember: ['ghi nhớ', 'truy xuất', 'ôn tập', 'flashcard', 'nhắc lại'],
+    solve: ['giải bài', 'phân tích', 'chiến lược', 'luyện tập'],
+    teach: ['giảng', 'dạy', 'giải thích', 'phản biện'],
+    recover: ['lỗi', 'sửa lỗi', 'thành thạo', 'tự kiểm tra']
+  };
+  const DEFAULT_STEPS = [
+    'Tự nêu điều đã biết và điều cần tìm trước khi xem gợi ý.',
+    'Chọn nguyên lý phù hợp, giải thích vì sao nguyên lý đó áp dụng được.',
+    'Thử một câu tương tự mà không xem lời giải, sau đó tự kiểm tra.'
+  ];
+  let state = load();
+
+  function load() {
+    try {
+      const raw = JSON.parse(localStorage.getItem(STORE) || '{}');
+      return {
+        recent: Array.isArray(raw.recent) ? raw.recent.slice(-MAX_RECENT) : [],
+        profile: raw.profile && typeof raw.profile === 'object' ? raw.profile : {},
+        sessions: Number.isFinite(Number(raw.sessions)) ? Math.max(0, Number(raw.sessions)) : 0
+      };
+    } catch (_) {
+      return { recent: [], profile: {}, sessions: 0 };
+    }
+  }
+
+  function save() {
+    try { localStorage.setItem(STORE, JSON.stringify(state)); }
+    catch (error) { console.warn('[PRINCIPIA] Learning profile could not be saved:', error); }
+  }
+
+  function clean(value, max = 240) {
+    return String(value == null ? '' : value).replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, max);
+  }
+
+  function catalog() {
+    return Array.isArray(window.PRINCIPIA_STUDY_METHOD_CATALOG)
+      ? window.PRINCIPIA_STUDY_METHOD_CATALOG
+      : [];
+  }
+
+  function inferGoal(context) {
+    if (context.goal && GOALS[context.goal]) return context.goal;
+    const percent = Number(context.percent);
+    const errors = Number(context.errorCount) || 0;
+    if (errors >= 3 || (Number.isFinite(percent) && percent < 50)) return 'recover';
+    if (Number.isFinite(percent) && percent >= 80) return 'solve';
+    if (/giảng|dạy|teach|classroom/i.test(context.phase || '')) return 'teach';
+    if (/ôn|nhớ|flashcard|review/i.test(context.phase || '')) return 'remember';
+    return 'understand';
+  }
+
+  function topicFrom(context) {
+    const explicit = clean(context.topic, 120);
+    if (explicit) return explicit;
+    const heading = document.querySelector('#app h1,#app h2,.page-title,h1')?.textContent;
+    return clean(heading || 'Vật lý', 120);
+  }
+
+  function choose(context = {}) {
+    const items = catalog();
+    const topic = topicFrom(context);
+    const goal = inferGoal(context);
+    const terms = GOALS[goal];
+    const topicWords = topic.toLocaleLowerCase('vi').split(/[^\p{L}\p{N}]+/u).filter(word => word.length > 2);
+    const recent = new Set(state.recent.map(item => item.id));
+    const scored = items.map(item => {
+      const title = clean(item.title, 180);
+      const desc = clean(item.desc, 500);
+      const category = clean(item.category, 100);
+      const haystack = (title + ' ' + desc + ' ' + category).toLocaleLowerCase('vi');
+      const topicHits = topicWords.filter(word => haystack.includes(word)).length;
+      const goalHits = terms.filter(term => haystack.includes(term)).length;
+      const isCore = Number(item.id) > 0 && Number(item.id) <= 231;
+      const steps = Array.isArray(item.steps) ? item.steps.map(step => clean(step, 500)).filter(Boolean).slice(0, 5) : [];
+      const score = topicHits * 5 + goalHits * 3 + (steps.length ? 2 : 0) + (isCore ? 1 : 0) - (recent.has(item.id) ? 10 : 0);
+      return { item, score, steps };
+    }).filter(entry => entry.item && entry.item.title).sort((a, b) => b.score - a.score);
+    const candidate = scored.find(entry => !recent.has(entry.item.id)) || scored[0];
+    if (!candidate) {
+      return { topic, goal, title: 'Bước học tiếp theo', description: 'Bắt đầu bằng một câu hỏi ngắn để xác định phần bạn đã hiểu.', steps: DEFAULT_STEPS, methodId: null };
+    }
+    return {
+      topic, goal,
+      title: displayTitle(goal, context),
+      description: displayDescription(goal, context),
+      steps: candidate.steps.length ? candidate.steps : DEFAULT_STEPS,
+      methodId: candidate.item.id
+    };
+  }
+
+  function displayTitle(goal, context) {
+    if (goal === 'recover') return 'Gỡ đúng chỗ đang vướng';
+    if (goal === 'remember') return 'Kiểm tra trí nhớ trước khi xem lại';
+    if (goal === 'solve') return 'Thử thách vận dụng tiếp theo';
+    if (goal === 'teach') return 'Giải thích lại để kiểm tra hiểu sâu';
+    if (Number(context.percent) >= 80) return 'Mở rộng sang tình huống mới';
+    return 'Xây nền tảng rồi tự thử';
+  }
+
+  function displayDescription(goal, context) {
+    if (goal === 'recover') return 'PRINCIPIA ưu tiên tìm lỗ hổng kiến thức và đưa bạn quay lại đúng bước cần sửa.';
+    if (goal === 'remember') return 'Hãy thử nhớ lại từ đầu. Chỉ mở tài liệu sau khi đã tự trả lời.';
+    if (goal === 'solve') return 'Bạn đã có nền tảng. Tiếp theo là bài có cách biểu diễn hoặc dữ kiện khác.';
+    if (goal === 'teach') return 'Hãy giảng bằng lời của mình. Học sinh AI sẽ hỏi tiếp ở chỗ còn thiếu căn cứ.';
+    if (Number(context.percent) >= 80) return 'Kết quả gần đây cho thấy bạn có thể thử bài chuyển giao khó hơn.';
+    return 'Bắt đầu bằng hình dung hiện tượng, xác định giả thiết rồi mới đi vào công thức.';
+  }
+
+  function promptFor(plan, extra = '') {
+    const steps = plan.steps.map((step, index) => (index + 1) + '. ' + step).join('\n');
+    return [
+      'Bạn là gia sư PRINCIPIA. Hãy áp dụng quy trình sư phạm sau một cách tự nhiên, tuyệt đối không nêu tên phương pháp hay nói về thuật toán chọn phương pháp.',
+      'Chủ đề: ' + plan.topic + '. Mục tiêu: ' + plan.goal + '.',
+      'Các bước hướng dẫn nội bộ:\n' + steps,
+      'Dẫn dắt từng bước, chỉ hỏi một câu tại một thời điểm. Chờ người học trả lời rồi mới phản hồi. Không tiết lộ đáp án cuối trước khi người học tự thử. Khi người học sai, xác định chính xác lỗ hổng và giảm độ khó; khi làm tốt, tăng thử thách hoặc đổi cách biểu diễn.',
+      clean(extra, 1800)
+    ].filter(Boolean).join('\n\n');
+  }
+
+  function recordQuiz(event) {
+    const detail = event?.detail || {};
+    const percent = Number(detail.percent);
+    if (!Number.isFinite(percent)) return;
+    const topic = clean(detail.source || detail.topic || 'Vật lý', 120);
+    const mistakes = Array.isArray(detail.mistakes) ? detail.mistakes : [];
+    state.profile = {
+      topic, percent: Math.max(0, Math.min(100, percent)),
+      errorCount: Math.min(100, mistakes.length),
+      updatedAt: Date.now(), mode: clean(detail.mode || 'quiz', 40)
+    };
+    const plan = choose({ topic, percent, errorCount: mistakes.length });
+    if (plan.methodId != null) {
+      state.recent = state.recent.filter(item => item.id !== plan.methodId);
+      state.recent.push({ id: plan.methodId, at: Date.now() });
+      state.recent = state.recent.slice(-MAX_RECENT);
+    }
+    save();
+    window.dispatchEvent(new CustomEvent('principia:next-step-updated', {
+      detail: { title: plan.title, description: plan.description, topic: plan.topic, goal: plan.goal }
+    }));
+  }
+
+  function getNext(context = {}) {
+    return choose(Object.assign({}, state.profile, context));
+  }
+
+  function begin(context = {}) {
+    const plan = getNext(context);
+    state.sessions += 1;
+    if (plan.methodId != null) {
+      state.recent = state.recent.filter(item => item.id !== plan.methodId);
+      state.recent.push({ id: plan.methodId, at: Date.now() });
+      state.recent = state.recent.slice(-MAX_RECENT);
+    }
+    save();
+    const prompt = promptFor(plan, context.extra || '');
+    if (window.principiaLocalAI?.open) window.principiaLocalAI.open(prompt);
+    else if (window.principiaSuiteAI) window.principiaSuiteAI();
+    else if (window.notify) window.notify('Trợ lý học tập đang khởi động. Hãy thử lại sau.');
+    else alert('Trợ lý học tập chưa sẵn sàng. Hãy thử lại sau.');
+    return { title: plan.title, topic: plan.topic };
+  }
+
+  function directive(context = {}) {
+    const plan = getNext(context);
+    return promptFor(plan, 'Tích hợp cách dẫn dắt này vào vai trò hiện tại mà không nhắc tên kỹ thuật học tập.');
+  }
+
+  function startFocus() {
+    if (window.PrincipiaProMastery?.open) {
+      window.PrincipiaProMastery.open('study');
+      return true;
+    }
+    if (window.principiaSuiteFocus) {
+      window.principiaSuiteFocus();
+      return true;
+    }
+    return false;
+  }
+
+  window.PrincipiaLearningOrchestrator = Object.freeze({
+    recommend: getNext, begin, directive, startFocus,
+    getProfile: () => JSON.parse(JSON.stringify(state.profile)),
+    stats: () => ({ sessions: state.sessions, recentChoices: state.recent.length })
+  });
+
+  window.addEventListener('principia:quiz-completed', recordQuiz);
+})();
