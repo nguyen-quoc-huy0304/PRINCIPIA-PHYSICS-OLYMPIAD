@@ -51,8 +51,33 @@
  function sphereIn(parent,scale,pos,m){const o=new window.THREE.Mesh(new window.THREE.SphereGeometry(1,20,16),m);o.scale.set(...scale);o.position.set(...pos);parent.add(o)}
  function initWelcome(){document.querySelectorAll('.plc-welcome-3d').forEach(el=>{if(el.dataset.ready)return;el.dataset.ready='1';const canvas=el.querySelector('canvas');loadThree().then(()=>createScene(canvas,'welcome')).catch(()=>{});speakWelcomeOnce()})}
  function speakWelcomeOnce(){try{if(!('speechSynthesis'in window)||sessionStorage.getItem('principia-companion-greeted'))return;sessionStorage.setItem('principia-companion-greeted','1');const utterance=new SpeechSynthesisUtterance('Chào bạn! Sẵn sàng khám phá vật lý chưa?');utterance.lang='vi-VN';utterance.rate=1;window.speechSynthesis.speak(utterance)}catch(_){}}
- function loadThree(){if(window.THREE)return Promise.resolve();if(window.__principiaThreeLoading)return window.__principiaThreeLoading;
-  window.__principiaThreeLoading=new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/three.js/r160/three.min.js';s.onload=()=>resolve();s.onerror=()=>reject(new Error('Three.js load failed'));document.head.appendChild(s)});return window.__principiaThreeLoading}
+ function loadThree(){
+  if(window.THREE?.WebGLRenderer)return Promise.resolve(window.THREE);
+  if(window.__principiaThreeLoading)return window.__principiaThreeLoading;
+  const sources=[
+   'https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js',
+   'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js',
+   'https://unpkg.com/three@0.160.0/build/three.min.js'
+  ];
+  window.__principiaThreeLoading=(async()=>{
+   let lastError=null;
+   for(const src of sources){
+    try{
+     await new Promise((resolve,reject)=>{
+      const script=document.createElement('script');
+      const timer=window.setTimeout(()=>{script.remove();reject(new Error('Timeout loading '+src))},12000);
+      script.src=src;script.async=true;script.crossOrigin='anonymous';
+      script.onload=()=>{window.clearTimeout(timer);if(window.THREE?.WebGLRenderer)resolve();else{script.remove();reject(new Error('Three.js loaded without WebGLRenderer: '+src))}};
+      script.onerror=()=>{window.clearTimeout(timer);script.remove();reject(new Error('Unable to load '+src))};
+      document.head.appendChild(script);
+     });
+     return window.THREE;
+    }catch(error){lastError=error;console.warn('[PRINCIPIA] Three.js CDN failed; trying fallback.',error)}
+   }
+   throw lastError||new Error('All Three.js sources failed');
+  })().catch(error=>{window.__principiaThreeLoading=null;throw error});
+  return window.__principiaThreeLoading;
+ }
  function mount(){
   initWelcome();
   if(document.body.classList.contains('principia-welcome-active'))return;
