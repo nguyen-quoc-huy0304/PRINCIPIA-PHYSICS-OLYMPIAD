@@ -56,14 +56,23 @@
     root.querySelectorAll?.(SELECTOR).forEach(node => nodes.push(node));
     for (const node of nodes) {
       if (node.dataset.prIconDone || node.closest('#proSiteEditorPanel,.principia-mobile-nav,[data-pr-no-icon]')) continue;
-      if (node.querySelector('.pr-live-icon,svg,img')) { node.dataset.prIconDone='1'; continue; }
       const icon = choose(labelOf(node));
       if (!icon || !ICONS[icon]) continue;
-      const span=document.createElement('span');
-      span.className='pr-live-icon pr-live-icon-'+icon;
-      span.setAttribute('aria-hidden','true');
-      span.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+ICONS[icon]+'</svg>';
-      node.insertBefore(span,node.firstChild);
+      const svg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+ICONS[icon]+'</svg>';
+      const navHolder=node.querySelector(':scope > .nav-default-icon');
+      if(navHolder){
+        if(!navHolder.dataset.prOriginalMarkup)navHolder.dataset.prOriginalMarkup=navHolder.innerHTML;
+        navHolder.innerHTML=svg;
+        navHolder.classList.add('pr-nav-live-icon');
+        navHolder.setAttribute('aria-hidden','true');
+      }else{
+        if(node.querySelector('.pr-live-icon,svg,img')){node.dataset.prIconDone='1';continue}
+        const span=document.createElement('span');
+        span.className='pr-live-icon pr-live-icon-'+icon;
+        span.setAttribute('aria-hidden','true');
+        span.innerHTML=svg;
+        node.insertBefore(span,node.firstChild);
+      }
       node.classList.add('pr-icon-enhanced');
       node.dataset.prIconDone='1';
     }
@@ -85,7 +94,12 @@
     document.addEventListener('principia:rendered',()=>decorate());
     document.addEventListener('principia:page-changed',()=>decorate());
     window.addEventListener('pagehide',()=>observer.disconnect(),{once:true});
-    window.PrincipiaLiveIcons=Object.freeze({refresh:decorate,icons:Object.keys(ICONS).length});
+    window.PrincipiaLiveIcons=Object.freeze({
+      refresh:decorate,
+      icons:Object.keys(ICONS).length,
+      names:Object.freeze(Object.keys(ICONS)),
+      getSvg(name){return ICONS[name]?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+ICONS[name]+'</svg>':'';}
+    });
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
