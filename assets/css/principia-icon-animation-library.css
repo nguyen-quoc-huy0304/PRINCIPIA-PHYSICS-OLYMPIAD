@@ -1,0 +1,5 @@
+/* PRINCIPIA icon library + motion bridge */
+.pr-fa-icon,.fa-solid,.fa-regular,.fa-brands{display:inline-flex;align-items:center;justify-content:center;line-height:1;flex:0 0 auto}
+[data-pr-fa]{display:inline-flex;align-items:center;gap:.5em}
+[data-pr-animate]{will-change:transform,opacity}
+@media(prefers-reduced-motion:reduce){[data-pr-animate],.animate__animated{animation:none!important;transition:none!important}}
