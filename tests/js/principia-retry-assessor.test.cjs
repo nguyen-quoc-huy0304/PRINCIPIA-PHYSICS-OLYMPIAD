@@ -34,9 +34,9 @@ test('retry assessor requires an explicit attempt and never calls Gemini for inv
 
 test('retry assessor sends only the question, reference answer and independent attempt', async () => {
   const window = { principiaAI: { ask: async prompt => {
-    assert.match(prompt, /ĐỀ BÀI/);
-    assert.match(prompt, /ĐÁP ÁN THAM CHIẾU/);
-    assert.match(prompt, /LỜI GIẢI ĐỘC LẬP/);
+    assert.match(prompt, /BẢN GHI JSON/);
+    assert.match(prompt, /referenceAnswer/);
+    assert.match(prompt, /learnerAttempt/);
     assert.doesNotMatch(prompt, /email|uid|họ tên|địa chỉ/i);
     return '{"correct":false,"score":45,"feedback":"Thiếu điều kiện áp dụng định luật.","nextStep":"Xác định hệ trước."}';
   } } };
