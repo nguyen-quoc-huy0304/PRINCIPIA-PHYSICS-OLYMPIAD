@@ -111,3 +111,18 @@ test('study playbook generators execute and produce 3,111 uniquely titled catalo
   assert.equal(advanced[0].id, 1472);
   assert.equal(advanced.at(-1).id, 3111);
 });
+
+test('invisible learning orchestrator adapts to learner results without exposing method names', () => {
+  const source = read('assets/js/principia-learning-orchestrator.js');
+  assert.match(source, /principia:quiz-completed/);
+  assert.match(source, /principia:next-step-updated/);
+  assert.match(source, /window\.PRINCIPIA_STUDY_METHOD_CATALOG/);
+  assert.match(source, /function inferGoal/);
+  assert.match(source, /function choose/);
+  assert.match(source, /function promptFor/);
+  assert.match(source, /tuyệt đối không nêu tên phương pháp/);
+  assert.match(read('index.html'), /principia-learning-orchestrator\.js/);
+  assert.match(read('assets/js/principia-adaptive-learning.js'), /data-ppa-guided/);
+  assert.match(read('assets/js/principia-pro-mastery.js'), /data-guided-study/);
+  assert.match(read('assets/js/principia-pro-mastery.js'), /Hướng dẫn sư phạm nội bộ/);
+});
