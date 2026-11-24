@@ -45,8 +45,12 @@
     if (!rect.width || !rect.height) return;
     const x = Math.max(0, Math.min(100, ((event.clientX - rect.left) / rect.width) * 100));
     const y = Math.max(0, Math.min(100, ((event.clientY - rect.top) / rect.height) * 100));
+    const tiltX = Math.max(-1.8, Math.min(1.8, (50 - y) * 0.036));
+    const tiltY = Math.max(-2.2, Math.min(2.2, (x - 50) * 0.044));
     card.style.setProperty('--pr-live-x', x.toFixed(1) + '%');
     card.style.setProperty('--pr-live-y', y.toFixed(1) + '%');
+    card.style.setProperty('--pr-live-rx', tiltX.toFixed(2) + 'deg');
+    card.style.setProperty('--pr-live-ry', tiltY.toFixed(2) + 'deg');
   }
 
   function resetSpotlight(event) {
