@@ -89,6 +89,11 @@
     const iframe = player.querySelector('iframe');
     if (iframe) iframe.style.display = '';
     if (homePlaceholder?.parentNode) homePlaceholder.parentNode.insertBefore(player, homePlaceholder);
+    else {
+      const notice = document.querySelector('#principiaProMastery .pps-pinned-note');
+      if (notice) notice.replaceWith(player);
+      else document.querySelector('#principiaProMastery .ppm-content')?.append(player);
+    }
     homePlaceholder?.remove();
     homePlaceholder = null;
     player.querySelector('[data-pps-action="pin"]').textContent = 'Ghim góc';
