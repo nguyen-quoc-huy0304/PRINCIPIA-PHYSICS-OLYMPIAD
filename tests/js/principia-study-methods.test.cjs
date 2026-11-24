@@ -50,5 +50,5 @@ test('ant emblem is vector-based and the application references it', () => {
   assert.match(logo, /<path d="M310 310L248 263/);
   assert.match(app, /principia-ant-logo\.svg/);
   assert.match(read('index.html'), /principia-reference-polish\.css/);
-  assert.match(read('assets/js/principia-study-player.js'), /document.body.appendChild\\(player\\)/);
+  assert.match(read('assets/js/principia-study-player.js'), /document.body.appendChild\(player\)/);
 });
