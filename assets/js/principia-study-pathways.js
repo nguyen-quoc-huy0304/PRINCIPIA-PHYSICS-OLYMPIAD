@@ -61,10 +61,12 @@
     }).slice(0, 12);
     const candidates = [...new Map([...topicMethods, ...coreMethods].map(item => [item.id, item])).values()].slice(0, 18);
     const methodContext = candidates.map(item => '- ' + item.title + ' [' + item.category + ']: ' + item.desc).join('\n').slice(0, 3500);
+    const scienceDirective = window.PrincipiaLearningScience?.directive?.({ topic, goal, minutes: duration, phase: 'pathway' }) || '';
     const prompt = [
       'Thiết kế lộ trình học Vật lý thực tế trong ' + duration + ' phút.',
       'Chủ đề: ' + topic + '. Mục tiêu: ' + goalNames[goal] + '.',
       'PRINCIPIA có thư viện ' + (catalog.total || 3111) + ' mục học tập. Các mục sau là dữ liệu nội bộ để chọn chiến lược phù hợp, tuyệt đối không hiển thị tên phương pháp hoặc giải thích thuật toán cho người học:\n' + methodContext,
+      scienceDirective,
       'Áp dụng cách học âm thầm: truy xuất trí nhớ, ví dụ mẫu giảm dần, luyện tập có chủ đích, xen kẽ dạng bài, giải thích bằng lời, kiểm tra trường hợp biên, ôn giãn cách và tự đánh giá tùy mục tiêu. Chỉ dùng những cách thật sự phù hợp.',
       'Tạo 3–6 nhiệm vụ cụ thể theo trình tự. Mỗi nhiệm vụ phải có title, topic, minutes (5–60), dayOffset (0–30 tính từ hôm nay), note và đầu ra kiểm chứng được. Tổng thời lượng không vượt quá ' + duration + ' phút.',
       'Nếu mục tiêu là Olympic, có ít nhất một nhiệm vụ nhận diện cấu trúc, chọn định luật, kiểm tra giả thiết hoặc chứng minh. Nếu mục tiêu là học bằng cách giảng dạy, có một nhiệm vụ chuẩn bị lời giảng và câu hỏi cho AI Student.',
