@@ -1,6 +1,6 @@
 /* PRINCIPIA Experience System
  * One progressive-enhancement layer for motion, tactile UI, feedback and accessibility.
- * Vanilla JS; no React, third-party runtime, network calls or storage dependency.
+ * Vanilla JS with optional vendored favico.js; no React or network calls.
  */
 (() => {
   'use strict';
