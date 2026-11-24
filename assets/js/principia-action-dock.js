@@ -242,7 +242,8 @@
    const root=ensureDockRoot();
    if(node.parentElement!==root)root.appendChild(node);
    node.style.setProperty('position','absolute','important');
-   node.style.setProperty('inset','auto','important');
+   node.style.setProperty('left','auto','important');
+   node.style.setProperty('top','auto','important');
    node.style.setProperty('transform','none','important');
    node.style.setProperty('display',welcomeActive&&node.id!=='proSiteEditorFab'?'none':'grid','important');
    node.style.setProperty('z-index','2147483005','important');
