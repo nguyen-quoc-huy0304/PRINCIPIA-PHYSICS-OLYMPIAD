@@ -2,11 +2,66 @@
 (()=> {
  'use strict';
  const STORAGE='principia_site_edits_v1';
- let state={text:{},images:{}},enabled=false,toolbar=null;
+ let state={text:{},images:{}},enabled=false,toolbar=null,remoteRef=null,remoteUnsubscribe=null,remoteReady=false,remoteLoading=false;
  const escapeHtml=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  function isAdmin(){return !!window.PrincipiaAccess?.isOwner?.();}
- function load(){try{const parsed=JSON.parse(localStorage.getItem(STORAGE)||'{}');state={text:parsed.text||{},images:parsed.images||{}}}catch(_){state={text:{},images:{}}}}
- function persist(){try{localStorage.setItem(STORAGE,JSON.stringify(state));setStatus('Đã lưu trên thiết bị này.')}catch(error){setStatus('Không đủ dung lượng lưu. Hãy xuất bản sao hoặc giảm dung lượng ảnh.');}}
+ function normalizeState(value){
+  const text={},images={};
+  if(value&&typeof value.text==='object'&&value.text)Object.entries(value.text).slice(0,2500).forEach(([key,item])=>{if(typeof key==='string'&&key.length<=600&&typeof item==='string'&&item.length<=12000)text[key]=item});
+  if(value&&typeof value.images==='object'&&value.images)Object.entries(value.images).slice(0,250).forEach(([key,item])=>{if(typeof key==='string'&&key.length<=600&&typeof item==='string'&&item.length<=1100000&&/^data:image\/(?:png|jpeg|webp|gif);base64,/i.test(item))images[key]=item});
+  return {text,images};
+ }
+ function load(){try{state=normalizeState(JSON.parse(localStorage.getItem(STORAGE)||'{}'))}catch(_){state={text:{},images:{}}}}
+ function persist(){
+  try{localStorage.setItem(STORAGE,JSON.stringify(state));setStatus('Đã lưu trên thiết bị này.')}
+  catch(error){setStatus('Không đủ dung lượng lưu. Hãy xuất bản sao hoặc giảm dung lượng ảnh.');return;}
+  syncRemote();
+ }
+ function applyStoredEdits(){
+  const elements=[...document.body.querySelectorAll('*')];
+  elements.filter(el=>el.tagName==='IMG').forEach(img=>{const src=state.images[elementPath(img)];if(typeof src==='string'&&img.src!==src)img.src=src});
+  const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
+  const changes=[];let node;
+  while((node=walker.nextNode()))if(!excluded(node)){
+   const key=elementPath(node.parentElement)+':text:'+Array.prototype.indexOf.call(node.parentElement.childNodes,node);
+   if(Object.prototype.hasOwnProperty.call(state.text,key)&&node.nodeValue!==state.text[key])changes.push({node,value:state.text[key]});
+  }
+  changes.forEach(({node,value})=>{node.nodeValue=value});
+ }
+ async function subscribeRemote(){
+  if(remoteLoading||remoteUnsubscribe||!window.firebase?.auth?.().currentUser)return;
+  remoteLoading=true;
+  try{
+   if(typeof window.principiaLeaderboardDb!=='function')throw new Error('Firestore adapter chưa sẵn sàng.');
+   const db=await window.principiaLeaderboardDb();
+   remoteRef=db.collection('principiaContent').doc('siteEdits');
+   remoteUnsubscribe=remoteRef.onSnapshot(snapshot=>{
+    if(snapshot.exists){
+     state=normalizeState(snapshot.data());
+     try{localStorage.setItem(STORAGE,JSON.stringify(state))}catch(_){}
+     applyStoredEdits();if(isAdmin())scan();
+    }else if(isAdmin())syncRemote();
+    remoteReady=true;remoteLoading=false;
+    const toggle=toolbar?.querySelector('[data-toggle]');if(toggle)toggle.disabled=false;
+    const importer=toolbar?.querySelector('[data-import]');if(importer)importer.disabled=false;
+    if(isAdmin())setStatus('Đã đồng bộ nội dung PRINCIPIA trên các thiết bị.');
+   },error=>{remoteReady=true;remoteLoading=false;const toggle=toolbar?.querySelector('[data-toggle]');if(toggle)toggle.disabled=false;const importer=toolbar?.querySelector('[data-import]');if(importer)importer.disabled=false;setStatus('Không đồng bộ được: '+(error?.message||'lỗi Firestore')+'. Bản cục bộ vẫn được giữ.')});
+  }catch(error){
+   remoteReady=true;remoteLoading=false;
+   const toggle=toolbar?.querySelector('[data-toggle]');if(toggle)toggle.disabled=false;
+   const importer=toolbar?.querySelector('[data-import]');if(importer)importer.disabled=false;
+   setStatus('Đang dùng bản lưu cục bộ: '+(error?.message||'Firestore chưa sẵn sàng'));
+  }
+ }
+ function stopRemote(){remoteUnsubscribe?.();remoteUnsubscribe=null;remoteRef=null;remoteReady=false;remoteLoading=false;}
+ function syncRemote(){
+  if(!isAdmin()||!remoteRef||!remoteReady)return;
+  const payload={text:state.text,images:state.images};
+  if(new Blob([JSON.stringify(payload)]).size>800000){setStatus('Nội dung vượt giới hạn đồng bộ Firestore 800 KB. Bản cục bộ vẫn được lưu; hãy giảm dung lượng ảnh.');return;}
+  remoteRef.set({...payload,updatedAt:window.firebase.firestore.FieldValue.serverTimestamp()})
+   .then(()=>setStatus('Đã lưu và đồng bộ nội dung PRINCIPIA.'))
+   .catch(error=>setStatus('Đã lưu cục bộ; đồng bộ thất bại: '+(error?.message||'Firestore')));
+ }
  function setStatus(message){const el=toolbar?.querySelector('[data-status]');if(el)el.textContent=message;}
  function elementPath(element){
   const parts=[];let node=element;
@@ -22,7 +77,7 @@
   return !parent||parent.closest('[data-pro-editor-toolbar],[data-pro-edit-key],script,style,noscript,textarea,input,select,option,svg,[contenteditable="true"]')||!node.nodeValue.trim();
  }
  function scan(){
-  if(!isAdmin())return;
+  if(!isAdmin()){applyStoredEdits();return;}
   const elements=[...document.body.querySelectorAll('*')];
   elements.forEach(el=>{if(!el.dataset.proEditPath)el.dataset.proEditPath=elementPath(el);});
   elements.filter(el=>el.tagName==='IMG').forEach(img=>{
@@ -121,9 +176,10 @@
   picker.onchange=async()=>{const file=picker.files?.[0];if(!file)return;try{const src=await compressImage(file);state.images[image.dataset.proImageEditKey]=src;image.src=src;persist();}catch(error){setStatus(error.message||'Không thể thay ảnh.');}};
   picker.click();
  },true);
- document.addEventListener('principia:rendered',()=>queueMicrotask(()=>{makeToolbar();scan();}));
- document.addEventListener('principia:auth-state-changed',()=>{if(isAdmin()){makeToolbar();scan();return;}enabled=false;toolbar?.remove();toolbar=null;document.getElementById('proSiteEditorFab')?.remove();document.querySelectorAll('[data-pro-edit-key]').forEach(el=>{el.contentEditable='false';el.classList.remove('pro-edit-text')});});
- load();
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{makeToolbar();scan();},{once:true});else{makeToolbar();scan();}
- window.PrincipiaSiteEditor={setEnabled,export:()=>JSON.stringify(state),getState:()=>JSON.parse(JSON.stringify(state))};
+ document.addEventListener('principia:rendered',()=>queueMicrotask(()=>{applyStoredEdits();if(isAdmin()){makeToolbar();scan();}}));
+ document.addEventListener('principia:auth-state-changed',event=>{if(event.detail?.authenticated){subscribeRemote();if(isAdmin())makeToolbar();else applyStoredEdits();return;}stopRemote();enabled=false;toolbar?.remove();toolbar=null;document.getElementById('proSiteEditorFab')?.remove();document.querySelectorAll('[data-pro-edit-key]').forEach(el=>{el.contentEditable='false';el.classList.remove('pro-edit-text')});});
+ load();applyStoredEdits();
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{if(isAdmin())makeToolbar();scan();},{once:true});else{if(isAdmin())makeToolbar();scan();}
+ window.addEventListener('pagehide',stopRemote,{once:true});
+ window.PrincipiaSiteEditor={setEnabled,export:()=>JSON.stringify(state),getState:()=>JSON.parse(JSON.stringify(state)),sync:subscribeRemote};
 })();
