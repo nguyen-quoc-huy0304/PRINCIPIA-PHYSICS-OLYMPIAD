@@ -13,7 +13,7 @@ This repository is a static HTML/CSS/JavaScript application. The reference proje
 | [UI/UX Pro Max](https://devanshutak25.github.io/ui-ux-ref/) | Design tokens, color hierarchy, responsive layouts, typography and accessibility rules. |
 | [FeralUI](https://feralui.dev/) | Magnetic pointer response and spring-like interaction on desktop; touch and reduced-motion fallbacks. |
 | [Anime.js](https://animejs.com/) | Timeline-like sequencing and easing using the browser Web Animations API; no second animation runtime. |
-| [favico.js](https://lab.ejci.net/favico.js/) | Dynamic favicon badge/status API implemented with Canvas. No favico.js package is bundled. |
+| [favico.js](https://lab.ejci.net/favico.js/) | Dynamic favicon badge/status API reuses PRINCIPIA’s existing SVG data-URI badge implementation. No favico.js package is bundled. |
 | [Hairline](https://hairline.lucasmarkes.com/) | Pointer-responsive isometric SVG figure in the lab header, using native SVG/CSS. |
 | [Koboyo page-mascot](https://koboyo.com/page-mascot) | Pointer gaze response is attached only to the existing PRINCIPIA bundled pose element; no character sheets are replaced. |
 | [Lucian UX/UI Prompt](https://lucianlabs.dev/en/uxui-prompt/) | Interactive, self-contained workbench patterns, light/dark mapping and save/copy/export actions. |
