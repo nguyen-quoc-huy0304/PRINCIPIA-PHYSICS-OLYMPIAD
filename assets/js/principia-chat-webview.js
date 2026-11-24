@@ -91,20 +91,29 @@
   const input=document.getElementById('chatInput');
   const message=input?.value.trim()||'';
   if(!message){window.notify?.('Nhập câu hỏi trước khi gửi.');return}
-  const ai=selectedAI();
-  if(!ai){window.notify?.('Hãy chọn một AI trước.');return}
-  const copied=await copyText(message);
-  if(typeof window.principiaChatHistory==='function'&&typeof window.savePrincipiaChatHistory==='function'){
-   const history=window.principiaChatHistory();
-   history.push({role:'user',text:message,at:Date.now()});
-   window.savePrincipiaChatHistory(history);
-   window.renderPrincipiaChatHistory?.();
-  }
+  if(!window.principiaAI?.ask){window.notify?.('Google AI chưa sẵn sàng. Hãy tải lại trang.');return}
+  const send=document.querySelector('#chatBox .ai-chat-compose button');
+  if(send)send.disabled=true;
   if(input)input.value='';
-  openSelected();
-  const status=document.getElementById('principiaChatWebStatus');
-  if(status)status.textContent=copied?'Câu hỏi đã được sao chép. Dán vào ô nhập của '+String(ai.name||'AI')+' trong khung này.':'Không thể sao chép tự động. Hãy quay lại Chat để sao chép câu hỏi.';
-  if(!copied)window.notify?.('Trình duyệt không cho phép sao chép tự động. Hãy thử lại bằng thao tác sao chép thủ công.');
+  const history=typeof window.principiaChatHistory==='function'?window.principiaChatHistory():[];
+  const prior=history.filter(item=>['user','assistant'].includes(item.role)).slice(-12).map(item=>({role:item.role,content:String(item.text||'').slice(0,4000)}));
+  history.push({role:'user',text:message,at:Date.now()});
+  if(typeof window.savePrincipiaChatHistory==='function')window.savePrincipiaChatHistory(history);
+  window.renderPrincipiaChatHistory?.();
+  const status=document.querySelector('#chatBox .ai-chat-sub');
+  if(status)status.textContent='Đang gửi yêu cầu tới Google Gemini…';
+  try{
+   const answer=await window.principiaAI.ask(message,{history:prior});
+   history.push({role:'assistant',text:answer,at:Date.now()});
+   if(typeof window.savePrincipiaChatHistory==='function')window.savePrincipiaChatHistory(history);
+   window.renderPrincipiaChatHistory?.();
+   if(status)status.textContent='Đã nhận phản hồi từ Google Gemini.';
+  }catch(error){
+   history.push({role:'assistant',text:'Không gửi được yêu cầu: '+String(error.message||error),at:Date.now()});
+   if(typeof window.savePrincipiaChatHistory==='function')window.savePrincipiaChatHistory(history);
+   window.renderPrincipiaChatHistory?.();
+   if(status)status.textContent=String(error.message||error);
+  }finally{if(send)send.disabled=false}
  }
  function install(){
   ensure();
