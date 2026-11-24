@@ -2,15 +2,19 @@
 (()=> {
  'use strict';
  const KEY='principia_motion_library_v1';
- const DEFAULTS={cards:'lift',buttons:'press',navigation:'glow',mascot:'breathe'};
+ const DEFAULTS={cards:'lift',buttons:'press',navigation:'glow',mascot:'breathe',forms:'focus',tabs:'underline',progress:'glow',ai:'breathe'};
  const GROUPS={
   cards:{label:'Thẻ nội dung',selector:'#app .panel,#app .tile,#app .stat,#app .feature-card,#app .learning-card,#app .dashboard-card,#app .module-card',effects:['none','lift','glow','float','tilt']},
   buttons:{label:'Nút thao tác',selector:'#app button,#app [role="button"]',effects:['none','press','lift','glow','magnetic']},
   navigation:{label:'Điều hướng',selector:'#app .nav a,#app .nav button,#app nav a,#app nav button',effects:['none','glow','lift','underline','pulse']},
-  mascot:{label:'Mascot PRINCIPIA',selector:'#app .principia-bundled-pose',effects:['none','breathe','float','glow']}
+  mascot:{label:'Mascot PRINCIPIA',selector:'#app .principia-bundled-pose',effects:['none','breathe','float','glow']},
+  forms:{label:'Ô nhập liệu',selector:'#app input,#app textarea,#app select',effects:['none','focus','glow']},
+  tabs:{label:'Tab và bộ lọc',selector:'#app [role="tab"],#app .tabs button,#app .tab-button',effects:['none','underline','pulse','lift']},
+  progress:{label:'Thanh tiến độ / XP',selector:'#app .progress,#app [role="progressbar"],#app .xpbar',effects:['none','glow','shimmer']},
+  ai:{label:'Trạng thái AI',selector:'#app .ai-thinking,#app .ai-loading,#app .thinking,#app .typing-indicator,#app [data-ai-state="thinking"]',effects:['none','breathe','pulse','glow']}
  };
  const EXCLUDED='#proSiteEditorPanel,.modal,.modalbg,[role="dialog"],.chat-box,.principia-mobile-nav,#principiaM3ECanvasWorkspace';
- const EFFECT_LABELS={none:'Mặc định',lift:'Lift nhẹ',glow:'Glow',float:'Float',tilt:'3D tilt',press:'Physical press',magnetic:'Magnetic hover',underline:'Underline',pulse:'Pulse',breathe:'Breathe'};
+ const EFFECT_LABELS={none:'Mặc định',lift:'Lift nhẹ',glow:'Glow',float:'Float',tilt:'3D tilt',press:'Physical press',magnetic:'Magnetic hover',underline:'Underline',pulse:'Pulse',breathe:'Breathe',focus:'Focus ring',shimmer:'Shimmer'};
  let settings=read();
  let observer=null;
  const make=(tag,attrs={},value='')=>{
