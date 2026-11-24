@@ -5,18 +5,18 @@
 (() => {
   'use strict';
   const SOURCES = [
-    ['Animate UI','https://animate-ui.com/','Motion primitives, transitions, tabs, dialogs'],
-    ['Kokonut UI','https://kokonutui.com/docs','AI controls, tactile buttons, cards, loaders'],
-    ['Uiverse','https://uiverse.io/','Community HTML/CSS controls and visual elements'],
-    ['Libraries.dev','https://libraries.dev/introduction','Component discovery and border/motion patterns'],
-    ['UI/UX Pro Max','https://devanshutak25.github.io/ui-ux-ref/','Design tokens, UX, typography and layout rules'],
-    ['FeralUI','https://feralui.dev/','Physics-driven and magnetic interactions'],
-    ['Anime.js','https://animejs.com/','Timeline, spring-like and transform motion'],
-    ['favico.js','http://lab.ejci.net/favico.js/','Animated favicon notification badges'],
-    ['Hairline UI','https://hairline.lucasmarkes.com/','Fine-line SVG and geometric visual language'],
-    ['Koboyo Mascot','https://koboyo.com/page-mascot','Mascot gaze and page companion behavior'],
-    ['LucianLabs','https://lucianlabs.dev/en/','Interactive workbench and product UI patterns'],
-    ['ThreeUI','https://threeui.com/browse','Spatial, depth and 3D interface references']
+    ['Animate UI','https://animate-ui.com/','48 animated primitives and UI elements; React-based'],
+    ['Kokonut UI','https://kokonutui.com/docs','116 public components; React + Tailwind; Pro collection separate'],
+    ['Uiverse','https://uiverse.io/','7,475 community UI elements; inspect each item attribution/license'],
+    ['Libraries.dev','https://libraries.dev/introduction','5 React effect libraries; not a component catalog'],
+    ['UI/UX Pro Max','https://devanshutak25.github.io/ui-ux-ref/','757 reference entries across styles, palettes, charts and rules'],
+    ['FeralUI','https://feralui.dev/','13 public components; license must be verified before copying'],
+    ['Anime.js','https://animejs.com/','1 animation library; already vendored locally'],
+    ['favico.js','http://lab.ejci.net/favico.js/','1 favicon library; already vendored locally'],
+    ['Hairline UI','https://hairlineui.com/ui','224 React components; MIT; requires vanilla-JS adaptation'],
+    ['Koboyo Mascot','https://koboyo.com/page-mascot','52 mascot designs; held pending completion of character submissions'],
+    ['LucianLabs','https://lucianlabs.dev/uxui-prompt/','480 interactive elements; MIT; supports plain HTML/CSS/JS'],
+    ['ThreeUI','https://threeui.com/ui-elements','51 interactive UI elements; includes PRO items and 3D dependencies']
   ];
   const ITEMS = [
     ['Glass action button','Buttons','Kokonut UI','<button class="pv-glass">Launch workspace <span>↗</span></button>','.pv-glass{display:inline-flex;gap:12px;align-items:center;padding:12px 18px;border:1px solid rgba(255,255,255,.24);border-radius:14px;color:#fff;background:linear-gradient(135deg,rgba(145,125,255,.5),rgba(55,160,210,.28));box-shadow:inset 0 1px rgba(255,255,255,.25),0 12px 30px rgba(20,20,50,.2);backdrop-filter:blur(16px);cursor:pointer;transition:transform .25s,filter .25s}.pv-glass:hover{transform:translateY(-2px);filter:brightness(1.15)}'],
@@ -103,7 +103,12 @@
     const header=make('button',{type:'button','aria-expanded':'false',class:'pr-vault-toggle'},'▦ Component Vault · '+catalog.length+' mẫu');
     const body=make('div',{class:'pr-vault-body',hidden:''});
     const sourceRow=make('div',{class:'pr-vault-sources'});
-    SOURCES.forEach(([name,url])=>{const a=make('a',{href:url,target:'_blank',rel:'noopener noreferrer'},name);sourceRow.append(a)});
+    SOURCES.forEach(([name,url,detail])=>{
+      const a=make('a',{href:url,target:'_blank',rel:'noopener noreferrer',title:detail},name+' · '+(detail.split(';')[0]));
+      sourceRow.append(a);
+    });
+    const sourceNote=make('p',{class:'pr-vault-source-note'},
+      'Số lượng là thống kê công bố trên trang nguồn, không phải số mẫu đã nhập vào PRINCIPIA. Chỉ sao chép mã khi giấy phép cho phép; các thư viện React cần chuyển đổi trước khi dùng trong ứng dụng HTML/CSS/JS hiện tại.');
     const controls=make('div',{class:'pr-vault-controls'});
     const search=make('input',{type:'search',placeholder:'Tìm component…','aria-label':'Tìm component'});
     const categories=['All',...new Set(catalog.map(item=>item.category))];
@@ -115,7 +120,7 @@
     const count=make('p',{class:'pr-vault-count','aria-live':'polite'});
     const grid=make('div',{class:'pr-vault-grid'});
     const pager=make('nav',{class:'pr-vault-pager','aria-label':'Phân trang component'});
-    body.append(sourceRow,controls,count,grid,pager);
+    body.append(sourceRow,sourceNote,controls,count,grid,pager);
     section.append(header,body);
     const status=panel.querySelector('[data-status]');
     if(status)panel.insertBefore(section,status);else panel.append(section);
