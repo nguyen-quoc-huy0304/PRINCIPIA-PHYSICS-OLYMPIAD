@@ -158,8 +158,10 @@
     });
     count.textContent=visible.length+' / '+catalog.length+' mẫu · trang '+(currentPage+1)+'/'+pageCount+' · '+ITEMS.length+' cấu trúc × '+SKINS.length+' skin';
     pager.replaceChildren();
-    const previous=make('button',{type:'button',disabled:String(currentPage===0)},'← Trước');
-    const next=make('button',{type:'button',disabled:String(currentPage>=pageCount-1)},'Tiếp →');
+    const previous=make('button',{type:'button'},'← Trước');
+    const next=make('button',{type:'button'},'Tiếp →');
+    previous.disabled=currentPage===0;
+    next.disabled=currentPage>=pageCount-1;
     const pageLabel=make('span',{},'Trang '+(currentPage+1)+' / '+pageCount);
     previous.addEventListener('click',()=>{currentPage=Math.max(0,currentPage-1);render(grid,count,pager)});
     next.addEventListener('click',()=>{currentPage=Math.min(pageCount-1,currentPage+1);render(grid,count,pager)});
