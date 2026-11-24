@@ -129,40 +129,6 @@
   window.scrollTo({top:0,behavior:'smooth'});
  }
 
- function mountTrigger(){
-  const topRight=document.querySelector('#app .topright');
-  if(!topRight||isWelcome())return;
-  let trigger=document.getElementById(IDS.trigger);
-  if(!trigger){
-   trigger=document.createElement('button');trigger.id=IDS.trigger;trigger.type='button';
-   trigger.textContent='⌘';trigger.title='Trung tâm lệnh (Ctrl + Shift + P)';
-   trigger.setAttribute('aria-label','Mở trung tâm lệnh PRINCIPIA');
-   trigger.addEventListener('click',openPalette);
-  }
-  const avatar=topRight.querySelector('.avatar,.avatar-default,[data-profile-menu]');
-  const streak=[...topRight.querySelectorAll('button.pill')].find(node=>/ngày học|thành tích/i.test(node.textContent+' '+node.title));
-  const anchor=avatar||null;
-  if(anchor&&trigger.nextElementSibling!==anchor)topRight.insertBefore(trigger,anchor);
-  else if(!anchor&&trigger.parentElement!==topRight)topRight.appendChild(trigger);
-  if(streak&&trigger.parentElement===topRight&&trigger.previousElementSibling!==streak)streak.insertAdjacentElement('afterend',trigger);
- }
-
- function mountBackTop(){
-  let button=document.getElementById(IDS.backTop);
-  if(!button){
-   button=document.createElement('button');button.id=IDS.backTop;button.type='button';
-   button.textContent='↑';button.title='Lên đầu trang';button.setAttribute('aria-label','Cuộn lên đầu trang');
-   button.addEventListener('click',scrollToTop);document.body.appendChild(button);
-  }
-  button.style.display=isWelcome()?'none':'inline-flex';
- }
-
- function updateBackTop(){
-  const button=document.getElementById(IDS.backTop);if(!button)return;
-  const visible=(window.scrollY||document.scrollingElement?.scrollTop||0)>420&&!isWelcome();
-  button.classList.toggle('is-visible',visible);
- }
-
  function mountEditorTools(){
   const panel=document.getElementById('proSiteEditorPanel');
   if(!panel||panel.querySelector('[data-principia-extra-tools]'))return;
