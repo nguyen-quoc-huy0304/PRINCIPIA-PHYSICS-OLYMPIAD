@@ -1,0 +1,28 @@
+/* PRINCIPIA Living Companion presentation layer */
+#principiaLivingCompanion{position:fixed;z-index:1200;right:20px;bottom:94px;width:132px;display:flex;flex-direction:column;align-items:center;gap:8px;touch-action:none}
+#principiaLivingCompanion .plc-mascot{width:116px;height:116px;border:0;padding:0;background:transparent;position:relative;cursor:pointer;border-radius:50%;overflow:visible;filter:drop-shadow(0 10px 22px rgba(108,86,210,.3));}
+#principiaLivingCompanion .plc-canvas{width:100%;height:100%;display:block}
+#principiaLivingCompanion .plc-fallback{position:absolute;inset:0;display:grid;place-items:center;font-size:48px;color:var(--pr-ref-accent,#a992ff);pointer-events:none}
+#principiaLivingCompanion.plc-webgl-ready .plc-fallback{opacity:0}
+#principiaLivingCompanion .plc-dot{position:absolute;right:6px;bottom:8px;width:12px;height:12px;border-radius:50%;background:#55df9a;border:2px solid var(--bg,#151625);box-shadow:0 0 12px #55df9a}
+#principiaLivingCompanion .plc-nudge{display:none;max-width:min(290px,calc(100vw - 24px));padding:11px 13px;border:1px solid rgba(157,135,255,.32);border-radius:14px;background:var(--card,rgba(24,25,43,.96));color:var(--text,#f2f0ff);font:500 13px/1.5 system-ui,sans-serif;box-shadow:0 12px 35px rgba(0,0,0,.26);cursor:pointer;white-space:pre-wrap;animation:plc-pop .25s ease-out}
+#principiaLivingCompanion .plc-nudge.visible{display:block}
+#principiaLivingCompanion .plc-controls{display:flex;gap:6px;opacity:.35;transition:opacity .2s}
+#principiaLivingCompanion:hover .plc-controls,#principiaLivingCompanion:focus-within .plc-controls{opacity:1}
+#principiaLivingCompanion .plc-controls button{width:30px;height:30px;border:1px solid var(--line,rgba(255,255,255,.2));border-radius:9px;background:var(--card,rgba(25,25,42,.95));color:var(--text,#fff);cursor:pointer}
+#principiaLivingCompanion.is-quiet .plc-nudge{display:none!important}
+#principiaLivingCompanion.is-quiet .plc-dot{background:#a1a1aa;box-shadow:none}
+#plc-color-picker{position:fixed;z-index:1201;right:24px;bottom:226px;display:flex;gap:8px;padding:10px;background:var(--card,#1b1b2b);border:1px solid var(--line,rgba(255,255,255,.15));border-radius:13px;box-shadow:0 12px 30px rgba(0,0,0,.3)}
+#plc-color-picker button{width:27px;height:27px;border:2px solid rgba(255,255,255,.5);border-radius:50%;cursor:pointer}
+.plc-toast{position:fixed;z-index:1202;right:22px;bottom:205px;padding:9px 13px;border:1px solid var(--line,rgba(255,255,255,.2));border-radius:11px;background:var(--card,#1b1b2b);color:var(--text,#fff);font:13px system-ui;box-shadow:0 8px 25px rgba(0,0,0,.2)}
+.plc-welcome-3d{position:relative;width:min(100%,420px);aspect-ratio:1;display:grid;place-items:center;animation:plc-float 4.2s ease-in-out infinite}
+.plc-welcome-3d .plc-canvas{position:absolute;inset:0;width:100%;height:100%}
+.plc-welcome-3d .plc-fallback{font-size:clamp(64px,12vw,120px);color:#a58bff}
+.plc-welcome-3d .plc-wave-label{position:absolute;top:8%;right:5%;font:700 11px system-ui;letter-spacing:.18em;color:#9eeaff;background:rgba(20,22,42,.5);border:1px solid rgba(154,210,255,.25);border-radius:999px;padding:7px 11px}
+.plc-welcome-3d.plc-webgl-ready .plc-fallback{opacity:0}
+.plc-welcome-3d canvas{pointer-events:none}
+.plc-color-picker button:focus-visible,#principiaLivingCompanion button:focus-visible{outline:2px solid var(--pr-ref-accent,#a992ff);outline-offset:3px}
+@keyframes plc-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes plc-pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:760px){#principiaLivingCompanion{right:12px;bottom:82px;width:96px}#principiaLivingCompanion .plc-mascot{width:88px;height:88px}#principiaLivingCompanion .plc-controls{opacity:.8}#plc-color-picker{right:12px;bottom:170px}.plc-welcome-3d{width:min(100%,300px)}}
+@media(prefers-reduced-motion:reduce){#principiaLivingCompanion .plc-nudge,.plc-welcome-3d{animation:none!important}}
