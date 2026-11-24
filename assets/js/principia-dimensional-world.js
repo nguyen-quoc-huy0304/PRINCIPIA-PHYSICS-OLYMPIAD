@@ -82,7 +82,7 @@
   col*=vignette;
   float topFade=smoothstep(0.,.16,screen.y);
   col*=.65+.35*topFade;
-  gl_FragColor=vec4(col*uIntensity,1.);
+  gl_FragColor=vec4(col*uIntensity,.9);
  }`;
  function compile(type,source){
   const shader=gl.createShader(type);gl.shaderSource(shader,source);gl.compileShader(shader);
@@ -90,7 +90,7 @@
   return shader;
  }
  function initGL(){
-  gl=canvas.getContext('webgl',{alpha:false,antialias:false,powerPreference:'low-power',depth:false,stencil:false});
+  gl=canvas.getContext('webgl',{alpha:true,antialias:false,powerPreference:'low-power',depth:false,stencil:false,premultipliedAlpha:false});
   if(!gl)return false;
   const vs=compile(gl.VERTEX_SHADER,vertex),fs=compile(gl.FRAGMENT_SHADER,fragment);
   program=gl.createProgram();gl.attachShader(program,vs);gl.attachShader(program,fs);gl.linkProgram(program);
