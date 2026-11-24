@@ -181,7 +181,7 @@
     const cx=width*.5,cy=height*.48,arms=4,spin=t*.00012;
     glow(cx,cy,Math.min(width,height)*.34,'rgba(127,101,255,ALPHA)',.17*settings.intensity);
     for(let i=0;i<420;i++){const arm=i%arms,progress=i/420,angle=progress*15+arm*Math.PI*2/arms+spin,r=progress*Math.min(width,height)*.38;
-      const spread=(Math.random()-.5)*Math.max(2,r*.08),x=cx+Math.cos(angle)*r+Math.cos(angle+Math.PI/2)*spread,y=cy+Math.sin(angle)*r+Math.sin(angle+Math.PI/2)*spread;
+      const seed=Math.sin(i*127.1+arm*311.7)*43758.5453,spread=((seed-Math.floor(seed))-.5)*Math.max(2,r*.08),x=cx+Math.cos(angle)*r+Math.cos(angle+Math.PI/2)*spread,y=cy+Math.sin(angle)*r+Math.sin(angle+Math.PI/2)*spread;
       ctx.fillStyle='rgba('+(i%3?'171,183,255':'255,204,235')+','+((1-progress)*.6*settings.intensity)+')';ctx.fillRect(x,y,.8+progress*1.2,.8+progress*1.2);
     }
   }
