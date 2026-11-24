@@ -15,6 +15,7 @@
   let toastHost = null;
   let toastSequence = 0;
   let favicon = null;
+  let faviconBadgeEngine = null;
   let faviconBadgeCount = 0;
   const SETTINGS_KEY = 'principia_experience_settings_v1';
   let settings = readSettings();
@@ -272,12 +273,28 @@
     const base = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="g" x2="1" y2="1"><stop stop-color="#9c87f5"/><stop offset="1" stop-color="#55a8d8"/></linearGradient></defs><rect width="64" height="64" rx="18" fill="#171a2b"/><path d="M15 46 28 13h9L24 46zm17 0 10-25h8L40 46z" fill="url(#g)"/></svg>';
     const baseUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(base);
     favicon.dataset.prBaseIcon = baseUrl;
+    if (typeof window.Favico === 'function') {
+      try {
+        faviconBadgeEngine = new window.Favico({
+          type: 'circle', position: 'up', animation: 'popFade',
+          bgColor: '#ef476f', textColor: '#fff', fontStyle: 'bold'
+        });
+        return;
+      } catch (error) {
+        console.warn('[PRINCIPIA] favico.js fallback:', error);
+      }
+    }
     favicon.href = baseUrl;
   }
 
   function setFaviconBadge(value) {
     const count = clamp(Math.floor(Number(value) || 0), 0, 999);
     if (!favicon) setupFavicon();
+    if (faviconBadgeEngine) {
+      if (count) faviconBadgeEngine.badge(count);
+      else faviconBadgeEngine.reset();
+      return;
+    }
     if (!count) {
       favicon.href = favicon.dataset.prBaseIcon;
       return;
