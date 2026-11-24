@@ -1,0 +1,234 @@
+/* PRINCIPIA — Visual Rebuild v2
+ * Visual-only layer. Preserve DOM, routes, app logic, logo and mascot.
+ */
+:root{
+ --pr-v2-ink:#080d19;
+ --pr-v2-panel:rgba(17,27,48,.78);
+ --pr-v2-panel-hi:rgba(25,38,65,.88);
+ --pr-v2-line:rgba(164,184,224,.16);
+ --pr-v2-line-hot:rgba(151,169,255,.38);
+ --pr-v2-white:#f4f6ff;
+ --pr-v2-muted:#9aa9c4;
+ --pr-v2-lilac:#a99aff;
+ --pr-v2-blue:#70c7e8;
+ --pr-v2-green:#8bdcc7;
+ --pr-v2-shadow:0 22px 64px rgba(0,0,0,.25);
+ --pr-v2-ease:cubic-bezier(.2,.8,.2,1);
+}
+html,body{min-height:100%;background-color:var(--pr-v2-ink)}
+body{
+ color:var(--pr-v2-white);
+ background:
+  radial-gradient(ellipse at 12% 4%,rgba(108,91,213,.17),transparent 31%),
+  radial-gradient(ellipse at 91% 19%,rgba(54,153,190,.12),transparent 29%),
+  radial-gradient(ellipse at 48% 100%,rgba(65,83,150,.11),transparent 42%),
+  linear-gradient(145deg,#080d19 0%,#0d172b 52%,#080e1c 100%);
+ background-attachment:fixed;
+}
+#app{color:var(--pr-v2-white)}
+#app :is(h1,h2,h3,h4){letter-spacing:-.035em;text-wrap:balance}
+#app :is(.main,.principia-mobile-main){color:var(--pr-v2-white)}
+#app .principia-desktop-shell>.sidebar,
+#app .sidebar{
+ background:linear-gradient(180deg,rgba(10,17,34,.96),rgba(10,18,35,.84))!important;
+ border-right:1px solid var(--pr-v2-line)!important;
+ box-shadow:16px 0 52px rgba(0,0,0,.17),inset -1px 0 rgba(255,255,255,.025)!important;
+ -webkit-backdrop-filter:blur(28px) saturate(145%);
+ backdrop-filter:blur(28px) saturate(145%);
+}
+#app .sidebar .brand-logo-img,#app .sidebar .brand .logo{filter:drop-shadow(0 0 13px rgba(151,137,255,.28))}
+#app .sidebar .nav{
+ border-radius:12px!important;
+ transition:background .24s var(--pr-v2-ease),border-color .24s ease,color .24s ease,transform .24s var(--pr-v2-ease)!important;
+}
+#app .sidebar .nav:hover{transform:translateX(2px);background:linear-gradient(100deg,rgba(137,119,255,.15),rgba(81,181,211,.07))!important}
+#app .sidebar .nav.active{
+ background:linear-gradient(100deg,rgba(137,119,255,.22),rgba(81,181,211,.1))!important;
+ border-color:rgba(169,154,255,.25)!important;
+ box-shadow:inset 3px 0 #aa9bff,0 8px 22px rgba(0,0,0,.12)!important;
+}
+#app .main,#app .principia-mobile-main{scrollbar-color:rgba(150,145,224,.45) transparent}
+#app .main>.top,#app .principia-mobile-topbar .top{
+ border:1px solid var(--pr-v2-line)!important;
+ border-radius:17px!important;
+ background:linear-gradient(110deg,rgba(20,31,55,.78),rgba(14,27,48,.58))!important;
+ box-shadow:0 12px 36px rgba(0,0,0,.13),inset 0 1px rgba(255,255,255,.055)!important;
+ -webkit-backdrop-filter:blur(22px) saturate(145%);
+ backdrop-filter:blur(22px) saturate(145%);
+}
+#app .hero{
+ isolation:isolate;
+ border:1px solid rgba(173,161,255,.25)!important;
+ border-radius:25px!important;
+ background:
+  radial-gradient(ellipse at 82% 12%,rgba(100,205,229,.2),transparent 32%),
+  radial-gradient(ellipse at 8% 100%,rgba(139,111,255,.25),transparent 46%),
+  linear-gradient(118deg,rgba(39,37,83,.96),rgba(16,37,65,.96) 70%,rgba(12,43,57,.94))!important;
+ box-shadow:0 25px 72px rgba(18,21,64,.32),inset 0 1px rgba(255,255,255,.13)!important;
+}
+#app .hero:after{
+ content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.18;
+ background-image:linear-gradient(rgba(196,205,255,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(196,205,255,.12) 1px,transparent 1px);
+ background-size:38px 38px;
+ mask-image:linear-gradient(110deg,transparent 8%,#000 78%);
+}
+#app .hero :is(h1,h2,h3){color:#fff;text-shadow:0 4px 30px rgba(177,167,255,.16)}
+#app .hero p{color:#c5d3ec}
+#app :is(.panel,.card,.stat,.tile,.tl-card,.reward-card,.sticker-card,.pm-card,.feature-card,.learning-card,.dashboard-card,.module-card){
+ border:1px solid var(--pr-v2-line)!important;
+ border-radius:18px!important;
+ background:linear-gradient(145deg,rgba(25,38,65,.84),rgba(12,23,43,.88))!important;
+ box-shadow:0 12px 34px rgba(0,0,0,.17),inset 0 1px rgba(255,255,255,.045)!important;
+ -webkit-backdrop-filter:blur(16px) saturate(130%);
+ backdrop-filter:blur(16px) saturate(130%);
+}
+#app :is(.panel,.card,.stat,.tile,.feature-card,.learning-card,.dashboard-card,.module-card){
+ transition:border-color .28s ease,box-shadow .3s ease,transform .3s var(--pr-v2-ease),background .28s ease!important;
+}
+#app :is(.panel,.card,.stat,.tile,.feature-card,.learning-card,.dashboard-card,.module-card):hover{
+ border-color:var(--pr-v2-line-hot)!important;
+ box-shadow:0 18px 42px rgba(0,0,0,.22),0 0 24px rgba(133,126,255,.075),inset 0 1px rgba(255,255,255,.07)!important;
+}
+#app .tile{border-radius:17px!important}
+#app .tile:hover{transform:translateY(-3px)}
+#app .tileicon,#app :is(.iconbox,.feature-icon,.module-icon){
+ border:1px solid rgba(174,164,255,.2)!important;
+ border-radius:14px!important;
+ background:linear-gradient(145deg,rgba(154,137,255,.2),rgba(74,181,207,.1))!important;
+ box-shadow:inset 0 1px rgba(255,255,255,.1),0 8px 23px rgba(67,88,166,.12)!important;
+}
+#app .stat strong,#app .stat .value{
+ background:linear-gradient(100deg,#fff 0%,#c9c0ff 56%,#9bd9ee 100%);
+ -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+ font-variant-numeric:tabular-nums;
+}
+#app :is(.sectionhead h2,.panel h2,.panel h3){color:#f0f3ff}
+#app :is(.nav,.tab,.pill,.badge,.chip,.tag){
+ border-color:var(--pr-v2-line);
+}
+#app :is(.tab,.pill,.chip,.tag){border-radius:11px!important}
+#app .tab.active{
+ color:#f8f6ff!important;
+ border-color:rgba(177,164,255,.4)!important;
+ background:linear-gradient(110deg,rgba(137,116,255,.24),rgba(75,167,204,.12))!important;
+ box-shadow:inset 0 1px rgba(255,255,255,.07),0 7px 20px rgba(60,62,145,.12)!important;
+}
+#app :is(button.primary,.primary,.btn-primary,.ppm-primary){
+ border:1px solid rgba(214,205,255,.27)!important;
+ border-radius:12px!important;
+ background:linear-gradient(112deg,#9079f3 0%,#6b6bd8 55%,#438fb8 100%)!important;
+ box-shadow:0 9px 24px rgba(101,89,212,.25),inset 0 1px rgba(255,255,255,.2)!important;
+ transition:transform .22s var(--pr-v2-ease),filter .22s ease,box-shadow .25s ease!important;
+}
+#app :is(button.primary,.primary,.btn-primary,.ppm-primary):hover:not(:disabled){
+ transform:translateY(-2px);filter:brightness(1.08);
+ box-shadow:0 14px 30px rgba(111,96,229,.32),inset 0 1px rgba(255,255,255,.23)!important;
+}
+#app :is(button.secondary,.secondary,.iconbtn,.toolbar button,.modalactions button){
+ border-radius:11px!important;border-color:rgba(160,181,226,.19)!important;
+ background:linear-gradient(145deg,rgba(39,53,82,.82),rgba(18,31,53,.9))!important;
+}
+#app :is(input:not([type=checkbox]):not([type=radio]),textarea,select){
+ border-radius:11px!important;color:#f0f3ff!important;
+ border-color:rgba(151,176,230,.2)!important;background:rgba(7,15,30,.78)!important;
+}
+#app :is(input,textarea,select):focus{
+ border-color:rgba(174,158,255,.7)!important;
+ box-shadow:0 0 0 3px rgba(146,126,246,.14),0 0 20px rgba(111,129,240,.07)!important;
+}
+#app :is(.progress,.xpbar,[role=progressbar]){background:rgba(113,137,188,.15)!important}
+#app :is(.progress,.xpbar) div{background:linear-gradient(90deg,#9278ff,#65bfe5,#80dfc2)!important}
+#app :is(.choice,.option,.answer-option){
+ border-color:rgba(157,179,230,.18)!important;background:rgba(18,31,55,.66)!important;
+}
+#app :is(.choice,.option,.answer-option):hover{
+ border-color:rgba(175,161,255,.44)!important;background:rgba(86,77,154,.16)!important;
+}
+#app :is(.modal,.modal-card,.modalbox,.dialog,.popover-content){
+ border:1px solid rgba(166,180,235,.22)!important;border-radius:19px!important;
+ background:linear-gradient(145deg,rgba(24,37,67,.98),rgba(9,18,36,.98))!important;
+ box-shadow:0 30px 90px rgba(0,0,0,.48),inset 0 1px rgba(255,255,255,.07)!important;
+}
+#app :is(.toast,.xp-toast,.pr-experience-toast){
+ border:1px solid rgba(178,164,255,.25)!important;border-radius:14px!important;
+ background:rgba(19,29,51,.96)!important;box-shadow:0 16px 44px rgba(0,0,0,.3)!important;
+ -webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
+}
+#app :focus-visible{outline:2px solid #b9a8ff!important;outline-offset:3px!important}
+#app ::selection{color:#fff;background:rgba(133,111,233,.46)}
+#app ::-webkit-scrollbar-thumb{background:rgba(133,149,201,.32);border-radius:99px}
+.principia-welcome-screen{
+ background:
+  radial-gradient(ellipse at 76% 42%,rgba(80,169,211,.2),transparent 34%),
+  radial-gradient(ellipse at 18% 82%,rgba(132,101,235,.22),transparent 42%),
+  linear-gradient(135deg,#070b17,#11152d 55%,#081b29)!important;
+}
+.principia-welcome-screen .pw-art-panel{
+ border:1px solid rgba(181,173,255,.28)!important;border-radius:24px!important;
+ background:linear-gradient(145deg,rgba(31,43,76,.76),rgba(9,17,35,.7))!important;
+ box-shadow:0 30px 85px rgba(0,0,0,.3),0 0 48px rgba(110,126,255,.11),inset 0 1px rgba(255,255,255,.12)!important;
+ -webkit-backdrop-filter:blur(24px) saturate(145%);backdrop-filter:blur(24px) saturate(145%);
+}
+.principia-welcome-screen .pw-start-button{
+ background:linear-gradient(110deg,#9277f4,#6578df,#3da5bc)!important;
+ box-shadow:0 12px 32px rgba(94,103,220,.32),inset 0 1px rgba(255,255,255,.2)!important;
+}
+#app .principia-mobile-nav,body>.principia-mobile-nav{
+ border-top:1px solid rgba(171,185,239,.16)!important;
+ background:rgba(9,16,31,.94)!important;
+ box-shadow:0 -12px 34px rgba(0,0,0,.27)!important;
+ -webkit-backdrop-filter:blur(24px) saturate(145%);backdrop-filter:blur(24px) saturate(145%);
+}
+@media(max-width:760px){
+ body{background-attachment:scroll}
+ #app :is(.panel,.card,.stat,.tile,.feature-card,.learning-card,.dashboard-card,.module-card){box-shadow:0 8px 24px rgba(0,0,0,.16),inset 0 1px rgba(255,255,255,.04)!important}
+ #app .tile:hover{transform:none}
+ #app .hero:after{opacity:.1}
+}
+@media(prefers-reduced-motion:reduce){
+ #app :is(.panel,.card,.stat,.tile,.feature-card,.learning-card,.dashboard-card,.module-card,.nav,.tab,button){transition:none!important}
+ #app .tile:hover,#app button:hover{transform:none!important}
+}
+/* Both theme attributes are supported by existing PRINCIPIA theme controllers. */
+html[data-theme="light"] body,html[data-pr-theme="light"] body{
+ color:#1b2944;background:
+  radial-gradient(ellipse at 10% 4%,rgba(145,127,239,.12),transparent 34%),
+  radial-gradient(ellipse at 94% 18%,rgba(67,166,193,.08),transparent 30%),
+  linear-gradient(145deg,#f6f8ff,#edf2fc 55%,#f8fbff);
+}
+html[data-theme="light"] #app,html[data-pr-theme="light"] #app{color:#1b2944}
+html[data-theme="light"] #app :is(h1,h2,h3,h4),html[data-pr-theme="light"] #app :is(h1,h2,h3,h4){color:#1b2944}
+html[data-theme="light"] #app .sidebar,html[data-pr-theme="light"] #app .sidebar{
+ background:linear-gradient(180deg,rgba(249,251,255,.97),rgba(235,241,252,.91))!important;
+ border-color:rgba(79,99,148,.16)!important;
+}
+html[data-theme="light"] #app .main>.top,html[data-pr-theme="light"] #app .main>.top{
+ background:linear-gradient(110deg,rgba(255,255,255,.92),rgba(239,244,254,.84))!important;
+ border-color:rgba(79,99,148,.16)!important;
+}
+html[data-theme="light"] #app :is(.panel,.card,.stat,.tile,.tl-card,.reward-card,.sticker-card,.pm-card,.feature-card,.learning-card,.dashboard-card,.module-card),
+html[data-pr-theme="light"] #app :is(.panel,.card,.stat,.tile,.tl-card,.reward-card,.sticker-card,.pm-card,.feature-card,.learning-card,.dashboard-card,.module-card){
+ color:#1b2944!important;border-color:rgba(77,99,151,.15)!important;
+ background:linear-gradient(145deg,rgba(255,255,255,.97),rgba(239,244,254,.95))!important;
+ box-shadow:0 10px 28px rgba(42,58,98,.08),inset 0 1px #fff!important;
+}
+html[data-theme="light"] #app :is(.sectionhead h2,.panel h2,.panel h3),
+html[data-pr-theme="light"] #app :is(.sectionhead h2,.panel h2,.panel h3){color:#1b2944!important}
+html[data-theme="light"] #app :is(p,.muted,.small,.description,.subtitle),
+html[data-pr-theme="light"] #app :is(p,.muted,.small,.description,.subtitle){color:#64718a}
+html[data-theme="light"] #app :is(input:not([type=checkbox]):not([type=radio]),textarea,select),
+html[data-pr-theme="light"] #app :is(input:not([type=checkbox]):not([type=radio]),textarea,select){
+ color:#1b2944!important;background:rgba(255,255,255,.95)!important;border-color:rgba(76,97,145,.2)!important;
+}
+html[data-theme="light"] #app :is(button.secondary,.secondary,.iconbtn,.toolbar button,.modalactions button),
+html[data-pr-theme="light"] #app :is(button.secondary,.secondary,.iconbtn,.toolbar button,.modalactions button){
+ color:#33415f!important;background:linear-gradient(145deg,#fff,#edf2fc)!important;border-color:rgba(76,97,145,.18)!important;
+}
+html[data-theme="light"] #app :is(.modal,.modal-card,.modalbox,.dialog,.popover-content),
+html[data-pr-theme="light"] #app :is(.modal,.modal-card,.modalbox,.dialog,.popover-content){
+ color:#1b2944!important;background:linear-gradient(145deg,#fff,#eef3fc)!important;border-color:rgba(76,97,145,.18)!important;
+}
+html[data-theme="light"] #app .principia-mobile-nav,html[data-pr-theme="light"] #app .principia-mobile-nav,
+html[data-theme="light"] body>.principia-mobile-nav,html[data-pr-theme="light"] body>.principia-mobile-nav{
+ background:rgba(249,251,255,.96)!important;border-color:rgba(76,97,145,.17)!important;
+}
