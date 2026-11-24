@@ -32,6 +32,17 @@ test('study library contains every numbered method and core requested learning t
     assert.ok(titles.some(title => title.includes(term)), 'missing method: ' + term);
   }
 });
+test('study playbook expansion creates 1,200 contextual guides without inflating the core-method count', () => {
+  const source = read('assets/js/principia-study-methods-expansion.js');
+  assert.match(source, /const methods = \[/);
+  assert.match(source, /const topics = \[/);
+  assert.match(source, /window\.PRINCIPIA_STUDY_METHOD_PLAYBOOKS = out/);
+  assert.match(source, /window\.PRINCIPIA_STUDY_METHOD_PLAYBOOK_COUNT = out\.length/);
+  assert.match(source, /kind: 'playbook'/);
+  assert.match(read('index.html'), /principia-study-methods-expansion\.js/);
+  assert.match(read('assets/js/principia-study-methods.js'), /CORE_METHOD_COUNT=methods\.length/);
+  assert.match(read('assets/js/principia-study-methods.js'), /methods\.push\(\.\.\.window\.PRINCIPIA_STUDY_METHOD_PLAYBOOKS\)/);
+});
 test('component reference expansion provides more than 100,000 themed variants', () => {
   const source = read('assets/js/principia-vault-expansion.js');
   const vault = read('assets/js/principia-component-vault.js');
