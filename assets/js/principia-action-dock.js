@@ -209,7 +209,7 @@
    '#principiaActionDockRoot>#proSiteEditorFab{right:12px!important;bottom:calc(194px + env(safe-area-inset-bottom,0px))!important}'+
    '@media(min-width:901px){#principiaActionDockRoot>#principiaDockAI{right:18px!important;bottom:18px!important}#principiaActionDockRoot>#principiaDockBrowser{right:18px!important;bottom:74px!important}#principiaActionDockRoot>#proSiteEditorFab{right:18px!important;bottom:130px!important}}'+
    'html body #principiaSearchTrigger,html body #principiaDownloadFab{display:none!important;visibility:hidden!important;pointer-events:none!important}'+
-   'body.principia-welcome-active #principiaActionDockRoot>#principiaDockAI,body.principia-welcome-active #principiaActionDockRoot>#principiaDockBrowser{display:none!important;visibility:hidden!important;pointer-events:none!important}'visibility:hidden!important;pointer-events:none!important}';
+   'body.principia-welcome-active #principiaActionDockRoot>#principiaDockAI,body.principia-welcome-active #principiaActionDockRoot>#principiaDockBrowser{display:none!important;visibility:hidden!important;pointer-events:none!important}';
   document.head.appendChild(style);
  }
  function syncEditorPanelPosition(pencil){
