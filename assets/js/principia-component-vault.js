@@ -78,10 +78,10 @@
     const attributedHTML=source==='LucianLabs'?'<!-- Lucian UX/UI Prompt · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/ -->\n'+html:html;
     return {id,name,category,source,html:attributedHTML,css:css.replace(/#a995ff/g,'var(--pv-accent)').replace(/#65c8e8/g,'var(--pv-accent2)')};
   }
-  const catalog=ITEMS.flatMap((item,index)=>SKINS.map((skin,skinIndex)=>{
+  const catalogCount = ITEMS.length * SKINS.length;
+  function buildVariant(item,index,skinIndex){
     const base=buildItem(item,index);
-    const [skinName,accent,accent2]=skin;
-    const id=base.id+'-'+skinIndex;
+    const [skinName,accent,accent2]=SKINS[skinIndex];
     const wrapper='pv-skin-'+skinIndex;
     const colorMap={
       '#a995ff':accent,'#65c8e8':accent2,'#6554d9':accent,'#9d8bff':accent,
@@ -90,8 +90,8 @@
     };
     const css=base.css.replace(/#[0-9a-f]{6}/gi,color=>colorMap[color.toLowerCase()]||color);
     const skinCSS='.'+wrapper+'{--pv-accent:'+accent+';--pv-accent2:'+accent2+';--pv-skin-shadow:0 12px 32px '+accent+'22;--ux-accent:'+accent+';--ux-accent-2:'+accent2+';--ux-accent-soft:'+accent+'22;--ux-accent-ink:#10121c;--ux-mint:'+accent2+';--ux-page:#10121c;--ux-surface:#191b2b;--ux-surface-2:#22253a;--ux-surface-3:#30344c;--ux-ink:#f5f4ff;--ux-ink-2:#c1bfd2;--ux-ink-3:#9290a8;--ux-line:'+accent+'33;--ux-line-2:'+accent+'66;--ux-glass:'+accent+'18;--ux-glass-line:'+accent+'55;--ux-shadow:'+accent+'22;--ux-shadow-strong:'+accent+'55;--ux-grad:linear-gradient(120deg,'+accent+','+accent2+')}';
-    return {...base,id,name:base.name+' — '+skinName,skin:skinName,html:'<div class="'+wrapper+'">'+base.html+'</div>',css:css+'\n'+skinCSS};
-  }));
+    return {...base,id:base.id+'-'+skinIndex,name:base.name+' — '+skinName,skin:skinName,html:'<div class="'+wrapper+'">'+base.html+'</div>',css:css+'\\n'+skinCSS};
+  }
   function make(tag,attrs={},text=''){
     const node=document.createElement(tag);
     Object.entries(attrs).forEach(([key,value])=>node.setAttribute(key,value));
@@ -103,7 +103,7 @@
     if(!panel||panel.querySelector('#'+rootId))return;
     const section=make('section',{id:rootId});
     section.className='pr-vault';
-    const header=make('button',{type:'button','aria-expanded':'false',class:'pr-vault-toggle'},'▦ Component Vault · '+catalog.length+' mẫu');
+    const header=make('button',{type:'button','aria-expanded':'false',class:'pr-vault-toggle'},'▦ Component Vault · '+catalogCount.toLocaleString('vi-VN')+' biến thể');
     const body=make('div',{class:'pr-vault-body',hidden:''});
     const sourceRow=make('div',{class:'pr-vault-sources'});
     SOURCES.forEach(([name,url,detail])=>{
@@ -114,7 +114,7 @@
       'Số lượng là thống kê công bố trên trang nguồn, không phải số mẫu đã nhập vào PRINCIPIA. Chỉ sao chép mã khi giấy phép cho phép; các thư viện React cần chuyển đổi trước khi dùng trong ứng dụng HTML/CSS/JS hiện tại.');
     const controls=make('div',{class:'pr-vault-controls'});
     const search=make('input',{type:'search',placeholder:'Tìm component…','aria-label':'Tìm component'});
-    const categories=['All',...new Set(catalog.map(item=>item.category))];
+    const categories=['All',...new Set(ITEMS.map(item=>item[1]))];
     const select=make('select',{'aria-label':'Lọc danh mục'});
     categories.forEach(category=>select.append(make('option',{value:category},category)));
     const variant=make('select',{'aria-label':'Accent màu'});
@@ -138,10 +138,15 @@
     render(grid,count,pager);
   }
   function render(grid,count,pager){
-    const visible=catalog.filter(item=>item.skin===activeSkin&&(activeCategory==='All'||item.category===activeCategory)&&(!searchTerm||[item.name,item.category,item.source].join(' ').toLowerCase().includes(searchTerm)));
+    const skinIndex=Math.max(0,SKINS.findIndex(skin=>skin[0]===activeSkin));
+    const visible=ITEMS.map((item,index)=>({item,index})).filter(({item})=>
+      (activeCategory==='All'||item[1]===activeCategory)&&
+      (!searchTerm||(item[0]+' '+item[1]+' '+item[2]).toLowerCase().includes(searchTerm))
+    );
     const pageCount=Math.max(1,Math.ceil(visible.length/pageSize));
     currentPage=Math.min(currentPage,pageCount-1);
-    const pageItems=visible.slice(currentPage*pageSize,(currentPage+1)*pageSize);
+    const pageItems=visible.slice(currentPage*pageSize,(currentPage+1)*pageSize)
+      .map(({item,index})=>buildVariant(item,index,skinIndex));
     grid.replaceChildren();
     pageItems.forEach(item=>{
       const card=make('article',{class:'pr-vault-item'});
@@ -167,7 +172,7 @@
       card.append(title,meta,preview,actions,sourceLink);
       grid.append(card);
     });
-    count.textContent=visible.length+' mẫu · skin '+activeSkin+' · '+ITEMS.length+' cấu trúc gốc × '+SKINS.length+' skin = '+catalog.length+' biến thể · trang '+(currentPage+1)+'/'+pageCount;
+    count.textContent=visible.length+' cấu trúc · skin '+activeSkin+' · '+ITEMS.length+' cấu trúc gốc × '+SKINS.length+' skin = '+catalogCount.toLocaleString('vi-VN')+' biến thể · trang '+(currentPage+1)+'/'+pageCount;
     pager.replaceChildren();
     const previous=make('button',{type:'button'},'← Trước');
     const next=make('button',{type:'button'},'Tiếp →');
