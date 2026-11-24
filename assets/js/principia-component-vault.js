@@ -5,18 +5,18 @@
 (() => {
   'use strict';
   const SOURCES = [
-    ['Animate UI','https://animate-ui.com/','48 animated primitives and UI elements; React-based'],
-    ['Kokonut UI','https://kokonutui.com/docs','116 public components; React + Tailwind; Pro collection separate'],
+    ['Animate UI','https://animate-ui.com/','Motion primitives for Radix UI, Base UI and React Aria; adapted to vanilla CSS/JS'],
+    ['Kokonut UI','https://kokonutui.com/docs','100+ React, Tailwind and Motion components; adapted interaction patterns'],
     ['Uiverse','https://uiverse.io/','Community-made UI elements; each imported element retains its creator and license information'],
-    ['Libraries.dev','https://libraries.dev/introduction','5 React effect libraries; not a component catalog'],
-    ['UI/UX Pro Max','https://devanshutak25.github.io/ui-ux-ref/','757 reference entries across styles, palettes, charts and rules'],
-    ['FeralUI','https://feralui.dev/','13 public components; license must be verified before copying'],
-    ['Anime.js','https://animejs.com/','1 animation library; already vendored locally'],
-    ['favico.js','http://lab.ejci.net/favico.js/','1 favicon library; already vendored locally'],
+    ['Libraries.dev','https://libraries.dev/introduction','React effects for border beams, thinking orbs, gooey surfaces, metal and image reveals'],
+    ['UI/UX Pro Max','https://devanshutak25.github.io/ui-ux-ref/','Design reference covering styles, palettes, typography, charts, UX and product patterns'],
+    ['FeralUI','https://feralui.dev/','Physics-driven React experiments; adapted pointer and spring interaction patterns'],
+    ['Anime.js','https://animejs.com/','JavaScript animation engine; locally vendored and used for interface transitions'],
+    ['favico.js','http://lab.ejci.net/favico.js/','Animated favicon badges; locally vendored with fallback behavior'],
     ['Hairline UI','https://hairline.lucasmarkes.com/','33 pointer-responsive SVG figures; adapt interaction patterns to vanilla HTML/CSS/JS'],
     ['Koboyo Mascot','https://koboyo.com/page-mascot','52 mascot designs; only pointer-response behavior is adapted to the existing PRINCIPIA character set'],
-    ['LucianLabs','https://lucianlabs.dev/uxui-prompt/','480 interactive elements; MIT; supports plain HTML/CSS/JS'],
-    ['ThreeUI','https://threeui.com/browse','51 interactive UI elements; includes PRO items and 3D dependencies']
+    ['LucianLabs','https://lucianlabs.dev/uxui-prompt/','480 interactive elements; MIT; source attribution retained'],
+    ['ThreeUI','https://threeui.com/browse','3D, Canvas and WebGL interface patterns; used as progressive enhancement']
   ];
   const BASE_ITEMS = [
     ['Glass action button','Buttons','Kokonut UI','<button class="pv-glass">Launch workspace <span>↗</span></button>','.pv-glass{display:inline-flex;gap:12px;align-items:center;padding:12px 18px;border:1px solid rgba(255,255,255,.24);border-radius:14px;color:#fff;background:linear-gradient(135deg,rgba(145,125,255,.5),rgba(55,160,210,.28));box-shadow:inset 0 1px rgba(255,255,255,.25),0 12px 30px rgba(20,20,50,.2);backdrop-filter:blur(16px);cursor:pointer;transition:transform .25s,filter .25s}.pv-glass:hover{transform:translateY(-2px);filter:brightness(1.15)}'],
