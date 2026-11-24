@@ -6,7 +6,7 @@
  const defaults={enabled:true,scene:'planet',intensity:.82};
  const scenes=['planet','nebula','wireframe','aurora'];
  const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
- let settings=readSettings(),canvas,gl,program,raf=0,last=0,uniforms={},buffer,resizeObserver=null;
+ let settings=readSettings(),canvas,gl,program,raf=0,last=0,uniforms={},buffer;
  let pointer={x:0,y:0},dpr=1,failed=false;
  function readSettings(){try{const s=JSON.parse(localStorage.getItem(KEY)||'{}');return{enabled:s.enabled!==false,scene:scenes.includes(s.scene)?s.scene:'planet',intensity:clamp(Number(s.intensity)||.82,.2,1)}}catch(_){return{...defaults}}}
  function persist(){try{localStorage.setItem(KEY,JSON.stringify(settings))}catch(_){/* Storage is optional. */}}
@@ -39,7 +39,7 @@
   col+=vec3(.025,.19,.25)*neb2*.28;
   vec2 grid=uv*vec2(145.,90.);vec2 cell=fract(grid)-.5;
   float star=step(.997,hash(floor(grid)));
-  float sparkle=star*smoothstep(.48,.02,length(cell));
+  float sparkle=star*(1.-smoothstep(.02,.48,length(cell)));
   col+=vec3(.6,.76,1.)*sparkle*(.35+.65*sin(uTime*1.5+hash(floor(grid))*6.));
   return col;
  }
@@ -47,8 +47,8 @@
   vec2 uv=(gl_FragCoord.xy-.5*uResolution)/uResolution.y;
   vec2 screen=vUv;
   vec3 col=background(screen);
-  float vignette=smoothstep(1.25,.18,length(uv));
-  if(uScene>.5&&uScene<1.5){
+  float vignette=(1.-smoothstep(.18,1.25,length(uv)));
+  if(uScene<.5||uScene>1.5){
    vec3 ro=vec3(uPointer.x*.16,uPointer.y*.12,3.5);
    vec3 rd=normalize(vec3(uv,-1.75));
    float t=0.,material=0.;
@@ -60,21 +60,21 @@
     float spec=pow(max(dot(reflect(-light,n),-rd),0.),36.);
     vec3 base=material<1.5?vec3(.18,.29,.68):material<2.5?vec3(.34,.78,.94):vec3(.65,.43,.98);
     float bands=sin(atan(p.y,p.x)*26.+p.z*12.)*.5+.5;
-    if(uScene>1.1)base*=.35+.65*step(.78,bands);
+    if(uScene>1.5&&uScene<2.5)base*=.35+.65*step(.78,bands);
     col=mix(base*.26,base*(.38+diff*.8),.7)+vec3(.35,.48,1.)*fres*.75+vec3(.55,.8,1.)*spec*.75;
     col+=vec3(.09,.18,.42)*pow(max(0.,1.-length(p.xy)*.55),3.);
    }else{
     float glow=exp(-abs(length(uv)-.78)*8.);
     col+=vec3(.14,.2,.52)*glow*.25;
    }
-   if(uScene>1.5){
+   if(uScene>2.5){
     float wave=sin(screen.x*18.+uTime*.55+sin(screen.x*8.)*2.);
-    float aur=smoothstep(.22,.0,abs(screen.y-(.55+wave*.08)));
+    float aur=(1.-smoothstep(0.,.22,abs(screen.y-(.55+wave*.08))));
     col+=vec3(.08,.8,.62)*aur*.25;
    }
-  }else if(uScene<.5){
+  }else if(uScene<1.5){
    float rings=sin(length(uv-vec2(.12,.12))*45.-uTime*.6);
-   col+=vec3(.12,.22,.6)*smoothstep(.96,.2,abs(rings))*.12;
+   col+=vec3(.12,.22,.6)*(1.-smoothstep(.2,.96,abs(rings)))*.12;
   }else{
    float wire=abs(sin(uv.x*42.+sin(uv.y*12.+uTime*.15)*2.));
    col+=vec3(.12,.2,.42)*smoothstep(.94,.99,wire)*.3;
@@ -104,7 +104,7 @@
  function resize(){
   if(!canvas||!gl)return;
   const mobile=matchMedia('(max-width:760px)').matches;
-  dpr=Math.min(devicePixelRatio||1,mobile?.72:1.15)*(mobile?.72:1);
+  dpr=Math.min(devicePixelRatio||1,mobile?.72:1.15);
   const w=Math.max(1,Math.floor(innerWidth*dpr)),h=Math.max(1,Math.floor(innerHeight*dpr));
   if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;gl.viewport(0,0,w,h);gl.uniform2f(uniforms.resolution,w,h)}
  }
