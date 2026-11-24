@@ -13,7 +13,8 @@
   if(!canvas||!window.THREE)return false;
   try{
    const T=window.THREE;
-   const renderer=new T.WebGLRenderer({canvas,alpha:true,antialias:true});
+   let renderer=null;
+   renderer=new T.WebGLRenderer({canvas,alpha:true,antialias:true});
    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.7));
    renderer.setSize(canvas.clientWidth||300,canvas.clientHeight||300,false);
    const scene=new T.Scene(),camera=new T.PerspectiveCamera(32,Math.max(.1,(canvas.clientWidth||300)/(canvas.clientHeight||300)),.1,100);camera.position.set(0,0,5.6);
@@ -92,8 +93,7 @@
   scheduleNudge();
  }
  function openColorPicker(){const old=document.getElementById('plc-color-picker');if(old){old.remove();return}const p=document.createElement('div');p.id='plc-color-picker';p.className='plc-color-picker';['#9b87ff','#65d9ff','#79f0b4','#ffb86b','#ff80b7','#f1f5ff'].forEach(c=>{const b=document.createElement('button');b.style.background=c;b.title=c;b.setAttribute('aria-label','Màu '+c);b.addEventListener('click',()=>{cfg.color=c;shellMaterials.forEach(m=>m.color.set(c));save();p.remove();toast('Đã đổi màu companion')});p.appendChild(b)});document.body.appendChild(p)}
- function restorePosition(el){try{const p=JSON.parse(localStorage.getItem('principia_companion_position')||'{}');if(p.left&&p.top){el.style.left=p.left;el.style.top=p.top;el.style.right='auto';el.style.bottom='auto'}}catch(_){}}
- function restorePosition(el){try{const p=JSON.parse(localStorage.getItem('principia_companion_position')||'{}');if(p.left&&p.top){el.style.left=p.left;el.style.top=p.top;el.style.right='auto';el.style.bottom='auto'}}catch(_){}}
+ function restorePosition(el){try{const p=JSON.parse(localStorage.getItem('principia_companion_position')||'{}');if(typeof p.left==='string'&&typeof p.top==='string'){el.style.left=p.left;el.style.top=p.top;el.style.right='auto';el.style.bottom='auto'}}catch(_){}}
  function dragElement(el){const btn=el.querySelector('.plc-mascot');btn.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY,left:el.offsetLeft,top:el.offsetTop,moved:false};btn.setPointerCapture(e.pointerId)});btn.addEventListener('pointermove',e=>{if(!drag)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.abs(dx)+Math.abs(dy)>7)drag.moved=true;if(!drag.moved)return;el.style.left=clamp(drag.left+dx,4,innerWidth-el.offsetWidth-4)+'px';el.style.top=clamp(drag.top+dy,4,innerHeight-el.offsetHeight-4)+'px';el.style.right='auto';el.style.bottom='auto'});btn.addEventListener('pointerup',()=>{if(drag?.moved){try{localStorage.setItem('principia_companion_position',JSON.stringify({left:el.style.left,top:el.style.top}))}catch(_){}btn.dataset.suppressClick='1';setTimeout(()=>delete btn.dataset.suppressClick,160)}drag=null})}
  const hints=[
   'Thử chia bài toán thành dữ kiện, đại lượng cần tìm và định luật liên quan.',
