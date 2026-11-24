@@ -10,11 +10,20 @@
  }
  function summarize(points){
   if(!Array.isArray(points)||points.length<2||points.length>MAX_POINTS)throw new Error('Số điểm đo không hợp lệ.');
-  const n=points.length,mean=points.reduce((s,p)=>s+p.y,0)/n,variance=points.reduce((s,p)=>s+(p.y-mean)**2,0)/(n-1);
-  const xmean=points.reduce((s,p)=>s+p.x,0)/n,ymean=mean;
+  const overflow='Số liệu quá lớn để tính thống kê an toàn. Hãy kiểm tra đơn vị hoặc thang đo.';
+  const n=points.length,sumY=points.reduce((s,p)=>s+p.y,0);
+  if(!Number.isFinite(sumY))throw new Error(overflow);
+  const mean=sumY/n,varianceSum=points.reduce((s,p)=>s+(p.y-mean)**2,0);
+  if(!Number.isFinite(mean)||!Number.isFinite(varianceSum))throw new Error(overflow);
+  const variance=varianceSum/(n-1),sumX=points.reduce((s,p)=>s+p.x,0);
+  if(!Number.isFinite(sumX))throw new Error(overflow);
+  const xmean=sumX/n,ymean=mean;
   const sxx=points.reduce((s,p)=>s+(p.x-xmean)**2,0),sxy=points.reduce((s,p)=>s+(p.x-xmean)*(p.y-ymean),0);
+  if(!Number.isFinite(sxx)||!Number.isFinite(sxy))throw new Error(overflow);
   const slope=sxx?sxy/sxx:null,intercept=slope===null?null:ymean-slope*xmean;
-  return {count:n,mean,standardDeviation:Math.sqrt(variance),standardError:Math.sqrt(variance/n),slope,intercept};
+  const standardDeviation=Math.sqrt(variance),standardError=Math.sqrt(variance/n);
+  if(!Number.isFinite(variance)||!Number.isFinite(standardDeviation)||!Number.isFinite(standardError)||(slope!==null&&!Number.isFinite(slope))||(intercept!==null&&!Number.isFinite(intercept)))throw new Error(overflow);
+  return {count:n,mean,standardDeviation,standardError,slope,intercept};
  }
  function validate(record){
   if(!record||typeof record!=='object')throw new Error('Bản ghi thí nghiệm không hợp lệ.');
