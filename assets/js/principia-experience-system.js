@@ -43,10 +43,14 @@
       button.dataset.prExperienceButton = '1';
       button.dataset.prUiButton = '1';
     });
-    root.querySelectorAll('[aria-busy="true"],[data-ai-state="thinking"],.ai-thinking,.ai-loading,.thinking,.typing-indicator').forEach(node => {
+    const busySelector = '[aria-busy="true"],[data-ai-state="thinking"],.ai-thinking,.ai-loading,.thinking,.typing-indicator';
+    const progressSelector = '[role="progressbar"],.progress,.xpbar';
+    if (root instanceof Element && root.matches(busySelector) && safeElement(root)) root.classList.add('pr-ref-thinking');
+    if (root instanceof Element && root.matches(progressSelector) && safeElement(root)) root.classList.add('pr-ref-progress');
+    root.querySelectorAll(busySelector).forEach(node => {
       if (safeElement(node)) node.classList.add('pr-ref-thinking');
     });
-    root.querySelectorAll('[role="progressbar"],.progress,.xpbar').forEach(node => {
+    root.querySelectorAll(progressSelector).forEach(node => {
       if (safeElement(node)) node.classList.add('pr-ref-progress');
     });
   }
@@ -180,6 +184,9 @@
     if (!(element instanceof Element)) return false;
     const active = Boolean(busy);
     if (active) {
+      if (!Object.prototype.hasOwnProperty.call(element.dataset, 'prPreviousAriaLabel')) {
+        element.dataset.prPreviousAriaLabel = element.getAttribute('aria-label') || '';
+      }
       element.setAttribute('aria-busy', 'true');
       element.dataset.aiState = 'thinking';
       if (typeof label === 'string' && label.trim()) element.setAttribute('aria-label', label.trim().slice(0, 120));
@@ -187,6 +194,12 @@
     } else {
       element.removeAttribute('aria-busy');
       if (element.dataset.aiState === 'thinking') delete element.dataset.aiState;
+      if (Object.prototype.hasOwnProperty.call(element.dataset, 'prPreviousAriaLabel')) {
+        const previous = element.dataset.prPreviousAriaLabel;
+        if (previous) element.setAttribute('aria-label', previous);
+        else element.removeAttribute('aria-label');
+        delete element.dataset.prPreviousAriaLabel;
+      }
       element.classList.remove('pr-ref-thinking');
     }
     return true;
@@ -227,12 +240,15 @@
     setupFavicon();
 
     mutationObserver = new MutationObserver(records => {
-      records.forEach(record => record.addedNodes.forEach(node => {
-        if (node.nodeType === Node.ELEMENT_NODE) enhance(node);
-      }));
+      records.forEach(record => {
+        if (record.type === 'attributes' && record.target instanceof Element) enhance(record.target);
+        record.addedNodes?.forEach(node => {
+          if (node.nodeType === Node.ELEMENT_NODE) enhance(node);
+        });
+      });
     });
     const root = document.getElementById('app') || document.body;
-    mutationObserver.observe(root, { childList: true, subtree: true });
+    mutationObserver.observe(root, { childList: true, subtree: true, attributes: true, attributeFilter: ['aria-busy', 'data-ai-state', 'class', 'role'] });
     document.addEventListener('principia:rendered', () => enhance());
     document.addEventListener('principia:page-changed', () => enhance());
     window.addEventListener('pagehide', () => {
