@@ -1,0 +1,40 @@
+/* PRINCIPIA Delight Motion — ambient detail, scroll feedback and staggered entrances. */
+#prDelightProgress{
+  position:fixed;z-index:2147483580;inset:0 auto auto 0;width:100%;height:3px;
+  pointer-events:none;opacity:1;transform:translateZ(0);
+  background:linear-gradient(90deg,rgba(129,105,255,.12),rgba(100,191,255,.1));
+}
+#prDelightProgress span{
+  display:block;width:var(--pr-scroll-progress,0%);height:100%;
+  background:linear-gradient(90deg,#8c72ff,#6fd7ed,#a7f0d0);
+  box-shadow:0 0 12px rgba(125,154,255,.62),0 0 24px rgba(100,206,231,.24);
+  transition:width .12s linear;
+}
+html.pr-scroll-progress-off #prDelightProgress{display:none}
+#app .pr-delight-reveal{
+  opacity:.001;transform:translate3d(0,19px,0) scale(.992);
+  transition:opacity .68s cubic-bezier(.2,.75,.25,1),transform .72s cubic-bezier(.2,.8,.25,1);
+  transition-delay:var(--pr-delight-delay,0ms);
+}
+#app .pr-delight-reveal.pr-delight-visible{opacity:1;transform:translate3d(0,0,0) scale(1)}
+#app :is(.panel,.tile,.stat,.feature-card){--pr-spot-x:50%;--pr-spot-y:50%}
+#app :is(.panel,.tile,.stat,.feature-card)::before{
+  content:"";position:absolute;inset:0;z-index:1;pointer-events:none;border-radius:inherit;
+  opacity:0;background:radial-gradient(260px circle at var(--pr-spot-x) var(--pr-spot-y),rgba(150,174,255,.12),transparent 68%);
+  transition:opacity .28s ease;
+}
+@media(hover:hover) and (pointer:fine){
+  #app :is(.panel,.tile,.stat,.feature-card):hover::before{opacity:1}
+}
+html.pr-spotlight-off #app :is(.panel,.tile,.stat,.feature-card)::before{display:none}
+.pr-delight-settings{display:grid;gap:10px;margin:14px 0;padding:14px;border:1px solid var(--line,rgba(150,165,220,.2));border-radius:15px;background:var(--card,rgba(255,255,255,.04))}
+.pr-delight-settings>strong{font-size:13px}
+.pr-delight-settings label{display:flex;align-items:center;gap:9px;font-size:12px;cursor:pointer}
+.pr-delight-settings input{accent-color:#9d88ff}
+.pr-delight-settings small{color:var(--muted,#929db9);font-size:11px;line-height:1.5}
+html.pr-delight-off #app .pr-delight-reveal{opacity:1;transform:none;transition:none}
+@media(prefers-reduced-motion:reduce){
+  #prDelightProgress{display:none!important}
+  #app .pr-delight-reveal{opacity:1!important;transform:none!important;transition:none!important}
+  #app :is(.panel,.tile,.stat,.feature-card)::before{display:none!important}
+}
