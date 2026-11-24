@@ -1,0 +1,57 @@
+/* PRINCIPIA quick controls — command palette and unobtrusive scroll-to-top. */
+#principiaCommandTrigger,#principiaBackToTop{
+  appearance:none;display:inline-flex;align-items:center;justify-content:center;
+  border:1px solid rgba(199,184,255,.28);color:#f7f4ff;
+  background:linear-gradient(145deg,rgba(115,91,185,.32),rgba(44,53,83,.72));
+  box-shadow:0 7px 20px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.13);
+  -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);
+  transition:transform .22s cubic-bezier(.22,1,.36,1),box-shadow .22s ease,border-color .22s ease;
+}
+#principiaCommandTrigger{width:38px;height:38px;min-width:38px;border-radius:13px;font-size:18px;cursor:pointer}
+#principiaCommandTrigger:hover,#principiaBackToTop:hover{transform:translateY(-2px);border-color:rgba(194,174,255,.65);box-shadow:0 10px 26px rgba(85,65,160,.28),inset 0 1px 0 rgba(255,255,255,.2)}
+#principiaBackToTop{
+  position:fixed;left:18px;bottom:18px;z-index:1100;width:44px;height:44px;
+  border-radius:15px;font-size:21px;cursor:pointer;opacity:0;visibility:hidden;
+  transform:translateY(9px);pointer-events:none;
+}
+#principiaBackToTop.is-visible{opacity:1;visibility:visible;transform:translateY(0);pointer-events:auto}
+#principiaCommandOverlay{
+  position:fixed;inset:0;z-index:2147483600;display:none;align-items:flex-start;justify-content:center;
+  padding:min(13vh,100px) 14px 20px;background:rgba(4,6,16,.72);
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+}
+#principiaCommandOverlay.is-open{display:flex;animation:pr-command-fade .18s ease-out}
+@keyframes pr-command-fade{from{opacity:0}to{opacity:1}}
+#principiaCommandDialog{
+  width:min(620px,100%);max-height:min(74vh,680px);overflow:hidden;
+  border:1px solid rgba(196,181,255,.25);border-radius:22px;
+  background:linear-gradient(145deg,rgba(31,30,53,.98),rgba(17,22,38,.98));
+  color:#f5f3ff;box-shadow:0 28px 90px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.08);
+  transform:translateY(8px);animation:pr-command-enter .28s cubic-bezier(.22,1,.36,1) forwards;
+}
+@keyframes pr-command-enter{to{transform:translateY(0)}}
+#principiaCommandSearch{width:100%;height:56px;padding:0 18px;border:0;border-bottom:1px solid rgba(196,181,255,.16);border-radius:0;background:transparent;color:inherit;font:inherit;font-size:15px;outline:none}
+#principiaCommandList{max-height:calc(min(74vh,680px) - 112px);overflow:auto;padding:9px}
+.pr-command-group{padding:9px 10px 5px;color:#a9a4c4;font-size:10px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase}
+.pr-command-item{display:flex;align-items:center;gap:12px;width:100%;padding:11px 12px;border:1px solid transparent;border-radius:12px;background:transparent;color:inherit;text-align:left;cursor:pointer;font:inherit}
+.pr-command-item:hover,.pr-command-item:focus-visible{border-color:rgba(177,154,255,.22);background:rgba(154,130,240,.14);outline:none}
+.pr-command-icon{width:30px;height:30px;display:grid;place-items:center;flex:0 0 30px;border-radius:10px;background:rgba(155,133,232,.15);font-size:16px}
+.pr-command-copy{min-width:0;flex:1}
+.pr-command-copy strong{display:block;font-size:13px;font-weight:650}
+.pr-command-copy small{display:block;margin-top:3px;color:#aaa8bd;font-size:11px}
+.pr-command-shortcut{color:#a9a4c4;font-size:10px;white-space:nowrap}
+.pr-command-empty{padding:28px 12px;text-align:center;color:#aaa8bd;font-size:13px}
+#principiaCommandFooter{display:flex;gap:14px;justify-content:flex-end;padding:10px 15px;border-top:1px solid rgba(196,181,255,.14);color:#aaa8bd;font-size:10px}
+body.principia-welcome-active #principiaCommandTrigger,
+body.principia-welcome-active #principiaBackToTop{display:none!important}
+@media(max-width:900px){
+ #principiaCommandTrigger{width:36px;height:36px;min-width:36px}
+ #principiaBackToTop{left:12px;bottom:calc(91px + env(safe-area-inset-bottom,0px));width:42px;height:42px}
+ #principiaCommandOverlay{padding:9vh 10px 14px}
+ #principiaCommandDialog{border-radius:18px;max-height:78vh}
+ #principiaCommandList{max-height:calc(78vh - 112px)}
+}
+@media(prefers-reduced-motion:reduce){
+ #principiaCommandOverlay,#principiaCommandDialog{animation:none}
+ #principiaBackToTop,#principiaCommandTrigger{transition:none}
+}
