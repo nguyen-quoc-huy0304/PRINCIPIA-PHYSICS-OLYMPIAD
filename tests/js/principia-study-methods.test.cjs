@@ -40,7 +40,7 @@ test('study playbook expansion creates 1,240 contextual guides without inflating
   assert.match(source, /window\.PRINCIPIA_STUDY_METHOD_PLAYBOOK_COUNT = out\.length/);
   assert.match(source, /kind: 'playbook'/);
   assert.equal((source.match(/\{ name: '/g) || []).length, 31);
-  assert.equal((source.match(/\\['[^']+','[^']+'\\]/g) || []).length, 40);
+  assert.equal((source.match(/\['[^']+','[^']+'\]/g) || []).length, 40);
   assert.match(source, /out.length !== methods.length \* topics.length/);
   assert.match(source, /new Set\(out.map\(item => item.title\)\)/);
   assert.match(read('index.html'), /principia-study-methods-expansion\.js/);
