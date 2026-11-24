@@ -90,9 +90,13 @@
     css.textContent = '#principiaAdaptiveCard{margin-top:12px}#principiaAdaptiveCard .ppa-muted{opacity:.75;font-size:13px;line-height:1.55}#principiaAdaptiveCard .ppa-metrics{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}#principiaAdaptiveCard .ppa-metrics span{padding:8px 10px;border:1px solid var(--line,#39435b);border-radius:9px;font-size:12px}#principiaAdaptiveCard .ppa-task{padding:12px;border:1px solid var(--line,#39435b);border-radius:12px;margin-top:10px}#principiaAdaptiveCard textarea{display:block;box-sizing:border-box;width:100%;min-height:100px;margin:7px 0;padding:10px;border:1px solid var(--line,#39435b);border-radius:9px;background:var(--bg,#101626);color:inherit}#principiaAdaptiveCard .ppa-check{display:flex;align-items:center;gap:8px;font-size:12px}#principiaAdaptiveCard .ppa-check input{width:auto}#principiaAdaptiveCard .ppa-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}#principiaAdaptiveCard button{padding:9px 12px;border:1px solid var(--line,#39435b);border-radius:9px;background:transparent;color:inherit}#principiaAdaptiveCard button:first-child{background:var(--primary,#6557dc);color:white;border-color:transparent}#principiaAdaptiveCard details{margin-top:10px;font-size:13px}#principiaAdaptiveCard li{margin:6px 0}';
     document.head.appendChild(css);
   }
-  function refreshCard() {
+  function refreshCard(force) {
     const root = document.querySelector('#principiaProMastery .ppm-content');
-    if (!root || document.getElementById('principiaAdaptiveCard')) return;
+    const active = document.querySelector('#principiaProMastery .ppm-tabs [aria-current="true"]')?.dataset.tab;
+    if (!root || !['overview', 'mastery'].includes(active)) return;
+    const existing = document.getElementById('principiaAdaptiveCard');
+    if (existing && !force) return;
+    if (existing) existing.remove();
     style();
     root.insertAdjacentHTML('beforeend', render());
     bindCard();
@@ -113,8 +117,9 @@
     if (answer.length < 30) return alert('Hãy trình bày cách giải độc lập ít nhất 30 ký tự.');
     if (!verified) return alert('Hãy tự kiểm tra lời giải trước khi ghi nhận thành thạo.');
     const days = [1, 3, 7, 14, 30];
-    const next = days[Math.min(days.length - 1, Math.max(0, Number(item.intervalIndex) || 0) + 1)];
-    item.intervalIndex = Math.min(days.length - 1, (Number(item.intervalIndex) || 0) + 1);
+    const index = Math.min(days.length - 1, Math.max(0, Number(item.intervalIndex) || 0));
+    const next = days[index];
+    item.intervalIndex = Math.min(days.length - 1, index + 1);
     item.intervalDays = next;
     item.dueAt = Date.now() + next * DAY;
     item.status = 'review';
