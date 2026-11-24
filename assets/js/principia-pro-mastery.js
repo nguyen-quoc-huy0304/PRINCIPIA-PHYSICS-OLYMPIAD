@@ -141,7 +141,7 @@
         if (url.pathname === '/watch') id = url.searchParams.get('v') || '';
         else if (url.pathname.startsWith('/embed/')) id = url.pathname.split('/')[2] || '';
       }
-      return /^[A-Za-z0-9_-]{11}$/.test(id) ? 'https://www.youtube-nocookie.com/embed/' + id : '';
+      return /^[A-Za-z0-9_-]{11}$/.test(id) ? 'https://www.youtube-nocookie.com/embed/' + id + '?enablejsapi=1&origin=' + encodeURIComponent(location.origin) : '';
     } catch (_) { return ''; }
   }
   function render() {
