@@ -191,7 +191,6 @@
     const key = todayKey();
     if (!todayHabit()) state.habits.push({ date: key, done: true });
     else todayHabit().done = true;
-    if (!state.sessions.some(x => x.date === key && x.minutes >= 5)) state.sessions.push({ date: key, minutes: Math.max(5, minutesToday()) });
     saveState(); render();
   }
   function setDuration(minutes) {
@@ -276,7 +275,17 @@
     const level = difficulty === 'easy' ? 0 : difficulty === 'hard' ? 2 : 1;
     const questions = (stylesByPersona[persona] || stylesByPersona.curious).slice(0, frequency).map((q, i) => '<li>' + esc(q) + (level === 2 ? ' Hãy chứng minh chặt chẽ.' : level === 0 ? ' Giải thích từng bước.' : '') + '</li>').join('');
     const target = modal().querySelector('#ppmStudentQuestions');
-    if (target) target.innerHTML = '<b>Học sinh hỏi:</b><ol>' + questions + '</ol><p>Hãy trả lời bằng lời của bạn, sau đó tự kiểm tra bằng ví dụ.</p>';
+    if (target) {
+      target.innerHTML = '<b>Học sinh hỏi:</b><ol>' + questions + '</ol><p>Hãy trả lời bằng lời của bạn, sau đó tự kiểm tra bằng ví dụ.</p><button type="button" class="ppm-button ppm-primary" data-student-ai>Tiếp tục đối thoại với AI Student</button>';
+      target.querySelector('[data-student-ai]').addEventListener('click', () => {
+        const personaName = ({ curious: 'tò mò', skeptical: 'hoài nghi', beginner: 'mới học', olympiad: 'học sinh Olympic' })[persona];
+        const context = modal().querySelector('#ppmNotes')?.value || state.notes;
+        const prompt = 'Bạn đóng vai một học sinh ' + personaName + ' đang được người dùng dạy Vật lý. Độ khó: ' + difficulty + '. Tần suất: ' + frequency + ' câu hỏi mỗi lượt. Hãy dựa trên nội dung bài giảng sau và hỏi từng câu một; không tự giảng thay giáo viên. Nếu giáo viên trả lời thiếu logic, hãy hỏi tiếp một câu Socratic lịch sự. Nội dung bài giảng: ' + context.slice(0, 5000);
+        close();
+        if (window.principiaLocalAI && typeof window.principiaLocalAI.open === 'function') window.principiaLocalAI.open(prompt);
+        else if (typeof window.principiaSuiteAI === 'function') window.principiaSuiteAI();
+      });
+    }
   }
   function loadVideo() {
     const input = modal().querySelector('#ppmVideoUrl');
