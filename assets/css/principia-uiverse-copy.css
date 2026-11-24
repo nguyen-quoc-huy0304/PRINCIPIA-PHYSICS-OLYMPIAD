@@ -1,0 +1,55 @@
+/* Uiverse button pattern by Web-Potato — MIT License.
+ * Source: https://uiverse.io/Web-Potato/silent-ape-24
+ * Adapted from the published HTML/CSS button: nested face, raised shadow and press-down transition.
+ */
+#app .main .pr-uiverse-button,
+#principiaLabCodeStudio .pr-uiverse-button{
+  padding:.14em .22em!important;
+  border:0!important;
+  border-radius:12px!important;
+  background:linear-gradient(135deg,rgba(164,145,255,.9),rgba(73,160,205,.9))!important;
+  box-shadow:0 .28em .12em rgba(75,91,170,.34)!important;
+  transition:transform .24s cubic-bezier(.2,.8,.2,1),box-shadow .24s ease,filter .24s ease!important;
+  transform:translate3d(0,0,0);
+  isolation:isolate;
+}
+#app .main .pr-uiverse-button>.pr-uiverse-label,
+#principiaLabCodeStudio .pr-uiverse-button>.pr-uiverse-label{
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:.5em;
+  min-height:2.45em;
+  padding:.55em 1.05em;
+  border:1px solid rgba(255,255,255,.36);
+  border-radius:9px;
+  color:#fff;
+  background:linear-gradient(145deg,rgba(20,29,57,.96),rgba(29,42,77,.94));
+  box-shadow:inset 0 1px rgba(255,255,255,.18);
+  transition:transform .28s cubic-bezier(.2,.8,.2,1),box-shadow .28s ease,background .28s ease;
+}
+#app .main .pr-uiverse-button:hover:not(:disabled),
+#principiaLabCodeStudio .pr-uiverse-button:hover:not(:disabled){
+  transform:translateY(2px);
+  box-shadow:0 .08em .04em rgba(75,91,170,.25)!important;
+  filter:brightness(1.12);
+}
+#app .main .pr-uiverse-button:active:not(:disabled),
+#principiaLabCodeStudio .pr-uiverse-button:active:not(:disabled){
+  transform:translateY(4px) scale(.985);
+  box-shadow:0 0 0 transparent!important;
+}
+#app .main .pr-uiverse-button:focus-visible,
+#principiaLabCodeStudio .pr-uiverse-button:focus-visible{
+  outline:2px solid var(--accent,#a99aff);
+  outline-offset:4px;
+}
+#app .main .pr-uiverse-button:disabled,
+#principiaLabCodeStudio .pr-uiverse-button:disabled{opacity:.55;cursor:not-allowed}
+@media(prefers-reduced-motion:reduce){
+ #app .main .pr-uiverse-button,
+ #app .main .pr-uiverse-button>.pr-uiverse-label,
+ #principiaLabCodeStudio .pr-uiverse-button,
+ #principiaLabCodeStudio .pr-uiverse-button>.pr-uiverse-label{transition:none!important}
+}
