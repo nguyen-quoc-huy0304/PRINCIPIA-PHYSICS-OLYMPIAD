@@ -4,11 +4,11 @@
   const STORE = 'principia_learning_orchestrator_v1';
   const MAX_RECENT = 12;
   const GOALS = {
-    understand: ['hiểu khái niệm', 'giải thích bằng hình', 'mô hình hóa', 'ví dụ cụ thể'],
-    remember: ['ghi nhớ', 'truy xuất', 'ôn tập', 'flashcard', 'nhắc lại'],
-    solve: ['giải bài', 'phân tích', 'chiến lược', 'luyện tập'],
-    teach: ['giảng', 'dạy', 'giải thích', 'phản biện'],
-    recover: ['lỗi', 'sửa lỗi', 'thành thạo', 'tự kiểm tra']
+    understand: ['hiểu khái niệm', 'giải thích bằng hình', 'mô hình hóa', 'ví dụ cụ thể', 'hiểu sâu', 'feynman', 'concept'],
+    remember: ['ghi nhớ', 'truy xuất', 'ôn tập', 'flashcard', 'nhắc lại', 'spaced', 'retrieval'],
+    solve: ['giải bài', 'phân tích', 'chiến lược', 'luyện tập', 'olympiad', 'problem solving'],
+    teach: ['giảng', 'dạy', 'giải thích', 'phản biện', 'teach', 'peer instruction'],
+    recover: ['lỗi', 'sửa lỗi', 'thành thạo', 'tự kiểm tra', 'error', 'deliberate practice']
   };
   const DEFAULT_STEPS = [
     'Tự nêu điều đã biết và điều cần tìm trước khi xem gợi ý.',
@@ -68,6 +68,8 @@
     const topic = topicFrom(context);
     const goal = inferGoal(context);
     const terms = GOALS[goal];
+    const energy = [1, 2, 3].includes(Number(context.energy)) ? Number(context.energy) : 2;
+    const confidence = Number.isFinite(Number(context.confidence)) ? Math.max(1, Math.min(5, Number(context.confidence))) : 3;
     const topicWords = topic.toLocaleLowerCase('vi').split(/[^\p{L}\p{N}]+/u).filter(word => word.length > 2);
     const recent = new Set(state.recent.map(item => item.id));
     const scored = items.map(item => {
@@ -82,16 +84,19 @@
       const score = topicHits * 5 + goalHits * 3 + (steps.length ? 2 : 0) + (isCore ? 1 : 0) - (recent.has(item.id) ? 10 : 0);
       return { item, score, steps };
     }).filter(entry => entry.item && entry.item.title).sort((a, b) => b.score - a.score);
-    const candidate = scored.find(entry => !recent.has(entry.item.id)) || scored[0];
+    const fresh = scored.filter(entry => !recent.has(entry.item.id));
+    const pool = (fresh.length ? fresh : scored).slice(0, Math.min(8, fresh.length || scored.length));
+    const candidate = pool.length ? pool[state.sessions % pool.length] : null;
     if (!candidate) {
       return { topic, goal, title: 'Bước học tiếp theo', description: 'Bắt đầu bằng một câu hỏi ngắn để xác định phần bạn đã hiểu.', steps: DEFAULT_STEPS, methodId: null };
     }
     return {
-      topic, goal,
+      topic, goal, energy, confidence,
       title: displayTitle(goal, context),
       description: displayDescription(goal, context),
       steps: candidate.steps.length ? candidate.steps : DEFAULT_STEPS,
-      methodId: candidate.item.id
+      methodId: candidate.item.id,
+      estimatedMinutes: energy === 1 ? 10 : goal === 'remember' ? 15 : energy === 3 ? 35 : 25
     };
   }
 
@@ -117,7 +122,7 @@
     const steps = plan.steps.map((step, index) => (index + 1) + '. ' + step).join('\n');
     return [
       'Bạn là gia sư PRINCIPIA. Hãy áp dụng quy trình sư phạm sau một cách tự nhiên, tuyệt đối không nêu tên phương pháp hay nói về thuật toán chọn phương pháp.',
-      'Chủ đề: ' + plan.topic + '. Mục tiêu: ' + plan.goal + '.',
+      'Chủ đề: ' + plan.topic + '. Mục tiêu: ' + plan.goal + '. Thời lượng khởi điểm: ' + plan.estimatedMinutes + ' phút. Mức năng lượng: ' + plan.energy + '/3.',
       'Các bước hướng dẫn nội bộ:\n' + steps,
       'Dẫn dắt từng bước, chỉ hỏi một câu tại một thời điểm. Chờ người học trả lời rồi mới phản hồi. Không tiết lộ đáp án cuối trước khi người học tự thử. Khi người học sai, xác định chính xác lỗ hổng và giảm độ khó; khi làm tốt, tăng thử thách hoặc đổi cách biểu diễn.',
       clean(extra, 1800)
@@ -145,6 +150,20 @@
     window.dispatchEvent(new CustomEvent('principia:next-step-updated', {
       detail: { title: plan.title, description: plan.description, topic: plan.topic, goal: plan.goal }
     }));
+  }
+
+  function recordRetryAssessment(event) {
+    const detail = event?.detail || {};
+    const score = Number(detail.score);
+    if (!Number.isFinite(score) || score < 0 || score > 100) return;
+    state.profile = Object.assign({}, state.profile, {
+      topic: clean(detail.source || state.profile.topic || 'Vật lý', 120),
+      lastRetryScore: Math.round(score),
+      lastRetryPassed: detail.passed === true,
+      retryUpdatedAt: Date.now(),
+      errorCount: detail.passed === true ? Math.max(0, (Number(state.profile.errorCount) || 0) - 1) : Math.min(100, (Number(state.profile.errorCount) || 0) + 1)
+    });
+    save();
   }
 
   function getNext(context = {}) {
@@ -230,5 +249,6 @@
   });
 
   window.addEventListener('principia:quiz-completed', recordQuiz);
+  window.addEventListener('principia:adaptive-retry-assessed', recordRetryAssessment);
   window.addEventListener('principia:next-step-updated', showNextStep);
 })();
