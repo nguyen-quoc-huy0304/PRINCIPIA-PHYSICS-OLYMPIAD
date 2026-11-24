@@ -1,4 +1,4 @@
-/* PRINCIPIA — 1,200 contextual learning playbooks.
+/* PRINCIPIA — 1,240 contextual learning playbooks.
  * These are method × physics-topic applications, not 1,200 independent research methods.
  * The 231-item core library remains intact and is counted separately.
  */
@@ -56,6 +56,12 @@
         duration: 10
       });
     }
+  }
+  if (out.length !== methods.length * topics.length) {
+    throw new Error('Study playbook catalog count mismatch');
+  }
+  if (new Set(out.map(item => item.title)).size !== out.length) {
+    throw new Error('Study playbook titles must be unique');
   }
   window.PRINCIPIA_STUDY_METHOD_PLAYBOOKS = out;
   window.PRINCIPIA_STUDY_METHOD_PLAYBOOK_COUNT = out.length;
