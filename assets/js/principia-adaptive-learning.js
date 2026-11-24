@@ -69,11 +69,13 @@
     const recent = attempts();
     const average = recent.length ? recent.reduce((sum, item) => sum + (Number(item.percent) || 0), 0) / recent.length : null;
     const due = state.errors.filter(item => item.status !== 'mastered' && Number(item.dueAt) <= Date.now()).length;
+    const learnerProfile = window.PrincipiaLearningOrchestrator?.getProfile?.() || {};
+    const unresolved = state.errors.filter(item => item.status !== 'mastered').length;
     const profile = window.PrincipiaLearningOrchestrator?.recommend({
-      topic: state.errors[0]?.source || recent.at(-1)?.topic || 'Vật lý',
+      topic: state.errors[0]?.source || recent.at(-1)?.topic || learnerProfile.topic || 'Vật lý',
       percent: average,
-      errorCount: due,
-      goal: due >= 3 || (average !== null && average < 50) ? 'recover' : undefined
+      errorCount: unresolved,
+      goal: unresolved >= 3 || (average !== null && average < 50) ? 'recover' : undefined
     });
     if (profile) return {
       title: profile.title,
