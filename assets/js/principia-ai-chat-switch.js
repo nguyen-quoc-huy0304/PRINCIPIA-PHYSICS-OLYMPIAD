@@ -51,6 +51,12 @@
   const launcher=event.target.closest(DOCK_AI);
   if(!launcher)return;
   const chat=byId('chatBox');
+  const web=byId('principiaChatWebView');
+  const searchVisible=!!web&&!web.hidden&&web.style.display!=='none';
+  if(searchVisible&&chat?.classList.contains('open')){
+   event.preventDefault();event.stopImmediatePropagation();showChat();
+   return;
+  }
   if(!chat?.classList.contains('open'))showChat();
  },true);
  document.addEventListener('principia:rendered',mount);
