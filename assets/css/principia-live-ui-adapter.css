@@ -1,0 +1,128 @@
+/* Live component patterns adapted for PRINCIPIA's existing elements.
+   Uiverse MIT button source attribution: https://uiverse.io/Web-Potato/silent-ape-24
+   Other interaction patterns are compatibility adaptations; no third-party runtime is injected.
+*/
+#app .main [data-pr-live-ui="spotlight"]{
+ --pr-live-x:50%;
+ --pr-live-y:0%;
+ position:relative;
+ isolation:isolate;
+ background-image:radial-gradient(280px circle at var(--pr-live-x) var(--pr-live-y),rgba(153,137,255,.105),transparent 68%);
+ transition:border-color .28s ease,box-shadow .3s ease,transform .3s cubic-bezier(.2,.8,.2,1),background-color .28s ease;
+}
+#app .main [data-pr-live-ui="spotlight"]::after{
+ content:"";
+ position:absolute;
+ inset:0 9% auto;
+ height:1px;
+ pointer-events:none;
+ background:linear-gradient(90deg,transparent,rgba(191,179,255,.58),rgba(112,204,231,.4),transparent);
+ opacity:.65;
+}
+#app .main [data-pr-live-ui="spotlight"]:hover{
+ border-color:rgba(172,157,255,.38)!important;
+ box-shadow:0 17px 42px rgba(0,0,0,.22),0 0 25px rgba(130,119,236,.08),inset 0 1px rgba(255,255,255,.07)!important;
+}
+#app .main [data-pr-live-ui="press"]{
+ position:relative;
+ isolation:isolate;
+ border:1px solid rgba(208,197,255,.3)!important;
+ border-radius:11px!important;
+ background:linear-gradient(135deg,#927af1,#6d69d9 58%,#478eaf)!important;
+ box-shadow:0 4px 0 rgba(54,48,112,.82),0 9px 22px rgba(101,89,212,.2),inset 0 1px rgba(255,255,255,.2)!important;
+ color:#fff!important;
+ transition:transform .18s cubic-bezier(.2,.8,.2,1),box-shadow .18s ease,filter .18s ease!important;
+}
+#app .main [data-pr-live-ui="press"]:hover:not(:disabled){
+ transform:translateY(1px);
+ filter:brightness(1.08);
+ box-shadow:0 3px 0 rgba(54,48,112,.82),0 11px 24px rgba(101,89,212,.25),inset 0 1px rgba(255,255,255,.22)!important;
+}
+#app .main [data-pr-live-ui="press"]:active:not(:disabled){
+ transform:translateY(4px) scale(.99);
+ box-shadow:0 0 0 transparent,inset 0 1px rgba(255,255,255,.12)!important;
+}
+#app .main [data-pr-live-ui="segmented"] .tab{
+ position:relative;
+ isolation:isolate;
+ transition:color .22s ease,background .22s ease,border-color .22s ease,box-shadow .22s ease,transform .22s cubic-bezier(.2,.8,.2,1)!important;
+}
+#app .main [data-pr-live-ui="segmented"] .tab.active{
+ color:#fff!important;
+ background:linear-gradient(115deg,rgba(139,117,246,.28),rgba(73,170,204,.15))!important;
+ border-color:rgba(180,164,255,.42)!important;
+ box-shadow:inset 0 1px rgba(255,255,255,.08),0 6px 18px rgba(85,75,170,.12)!important;
+}
+#app .main [data-pr-live-ui="segmented"] .tab.active::after{
+ content:"";
+ position:absolute;
+ left:20%;
+ right:20%;
+ bottom:0;
+ height:2px;
+ border-radius:2px;
+ background:linear-gradient(90deg,#aa96ff,#76cce8);
+ box-shadow:0 0 12px rgba(169,150,255,.45);
+}
+#app .main [data-pr-live-ui="accordion"] summary{
+ cursor:pointer;
+ transition:color .2s ease;
+}
+#app .main [data-pr-live-ui="accordion"] summary:hover{color:#b9aaff}
+#app .main [data-pr-live-ui="accordion"][open]{
+ border-color:rgba(169,151,255,.36);
+}
+#app .main [data-pr-live-ui="thinking"]{
+ position:relative;
+}
+#app .main [data-pr-live-ui="thinking"]::before{
+ content:"";
+ display:inline-block;
+ width:9px;
+ height:9px;
+ margin-inline-end:9px;
+ vertical-align:middle;
+ border-radius:50%;
+ background:radial-gradient(circle at 35% 30%,#fff,#a995ff 42%,#4268b8);
+ box-shadow:0 0 14px rgba(157,139,255,.7);
+ animation:pr-live-thinking 1.4s ease-in-out infinite alternate;
+}
+@keyframes pr-live-thinking{
+ to{transform:scale(.72);filter:hue-rotate(28deg);box-shadow:0 0 5px rgba(157,139,255,.35)}
+}
+#app .main [data-pr-live-ui="progress"]{
+ background:rgba(128,148,195,.14);
+}
+#app .main [data-pr-live-ui="progress"]>div{
+ background:linear-gradient(90deg,#947bfa,#67c2e6,#83dec4);
+ box-shadow:0 0 14px rgba(133,151,255,.3);
+}
+#app .main [data-pr-live-ui="search"]:focus-within{
+ border-color:rgba(174,158,255,.62);
+ box-shadow:0 0 0 3px rgba(146,126,246,.12),0 0 20px rgba(111,129,240,.07);
+}
+@media(hover:hover) and (pointer:fine){
+ #app .main [data-pr-live-ui="spotlight"]:hover{
+  transform:perspective(1100px) rotateX(var(--pr-live-rx,0deg)) rotateY(var(--pr-live-ry,0deg)) translateY(-2px);
+ }
+}
+@media(max-width:760px){
+ #app .main [data-pr-live-ui="spotlight"]:hover{transform:none}
+}
+@media(prefers-reduced-motion:reduce){
+ #app .main [data-pr-live-ui],
+ #app .main [data-pr-live-ui]::before,
+ #app .main [data-pr-live-ui]::after{
+  animation:none!important;
+  transition:none!important;
+  transform:none!important;
+ }
+}
+html[data-theme="light"] #app .main [data-pr-live-ui="spotlight"],
+html[data-pr-theme="light"] #app .main [data-pr-live-ui="spotlight"]{
+ background-image:radial-gradient(280px circle at var(--pr-live-x) var(--pr-live-y),rgba(133,117,220,.09),transparent 68%);
+}
+html[data-theme="light"] #app .main [data-pr-live-ui="press"],
+html[data-pr-theme="light"] #app .main [data-pr-live-ui="press"]{
+ color:#fff!important;
+}
