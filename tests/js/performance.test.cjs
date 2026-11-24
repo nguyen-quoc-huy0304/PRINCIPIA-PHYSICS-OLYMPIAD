@@ -101,11 +101,11 @@ test('removes failed scripts and permits a clean retry', async () => {
 test('loadScripts preserves script order', async () => {
   const { api, scripts } = createHarness();
   const sequence = api.loadScripts(['/assets/first.js', 'https://cdn.example/second.js']);
-  await Promise.resolve();
+  await new Promise(resolve => setImmediate(resolve));
   assert.equal(scripts.length, 1);
   assert.equal(scripts[0].src, '/assets/first.js');
   scripts[0].onload();
-  await Promise.resolve();
+  await new Promise(resolve => setImmediate(resolve));
   assert.equal(scripts.length, 2);
   assert.equal(scripts[1].src, 'https://cdn.example/second.js');
   scripts[1].onload();
