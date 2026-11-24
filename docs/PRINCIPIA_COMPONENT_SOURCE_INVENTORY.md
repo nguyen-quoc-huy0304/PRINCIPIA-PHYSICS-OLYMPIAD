@@ -21,7 +21,7 @@ This inventory separates published source counts from components actually vendor
 
 ## Existing PRINCIPIA vault
 
-The current local vault contains 40 base structures × 25 visual skins = 1,000 selectable variants. The 1,000 figure is not 1,000 distinct upstream source components.
+The vault now contains 140 base structures: 40 original/adapted PRINCIPIA patterns plus 100 source components imported from Lucian UX/UI Prompt IDs 001–100. Each can be displayed with 25 selectable skins, for 3,500 selectable visual variants. The 3,500 figure is not 3,500 distinct source components. Imported Lucian source code retains its MIT attribution in the exported HTML. Live previews run in sandboxed iframes with scripts enabled but network access and same-origin access denied.
 
 ## Import policy
 
