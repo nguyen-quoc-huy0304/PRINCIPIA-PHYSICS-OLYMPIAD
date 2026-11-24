@@ -3,7 +3,7 @@
    Vanilla CSS: no React/Tailwind runtime or external network dependency. */
 :root{
   --pr-sidebar-expanded:235px;
-  --pr-sidebar-collapsed:78px;
+  --pr-sidebar-collapsed:88px;
   --pr-sidebar-motion:cubic-bezier(.22,1,.36,1);
 }
 #app>.layout,#app>.principia-desktop-shell{
@@ -32,7 +32,12 @@
   #app>.layout.pr-sidebar-collapsed>.sidebar,
   #app>.principia-desktop-shell.pr-sidebar-collapsed>.sidebar{
     width:var(--pr-sidebar-collapsed)!important;min-width:var(--pr-sidebar-collapsed)!important;
-    padding:20px 9px!important;overflow-x:hidden!important;align-items:stretch!important;
+    padding:16px 8px!important;overflow-x:hidden!important;align-items:stretch!important;
+    top:12px!important;height:calc(100vh - 24px)!important;min-height:calc(100vh - 24px)!important;
+    margin:12px 8px!important;border:1px solid rgba(179,166,255,.25)!important;border-radius:24px!important;
+    background:linear-gradient(165deg,rgba(30,34,65,.94),rgba(9,19,38,.96))!important;
+    box-shadow:0 22px 58px rgba(0,0,0,.34),0 0 34px rgba(135,119,242,.10),inset 0 1px rgba(255,255,255,.12)!important;
+    -webkit-backdrop-filter:blur(28px) saturate(155%)!important;backdrop-filter:blur(28px) saturate(155%)!important;
   }
   #app>.layout.pr-sidebar-collapsed>.sidebar>.brand,
   #app>.principia-desktop-shell.pr-sidebar-collapsed>.sidebar>.brand{
@@ -47,7 +52,7 @@
   #app>.layout.pr-sidebar-collapsed>.sidebar .nav,
   #app>.principia-desktop-shell.pr-sidebar-collapsed>.sidebar .nav{
     display:flex!important;align-items:center!important;justify-content:center!important;
-    min-height:46px!important;width:100%!important;margin:3px 0!important;padding:8px 4px!important;
+    min-height:46px!important;width:100%!important;margin:4px 0!important;padding:8px 4px!important;
     gap:0!important;border-radius:13px!important;text-align:center!important;
   }
   #app>.layout.pr-sidebar-collapsed>.sidebar .nav>span:last-child,
@@ -61,7 +66,7 @@
   #app>.layout.pr-sidebar-collapsed>.sidebar .sidebottom,
   #app>.principia-desktop-shell.pr-sidebar-collapsed>.sidebar .sidebottom{display:none!important}
   #app>.layout.pr-sidebar-collapsed>.sidebar .nav.active,
-  #app>.principia-desktop-shell.pr-sidebar-collapsed>.sidebar .nav.active{box-shadow:inset 0 0 0 1px rgba(177,163,255,.22),0 8px 22px rgba(48,50,120,.16)!important}
+  #app>.principia-desktop-shell.pr-sidebar-collapsed>.sidebar .nav.active{box-shadow:inset 0 0 0 1px rgba(177,163,255,.3),0 8px 22px rgba(48,50,120,.22),0 0 22px rgba(147,128,255,.12)!important}
   #app>.layout.pr-sidebar-collapsed>.main,
   #app>.principia-desktop-shell.pr-sidebar-collapsed>.main{min-width:0!important}
 }
