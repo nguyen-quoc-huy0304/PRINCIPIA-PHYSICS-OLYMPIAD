@@ -15,7 +15,9 @@ pub fn score_projectile(speed: f64, angle_degrees: f64, target_m: f64, gravity: 
     let flight = projectile(speed, angle_degrees, gravity)?;
     let error = (flight.range - target_m).abs();
     if !error.is_finite() { return Err(PhysicsError::NonFinite); }
-    let points = (100.0 - error * 5.0).round().max(0.0) as u32;
+    let score_delta = error * 5.0;
+    if !score_delta.is_finite() { return Err(PhysicsError::NonFinite); }
+    let points = (100.0 - score_delta).round().max(0.0) as u32;
     Ok(ShotResult { range_m: flight.range, error_m: error, points })
 }
 
