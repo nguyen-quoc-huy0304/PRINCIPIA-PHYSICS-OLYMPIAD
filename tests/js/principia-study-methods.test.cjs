@@ -89,4 +89,8 @@ test('guided pathways connect Gemini, virtual classroom and Study With Me', () =
   assert.match(source, /PrincipiaProMastery\.open\('classroom'\)/);
   assert.match(source, /PrincipiaProMastery\.open\('study'\)/);
   assert.match(read('index.html'), /principia-study-pathways\.js/);
+  const mastery = read('assets/js/principia-pro-mastery.js');
+  assert.match(mastery, /data-pathways/);
+  assert.match(mastery, /Mở thư viện phương pháp/);
+  assert.doesNotMatch(mastery, /Mở 231 phương pháp/);
 });
