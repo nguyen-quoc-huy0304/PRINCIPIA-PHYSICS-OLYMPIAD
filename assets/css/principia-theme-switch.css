@@ -1,0 +1,72 @@
+/* PRINCIPIA theme switch and polished day/night transition layer. */
+:root{
+  color-scheme:dark;
+  --pr-theme-bg:#090d1b;
+  --pr-theme-surface:rgba(18,24,45,.88);
+  --pr-theme-text:#edf1ff;
+  --pr-theme-muted:#aab5d0;
+  --pr-theme-border:rgba(160,178,235,.2);
+}
+html[data-pr-theme="light"]{
+  color-scheme:light;
+  --pr-theme-bg:#f4f7ff;
+  --pr-theme-surface:rgba(255,255,255,.9);
+  --pr-theme-text:#17213a;
+  --pr-theme-muted:#5b6680;
+  --pr-theme-border:rgba(66,86,135,.2);
+}
+html[data-pr-theme="light"] body{
+  color:var(--pr-theme-text);
+  background-color:var(--pr-theme-bg);
+}
+html[data-pr-theme="light"] #app{
+  color:var(--pr-theme-text);
+}
+html[data-pr-theme="light"] #app :is(.panel,.card,.tile,.stat,.modal-card,.modalbox,.lesson-content-panel,.ai-cheploi-box,.cl-left-pane,.cl-right-pane){
+  border-color:var(--pr-theme-border);
+}
+html[data-pr-theme="light"] #app :is(input,textarea,select,.inp){
+  color:#1c2742;
+  background-color:rgba(255,255,255,.92);
+  border-color:rgba(75,95,145,.25);
+}
+html[data-pr-theme="light"] #app :is(.muted,.small,.hint,.description){
+  color:var(--pr-theme-muted);
+}
+.pr-theme-switch{
+  position:fixed;top:max(14px,env(safe-area-inset-top));right:max(14px,env(safe-area-inset-right));
+  z-index:2147483590;display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  min-height:42px;padding:0 14px;border:1px solid rgba(168,181,235,.28);border-radius:999px;
+  color:#f3f5ff;background:rgba(19,25,48,.82);
+  box-shadow:0 8px 28px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.12);
+  -webkit-backdrop-filter:blur(18px) saturate(155%);backdrop-filter:blur(18px) saturate(155%);
+  font:600 12px/1 system-ui,sans-serif;letter-spacing:.01em;cursor:pointer;
+  transition:transform .28s cubic-bezier(.2,.8,.2,1),background .35s ease,border-color .35s ease,box-shadow .35s ease;
+}
+.pr-theme-switch:hover{transform:translateY(-2px) scale(1.035);box-shadow:0 12px 34px rgba(0,0,0,.28),0 0 22px rgba(142,157,255,.16)}
+.pr-theme-switch:active{transform:scale(.96)}
+.pr-theme-icon{display:inline-grid;place-items:center;width:19px;height:19px;font-size:19px;line-height:1;transition:transform .55s cubic-bezier(.2,.8,.2,1)}
+.pr-theme-switch:hover .pr-theme-icon{transform:rotate(24deg)}
+.pr-theme-label{white-space:nowrap}
+html[data-pr-theme="light"] .pr-theme-switch{
+  color:#24304d;background:rgba(255,255,255,.84);border-color:rgba(75,95,145,.22);
+  box-shadow:0 8px 28px rgba(48,64,105,.13),inset 0 1px 0 rgba(255,255,255,.9);
+}
+html.pr-theme-changing body,html.pr-theme-changing #app,
+html.pr-theme-changing #app :is(.panel,.card,.tile,.stat,.nav,.tab,button,input,textarea,select){
+  transition:background-color .42s ease,color .32s ease,border-color .42s ease,box-shadow .42s ease;
+}
+html[data-pr-theme="light"] #principia3DAtmosphere{opacity:.38}
+html[data-pr-theme="light"] .pr-experience-toast{color:#1c2742;background:rgba(249,251,255,.96);border-color:rgba(75,95,145,.2)}
+::view-transition-old(root),::view-transition-new(root){animation-duration:.42s}
+::view-transition-old(root){animation-name:pr-theme-fade-out}
+::view-transition-new(root){animation-name:pr-theme-fade-in}
+@keyframes pr-theme-fade-out{to{opacity:.35;filter:blur(2px)}}
+@keyframes pr-theme-fade-in{from{opacity:.35;filter:blur(2px)}to{opacity:1;filter:blur(0)}}
+@media(max-width:760px){
+  .pr-theme-switch{min-height:39px;padding:0 12px;top:max(10px,env(safe-area-inset-top));right:max(10px,env(safe-area-inset-right))}
+}
+@media(prefers-reduced-motion:reduce){
+  .pr-theme-switch,.pr-theme-icon{transition:none!important}
+  ::view-transition-old(root),::view-transition-new(root){animation:none!important}
+}
