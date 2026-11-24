@@ -364,6 +364,370 @@ body.principia-welcome-active .principia-welcome-screen .pw-start-button{
  body.principia-welcome-active>#proSiteEditorFab{bottom:138px!important}
 }
 
+.principia-desktop-shell>.sidebar{position:sticky;top:0;align-self:start;height:100vh;min-height:100vh;overflow-y:auto}
+.principia-desktop-shell>.main{min-width:0;width:100%;max-width:none;margin:0;padding:28px clamp(24px,3vw,52px)}
+.principia-mobile-shell{display:none}
+@media(min-width:901px){
+ #app>.principia-desktop-shell{display:grid!important}
+ #app>.principia-mobile-shell{display:none!important}
+ .principia-desktop-shell>.sidebar{display:flex!important}
+ .principia-desktop-shell>.main{display:block!important}
+}
+@media(max-width:900px){
+ #app>.principia-desktop-shell{display:none!important}
+ #app>.principia-mobile-shell{display:flex!important;flex-direction:column;min-height:100svh;width:100%;padding:0}
+ .principia-mobile-main{order:1;flex:1 1 auto;width:100%;min-width:0;min-height:0;padding:0 0 calc(86px + env(safe-area-inset-bottom));}
+ .principia-mobile-topbar{position:relative;width:100%;z-index:5;padding:12px 14px 0}
+ .principia-mobile-topbar .top{align-items:flex-start;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+ .principia-mobile-topbar .topright{max-width:100%;flex-wrap:wrap}
+ .principia-mobile-main>#body{padding:0 13px 16px;min-width:0}
+ .principia-mobile-nav{position:fixed!important;left:0!important;right:0!important;bottom:0!important;top:auto!important;z-index:2147483000!important;display:flex;align-items:stretch;gap:4px;width:100%;min-height:72px;max-height:calc(84px + env(safe-area-inset-bottom));overflow-x:auto;overflow-y:hidden;padding:7px 8px calc(7px + env(safe-area-inset-bottom));background:rgba(16,18,35,.97);border-top:1px solid rgba(210,200,255,.2);box-shadow:0 -10px 30px rgba(0,0,0,.32);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px)}
+ .principia-mobile-nav .brand{display:flex;flex:0 0 42px;width:42px;min-width:42px;height:48px;align-items:center;justify-content:center;padding:0;margin:0;border:0}
+ .principia-mobile-nav .brand-logo-img{width:36px;height:36px;object-fit:contain}
+ .principia-mobile-nav .nav{display:flex;flex:1 0 64px;min-width:64px;max-width:100px;min-height:52px;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:4px 3px;text-align:center;font-size:10px;white-space:nowrap}
+ .principia-mobile-nav .nav>span:last-child{display:block;font-size:10px;line-height:1.15}
+ .principia-mobile-nav .nav-default-icon,.principia-mobile-nav .nav-custom-icon{display:block;width:24px;height:24px;object-fit:contain;font-size:21px}
+ .principia-mobile-nav .navlabel,.principia-mobile-nav .sidebottom{display:none!important}
+ .principia-mobile-nav .nav.active{background:#27213f;color:#c8bcff}
+ body.principia-welcome-active .principia-mobile-nav{display:none!important}
+}
+
+/* Keep the mobile navigation attached to the viewport, not the scrolling page. */
+@media(max-width:900px){
+ body>.principia-mobile-nav{position:fixed!important;inset:auto 0 0 0!important;z-index:2147483000!important;width:100vw!important;transform:none!important;}
+ #app .principia-mobile-main{padding-bottom:calc(88px + env(safe-area-inset-bottom) + 8px)!important;}
+}
+
+/* Mobile viewport fix: legacy body rules (perspective/grid/overflow) otherwise
+   turn fixed descendants into page-relative elements on some mobile browsers. */
+@media(max-width:900px){
+ html,body{width:100%!important;max-width:none!important;height:auto!important;min-height:100%!important;margin:0!important;padding:0!important;display:block!important;overflow-x:hidden!important;overflow-y:auto!important;perspective:none!important;transform:none!important;filter:none!important;contain:none!important;}
+ body{place-items:initial!important;gap:0!important;}
+ body>.principia-mobile-nav{position:fixed!important;left:0!important;right:0!important;bottom:0!important;top:auto!important;width:100%!important;max-width:none!important;margin:0!important;transform:none!important;}
+ #app{width:100%!important;max-width:none!important;min-height:100svh!important;margin:0!important;padding:0!important;transform:none!important;filter:none!important;perspective:none!important;contain:none!important;}
+ #app .principia-mobile-shell{min-height:100svh!important;}
+ #app .principia-mobile-main{padding-bottom:calc(96px + env(safe-area-inset-bottom))!important;}
+}
+/* Welcome screen: the start action is the only visible button/control. */
+body.principia-welcome-active>.chat-bubble-btn,
+body.principia-welcome-active>.chat-box,
+body.principia-welcome-active>.chat-panel,
+body.principia-welcome-active>.principia-ai-overlay,
+body.principia-welcome-active>.principia-mobile-nav{display:none!important;}
+body.principia-welcome-active #app .principia-welcome-screen button:not(.pw-start-button){display:none!important;}
+
+
+/* Device-specific controls and desktop-shell recovery. */
+@media(max-width:900px) and (hover:none) and (pointer:coarse){
+ #principiaSuiteTrigger{display:none!important;visibility:hidden!important;pointer-events:none!important;}
+}
+body[data-principia-device="desktop"] #app>.principia-desktop-shell{display:grid!important;grid-template-columns:250px minmax(0,1fr)!important;}
+body[data-principia-device="desktop"] #app>.principia-mobile-shell{display:none!important;}
+body[data-principia-device="desktop"] #app .principia-desktop-shell>.sidebar{display:flex!important;}
+body[data-principia-device="desktop"] #app .principia-desktop-shell>.main{display:block!important;min-width:0!important;}
+
+
+/* Keep desktop mode on physical computers even in narrow browser windows. */
+@media(max-width:900px){
+ body[data-principia-device="desktop"] #app>.principia-desktop-shell{display:grid!important;grid-template-columns:250px minmax(0,1fr)!important;min-height:100vh!important;width:100%!important;}
+ body[data-principia-device="desktop"] #app>.principia-mobile-shell{display:none!important;}
+ body[data-principia-device="desktop"] #app .principia-desktop-shell>.sidebar{display:flex!important;position:sticky!important;top:0!important;height:100vh!important;min-height:100vh!important;}
+ body[data-principia-device="desktop"] #app .principia-desktop-shell>.main{display:block!important;min-width:0!important;width:100%!important;max-width:none!important;padding:28px 24px!important;}
+ body[data-principia-device="mobile"] #principiaSuiteTrigger{display:none!important;visibility:hidden!important;pointer-events:none!important;}
+}
+
+
+/* Restore the classic desktop workspace; legacy Home overrides must not collapse it. */
+@media (min-width:901px){
+  #app>.layout{
+    display:grid!important;
+    grid-template-columns:235px minmax(0,1fr)!important;
+    align-items:stretch!important;
+    min-height:100vh!important;
+    width:100%!important;
+    background:var(--bg)!important;
+  }
+  #app>.layout>.sidebar{
+    display:flex!important;
+    flex-direction:column!important;
+    width:auto!important;
+    min-width:0!important;
+    height:100vh!important;
+    min-height:100vh!important;
+    position:sticky!important;
+    top:0!important;
+    padding:22px 14px!important;
+  }
+  #app>.layout>.main{
+    display:block!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:1500px!important;
+    min-height:100vh!important;
+    margin:0 auto!important;
+    padding:27px clamp(15px,4vw,48px)!important;
+  }
+}
+@media (max-width:900px){
+  body[data-principia-device="desktop"] #app>.layout{
+    display:grid!important;
+    grid-template-columns:235px minmax(0,1fr)!important;
+    min-height:100vh!important;
+    width:100%!important;
+  }
+  body[data-principia-device="desktop"] #app>.layout>.sidebar{
+    display:flex!important;width:auto!important;height:100vh!important;position:sticky!important;
+  }
+  body[data-principia-device="desktop"] #app>.layout>.main{
+    display:block!important;min-width:0!important;width:100%!important;max-width:none!important;
+    padding:24px!important;
+  }
+}
+
+
+/* PRINCIPIA PRO Home + AI launcher final override.
+   Loaded after legacy styles so Home uses the same workspace shell as every tab. */
+body.principia-home-active .sidebar,
+body.principia-home-active .top,
+body.principia-home-active .chat-bubble-btn.chat-messenger-launcher{
+  visibility:visible!important;
+  opacity:1!important;
+}
+@media(min-width:901px){
+  body.principia-home-active .sidebar{display:flex!important}
+  body.principia-home-active .top{display:flex!important}
+  body.principia-home-active .main{
+    display:block!important;min-height:100vh!important;
+    padding:27px clamp(15px,4vw,48px)!important;
+  }
+  body.principia-home-active #body{
+    display:block!important;min-height:0!important;width:100%!important;
+    max-width:1500px!important;margin:0 auto!important;padding:0!important;
+  }
+}
+@media(max-width:900px){
+  body.principia-home-active .principia-mobile-nav{display:flex!important}
+  body.principia-home-active .principia-mobile-topbar{display:block!important}
+  body.principia-home-active .principia-mobile-main{
+    display:block!important;min-width:0!important;width:100%!important;
+    padding-bottom:calc(96px + env(safe-area-inset-bottom))!important;
+  }
+  body.principia-home-active .principia-mobile-main>#body{
+    display:block!important;min-height:0!important;width:100%!important;
+    padding:0 13px 16px!important;
+  }
+}
+/* Search-control silhouette with the existing Messenger logo centered inside. */
+button.chat-bubble-btn.chat-messenger-launcher{
+  position:fixed!important;right:18px!important;bottom:18px!important;
+  z-index:2147483002!important;display:grid!important;place-items:center!important;
+  box-sizing:border-box!important;width:46px!important;height:46px!important;
+  min-width:46px!important;min-height:46px!important;max-width:46px!important;max-height:46px!important;
+  padding:0!important;margin:0!important;gap:0!important;
+  border:1px solid var(--line,#777)!important;border-radius:14px!important;
+  background:var(--card,#171526)!important;color:var(--text,#fff)!important;
+  box-shadow:0 8px 24px #0004!important;overflow:hidden!important;line-height:0!important;
+}
+button.chat-bubble-btn.chat-messenger-launcher::before,
+button.chat-bubble-btn.chat-messenger-launcher::after{display:none!important;content:none!important}
+button.chat-bubble-btn.chat-messenger-launcher>.chat-messenger-logo{
+  display:block!important;position:static!important;grid-area:1/1!important;
+  align-self:center!important;justify-self:center!important;flex:none!important;
+  width:29px!important;height:29px!important;min-width:29px!important;min-height:29px!important;
+  max-width:29px!important;max-height:29px!important;margin:0!important;padding:0!important;
+  object-fit:contain!important;transform:none!important;
+}
+button.chat-bubble-btn.chat-messenger-launcher:hover{
+  background:var(--card2,#29263d)!important;transform:translateY(-1px)!important;
+}
+@media(max-width:900px){
+  body[data-principia-device="mobile"] .chat-bubble-btn.chat-messenger-launcher,
+  body.principia-home-active .chat-bubble-btn.chat-messenger-launcher{
+    right:12px!important;bottom:calc(82px + env(safe-area-inset-bottom))!important;
+  }
+}
+
+
+/* PRO refinements: remove the unused Home character spacer and make Messenger launcher glass-transparent. */
+body.principia-home-active .principia-home-comic{display:none!important}
+body.principia-home-active .stats{margin-top:8px!important}
+button.chat-bubble-btn.chat-messenger-launcher{
+  display:grid!important;
+  place-items:center!important;
+  align-content:center!important;
+  justify-content:center!important;
+  background:transparent!important;
+  background-color:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  padding:0!important;
+  width:46px!important;height:46px!important;
+  min-width:46px!important;min-height:46px!important;
+  max-width:46px!important;max-height:46px!important;
+}
+button.chat-bubble-btn.chat-messenger-launcher>.chat-messenger-logo{
+  position:absolute!important;
+  inset:50% auto auto 50%!important;
+  display:block!important;
+  width:31px!important;height:31px!important;
+  min-width:31px!important;min-height:31px!important;
+  max-width:31px!important;max-height:31px!important;
+  margin:0!important;padding:0!important;
+  transform:translate(-50%,-50%)!important;
+  object-fit:contain!important;
+}
+button.chat-bubble-btn.chat-messenger-launcher:hover{
+  background:rgba(255,255,255,.08)!important;
+  box-shadow:0 4px 16px rgba(0,0,0,.12)!important;
+}
+
+
+/* PRO welcome screen: fixed viewport, no page scrolling, and remove obsolete floating controls. */
+body.principia-welcome-active,body.principia-welcome-active #app{height:100dvh!important;min-height:100dvh!important;overflow:hidden!important}
+body.principia-welcome-active .principia-welcome-screen{height:100dvh!important;min-height:100dvh!important;max-height:100dvh!important;overflow:hidden!important;box-sizing:border-box!important}
+body.principia-welcome-active .pw-header,body.principia-welcome-active .pw-footer{flex:0 0 auto!important}
+body.principia-welcome-active .pw-content{flex:1 1 auto!important;min-height:0!important;margin:0 auto!important;padding:clamp(8px,2vh,24px) 0!important;overflow:hidden!important}
+body.principia-welcome-active .pw-visual{min-height:0!important}
+#principiaSuiteTrigger{display:none!important;visibility:hidden!important;pointer-events:none!important}
+.brand{justify-content:flex-start!important;gap:12px!important}
+.brand-name{display:inline-block!important;color:var(--txt,#fff)!important;font-size:17px!important;font-weight:900!important;letter-spacing:2px!important;line-height:1!important}
+@media(max-width:900px){
+ body.principia-welcome-active .principia-welcome-screen{padding:12px 16px 10px!important}
+ body.principia-welcome-active .pw-header{min-height:42px!important}
+ body.principia-welcome-active .pw-brand img{width:38px!important;height:38px!important;min-width:38px!important;min-height:38px!important}
+ body.principia-welcome-active .pw-brand b{font-size:12px!important;letter-spacing:1.8px!important}
+ body.principia-welcome-active .pw-brand small{font-size:7px!important;letter-spacing:.8px!important}
+ body.principia-welcome-active .pw-account{display:none!important}
+ body.principia-welcome-active .pw-content{grid-template-columns:1fr!important;grid-template-rows:auto minmax(0,1fr)!important;gap:2px!important;padding:6px 0!important}
+ body.principia-welcome-active .pw-copy{text-align:center!important}
+ body.principia-welcome-active .pw-kicker{justify-content:center!important;font-size:7px!important;letter-spacing:1px!important}
+ body.principia-welcome-active .pw-overline{margin-top:5px!important;font-size:8px!important;letter-spacing:3px!important}
+ body.principia-welcome-active .pw-copy h1{margin:4px 0 5px!important;font-size:clamp(36px,9vw,54px)!important;letter-spacing:-2px!important}
+ body.principia-welcome-active .pw-copy h2{font-size:clamp(16px,4.5vw,22px)!important;margin:0 0 5px!important}
+ body.principia-welcome-active .pw-copy>p{max-width:520px!important;margin:0 auto 8px!important;font-size:10px!important;line-height:1.4!important}
+ body.principia-welcome-active .pw-start-button{min-height:40px!important;padding:9px 16px!important;font-size:12px!important}
+ body.principia-welcome-active .pw-note{justify-content:center!important;margin-top:7px!important;font-size:7px!important}
+ body.principia-welcome-active .pw-visual{min-height:0!important;max-height:100%!important;overflow:hidden!important}
+ body.principia-welcome-active .pw-art-panel{width:min(250px,72vw)!important;min-height:0!important;height:100%!important;max-height:100%!important;padding:8px!important;overflow:hidden!important}
+ body.principia-welcome-active .pw-art-top{font-size:7px!important}
+ body.principia-welcome-active .pw-character-halo{width:min(190px,48vw)!important;height:min(190px,25vh)!important;margin:3px auto!important;min-height:0!important}
+ body.principia-welcome-active .pw-speech{display:none!important}
+ body.principia-welcome-active .pw-formula-row{margin:2px 0 4px!important}
+ body.principia-welcome-active .pw-formula-row span{padding:4px 7px!important;font-size:9px!important}
+ body.principia-welcome-active .pw-art-bottom{padding-top:5px!important;font-size:6px!important}
+ body.principia-welcome-active .pw-floating-chip{display:none!important}
+ body.principia-welcome-active .pw-footer{font-size:6px!important;letter-spacing:.7px!important}
+ .principia-mobile-nav .brand{flex:0 0 64px!important;width:64px!important;min-width:64px!important;gap:4px!important;flex-direction:column!important}
+ .principia-mobile-nav .brand-logo-img{width:27px!important;height:27px!important}
+ .principia-mobile-nav .brand-name{font-size:8px!important;letter-spacing:1px!important}
+}
+@media(max-width:520px) and (max-height:700px){
+ body.principia-welcome-active .pw-content{grid-template-rows:auto minmax(0,1fr)!important}
+ body.principia-welcome-active .pw-copy>p,body.principia-welcome-active .pw-note{display:none!important}
+ body.principia-welcome-active .pw-character-halo{height:min(150px,21vh)!important;width:min(150px,40vw)!important}
+}
+
+
+/* Welcome route: keep the start screen free of floating AI and search controls. */
+body.principia-welcome-active #principiaSearchTrigger,
+body.principia-welcome-active .chat-bubble-btn.chat-messenger-launcher,
+body.principia-welcome-active #principiaGlobalSearch{
+ display:none!important;
+ visibility:hidden!important;
+ pointer-events:none!important;
+}
+
+/* Messenger uses the same circular Liquid Glass control language as search. */
+button.chat-bubble-btn.chat-messenger-launcher{
+ background:linear-gradient(145deg,rgba(255,255,255,.20),rgba(137,112,235,.16))!important;
+ background-color:rgba(28,30,48,.58)!important;
+ border:1px solid rgba(255,255,255,.28)!important;
+ border-radius:50%!important;
+ box-shadow:0 8px 26px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.28)!important;
+ outline:0!important;
+ -webkit-backdrop-filter:blur(22px) saturate(180%)!important;
+ backdrop-filter:blur(22px) saturate(180%)!important;
+}
+button.chat-bubble-btn.chat-messenger-launcher:hover,
+button.chat-bubble-btn.chat-messenger-launcher:focus{
+ background:linear-gradient(145deg,rgba(255,255,255,.28),rgba(137,112,235,.23))!important;
+ box-shadow:0 10px 30px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.34)!important;
+}
+button.chat-bubble-btn.chat-messenger-launcher>.chat-messenger-logo{
+ width:31px!important;height:31px!important;
+ min-width:31px!important;min-height:31px!important;
+ max-width:31px!important;max-height:31px!important;
+}
+@media(min-width:901px){
+ #app>.layout>.sidebar>.brand{display:flex!important;align-items:center!important;gap:12px!important;padding-left:8px!important}
+ #app>.layout>.sidebar>.brand .brand-name{display:inline-block!important;color:var(--txt,#fff)!important;font-size:18px!important;font-weight:900!important;letter-spacing:2px!important;line-height:1!important}
+}
+
+
+/* App header identity: restore the PRINCIPIA emblem beside the PRO label. */
+.principia-top-brand{display:flex!important;align-items:center!important;gap:10px!important;margin:3px 0 8px!important;min-height:40px!important}
+.principia-top-logo{display:block!important;width:38px!important;height:38px!important;min-width:38px!important;object-fit:contain!important;border-radius:50%!important;filter:drop-shadow(0 2px 8px rgba(0,0,0,.22))}
+.principia-top-brand .eyebrow{margin:0!important}
+.principia-top-brand .muted{margin-top:1px!important}
+#principiaDownloadFab{
+ right:18px!important;bottom:142px!important;border-radius:50%!important;
+ background:linear-gradient(145deg,rgba(255,255,255,.22),rgba(137,112,235,.18))!important;
+ border:1px solid rgba(255,255,255,.32)!important;
+ -webkit-backdrop-filter:blur(22px) saturate(180%)!important;
+ backdrop-filter:blur(22px) saturate(180%)!important;
+}
+@media(max-width:900px){
+ .principia-top-logo{width:32px!important;height:32px!important;min-width:32px!important}
+ .principia-top-brand{gap:8px!important;margin:2px 0 7px!important}
+ #principiaDownloadFab{right:12px!important;bottom:calc(142px + env(safe-area-inset-bottom))!important}
+}
+
+
+/* Match the workspace header to the rounded Liquid Glass surface language. */
+#app .top{
+ border:1px solid rgba(255,255,255,.20)!important;
+ border-radius:24px!important;
+ background:linear-gradient(135deg,rgba(255,255,255,.075),rgba(137,112,235,.055) 48%,rgba(255,255,255,.035))!important;
+ box-shadow:0 14px 42px rgba(0,0,0,.16),inset 0 1px 0 rgba(255,255,255,.10)!important;
+ -webkit-backdrop-filter:blur(24px) saturate(165%)!important;
+ backdrop-filter:blur(24px) saturate(165%)!important;
+}
+
+
+/* PRINCIPIA: suppress the two legacy floating controls; the action dock owns the visible controls. */
+html body button#principiaSearchTrigger,
+html body button#principiaDownloadFab,
+html body #principiaSearchTrigger,
+html body #principiaDownloadFab{
+ display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;
+ width:0!important;height:0!important;min-width:0!important;min-height:0!important;max-width:0!important;max-height:0!important;
+ margin:0!important;padding:0!important;border:0!important;overflow:hidden!important;
+}
+
+/* Remove all controls from the welcome screen, including the welcome editor bubble. */
+body.principia-welcome-active .principia-welcome-screen button:not(.pw-start-button),
+body.principia-welcome-active #principiaWelcomeEditorBubble,
+body.principia-welcome-active #principiaWelcomeEditorPanel{display:none!important;visibility:hidden!important;pointer-events:none!important}
+
+body.principia-welcome-active>#principiaWelcomeEditorBubble,body.principia-welcome-active>#principiaWelcomeEditorPanel,body.principia-welcome-active>#proSiteEditorPanel{display:none!important;visibility:hidden!important;pointer-events:none!important}
+
+body.principia-welcome-active>#proSiteEditorFab{display:grid!important;visibility:visible!important;pointer-events:auto!important;position:fixed!important;right:18px!important;bottom:130px!important;z-index:2147483005!important}
+body.principia-welcome-active>#principiaWelcomeEditorBubble,body.principia-welcome-active>#principiaWelcomeEditorPanel,body.principia-welcome-active>#proSiteEditorPanel,body.principia-welcome-active>.chat-bubble-btn,body.principia-welcome-active>.chat-box,body.principia-welcome-active>.chat-panel,body.principia-welcome-active>.principia-ai-overlay,body.principia-welcome-active>.principia-mobile-nav,body.principia-welcome-active>#principiaSearchTrigger,body.principia-welcome-active>#principiaDownloadFab,body.principia-welcome-active>#principiaGlobalSearch{display:none!important;visibility:hidden!important;pointer-events:none!important}
+
+/* Keep the single entry action visible; remove only unwanted floating controls. */
+body.principia-welcome-active .principia-welcome-screen .pw-start-button{
+ display:inline-flex!important;align-items:center;justify-content:center;gap:10px;
+ min-height:48px;padding:12px 22px;margin:18px auto 0;
+ border:1px solid rgba(255,255,255,.28);border-radius:14px;
+ background:linear-gradient(135deg,#7657e8,#4b8bd8);color:#fff;
+ font:700 14px/1.2 system-ui,sans-serif;letter-spacing:.2px;
+ box-shadow:0 8px 24px rgba(72,85,180,.28);cursor:pointer;
+}
+@media(max-width:900px){
+ body.principia-welcome-active .principia-welcome-screen .pw-start-button{min-height:40px;margin-top:8px;padding:9px 17px;font-size:12px}
+ body.principia-welcome-active>#proSiteEditorFab{bottom:138px!important}
+}
+
 /* Welcome screen hard guard: hide the entire action dock even if the body route class is late. */
 html:has(#app .principia-welcome-screen:not([hidden]))>#principiaActionDockRoot{
  display:none!important;visibility:hidden!important;pointer-events:none!important;
