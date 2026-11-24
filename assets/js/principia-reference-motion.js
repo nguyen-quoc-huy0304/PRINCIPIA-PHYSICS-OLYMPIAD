@@ -2,8 +2,8 @@
 (()=> {
  'use strict';
  const ROOT='#app';
- const SURFACES='.card,.panel,.stat,.feature-card,.learning-card,.glass-card,.module-card,.dashboard-card,.lesson-card';
- const BUTTONS='button.primary,button.oli-btn,button.nav,.action-card button';
+ const SURFACES='.card:not([data-pr-ui-card]):not([data-pr-component]),.learning-card:not([data-pr-component]),.dashboard-card:not([data-pr-component]),.module-card:not([data-pr-component])';
+ const BUTTONS='#app .main .hero button.primary,#app .main .sectionhead .toolbar button:not(.pr-uiverse-button),#app .main .toolbar button.primary';
  const reduced=()=>window.matchMedia('(prefers-reduced-motion: reduce)').matches;
  const seen=new WeakSet();
  let observer=null;
