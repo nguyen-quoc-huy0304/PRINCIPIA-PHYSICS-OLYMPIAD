@@ -50,3 +50,14 @@ body{background-color:var(--pr-final-bg)}
 @media(hover:hover){#app .main :is(.card,.panel,.widget,.feature-card):hover{transform:translateY(-2px)}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.pr-final-reveal,#app .main *{animation-duration:.01ms!important;transition-duration:.01ms!important;animation-iteration-count:1!important}.pr-final-reveal{opacity:1;transform:none}}
 @media(max-width:900px){#app .main :is(.card,.panel,.widget,.feature-card){border-radius:14px}}
+
+/* Reference-inspired motion families (Anime.js timing, Animate UI transitions, Uiverse tactile feedback). */
+#app .main :is(.card,.panel,.widget,.feature-card){transform-origin:center;}
+#app .main :is(.card,.panel,.widget,.feature-card):focus-within{border-color:rgba(169,151,255,.34)!important;box-shadow:0 14px 36px rgba(0,0,0,.17),0 0 0 3px rgba(137,119,255,.055)!important}
+#app .sidebar .nav.active{position:relative;overflow:hidden}
+#app .sidebar .nav.active::after{content:"";position:absolute;left:0;top:18%;bottom:18%;width:2px;border-radius:2px;background:linear-gradient(#b6a7ff,#73cbe7);box-shadow:0 0 12px rgba(165,149,255,.45)}
+#app .main :is(button,.btn,.oli-btn){background-clip:padding-box}
+#app .main :is(button,.btn,.oli-btn):focus-visible,#app .sidebar .nav:focus-visible{outline:2px solid rgba(177,164,255,.78)!important;outline-offset:3px!important}
+#app .main :is(.card,.panel,.widget,.feature-card) :is(img,svg){transition:transform .3s var(--pr-final-ease),filter .3s ease}
+@media(hover:hover){#app .main :is(.card,.panel,.widget,.feature-card):hover :is(img,svg){filter:drop-shadow(0 4px 8px rgba(140,125,255,.12))}}
+@media(prefers-reduced-motion:reduce){#app .sidebar .nav.active::after{box-shadow:none}}
