@@ -36,7 +36,7 @@ test('component reference expansion provides more than 100,000 themed variants',
   const source = read('assets/js/principia-vault-expansion.js');
   const vault = read('assets/js/principia-component-vault.js');
   assert.match(source, /length: 157/);
-  assert.equal((source.match(/^    \\['/gm) || []).length, 22);
+  assert.equal((source.match(/^    \['/gm) || []).length, 22);
   assert.match(source, /window\.PRINCIPIA_EXTRA_COMPONENTS = components/);
   assert.match(vault, /PRINCIPIA_EXTRA_COMPONENTS/);
   assert.match(vault, /PRINCIPIA_EXTRA_SKINS/);
