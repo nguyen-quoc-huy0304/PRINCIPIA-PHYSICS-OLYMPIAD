@@ -126,9 +126,7 @@
  }
 
  function scrollToTop(){
-  const main=document.querySelector('#app .principia-mobile-main,#app .main')||document.scrollingElement;
-  if(main&&main!==document.scrollingElement&&main.scrollHeight>main.clientHeight+20)main.scrollTo({top:0,behavior:'smooth'});
-  else window.scrollTo({top:0,behavior:'smooth'});
+  window.scrollTo({top:0,behavior:'smooth'});
  }
 
  function mountTrigger(){
@@ -161,9 +159,7 @@
 
  function updateBackTop(){
   const button=document.getElementById(IDS.backTop);if(!button)return;
-  const mobile=document.querySelector('#app .principia-mobile-main');
-  const scrollRoot=mobile&&mobile.scrollHeight>mobile.clientHeight+30?mobile:document.scrollingElement;
-  const visible=(scrollRoot?.scrollTop||window.scrollY||0)>420&&!isWelcome();
+  const visible=(window.scrollY||document.scrollingElement?.scrollTop||0)>420&&!isWelcome();
   button.classList.toggle('is-visible',visible);
  }
 
