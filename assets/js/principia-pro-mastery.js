@@ -37,11 +37,19 @@
     return [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
   }
   function todayHabit() { return state.habits.find(x => x.date === todayKey()); }
+  function linkedLearningState() {
+    try { const value = JSON.parse(localStorage.getItem('principia_learning_suite_v1') || '{}'); return value && typeof value === 'object' ? value : {}; }
+    catch (_) { return {}; }
+  }
   function minutesToday() {
-    return state.sessions.filter(x => x.date === todayKey()).reduce((sum, x) => sum + x.minutes, 0);
+    const own = state.sessions.filter(x => x.date === todayKey()).reduce((sum, x) => sum + x.minutes, 0);
+    const linked = linkedLearningState();
+    const focus = (Array.isArray(linked.focusSessions) ? linked.focusSessions : []).filter(x => x.date === todayKey()).reduce((sum, x) => sum + Math.max(0, Number(x.seconds) || 0) / 60, 0);
+    return Math.round(own + focus);
   }
   function streak() {
-    const days = new Set(state.sessions.map(x => x.date));
+    const linked = linkedLearningState();
+    const days = new Set(state.sessions.map(x => x.date).concat(Array.isArray(linked.studyDays) ? linked.studyDays : []));
     let cursor = new Date();
     if (!days.has(todayKey())) cursor.setDate(cursor.getDate() - 1);
     let count = 0;
