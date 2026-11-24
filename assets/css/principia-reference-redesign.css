@@ -1,0 +1,211 @@
+/* PRINCIPIA Reference Redesign — visual skin only.
+ * Keeps every existing page, DOM region, navigation target, component behavior and brand asset.
+ * Visual language adapted from Animate UI, Kokonut UI, Uiverse, Libraries.dev,
+ * UI/UX Pro Max, FeralUI, Anime.js, Hairline and ThreeUI patterns.
+ * Direct third-party snippets retain their own source/license notices in their dedicated files.
+ */
+:root{
+ --pr-rd-bg:#080d1c;
+ --pr-rd-surface:rgba(16,25,48,.84);
+ --pr-rd-surface-raised:rgba(24,35,64,.88);
+ --pr-rd-edge:rgba(163,181,230,.17);
+ --pr-rd-edge-strong:rgba(174,158,255,.42);
+ --pr-rd-text:#f1f4ff;
+ --pr-rd-muted:#9aaaca;
+ --pr-rd-violet:#a996ff;
+ --pr-rd-cyan:#78c9e8;
+ --pr-rd-mint:#83dfc4;
+ --pr-rd-shadow:0 18px 48px rgba(0,0,0,.24);
+ --pr-rd-ease:cubic-bezier(.22,1,.36,1);
+ color-scheme:dark;
+}
+html,body{color:var(--pr-rd-text)}
+body{
+ background:
+  radial-gradient(ellipse at 8% 0%,rgba(103,91,198,.16),transparent 35%),
+  radial-gradient(ellipse at 96% 12%,rgba(44,151,183,.11),transparent 32%),
+  linear-gradient(145deg,#070b17 0%,#0b1428 52%,#080d1c 100%);
+}
+#app{color:var(--pr-rd-text)}
+#app .main,#app .principia-mobile-main{color:var(--pr-rd-text)}
+#app :is(h1,h2,h3,h4,h5){color:#f4f6ff;letter-spacing:-.028em;text-wrap:balance}
+#app :is(p,.muted,.small,.description,.subtitle){color:var(--pr-rd-muted)}
+#app a:not(.nav):not(.tab){text-decoration-color:rgba(169,150,255,.42);text-underline-offset:3px}
+#app a:not(.nav):not(.tab):hover{color:#c9c0ff}
+#app :is(.top,.principia-mobile-topbar .top){
+ border-color:rgba(165,184,237,.14);
+ background:linear-gradient(110deg,rgba(17,27,52,.72),rgba(18,31,56,.48));
+ box-shadow:0 10px 34px rgba(0,0,0,.12),inset 0 1px rgba(255,255,255,.045);
+ -webkit-backdrop-filter:blur(20px) saturate(140%);
+ backdrop-filter:blur(20px) saturate(140%);
+}
+#app .hero{
+ border-color:rgba(177,162,255,.3);
+ background:
+  radial-gradient(ellipse at 82% 15%,rgba(98,196,224,.2),transparent 34%),
+  radial-gradient(ellipse at 10% 100%,rgba(139,108,248,.27),transparent 48%),
+  linear-gradient(118deg,rgba(38,34,83,.96),rgba(17,34,63,.96) 68%,rgba(13,43,60,.94));
+ box-shadow:0 24px 72px rgba(25,23,75,.3),inset 0 1px rgba(255,255,255,.14);
+}
+#app .hero :is(h1,h2,h3){color:#fff}
+#app .hero p{color:#c3d2ef}
+#app :is(.panel,.card,.stat,.tile,.tl-card,.reward-card,.sticker-card,.pm-card,.feature-card,.learning-card,.dashboard-card,.module-card){
+ color:var(--pr-rd-text);
+ border-color:var(--pr-rd-edge);
+ background:
+  linear-gradient(145deg,rgba(23,35,66,.88),rgba(12,23,45,.86));
+ box-shadow:0 12px 36px rgba(0,0,0,.18),inset 0 1px rgba(255,255,255,.045);
+}
+#app :is(.panel,.card,.stat,.tile,.feature-card,.learning-card,.dashboard-card,.module-card){
+ transition:transform .32s var(--pr-rd-ease),border-color .28s ease,box-shadow .32s ease,background .28s ease;
+}
+#app :is(.panel,.card,.stat,.tile,.feature-card,.learning-card,.dashboard-card,.module-card):hover{
+ border-color:var(--pr-rd-edge-strong);
+ box-shadow:0 20px 48px rgba(0,0,0,.25),0 0 26px rgba(130,117,239,.09),inset 0 1px rgba(255,255,255,.07);
+}
+#app .tile:hover{transform:translateY(-4px)}
+#app .stat strong,#app .stat .value{
+ color:#f5f3ff;
+ background:linear-gradient(100deg,#fff 0%,#c9beff 56%,#9cdbf1 100%);
+ -webkit-background-clip:text;background-clip:text;
+ -webkit-text-fill-color:transparent;
+ font-variant-numeric:tabular-nums;
+}
+#app :is(.tileicon,.iconbox,.feature-icon,.module-icon){
+ border-color:rgba(180,165,255,.2);
+ background:linear-gradient(145deg,rgba(150,131,255,.2),rgba(74,174,205,.12));
+ box-shadow:inset 0 1px rgba(255,255,255,.1),0 8px 24px rgba(79,93,184,.12);
+}
+#app .tile:hover .tileicon{box-shadow:0 0 25px rgba(155,140,255,.22)}
+#app :is(.sectionhead h2,.panel h2,.panel h3){color:#eff2ff}
+#app :is(.nav,.tab,.pill,.badge,.chip,.tag){
+ border-color:rgba(154,178,232,.16);
+ color:#b7c5e3;
+}
+#app .nav{
+ transition:color .22s ease,background .24s ease,border-color .24s ease,box-shadow .24s ease,transform .24s var(--pr-rd-ease);
+}
+#app .nav:hover{
+ color:#fff;
+ border-color:rgba(169,155,255,.23);
+ background:linear-gradient(100deg,rgba(126,105,233,.17),rgba(64,151,190,.08));
+}
+#app .nav.active{
+ color:#fff;
+ border-color:rgba(177,162,255,.3);
+ background:linear-gradient(105deg,rgba(128,105,238,.27),rgba(65,153,193,.13));
+ box-shadow:inset 3px 0 #b2a0ff,0 7px 22px rgba(65,58,145,.16);
+}
+#app :is(.tab,.pill,.chip,.tag){
+ background:rgba(20,31,57,.72);
+ transition:color .2s ease,background .22s ease,border-color .22s ease,box-shadow .22s ease,transform .22s var(--pr-rd-ease);
+}
+#app .tab:hover{color:#fff;border-color:rgba(174,160,255,.4);transform:translateY(-1px)}
+#app .tab.active{
+ color:#f8f6ff;border-color:rgba(183,166,255,.46);
+ background:linear-gradient(115deg,rgba(129,106,239,.28),rgba(60,151,192,.15));
+ box-shadow:inset 0 1px rgba(255,255,255,.07),0 7px 22px rgba(80,70,170,.13);
+}
+#app :is(button.primary,.primary,.btn-primary,.ppm-primary){
+ color:#fff;border-color:rgba(208,197,255,.28);
+ background:linear-gradient(112deg,#8b73ef 0%,#6967d6 55%,#438fb8 100%);
+ box-shadow:0 8px 23px rgba(101,89,212,.27),inset 0 1px rgba(255,255,255,.2);
+ text-shadow:0 1px 1px rgba(25,20,66,.22);
+ transition:transform .22s var(--pr-rd-ease),filter .22s ease,box-shadow .25s ease;
+}
+#app :is(button.primary,.primary,.btn-primary,.ppm-primary):hover:not(:disabled){
+ filter:brightness(1.1) saturate(1.08);
+ box-shadow:0 13px 30px rgba(111,96,229,.34),inset 0 1px rgba(255,255,255,.24);
+ transform:translateY(-2px);
+}
+#app :is(button.secondary,.secondary,.iconbtn,.toolbar button,.modalactions button){
+ color:#dce6ff;border-color:rgba(158,181,235,.2);
+ background:linear-gradient(145deg,rgba(38,53,86,.82),rgba(18,31,57,.9));
+ box-shadow:inset 0 1px rgba(255,255,255,.045);
+ transition:transform .2s var(--pr-rd-ease),border-color .2s ease,box-shadow .2s ease,filter .2s ease;
+}
+#app :is(button.secondary,.secondary,.iconbtn,.toolbar button,.modalactions button):hover:not(:disabled){
+ border-color:rgba(174,163,255,.42);box-shadow:0 9px 24px rgba(0,0,0,.2),0 0 18px rgba(127,132,255,.09);
+}
+#app button:disabled,#app [aria-disabled="true"]{filter:saturate(.55);box-shadow:none}
+#app :is(input:not([type=checkbox]):not([type=radio]),textarea,select){
+ color:#f0f3ff;border-color:rgba(151,176,230,.22);
+ background:rgba(7,15,32,.78);
+ box-shadow:inset 0 2px 8px rgba(0,0,0,.14);
+}
+#app :is(input,textarea,select)::placeholder{color:#7486aa}
+#app :is(input,textarea,select):focus{
+ border-color:rgba(174,158,255,.72);
+ box-shadow:0 0 0 3px rgba(146,126,246,.15),0 0 22px rgba(111,129,240,.08);
+ outline:none;
+}
+#app :is(input[type=checkbox],input[type=radio]){accent-color:#a493ff}
+#app :is(.progress,.xpbar,[role=progressbar]){
+ border-color:rgba(158,179,228,.15);
+ background:rgba(113,137,188,.16);
+}
+#app :is(.progress,.xpbar) div{
+ background:linear-gradient(90deg,#9278ff,#65bfe5,#80dfc2);
+ box-shadow:0 0 15px rgba(128,151,255,.34);
+}
+#app :is(.choice,.option,.answer-option){
+ border-color:rgba(157,179,230,.19);
+ background:rgba(18,31,57,.68);
+ transition:border-color .2s ease,background .2s ease,box-shadow .2s ease,transform .2s var(--pr-rd-ease);
+}
+#app :is(.choice,.option,.answer-option):hover{
+ border-color:rgba(175,161,255,.48);
+ background:rgba(86,77,154,.17);
+ box-shadow:0 7px 20px rgba(0,0,0,.14);
+}
+#app :is(.modal,.modal-card,.modalbox,.dialog,.popover-content){
+ color:var(--pr-rd-text);
+ border-color:rgba(166,180,235,.24);
+ background:linear-gradient(145deg,rgba(24,37,69,.98),rgba(9,18,38,.98));
+ box-shadow:0 30px 100px rgba(0,0,0,.52),inset 0 1px rgba(255,255,255,.07);
+}
+#app :is(.modalbg,.modal-bg,.overlay){background:rgba(2,6,17,.76);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+#app :is(table,th,td){border-color:rgba(155,179,231,.16)}
+#app th{color:#dce5ff;background:rgba(36,48,80,.68)}
+#app td{color:#b9c8e5}
+#app pre,#app code,.math-block,.equation-block{
+ border-color:rgba(155,179,231,.18);
+ background:rgba(5,12,27,.72);
+}
+#app :is(.toast,.xp-toast,.pr-experience-toast){
+ color:#f2f4ff;border-color:rgba(178,164,255,.27);
+ background:rgba(20,29,54,.96);
+ box-shadow:0 16px 48px rgba(0,0,0,.32),inset 0 1px rgba(255,255,255,.08);
+ -webkit-backdrop-filter:blur(20px) saturate(145%);backdrop-filter:blur(20px) saturate(145%);
+}
+#app :is(.principia-mobile-nav,.principia-mobile-topbar){
+ border-color:rgba(171,185,239,.18);
+}
+#app .principia-mobile-nav{
+ background:rgba(11,18,36,.96);
+ box-shadow:0 -12px 36px rgba(0,0,0,.32);
+ -webkit-backdrop-filter:blur(24px) saturate(150%);
+ backdrop-filter:blur(24px) saturate(150%);
+}
+#app .principia-mobile-nav .nav.active{
+ color:#e8e1ff;background:rgba(137,119,239,.2);
+ box-shadow:inset 0 0 0 1px rgba(177,161,255,.22),0 5px 18px rgba(0,0,0,.14);
+}
+#app :focus-visible{outline:2px solid #b9a8ff;outline-offset:3px}
+#app ::selection{color:#fff;background:rgba(133,111,233,.48)}
+#app ::-webkit-scrollbar-thumb{border-color:transparent;background:rgba(133,149,201,.3);border-radius:99px}
+#app ::-webkit-scrollbar-thumb:hover{background:rgba(167,151,255,.5)}
+@media(hover:hover) and (pointer:fine){
+ #app .tile:hover{transform:translateY(-4px) perspective(900px) rotateX(1deg)}
+ #app button:not(:disabled):active{filter:brightness(.96)}
+}
+@media(max-width:760px){
+ body{background-attachment:scroll}
+ #app :is(.panel,.card,.stat,.tile,.feature-card,.learning-card,.dashboard-card,.module-card){box-shadow:0 8px 24px rgba(0,0,0,.17),inset 0 1px rgba(255,255,255,.04)}
+ #app .tile:hover{transform:none}
+}
+@media(prefers-reduced-motion:reduce){
+ #app :is(.panel,.card,.stat,.tile,.feature-card,.learning-card,.dashboard-card,.module-card),
+ #app :is(.nav,.tab,button,input,textarea,select){transition:none!important}
+ #app .tile:hover,#app button:hover{transform:none!important}
+}
