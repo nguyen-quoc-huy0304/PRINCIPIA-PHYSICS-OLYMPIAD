@@ -7,7 +7,7 @@ const root = path.resolve(__dirname, '../..');
 function read(relative) { return fs.readFileSync(path.join(root, relative), 'utf8'); }
 function extractArray(source, marker) {
   const start = source.indexOf(marker) + marker.length;
-  assert.ok(start >= marker.length, 'array marker must exist');
+  assert.ok(source.indexOf(marker) >= 0, 'array marker must exist');
   let depth = 0, quoted = false, escaped = false;
   for (let index = start; index < source.length; index += 1) {
     const char = source[index];
