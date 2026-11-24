@@ -45,10 +45,19 @@
     if (!window.principiaAI?.ask) return setStatus('Gemini chưa sẵn sàng. Kiểm tra đăng nhập và cấu hình AI của PRINCIPIA.');
     const goalNames = { understand: 'hiểu sâu khái niệm', remember: 'ghi nhớ và ôn tập bền lâu', solve: 'luyện giải bài tập', olympiad: 'chuẩn bị Olympic nâng cao', teach: 'học bằng cách giảng dạy', recover: 'củng cố phần đang yếu' };
     const catalog = window.principiaStudyMethodsCount?.() || {};
+    const allMethods = Array.isArray(window.PRINCIPIA_STUDY_METHOD_CATALOG) ? window.PRINCIPIA_STUDY_METHOD_CATALOG : [];
+    const topicMethods = allMethods.filter(item => String(item.title || '').toLocaleLowerCase('vi').includes(topic.toLocaleLowerCase('vi'))).slice(0, 8);
+    const coreMethods = allMethods.slice(0, 231).filter(item => {
+      const text = (item.title + ' ' + item.category + ' ' + item.desc).toLocaleLowerCase('vi');
+      const keywords = goal === 'remember' ? ['ghi nhớ', 'truy xuất', 'ôn tập', 'flashcard', 'recall'] : goal === 'solve' || goal === 'olympiad' ? ['giải bài', 'olympiad', 'luyện', 'tư duy', 'phân tích'] : goal === 'teach' ? ['dạy', 'giảng', 'cộng đồng', 'feynman'] : goal === 'recover' ? ['lỗi', 'yếu', 'phản tư', 'thành thạo'] : ['hiểu sâu', 'vật lý', 'trực quan', 'mô hình'];
+      return keywords.some(keyword => text.includes(keyword));
+    }).slice(0, 12);
+    const candidates = [...new Map([...topicMethods, ...coreMethods].map(item => [item.id, item])).values()].slice(0, 18);
+    const methodContext = candidates.map(item => '- ' + item.title + ' [' + item.category + ']: ' + item.desc).join('\\n');
     const prompt = [
       'Thiết kế lộ trình học Vật lý thực tế trong ' + duration + ' phút.',
       'Chủ đề: ' + topic + '. Mục tiêu: ' + goalNames[goal] + '.',
-      'PRINCIPIA có thư viện ' + (catalog.total || 3071) + ' mục gồm phương pháp cốt lõi và kịch bản áp dụng theo chủ đề. Chọn tối đa 4 phương pháp phù hợp, không liệt kê tràn lan.',
+      'PRINCIPIA có thư viện ' + (catalog.total || 3111) + ' mục. Đây là danh sách phương pháp thật có sẵn để lựa chọn:\\n' + methodContext + '\\nChỉ chọn tối đa 4 phương pháp từ danh sách trên, ghi đúng tên và giải thích vì sao hợp mục tiêu; không tự bịa tên phương pháp mới.',
       'Cấu trúc bắt buộc: (1) mục tiêu đo được, (2) chia thời gian từng chặng, (3) phương pháp và thao tác cụ thể, (4) một bài tự kiểm tra không gợi ý, (5) tiêu chí đạt/chưa đạt và bước ôn lại, (6) phần dạy lại cho AI Student nếu phù hợp.',
       'Nếu mục tiêu là học bằng cách giảng dạy, ưu tiên chuẩn bị bài giảng và câu hỏi cho AI Student. Nếu cần tập trung, đề xuất bật Study With Me và hẹn giờ; không giả định video đã được chọn.',
       'Không bịa nguồn khoa học, không hứa đảm bảo điểm số. Dùng tiếng Việt rõ ràng, ưu tiên hành động cụ thể.'
