@@ -37,7 +37,7 @@
     stars=Array.from({length:count},()=>({x:Math.random()*width,y:Math.random()*height,z:Math.random(),r:Math.random()*1.5+.25,phase:Math.random()*Math.PI*2}));
   }
   function resize(){
-    if(!canvas)return;width=innerWidth;height=innerHeight;dpr=Math.min(devicePixelRatio||1,1.5);
+    if(!canvas)return;width=innerWidth;height=innerHeight;dpr=Math.min(devicePixelRatio||1,width<700?.85:1);
     canvas.width=Math.round(width*dpr);canvas.height=Math.round(height*dpr);canvas.style.width=width+'px';canvas.style.height=height+'px';
     ctx.setTransform(dpr,0,0,dpr,0,0);seedStars();draw(performance.now(),true);
   }
@@ -234,12 +234,17 @@
     }
   }
   function draw(t=0,staticFrame=false){
-    if(!ctx)return;ctx.clearRect(0,0,width,height);
+    if(!ctx)return;
+    if(!staticFrame&&t-last<33){raf=requestAnimationFrame(draw);return;}
+    if(!staticFrame)last=t;
+    ctx.clearRect(0,0,width,height);
     if(settings.enabled){if(settings.scene==='cosmos')drawCosmos(t);else if(settings.scene==='aurora')drawAurora(t);else if(settings.scene==='grid')drawGrid(t);else if(settings.scene==='vortex')drawVortex(t);else if(settings.scene==='tunnel')drawTunnel(t);else if(settings.scene==='particles')drawParticles(t);else if(settings.scene==='waves')drawWaves(t);else if(settings.scene==='planet')drawPlanet(t);else if(settings.scene==='moon')drawMoon(t);else if(settings.scene==='crystal')drawCrystal(t);else if(settings.scene==='stardust')drawStardust(t);else if(settings.scene==='horizon')drawHorizon(t);else if(settings.scene==='galaxy')drawGalaxy(t);else if(settings.scene==='rings')drawRings(t);else if(settings.scene==='fluid')drawFluid(t);else if(settings.scene==='matrix')drawMatrix(t);else if(settings.scene==='lava')drawLava(t);else if(settings.scene==='topography')drawTopography(t);else if(settings.scene==='city')drawCity(t);else drawNebula(t)}
     if(!staticFrame&&settings.enabled&&!reduced&&!document.hidden)raf=requestAnimationFrame(draw);
   }
   function stop(){if(raf)cancelAnimationFrame(raf);raf=0}
   function apply(){
+    if(settings.enabled&&window.PrincipiaWorld3D?.getSettings().enabled)window.PrincipiaWorld3D.setEnabled(false);
+    last=0;
     document.documentElement.classList.toggle('pr-3d-background-on',settings.enabled);
     document.documentElement.dataset.pr3dScene=settings.scene;
     stop();if(settings.enabled&&!reduced&&!document.hidden)raf=requestAnimationFrame(draw);else draw(performance.now(),true);
@@ -251,9 +256,10 @@
     resize();addEventListener('resize',resize,{passive:true});
     if(fine)addEventListener('pointermove',e=>{pointer.x=(e.clientX/Math.max(1,width)-.5)*2;pointer.y=(e.clientY/Math.max(1,height)-.5)*2},{passive:true});
     document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();else apply()});
-    const observer=new MutationObserver(buildControls);observer.observe(document.body,{childList:true,subtree:true});
+    const root=document.getElementById('app')||document.body;
+    const observer=new MutationObserver(buildControls);observer.observe(root,{childList:true,subtree:true});
     buildControls();apply();
-    window.Principia3D=Object.freeze({setEnabled(value){settings.enabled=Boolean(value);persist();buildControls();apply()},setScene(value){if(!scenes.includes(value))return false;settings.scene=value;persist();buildControls();apply();return true},getSettings:()=>Object.freeze({...settings})});
+    window.Principia3D=Object.freeze({setEnabled(value){settings.enabled=Boolean(value);persist();const control=document.querySelector('[data-pr-3d-settings] input[type=checkbox]');if(control)control.checked=settings.enabled;buildControls();apply()},setScene(value){if(!scenes.includes(value))return false;settings.scene=value;persist();buildControls();apply();return true},getSettings:()=>Object.freeze({...settings})});
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
