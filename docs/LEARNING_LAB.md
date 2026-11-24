@@ -9,7 +9,7 @@ A standalone learning feature loaded after the shared Gemini client. It preserve
 - Gemini generates 4–8 concepts in prerequisite order, up to five prerequisites, core ideas, common misconceptions, and a self-check question per concept.
 - Dependency edges are validated to reference earlier concepts only, preventing cycles and dangling references.
 - Maps are saved locally (maximum 20) and can be exported as UTF-8 text.
-- Each concept can launch an oral self-explanation check.
+- Each prerequisite can launch a baseline oral check. Each concept can launch an oral self-explanation check or a misconception challenge that asks the learner to produce a counterexample and explain the conditions.
 
 ### Socratic oral practice
 - Four tutor personas: Socratic coach, beginner learner, skeptic, and Olympiad learner.
