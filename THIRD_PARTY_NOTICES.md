@@ -20,3 +20,13 @@ The full upstream Apache-2.0 license text is preserved in `third_party/licenses/
 - Hosted simulator: https://www.falstad.com/circuit/
 - PRINCIPIA currently embeds the upstream hosted simulator in an iframe; it does not redistribute or modify the CircuitJS1 source.
 - Educational-use caution: the upstream project notes that some component models are idealized and does not recommend using the simulator as the sole basis for real-circuit design.
+
+
+## Uiverse button pattern
+
+- Component: layered press-state action button adapted in `assets/css/principia-uiverse-copy.css` and extended by `assets/css/principia-live-ui-adapter.css`.
+- Original creator: Web-Potato.
+- Upstream source: https://uiverse.io/Web-Potato/silent-ape-24
+- License: MIT, as identified by the upstream Uiverse component listing.
+- PRINCIPIA retains source attribution in the stylesheet header. The adapter applies the visual interaction to existing primary-action buttons without replacing their labels, event handlers, or DOM structure.
+
