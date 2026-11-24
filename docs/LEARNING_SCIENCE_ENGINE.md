@@ -1,6 +1,6 @@
 # PRINCIPIA Learning Science Engine
 
-The learning science engine is a separate module loaded before the learning orchestrator. It provides 51 context-aware strategy profiles across 18 groups. It does not expose strategy names in the learner interface. The orchestrator selects a small compatible set for the current task instead of applying every technique in one session.
+The learning science engine is a separate module loaded before the learning orchestrator. It provides 58 context-aware strategy profiles across 19 groups. It does not expose strategy names in the learner interface. The orchestrator selects a small compatible set for the current task instead of applying every technique in one session.
 
 ## Strategy registry
 
@@ -11,7 +11,8 @@ The learning science engine is a separate module loaded before the learning orch
 - **Problem solving and physics reasoning:** Polya's four phases, first principles, problem decomposition, multiple solutions, counterexample testing, dimensional analysis, prediction before observation.
 - **Transfer and assessment:** transfer practice, exam wrappers, metacognitive calibration, immediate feedback.
 - **Motivation and planning:** autonomy/competence support from self-determination theory, growth-mindset reframing, goal-gradient milestones, implementation intentions (if–then plans), WOOP, habit stacking, time blocking, planned review (计划复盘).
-- **Focus and recovery:** flexible Pomodoro, deep-work blocks, attention restoration, environment design, ultradian-style breaks, sleep/recovery guidance.
+- **Focus and recovery:** flexible Pomodoro, deep-work blocks, attention restoration, environment design, ultradian-style breaks, cognitive-load management, embodied learning and sleep/recovery guidance.
+- **Additional motivation and planning:** mastery-oriented achievement goals, opt-in comparison of peer reasoning (never public ranking), unfinished-task resume cues without pressure, and timed practice only after baseline accuracy.
 
 The registry is intentionally broader than a single evidence ranking. Retrieval, distributed practice, and interleaving have classroom meta-analytic support, but their effects depend on task, feedback, timing, and whether practice actually elicits retrieval or discrimination. Self-explanation, elaborative interrogation, concrete examples, and dual coding are also discussed in learning-science reviews. Motivation, planning, focus, and culturally named study routines are treated as contextual implementation tools, not as equally proven memory interventions.
 
