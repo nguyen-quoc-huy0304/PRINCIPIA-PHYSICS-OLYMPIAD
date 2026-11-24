@@ -39,7 +39,8 @@ test('component reference expansion provides more than 100,000 themed variants',
   assert.match(source, /window\.PRINCIPIA_EXTRA_COMPONENTS = components/);
   assert.match(vault, /PRINCIPIA_EXTRA_COMPONENTS/);
   assert.match(vault, /PRINCIPIA_EXTRA_SKINS/);
-  assert.equal((40 + 512 + 20) * (25 + 157), 104104);
+  assert.match(vault, /catalogCount = ITEMS.length \* SKINS.length/);
+  assert.equal((40 + 512 + 22) * (25 + 157), 104468);
 });
 test('ant emblem is vector-based and the application references it', () => {
   const logo = read('assets/images/principia-ant-logo.svg');
