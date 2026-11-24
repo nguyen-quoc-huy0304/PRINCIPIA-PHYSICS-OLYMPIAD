@@ -46,13 +46,15 @@
   const gap=12;
   // All floating panels stay on the LEFT of their own launcher.
   // Do not flip to the right: dragging a launcher must preserve this relationship.
-  const left=rect.left-width-gap;
+  const left=clamp(rect.left-width-gap,8,Math.max(8,window.innerWidth-width-8));
   const top=clamp(rect.top+(rect.height-height)/2,8,Math.max(8,window.innerHeight-height-8));
-  panel.style.setProperty('position','fixed','important');
+  panel.style.setProperty('position','absolute','important');
   panel.style.setProperty('left',left+'px','important');
   panel.style.setProperty('top',top+'px','important');
   panel.style.setProperty('right','auto','important');
   panel.style.setProperty('bottom','auto','important');
+  panel.style.setProperty('pointer-events','auto','important');
+  panel.style.setProperty('z-index','2147482990','important');
  }
  function stylePanel(panel,mobileBottom,anchor){
   const mobile=isMobile();
@@ -94,7 +96,8 @@
   panel.innerHTML=header('⌕ Tìm kiếm Internet','principiaBrowserClose','<button type="button" id="principiaBrowserBack" title="Quay lại">←</button><button type="button" id="principiaBrowserForward" title="Tiến">→</button><button type="button" id="principiaBrowserReload" title="Tải lại">↻</button>')+
    '<div style="display:flex;gap:7px;padding:8px 10px"><button type="button" id="principiaBrowserHistoryToggle">Lịch sử</button><button type="button" id="principiaBrowserSave">☆ Lưu trang</button></div><div id="principiaBrowserHistoryList" hidden style="max-height:180px;overflow:auto;padding:8px 10px;border-bottom:1px solid var(--line,#46506a)"></div><div style="display:flex;align-items:center;gap:8px;padding:7px 10px;font-size:11px;opacity:.8"><span id="principiaBrowserStatus" role="status" style="flex:1">Đang xem Google. Dùng thanh tìm kiếm PRINCIPIA ở cạnh nút Quay lại.</span><button type="button" id="principiaBrowserExternal">Mở ngoài ↗</button></div>'+
    '<iframe id="principiaBrowserFrame" title="Kết quả tìm kiếm web" referrerpolicy="strict-origin-when-cross-origin" style="width:100%;flex:1;min-height:0;border:0;background:white" src="https://www.google.com/webhp?igu=1"></iframe>';
-  document.body.appendChild(panel);browserPanel=panel;stylePanel(panel,248,document.getElementById(IDS.browser));makeDraggable(panel);
+  const dockRoot=ensureDockRoot();
+  dockRoot.appendChild(panel);browserPanel=panel;stylePanel(panel,248,document.getElementById(IDS.browser));makeDraggable(panel);
   const frame=panel.querySelector('#principiaBrowserFrame'),status=panel.querySelector('#principiaBrowserStatus');
   let history=['https://www.google.com/webhp?igu=1',...readHistory().map(x=>x.url)],position=0;
   const normalize=raw=>{
@@ -214,12 +217,16 @@
  }
  function syncEditorPanelPosition(pencil){
   const panel=document.getElementById('proSiteEditorPanel');
-  if(!panel||panel.hidden||!pencil?.isConnected)return;
+  if(!panel||!pencil?.isConnected)return;
+  const root=ensureDockRoot();
+  if(panel.parentElement!==root)root.appendChild(panel);
   positionPanelFromAnchor(panel,pencil);
  }
  function syncChatPanelPosition(ai){
   const panel=document.getElementById('chatBox');
-  if(!panel||!panel.classList.contains('open')||!ai?.isConnected)return;
+  if(!panel||!ai?.isConnected)return;
+  const root=ensureDockRoot();
+  if(panel.parentElement!==root)root.appendChild(panel);
   positionPanelFromAnchor(panel,ai);
  }
  function applyLauncherPosition(node,defaultBottom){
