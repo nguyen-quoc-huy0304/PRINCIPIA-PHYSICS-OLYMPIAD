@@ -25,7 +25,7 @@
     const selectLabel=document.createElement('label');selectLabel.textContent='Phong cách nền';
     const select=document.createElement('select');select.className='pr-3d-select';
     [['cosmos','Vũ trụ quỹ đạo'],['aurora','Cực quang 3D'],['grid','Lưới không gian'],['nebula','Tinh vân chiều sâu'],['vortex','Hố đen hấp dẫn'],['tunnel','Đường hầm warp'],['particles','Mạng hạt 3D'],['waves','Sóng không gian 3D'],['planet','Hành tinh 3D'],['moon','Nguyệt thực'],['crystal','Tinh thể phát sáng'],['stardust','Mưa sao'],['horizon','Chân trời neon'],['galaxy','Thiên hà xoắn ốc'],['rings','Vành đai hành tinh'],['fluid','Dòng năng lượng']].forEach(([value,text])=>{const o=document.createElement('option');o.value=value;o.textContent=text;select.append(o)});
-    select.value=settings.scene;select.addEventListener('change',()=>{settings.scene=select.value;persist();draw(performance.now(),true)});selectLabel.append(select);section.append(selectLabel);
+    select.value=settings.scene;select.addEventListener('change',()=>{settings.scene=select.value;persist();apply()});selectLabel.append(select);section.append(selectLabel);
     const intensityLabel=document.createElement('label');intensityLabel.textContent='Cường độ hiệu ứng';
     const range=document.createElement('input');range.type='range';range.min='0.15';range.max='1';range.step='0.05';range.value=String(settings.intensity);
     range.addEventListener('input',()=>{settings.intensity=clamp(Number(range.value),0.15,1);persist();});intensityLabel.append(range);section.append(intensityLabel);
@@ -223,7 +223,7 @@
     document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();else apply()});
     const observer=new MutationObserver(buildControls);observer.observe(document.body,{childList:true,subtree:true});
     buildControls();apply();
-    window.Principia3D=Object.freeze({setEnabled(value){settings.enabled=Boolean(value);persist();buildControls();apply()},setScene(value){if(!scenes.includes(value))return false;settings.scene=value;persist();buildControls();draw(performance.now(),true);return true},getSettings:()=>Object.freeze({...settings})});
+    window.Principia3D=Object.freeze({setEnabled(value){settings.enabled=Boolean(value);persist();buildControls();apply()},setScene(value){if(!scenes.includes(value))return false;settings.scene=value;persist();buildControls();apply();return true},getSettings:()=>Object.freeze({...settings})});
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
