@@ -90,19 +90,47 @@
     start();
   }
 
+  function normalizeScriptURL(src) {
+    const key = String(src || '').trim();
+    if (!key) throw new TypeError('A script URL is required.');
+    let parsed;
+    try { parsed = new URL(key, window.location.href); }
+    catch (_) { throw new TypeError('Invalid script URL.'); }
+    const sameOriginHttp = parsed.protocol === 'http:' && parsed.origin === window.location.origin;
+    if (parsed.protocol !== 'https:' && !sameOriginHttp) {
+      throw new TypeError('Script URL must use HTTPS or same-origin HTTP.');
+    }
+    return key;
+  }
+
   function loadScript(src) {
-    const key = String(src || '');
-    if (!key) return Promise.reject(new TypeError('A script URL is required.'));
+    let key;
+    try { key = normalizeScriptURL(src); }
+    catch (error) { return Promise.reject(error); }
     if (lazyScripts.has(key)) return lazyScripts.get(key);
-    const existing = Array.from(document.scripts).find(s => s.dataset && s.dataset.principiaLazySrc === key);
+    let existing = Array.from(document.scripts).find(s => s.dataset && s.dataset.principiaLazySrc === key);
     if (existing && existing.dataset.loaded === 'true') return Promise.resolve(existing);
+    if (existing && existing.dataset.failed === 'true') {
+      try { if (existing.parentNode) existing.parentNode.removeChild(existing); } catch (_) {}
+      existing = null;
+    }
     const promise = new Promise((resolve, reject) => {
       const script = existing || document.createElement('script');
       script.async = false;
       script.dataset.principiaLazySrc = key;
       script.onload = () => { script.dataset.loaded = 'true'; resolve(script); };
-      script.onerror = () => { lazyScripts.delete(key); reject(new Error('Không tải được mô-đun: ' + key)); };
-      if (!existing) { script.src = key; document.head.appendChild(script); }
+      script.onerror = () => {
+        script.dataset.failed = 'true';
+        try { if (script.parentNode) script.parentNode.removeChild(script); } catch (_) {}
+        lazyScripts.delete(key);
+        reject(new Error('Không tải được mô-đun: ' + key));
+      };
+      if (!existing) {
+        script.src = key;
+        document.head.appendChild(script);
+      } else if (!script.src) {
+        script.src = key;
+      }
     });
     lazyScripts.set(key, promise);
     return promise;
