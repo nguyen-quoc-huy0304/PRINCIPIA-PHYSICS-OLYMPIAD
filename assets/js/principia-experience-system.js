@@ -303,7 +303,7 @@
       });
       mountEditorSettings();
     });
-    mutationObserver.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['aria-busy', 'data-ai-state', 'class', 'role'] });
+    mutationObserver.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['aria-busy', 'data-ai-state'] });
     mountEditorSettings();
     document.addEventListener('principia:rendered', () => { enhance(); mountEditorSettings(); });
     document.addEventListener('principia:page-changed', () => { enhance(); mountEditorSettings(); });
