@@ -9,7 +9,7 @@
   let activeTab = 'overview';
   let reviewIndex = 0;
   let revealed = false;
-  let timer = { endAt: 0, remaining: 1500, running: false, interval: null };
+  let timer = { endAt: 0, remaining: 1500, duration: 1500, running: false, interval: null };
   let canvas = null;
   let drawing = false;
   let lastPoint = null;
@@ -195,10 +195,13 @@
     saveState(); render();
   }
   function setDuration(minutes) {
-    stopTimer(false); timer.remaining = minutes * 60; paintTimer();
+    stopTimer(false); timer.duration = minutes * 60; timer.remaining = timer.duration; paintTimer();
   }
   function toggleTimer() {
-    if (timer.running) { stopTimer(true); return; }
+    if (timer.running) {
+      timer.remaining = Math.max(0, Math.ceil((timer.endAt - Date.now()) / 1000));
+      stopTimer(true); paintTimer(); return;
+    }
     if (timer.remaining <= 0) return;
     timer.endAt = Date.now() + timer.remaining * 1000;
     timer.running = true;
@@ -208,7 +211,7 @@
   function tick() {
     timer.remaining = Math.max(0, Math.ceil((timer.endAt - Date.now()) / 1000));
     if (!timer.remaining) {
-      const minutes = Math.max(1, Math.round((Number(timer.initial || 1500) - timer.remaining) / 60));
+      const minutes = Math.max(1, Math.round(timer.duration / 60));
       state.sessions.push({ date: todayKey(), minutes: Math.min(180, minutes) });
       saveState(); stopTimer(false);
     }
