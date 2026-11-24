@@ -68,3 +68,21 @@ test('ant emblem is vector-based and the application references it', () => {
   assert.match(read('index.html'), /principia-reference-polish\.css/);
   assert.match(read('assets/js/principia-study-player.js'), /document.body.appendChild\(player\)/);
 });
+
+test('advanced catalog adds 1,640 topic-specific playbooks from 41 strategies across 40 topics', () => {
+  const source = read('assets/js/principia-study-methods-advanced.js');
+  assert.match(source, /const methods = \[/);
+  assert.match(source, /const topics = \[\.\.\.new Set\(base\.map/);
+  assert.equal((source.match(/\{ name: '/g) || []).length, 41);
+  assert.match(source, /methods.length !== 41 \|\| out.length !== 1640/);
+  assert.match(source, /window\.PRINCIPIA_STUDY_METHOD_ADVANCED_PLAYBOOKS = out/);
+  assert.match(read('assets/js/principia-study-methods.js'), /methods\.push\(\.\.\.window\.PRINCIPIA_STUDY_METHOD_ADVANCED_PLAYBOOKS\)/);
+  assert.match(read('index.html'), /principia-study-methods-advanced\.js/);
+});
+test('guided pathways connect Gemini, virtual classroom and Study With Me', () => {
+  const source = read('assets/js/principia-study-pathways.js');
+  assert.match(source, /window\.principiaAI\?\.ask/);
+  assert.match(source, /PrincipiaProMastery\.open\('classroom'\)/);
+  assert.match(source, /PrincipiaProMastery\.open\('study'\)/);
+  assert.match(read('index.html'), /principia-study-pathways\.js/);
+});
