@@ -22,3 +22,9 @@ html[data-pr-icons-off="true"] #app .pr-live-icon,html[data-pr-icons-off="true"]
 #app .pr-nav-live-icon svg{width:100%;height:100%;display:block}
 @media(max-width:520px){.pr-icon-studio-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(prefers-reduced-motion:reduce){.pr-icon-studio-toggle,.pr-icon-studio-item button{transition:none!important}}
+
+/* Animate UI-style stroke drawing for feature icons on interaction. */
+@keyframes pr-icon-trace{from{stroke-dashoffset:110}to{stroke-dashoffset:0}}
+#app .pr-icon-enhanced:hover .pr-live-icon path,#app .pr-icon-enhanced:hover .pr-nav-live-icon path{stroke-dasharray:110;stroke-dashoffset:0;animation:pr-icon-trace .48s cubic-bezier(.2,.8,.2,1) both}
+#app .pr-icon-enhanced:active .pr-live-icon,#app .pr-icon-enhanced:active .pr-nav-live-icon{transform:scale(.88)}
+@media(prefers-reduced-motion:reduce){#app .pr-icon-enhanced:hover .pr-live-icon path,#app .pr-icon-enhanced:hover .pr-nav-live-icon path{animation:none;stroke-dasharray:none;stroke-dashoffset:0}}
