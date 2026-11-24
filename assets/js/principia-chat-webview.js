@@ -103,6 +103,17 @@
    replacement.__principiaEmbedded=true;
    window.selectPrincipiaAI=replacement;
   }
+  document.addEventListener('click',event=>{
+   const trigger=event.target.closest?.('#chatBox .ai-picker-head button[onclick*="openSelectedAI"]');
+   if(!trigger)return;
+   event.preventDefault();event.stopImmediatePropagation();openSelected();
+  },true);
+  document.addEventListener('change',event=>{
+   if(event.target?.id!=='principiaAISelect')return;
+   event.preventDefault();event.stopImmediatePropagation();
+   if(typeof window.selectPrincipiaAI==='function')window.selectPrincipiaAI(event.target.value);
+   else openSelected();
+  },true);
   window.principiaChatWebView=Object.freeze({openGoogle,openSelected,showChat,navigate});
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
