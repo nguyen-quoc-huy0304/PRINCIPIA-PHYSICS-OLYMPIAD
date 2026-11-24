@@ -1,7 +1,7 @@
 /* PRO welcome screen page module. */
 (()=> {
  'use strict';
- window.renderPrincipiaWelcomeScreen=function({account={},name='bạn',logo='/assets/images/principia-ant-logo.svg'}={}){
+ window.renderPrincipiaWelcomeScreen=function({account={},name='bạn',logo='/assets/images/principia-logo-round.svg'}={}){
   const safeName=String(name||'bạn').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const safeEmail=String(account.email||'Tài khoản đã đăng nhập').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const character=typeof window.principiaWelcomeCharacterMarkup==='function'?window.principiaWelcomeCharacterMarkup():'<img class="pw-welcome-character" src="/assets/images/principia-chat-character.png" alt="Nhân vật PRO">';
