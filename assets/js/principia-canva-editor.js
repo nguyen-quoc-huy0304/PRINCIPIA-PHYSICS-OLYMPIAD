@@ -11,11 +11,7 @@
  const observedSizes=new WeakMap();
  const originalResizeStyles=new WeakMap();
  const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
- const isAdmin=()=>{
-  let account=null;
-  try{account=JSON.parse(localStorage.getItem('principia_google_account')||'null')}catch(_){}
-  return !!account&&String(account.email||'').toLowerCase()==='huyquocnguyen03042011@gmail.com'&&account.uid===window.PRINCIPIA_OWNER_UID_PUBLIC;
- };
+ const isAdmin=()=>!!window.PrincipiaAccess?.isOwner?.();
  const currentPage=()=>String(window.__principiaLastRoute||'home').toLowerCase().replace(/[^a-z0-9_-]/g,'').slice(0,80)||'home';
  const number=(value,fallback,min,max)=>{
   const n=Number(value);
