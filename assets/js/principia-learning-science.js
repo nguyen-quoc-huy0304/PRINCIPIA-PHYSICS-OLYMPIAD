@@ -55,7 +55,14 @@
     { id:'chinese-targeted-volume', group:'practice', goals:['solve','olympiad'], triggers:['fluency','speed','practice'], weight:3, guide:'Luyện số lượng bài vừa đủ nhưng có phân loại mục tiêu và độ khó; dừng để phân tích lỗi, không chạy theo số bài.' },
     { id:'chinese-topic-training', group:'practice', goals:['solve','olympiad','recover'], triggers:['weak-topic','chapter','theme'], weight:3, guide:'Tập trung một chuyên đề trong phiên ngắn, xen kẽ câu nền tảng và câu vận dụng; kết thúc bằng một câu chuyển giao.' },
     { id:'group-study', group:'social', goals:['remember','teach','solve'], triggers:['group','classroom','study-together'], weight:2, guide:'Học cùng người khác bằng cách mỗi người tự giải trước, sau đó giải thích và phản biện trên bằng chứng; tránh so sánh điểm số.' },
-    { id:'planned-review', group:'planning', goals:['remember','recover'], triggers:['review','weekly','plan'], weight:3, guide:'Cuối phiên ghi điều đã hiểu, phần còn yếu và thời điểm ôn lại; đầu tuần điều chỉnh kế hoạch theo dữ liệu thực tế.' }
+    { id:'planned-review', group:'planning', goals:['remember','recover'], triggers:['review','weekly','plan'], weight:3, guide:'Cuối phiên ghi điều đã hiểu, phần còn yếu và thời điểm ôn lại; đầu tuần điều chỉnh kế hoạch theo dữ liệu thực tế.' },
+    { id:'cognitive-load-management', group:'cognitive-load', goals:['understand','solve','recover'], triggers:['complex','overload','new'], weight:4, guide:'Giới hạn số ý mới trong một lượt, làm rõ ký hiệu và chia chuỗi suy luận thành bước; chỉ tăng độ phức tạp khi phần trước đã vững.' },
+    { id:'schema-building', group:'understanding', goals:['understand','remember','transfer'], triggers:['chapter','connect','prior-knowledge'], weight:3, guide:'Kích hoạt kiến thức nền, đặt khái niệm mới vào cấu trúc đã biết và yêu cầu giải thích mối liên hệ giữa chúng.' },
+    { id:'embodied-learning', group:'representation', goals:['understand','transfer'], triggers:['motion','force','field','experiment'], weight:2, guide:'Dùng cử chỉ, mô hình vật lý đơn giản hoặc thao tác mô phỏng để biểu diễn quan hệ; sau đó chuyển lại thành sơ đồ và phương trình.' },
+    { id:'achievement-motivation', group:'motivation', goals:['solve','olympiad','recover'], triggers:['milestone','challenge','progress'], weight:2, guide:'Đặt mục tiêu làm chủ một kỹ năng cụ thể, ghi nhận nỗ lực có chiến lược và phản hồi tiến bộ dựa trên bằng chứng thay vì điểm thưởng đơn thuần.' },
+    { id:'social-comparison', group:'social', goals:['teach','solve'], triggers:['peer','group','discussion'], weight:2, guide:'Chỉ khi người học chủ động chọn học cùng nhóm, so sánh cách lập luận hoặc chiến lược với bạn học; không xếp hạng công khai, không so sánh giá trị cá nhân.' },
+    { id:'unfinished-task-resume', group:'planning', goals:['remember','solve','recover'], triggers:['resume','next-step','long-plan'], weight:2, guide:'Kết thúc phiên bằng một ghi chú ngắn về bước kế tiếp và điểm đang dở để lần sau tiếp tục dễ dàng; không tạo cảm giác mắc nợ hay áp lực phải quay lại.' },
+    { id:'chinese-timed-practice', group:'practice', goals:['solve','olympiad'], triggers:['exam','speed','timed'], weight:2, guide:'Chỉ thêm giới hạn thời gian sau khi người học đạt độ chính xác nền tảng; bắt đầu với thời gian rộng và ưu tiên chất lượng lập luận.' }
   ];
 
   const GOAL_ALIASES = {
@@ -81,7 +88,8 @@
       errorCount: Number.isFinite(errors) ? Math.max(0, Math.min(100, errors)) : 0,
       minutes: Number.isFinite(minutes) ? Math.max(5, Math.min(180, minutes)) : 25,
       fatigue: context.fatigue === true,
-      distracted: context.distracted === true
+      distracted: context.distracted === true,
+      socialLearning: context.socialLearning === true
     };
   }
 
@@ -98,6 +106,7 @@
   }
 
   function scoreMethod(method, context, recent) {
+    if (method.id === 'social-comparison' && !context.socialLearning) return -100;
     const goals = GOAL_ALIASES[context.goal] || [context.goal];
     let score = goals.includes(context.goal) ? 1 : 0;
     if (method.goals.some(goal => goals.includes(goal))) score += method.weight;
@@ -110,6 +119,7 @@
     if (context.confidence <= 2 && ['worked-examples','faded-guidance','growth-mindset'].includes(method.id)) score += 4;
     if (context.fatigue && ['sleep-recovery','attention-restoration','ultradian-breaks'].includes(method.id)) score += 8;
     if (context.distracted && ['attention-restoration','environment-design','pomodoro-flexible'].includes(method.id)) score += 6;
+    if (context.socialLearning && method.id === 'social-comparison') score += 5;
     if (recent.includes(method.id)) score -= 5;
     return score;
   }
