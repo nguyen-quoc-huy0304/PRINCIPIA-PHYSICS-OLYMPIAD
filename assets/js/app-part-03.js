@@ -85,7 +85,7 @@ function getPrincipiaAccount(){
  if(window.__principiaSessionAccount?.uid)return window.__principiaSessionAccount;
  return saved&&typeof saved==='object'?saved:null;
 }
-function isPrincipiaOwner(){const a=getPrincipiaAccount();return !!a && a.uid===window.PRINCIPIA_OWNER_UID_PUBLIC && (a.email||'').toLowerCase()===window.PRINCIPIA_OWNER_EMAIL_PUBLIC;}
+function isPrincipiaOwner(){return !!window.PrincipiaAccess?.isOwner?.();}
 function principiaRole(){return isPrincipiaOwner()?'admin':'viewer';}
 function isPrincipiaAdmin(){return isPrincipiaOwner();}
 function canManageContent(){return isPrincipiaOwner();}
