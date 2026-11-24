@@ -7,7 +7,7 @@ const read = path => fs.readFileSync(path, 'utf8');
 test('admin policy trusts only the authenticated Firebase user, never localStorage identity', () => {
   const policy = read('assets/js/core/permissions.js');
   assert.match(policy, /authenticatedUser\(\)/);
-  assert.match(policy, /w\.firebase\?\.auth\(\)\.currentUser/);
+  assert.match(policy, /w\.firebase\.auth\(\)\.currentUser/);
   assert.match(policy, /String\(user\.email\|\|''\)\.toLowerCase\(\)===OWNER_EMAIL/);
   assert.doesNotMatch(policy, /function isOwner\(\)\{const a=account\(\)/);
   assert.match(policy, /function role\(\)\{return isOwner\(\)\?'admin':'viewer'\}/);
@@ -40,7 +40,7 @@ test('browser cache versions are bumped for every corrected module', () => {
     'principia-site-editor.js?v=20261124-auth-policy3',
     'principia-canva-editor.js?v=20261124-auth-policy3',
     'principia-welcome-editor.js?v=20261124-auth-policy3',
-    'principia-living-companion.js?v=20261124-three-cdn-fix2'
+    'principia-living-companion.js?v=20261124-mascot-shape1'
   ]) assert.ok(html.includes(version), 'missing cache version: ' + version);
 });
 
