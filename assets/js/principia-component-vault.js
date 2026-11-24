@@ -119,7 +119,11 @@
       const meta=make('small',{},item.category+' · '+item.source);
       const preview=make('div',{class:'pr-vault-preview'});
       const frame=make('div',{class:'pr-vault-frame'});
-      frame.innerHTML=item.html;
+      const previewStyle=make('style');
+      previewStyle.textContent=variantCSS[activeVariant]+'\\n'+item.css;
+      const previewContent=make('div',{class:'pr-vault-content'});
+      previewContent.innerHTML=item.html;
+      frame.append(previewStyle,previewContent);
       preview.append(frame);
       const actions=make('div',{class:'pr-vault-actions'});
       const copyHTML=make('button',{type:'button'},'Copy HTML');
