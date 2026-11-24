@@ -13,7 +13,7 @@
     const style = document.createElement('style');
     style.id = 'principiaStudyPlayerStyles';
     style.textContent = [
-      '#ppmVideo.pps-floating{position:fixed!important;right:14px!important;bottom:calc(92px + env(safe-area-inset-bottom,0px))!important;width:380px;max-width:min(90vw,600px);z-index:2147483100;padding:9px;background:var(--card,#171e30);border:1px solid var(--line,#65729a);border-radius:15px;box-shadow:0 18px 48px #000a;resize:both;overflow:auto;color:var(--txt,#eef4ff)}',
+      '#ppmVideo.pps-floating{position:fixed!important;right:14px!important;bottom:calc(92px + env(safe-area-inset-bottom,0px))!important;width:380px;max-width:min(90vw,600px);z-index:2147483300;padding:9px;background:var(--card,#171e30);border:1px solid var(--line,#65729a);border-radius:15px;box-shadow:0 18px 48px #000a;resize:both;overflow:auto;color:var(--txt,#eef4ff)}',
       '#ppmVideo .pps-toolbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:8px}',
       '#ppmVideo .pps-toolbar button{font:600 11px/1.2 system-ui;padding:7px 9px;border:1px solid var(--line,#65729a);border-radius:9px;background:#ffffff0b;color:inherit;cursor:pointer}',
       '#ppmVideo .pps-toolbar button:focus-visible,#pps-reopen:focus-visible{outline:2px solid #a995ff;outline-offset:3px}',
@@ -22,7 +22,7 @@
       '#ppmVideo.pps-minimized{height:auto!important;min-height:0;resize:none}',
       '#ppmVideo.pps-minimized iframe{display:none!important}',
       '#ppmVideo .pps-title{margin-right:auto;font-size:11px;font-weight:800;letter-spacing:.04em}',
-      '#pps-reopen{position:fixed;right:14px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:2147483101;padding:10px 13px;border:1px solid #a995ff88;border-radius:12px;background:#171d36;color:#fff;box-shadow:0 10px 28px #0008;font:600 12px system-ui}',
+      '#pps-reopen{position:fixed;right:14px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:2147483301;padding:10px 13px;border:1px solid #a995ff88;border-radius:12px;background:#171d36;color:#fff;box-shadow:0 10px 28px #0008;font:600 12px system-ui}',
       '#principiaProMastery .pps-pinned-note{padding:12px;border:1px dashed var(--line,#65729a);border-radius:12px;color:var(--muted,#9aabc9);font-size:12px}',
       '@media(max-width:600px){#ppmVideo.pps-floating{right:8px!important;bottom:calc(145px + env(safe-area-inset-bottom,0px))!important;width:88vw;max-width:88vw;max-height:48vh}#ppmVideo.pps-floating iframe{max-height:30vh}#pps-reopen{right:8px;bottom:calc(145px + env(safe-area-inset-bottom,0px))}}',
       '@media(prefers-reduced-motion:reduce){#ppmVideo.pps-floating,#pps-reopen{scroll-behavior:auto}}'
@@ -141,6 +141,7 @@
         }
       });
       hide.addEventListener('click', () => {
+        if (!player.classList.contains('pps-floating')) setPinned(player, true);
         player.hidden = true;
         ensureReopenButton();
       });
