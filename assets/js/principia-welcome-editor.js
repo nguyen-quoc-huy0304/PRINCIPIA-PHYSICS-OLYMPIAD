@@ -2,15 +2,9 @@
 (()=> {
  'use strict';
  const KEY='principia_welcome_layout_v1';
- const OWNER='huyquocnguyen03042011@gmail.com';
  let state={deleted:[],positions:{}},bubble=null,panel=null,active=false,selected=null,observer=null;
  const screen=()=>document.querySelector('.principia-welcome-screen');
- const isAdmin=()=>{
-  try{
-   const account=JSON.parse(localStorage.getItem('principia_google_account')||'null');
-   return !!account&&String(account.email||'').toLowerCase()===OWNER&&account.uid===window.PRINCIPIA_OWNER_UID_PUBLIC;
-  }catch(_){return false}
- };
+ const isAdmin=()=>!!window.PrincipiaAccess?.isOwner?.();
  const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(state))}catch(error){console.warn('[PRINCIPIA] Không lưu được bố cục màn hình chào',error)}};
  const load=()=>{
   try{
