@@ -19,6 +19,6 @@ function setupHairlineFigure(){
  },{passive:true});
 }
 function setupMascotGaze(){if(!FINE||REDUCED)return;let last=0;document.addEventListener('pointermove',e=>{const now=performance.now();if(now-last<42)return;last=now;const m=document.querySelector('#app .principia-bundled-pose');if(!m)return;const r=m.getBoundingClientRect(),dx=clamp((e.clientX-(r.left+r.width/2))/Math.max(innerWidth,1),-.5,.5),dy=clamp((e.clientY-(r.top+r.height/2))/Math.max(innerHeight,1),-.5,.5);m.style.setProperty('--pr-mascot-x',(dx*7).toFixed(2)+'deg');m.style.setProperty('--pr-mascot-y',(-dy*5).toFixed(2)+'deg')},{passive:true})}
-function init(){if(!REDUCED){window.addEventListener('principia:page-changed',()=>{routePending=true});document.addEventListener('principia:rendered',()=>{if(routePending){routePending=false;animateRoute()}mountBeams()});mountBeams();setupMagnetic();setupMascotGaze()}window.PrincipiaKinetic=Object.freeze({refresh:mountBeams})}
+function init(){if(!REDUCED){window.addEventListener('principia:page-changed',()=>{routePending=true});document.addEventListener('principia:rendered',()=>{if(routePending){routePending=false;animateRoute()}mountBeams()});mountBeams();setupMagnetic();setupHairlineFigure();setupMascotGaze()}window.PrincipiaKinetic=Object.freeze({refresh:mountBeams})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
