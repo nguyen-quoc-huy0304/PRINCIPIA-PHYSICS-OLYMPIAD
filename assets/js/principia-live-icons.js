@@ -20,7 +20,20 @@
     bell:'<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/>',
     flash:'<path d="m13 2-3 9h7l-6 11 2-9H6z"/>',
     book:'<path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v18H6.5A2.5 2.5 0 0 0 4 22z"/><path d="M4 4.5v15A2.5 2.5 0 0 1 6.5 17H20"/>',
-    arrow:'<path d="M5 12h14m-6-6 6 6-6 6"/>'
+    arrow:'<path d="M5 12h14m-6-6 6 6-6 6"/>',
+    games:'<path d="M6 11h12a4 4 0 0 1 3.8 5.2l-.5 1.6a2 2 0 0 1-3.2.9L15.5 16h-7l-2.6 2.7a2 2 0 0 1-3.2-.9l-.5-1.6A4 4 0 0 1 6 11Z"/><path d="M8 13v4m-2-2h4m6-1h.01m2 2h.01"/>',
+    progress:'<path d="M4 19V5m0 14h17"/><path d="m7 15 4-4 3 2 5-6"/><path d="M16 7h3v3"/>',
+    discover:'<circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2.2 4.8-4.8 2.2 2.2-4.8z"/>',
+    music:'<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
+    research:'<path d="M4 4h16v16H4z"/><path d="M8 8h8M8 12h5M8 16h3"/><circle cx="17" cy="17" r="3"/>',
+    classroom:'<path d="M3 4h18v13H3z"/><path d="m7 21 5-4 5 4M8 9h8m-8 4h5"/>',
+    community:'<circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20a6 6 0 0 1 12 0m1-5a5 5 0 0 1 5 5"/>',
+    store:'<path d="M4 9h16l-1 12H5L4 9Z"/><path d="m3 9 2-6h14l2 6M9 13v3m6-3v3"/>',
+    admin:'<path d="M12 3 20 6v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/><path d="m9 12 2 2 4-4"/>',
+    edit:'<path d="m4 16.5-.8 4.3 4.3-.8L19 8.5 15.5 5z"/><path d="m13.8 6.7 3.5 3.5"/>',
+    more:'<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',
+    help:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.6 2.6 0 1 1 4.6 1.7c-1.2 1.1-2.1 1.4-2.1 3.3M12 17.5h.01"/>',
+    star:'<path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/>'
   };
   const RULES = [
     [/home|trang chủ|dashboard|overview/i,'home'],
@@ -40,7 +53,20 @@
     [/submit|nộp bài|complete|hoàn thành|correct/i,'check'],
     [/notification|thông báo/i,'bell'],
     [/flashcard|thẻ ghi nhớ|flash/i,'flash'],
-    [/library|thư viện|textbook|tài liệu/i,'book']
+    [/library|thư viện|textbook|tài liệu/i,'book'],
+    [/game|games|đố vui|trò chơi|mini game/i,'games'],
+    [/progress|tiến độ|thống kê|analytics/i,'progress'],
+    [/discover|khám phá|explore/i,'discover'],
+    [/music|âm nhạc|focus/i,'music'],
+    [/research|nghiên cứu|sổ nghiên cứu/i,'research'],
+    [/classroom|lớp học|giảng dạy/i,'classroom'],
+    [/community|cộng đồng|multiplayer/i,'community'],
+    [/shop|store|cửa hàng|vật phẩm/i,'store'],
+    [/admin|quản trị|administrator/i,'admin'],
+    [/edit|chỉnh sửa|editor/i,'edit'],
+    [/more|thêm|khác/i,'more'],
+    [/help|trợ giúp|hỗ trợ/i,'help'],
+    [/favorite|yêu thích|featured/i,'star']
   ];
   const SELECTOR = '#app .nav a,#app .nav button,#app nav a,#app nav button,#app button,#app [role="button"],#app a';
   function labelOf(node) {
