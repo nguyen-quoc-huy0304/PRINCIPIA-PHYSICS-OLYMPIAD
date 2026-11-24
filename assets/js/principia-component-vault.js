@@ -60,7 +60,7 @@
     ['Scroll progress marker','Progress','Animate UI','<div class="pv-scroll"><span></span></div>','.pv-scroll{height:3px;background:#ffffff20;overflow:hidden}.pv-scroll span{display:block;width:62%;height:100%;background:linear-gradient(90deg,#a995ff,#62c8e7);box-shadow:0 0 10px #a995ff}'],
     ['Favicon badge API','Developer','favico.js','<code class="pv-code">new Favico({ animation: "popFade" }).badge(3);</code>','.pv-code{display:block;padding:10px;border-radius:9px;background:#111528;color:#bfe7ff;font:12px ui-monospace,monospace}']
   ];
-  const VARIANTS = ['violet','cyan','mono'];
+  const SKINS = [["Aurora","#9d8cff","#58d6df"],["Nebula","#bb83ff","#ff86c8"],["Solar","#ffad4d","#ffe27a"],["Glacier","#68c9ff","#a2f2ff"],["Emerald","#46d6a2","#a6efc8"],["Rose Quartz","#ff83ad","#ffc1d6"],["Amethyst","#9b72ed","#d0a7ff"],["Cyberpunk","#f35dff","#35e6ff"],["Midnight","#8295ff","#63c7f4"],["Obsidian","#d1d5e8","#858ca8"],["Copper","#d58b63","#f2c49a"],["Sakura","#ff9dbd","#c4a1ff"],["Arctic","#75e1d4","#91baff"],["Volcanic","#ff765e","#ffbf69"],["Forest","#62bd83","#b3dc8a"],["Royal","#7779ff","#d19cff"],["Ocean","#368fe0","#55d8d0"],["Lavender","#b4a0ff","#e4b6ff"],["Candy","#ff73ce","#8f83ff"],["Lime","#9bd64b","#e0ee7b"],["Sandstone","#d5b47c","#f1dfb0"],["Steel","#91a9c5","#d2e0f1"],["Ruby","#e34f72","#ff9b9b"],["Topaz","#e6ad37","#8dd9dc"],["Monochrome","#d8dce8","#8b94aa"]];\n  const VARIANTS = ['violet','cyan','mono'];
   const variantCSS = {
     violet:':root{--pv-accent:#a995ff;--pv-accent2:#65c8e8}',
     cyan:':root{--pv-accent:#56d6d0;--pv-accent2:#72aaff}',
@@ -74,7 +74,20 @@
     const id='pv-'+index;
     return {id,name,category,source,html,css:css.replace(/#a995ff/g,'var(--pv-accent)').replace(/#65c8e8/g,'var(--pv-accent2)')};
   }
-  const catalog=ITEMS.map(buildItem);
+  const catalog=ITEMS.flatMap((item,index)=>SKINS.map((skin,skinIndex)=>{
+    const base=buildItem(item,index);
+    const [skinName,accent,accent2]=skin;
+    const id=base.id+'-'+skinIndex;
+    const wrapper='pv-skin-'+skinIndex;
+    const colorMap={
+      '#a995ff':accent,'#65c8e8':accent2,'#6554d9':accent,'#9d8bff':accent,
+      '#8d7aff':accent,'#b8a8ff':accent,'#a98bff':accent,'#62c8e7':accent2,
+      '#9b83ff':accent,'#328eb5':accent2,'#56d6d0':accent,'#72aaff':accent2
+    };
+    const css=base.css.replace(/#[0-9a-f]{6}/gi,color=>colorMap[color.toLowerCase()]||color);
+    const skinCSS='.'+wrapper+'{--pv-accent:'+accent+';--pv-accent2:'+accent2+';--pv-skin-shadow:0 12px 32px '+accent+'22}';
+    return {...base,id,name:base.name+' — '+skinName,skin:skinName,html:'<div class="'+wrapper+'">'+base.html+'</div>',css:css+'\\n'+skinCSS};
+  }));
   function make(tag,attrs={},text=''){
     const node=document.createElement(tag);
     Object.entries(attrs).forEach(([key,value])=>node.setAttribute(key,value));
@@ -116,7 +129,7 @@
     visible.forEach(item=>{
       const card=make('article',{class:'pr-vault-item'});
       const title=make('strong',{},item.name);
-      const meta=make('small',{},item.category+' · '+item.source);
+      const meta=make('small',{},item.category+' · '+item.source+' · '+item.skin);
       const preview=make('div',{class:'pr-vault-preview'});
       const frame=make('div',{class:'pr-vault-frame'});
       const previewStyle=make('style');
@@ -138,7 +151,7 @@
       card.append(title,meta,preview,actions,sourceLink);
       grid.append(card);
     });
-    count.textContent=visible.length+' / '+catalog.length+' components';
+    count.textContent=visible.length+' / '+catalog.length+' mẫu · '+ITEMS.length+' cấu trúc × '+SKINS.length+' skin';
   }
   async function copy(value,button){
     try{await navigator.clipboard.writeText(value);const old=button.textContent;button.textContent='Copied';setTimeout(()=>button.textContent=old,1100)}
