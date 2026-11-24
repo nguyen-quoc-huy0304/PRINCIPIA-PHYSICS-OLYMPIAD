@@ -1,0 +1,77 @@
+/* PRINCIPIA Motion Collection — local, reusable motion primitives */
+:root{--pr-motion-duration:520ms;--pr-motion-ease:cubic-bezier(.2,.8,.2,1)}
+@media(prefers-reduced-motion:no-preference){
+[data-pr-motion="float"]{animation:prFloat 4s ease-in-out infinite}
+[data-pr-motion="pulse"]{animation:prPulse 2.4s ease-in-out infinite}
+[data-pr-motion="spin"]{animation:prSpin 1.2s linear infinite}
+[data-pr-motion="orbit"]{animation:prOrbit 5s linear infinite}
+[data-pr-motion="shimmer"]{background-image:linear-gradient(110deg,transparent 20%,rgba(255,255,255,.14) 45%,transparent 70%);background-size:220% 100%;animation:prShimmer 2.4s linear infinite}
+[data-pr-motion="breath"]{animation:prBreath 3.6s ease-in-out infinite}
+[data-pr-motion="wiggle"]{animation:prWiggle 1.8s ease-in-out infinite}
+[data-pr-motion="bounce"]{animation:prBounce 1.5s ease-in-out infinite}
+[data-pr-motion="swing"]{transform-origin:top center;animation:prSwing 2.4s ease-in-out infinite}
+[data-pr-motion="heartbeat"]{animation:prHeartbeat 1.8s ease-in-out infinite}
+[data-pr-motion="wave"]{animation:prWave 2.2s ease-in-out infinite}
+[data-pr-motion="glow"]{animation:prGlow 2.4s ease-in-out infinite}
+[data-pr-motion="tilt"]{animation:prTilt 4s ease-in-out infinite}
+[data-pr-motion="drift"]{animation:prDrift 6s ease-in-out infinite}
+[data-pr-motion="pop"]{animation:prPop .45s var(--pr-motion-ease) both}
+[data-pr-motion="slide-up"]{animation:prSlideUp .55s var(--pr-motion-ease) both}
+[data-pr-motion="slide-down"]{animation:prSlideDown .55s var(--pr-motion-ease) both}
+[data-pr-motion="slide-left"]{animation:prSlideLeft .55s var(--pr-motion-ease) both}
+[data-pr-motion="slide-right"]{animation:prSlideRight .55s var(--pr-motion-ease) both}
+[data-pr-motion="zoom-in"]{animation:prZoomIn .55s var(--pr-motion-ease) both}
+[data-pr-motion="zoom-out"]{animation:prZoomOut .55s var(--pr-motion-ease) both}
+[data-pr-motion="flip-x"]{animation:prFlipX .65s ease both}
+[data-pr-motion="flip-y"]{animation:prFlipY .65s ease both}
+[data-pr-motion="roll-in"]{animation:prRoll .65s ease both}
+[data-pr-motion="blur-in"]{animation:prBlur .65s ease both}
+[data-pr-motion="shake"]{animation:prShake .45s ease}
+[data-pr-motion="rubber"]{animation:prRubber .8s ease}
+[data-pr-motion="squish"]{animation:prSquish .55s ease}
+[data-pr-motion="tada"]{animation:prTada .9s ease}
+[data-pr-motion="rotate-in"]{animation:prRotateIn .6s ease both}
+[data-pr-motion="reveal"]{opacity:0;transform:translateY(16px);transition:opacity .6s ease,transform .6s var(--pr-motion-ease)}
+[data-pr-motion="reveal"].pr-motion-visible{opacity:1;transform:none}
+[data-pr-motion="stagger"]>*{opacity:0;transform:translateY(12px);animation:prSlideUp .5s var(--pr-motion-ease) both;animation-delay:calc(var(--pr-motion-index,0)*65ms)}
+[data-pr-motion="hover-lift"]:hover{transform:translateY(-5px);box-shadow:0 16px 32px rgba(0,0,0,.16)}
+[data-pr-motion="hover-scale"]:hover{transform:scale(1.045)}
+[data-pr-motion="hover-rotate"]:hover{transform:rotate(2deg)}
+[data-pr-motion="hover-glow"]:hover{filter:drop-shadow(0 0 12px rgba(142,122,255,.4))}
+[data-pr-motion="press"]:active{transform:scale(.96)}
+[data-pr-motion="ripple"]{position:relative;overflow:hidden}
+[data-pr-motion="ripple"]::after{content:"";position:absolute;inset:0;border-radius:inherit;background:rgba(255,255,255,.18);opacity:0;transform:scale(.1);pointer-events:none}
+[data-pr-motion="ripple"]:active::after{animation:prRipple .45s ease}
+}
+@keyframes prFloat{50%{transform:translateY(-9px)}}
+@keyframes prPulse{50%{transform:scale(1.04);opacity:.85}}
+@keyframes prSpin{to{transform:rotate(360deg)}}
+@keyframes prOrbit{to{transform:rotate(360deg)}}
+@keyframes prShimmer{to{background-position:-220% 0}}
+@keyframes prBreath{50%{transform:scale(1.035);filter:brightness(1.08)}}
+@keyframes prWiggle{25%{transform:rotate(-4deg)}75%{transform:rotate(4deg)}}
+@keyframes prBounce{40%{transform:translateY(-10px)}60%{transform:translateY(-4px)}}
+@keyframes prSwing{20%{transform:rotate(8deg)}40%{transform:rotate(-6deg)}60%{transform:rotate(3deg)}}
+@keyframes prHeartbeat{15%,35%{transform:scale(1.12)}25%,45%{transform:scale(1.04)}}
+@keyframes prWave{25%{transform:translateY(-5px) rotate(3deg)}75%{transform:translateY(3px) rotate(-3deg)}}
+@keyframes prGlow{50%{filter:drop-shadow(0 0 14px rgba(126,183,255,.55))}}
+@keyframes prTilt{25%{transform:rotate(1.6deg)}75%{transform:rotate(-1.6deg)}}
+@keyframes prDrift{50%{transform:translate(7px,-5px)}}
+@keyframes prPop{0%{opacity:0;transform:scale(.7)}80%{transform:scale(1.04)}100%{opacity:1;transform:scale(1)}}
+@keyframes prSlideUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+@keyframes prSlideDown{from{opacity:0;transform:translateY(-18px)}to{opacity:1;transform:none}}
+@keyframes prSlideLeft{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:none}}
+@keyframes prSlideRight{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:none}}
+@keyframes prZoomIn{from{opacity:0;transform:scale(.86)}to{opacity:1;transform:scale(1)}}
+@keyframes prZoomOut{from{opacity:0;transform:scale(1.12)}to{opacity:1;transform:scale(1)}}
+@keyframes prFlipX{from{transform:perspective(500px) rotateX(70deg);opacity:0}to{transform:none;opacity:1}}
+@keyframes prFlipY{from{transform:perspective(500px) rotateY(70deg);opacity:0}to{transform:none;opacity:1}}
+@keyframes prRoll{from{transform:translateX(-24px) rotate(-90deg);opacity:0}to{transform:none;opacity:1}}
+@keyframes prBlur{from{filter:blur(10px);opacity:0}to{filter:blur(0);opacity:1}}
+@keyframes prShake{20%,60%{transform:translateX(-4px)}40%,80%{transform:translateX(4px)}}
+@keyframes prRubber{30%{transform:scaleX(1.18) scaleY(.82)}50%{transform:scaleX(.86) scaleY(1.14)}70%{transform:scaleX(1.06) scaleY(.94)}}
+@keyframes prSquish{35%{transform:scale(.9,1.08)}65%{transform:scale(1.06,.94)}}
+@keyframes prTada{10%,20%{transform:scale(.92) rotate(-3deg)}30%,50%,70%,90%{transform:scale(1.08) rotate(3deg)}40%,60%,80%{transform:scale(1.08) rotate(-3deg)}}
+@keyframes prRotateIn{from{opacity:0;transform:rotate(-25deg) scale(.85)}to{opacity:1;transform:none}}
+@keyframes prRipple{to{opacity:0;transform:scale(1.8)}}
+@media(prefers-reduced-motion:reduce){[data-pr-motion]{animation:none!important;transition:none!important;scroll-behavior:auto!important}[data-pr-motion="reveal"]{opacity:1;transform:none}}
