@@ -23,11 +23,6 @@
     return SHELLS.flatMap(selector => Array.from(document.querySelectorAll(selector)));
   }
 
-  function getSidebarLabel(sidebar) {
-    const nav = sidebar.querySelector('.nav');
-    return (nav?.getAttribute('aria-label') || nav?.textContent || 'Điều hướng').trim().slice(0, 80);
-  }
-
   function applyState(shell) {
     if (!shell) return;
     shell.classList.toggle('pr-sidebar-collapsed', collapsed);
@@ -48,7 +43,6 @@
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'principia-sidebar-toggle';
-    button.setAttribute('aria-controls', 'principia-primary-navigation');
     button.innerHTML = '<span class="pr-sidebar-toggle-icon" aria-hidden="true">‹</span><span class="pr-sidebar-toggle-label">Thu gọn</span>';
     button.addEventListener('click', () => {
       collapsed = !collapsed;
@@ -58,8 +52,6 @@
     const brand = sidebar.querySelector(':scope > .brand');
     if (brand) brand.insertAdjacentElement('afterend', button);
     else sidebar.insertAdjacentElement('afterbegin', button);
-    const nav = sidebar.querySelector('.nav');
-    if (nav && !nav.id) nav.id = 'principia-primary-navigation';
     sidebar.querySelectorAll('.nav').forEach(item => {
       const label = item.getAttribute('aria-label') || item.textContent.trim().replace(/\s+/g, ' ');
       if (label && !item.hasAttribute('title')) item.title = label.slice(0, 100);
