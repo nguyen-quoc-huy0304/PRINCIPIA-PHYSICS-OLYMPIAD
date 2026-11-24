@@ -36,3 +36,8 @@ rapier3d = { version = "=0.36.1", features = ["enhanced-determinism"] }
 [[bin]]
 name = "principia-core-server"
 path = "src/bin/principia-core-server.rs"
+
+# Keep the optimized Rust release build; skip Binaryen's extra pass because
+# strip=true removes target_features metadata needed to validate memory.fill.
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = false
