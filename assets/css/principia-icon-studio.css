@@ -28,3 +28,10 @@ html[data-pr-icons-off="true"] #app .pr-live-icon,html[data-pr-icons-off="true"]
 #app .pr-icon-enhanced:hover .pr-live-icon path,#app .pr-icon-enhanced:hover .pr-nav-live-icon path{stroke-dasharray:110;stroke-dashoffset:0;animation:pr-icon-trace .48s cubic-bezier(.2,.8,.2,1) both}
 #app .pr-icon-enhanced:active .pr-live-icon,#app .pr-icon-enhanced:active .pr-nav-live-icon{transform:scale(.88)}
 @media(prefers-reduced-motion:reduce){#app .pr-icon-enhanced:hover .pr-live-icon path,#app .pr-icon-enhanced:hover .pr-nav-live-icon path{animation:none;stroke-dasharray:none;stroke-dashoffset:0}}
+
+.pr-icon-slot-mapping{display:grid;gap:8px;padding-top:10px;border-top:1px solid var(--line,rgba(150,165,220,.2))}
+.pr-icon-slot-mapping>strong{color:var(--text,var(--txt,#eee));font:650 12px system-ui}
+.pr-icon-slot-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(120px,48%);gap:8px;align-items:center;color:var(--text,var(--txt,#eee));font:11px system-ui}
+.pr-icon-slot-row select{width:100%;min-width:0;padding:7px;border:1px solid var(--line,#596078);border-radius:8px;background:var(--card,#171a2b);color:inherit}
+.pr-icon-slot-reset{justify-self:start;padding:7px 10px;border:1px solid var(--line,rgba(150,165,220,.25));border-radius:8px;background:transparent;color:inherit;font:10px system-ui;cursor:pointer}
+@media(max-width:520px){.pr-icon-slot-row{grid-template-columns:1fr}}
