@@ -57,7 +57,7 @@
     });
     state.errors = state.errors.slice(0, MAX_ITEMS);
     save();
-    refreshCard();
+    refreshCard(true);
   }
   function attempts() {
     try {
