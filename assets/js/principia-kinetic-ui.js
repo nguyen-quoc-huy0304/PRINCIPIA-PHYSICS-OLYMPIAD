@@ -1,4 +1,4 @@
-/* PRINCIPIA Kinetic UI — native motion primitives adapted from the supplied libraries. */
+/* PRINCIPIA Kinetic UI — Anime.js runtime + native responsive interaction adapters. */
 (() => {
 'use strict';
 const REDUCED=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches??false;
