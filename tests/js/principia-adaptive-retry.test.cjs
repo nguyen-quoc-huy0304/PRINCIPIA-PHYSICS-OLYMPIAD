@@ -45,6 +45,6 @@ test('browser loads the retry assessor after Gemini client and refreshes changed
   const html = read('index.html');
   assert.ok(html.indexOf('principia-google-ai.js') < html.indexOf('principia-retry-assessor.js'));
   assert.ok(html.indexOf('principia-retry-assessor.js') < html.indexOf('principia-study-pathways.js'));
-  assert.match(html, /principia-adaptive-learning\.js\?v=20261124-gemini-retry2/);
-  assert.match(html, /principia-learning-orchestrator\.js\?v=20261124-invisible-learning3/);
+  assert.match(html, /principia-adaptive-learning\.js\?v=20261124-gemini-retry3/);
+  assert.match(html, /principia-learning-orchestrator\.js\?v=20261124-invisible-learning4/);
 });
