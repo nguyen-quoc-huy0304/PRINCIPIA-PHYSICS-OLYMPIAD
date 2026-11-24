@@ -262,6 +262,7 @@ async function initPrincipiaAuth(){
  try{
   const auth=await ensureFirebase();
   auth.onAuthStateChanged(async user=>{
+   document.dispatchEvent(new CustomEvent('principia:auth-state-changed',{detail:{authenticated:!!user,email:user?.email||''}}));
    if(user){
     principiaAuthInitialStateResolved=true;
     principiaAuthExplicitSignOut=false;
