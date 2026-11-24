@@ -250,12 +250,14 @@
       steady: 'Năng lượng vừa: chia thành chặng 15–25 phút, có đầu ra kiểm tra được.',
       intense: 'Năng lượng cao: thiết kế thử thách sâu, yêu cầu tự giải và tăng độ khó theo kết quả.'
     };
+    const focusPlan = window.PrincipiaLearningScience?.focusPlan?.({ energy: selectedEnergy, minutes: selectedDuration, goal: mode === 'intense' ? 'olympiad' : 'understand' });
     const extra = [
       'HƯỚNG DẪN NHỊP HỌC CÁ NHÂN:',
       MODES[mode].instruction,
       profile[mode],
       'Mức năng lượng do người học tự chọn: ' + selectedEnergy + '/3.',
       'Mục tiêu hôm nay: ' + selectedTarget + ' phút.',
+      focusPlan ? 'Nhịp tập trung gợi ý: ' + focusPlan.focusMinutes + ' phút tập trung, ' + focusPlan.breakMinutes + ' phút nghỉ; ' + focusPlan.instruction : '',
       'Không suy đoán nguyên nhân tâm trạng, không hỏi chuyện riêng tư, không cổ súy học đến kiệt sức. Nếu người học có dấu hiệu quá tải, đề xuất nghỉ ngắn hoặc giảm độ khó.',
       'Không nhắc tên chế độ hoặc kỹ thuật học. Hãy bắt đầu bằng một câu hỏi ngắn để xác định chủ đề và nhiệm vụ kế tiếp.'
     ].join('\n');
