@@ -126,7 +126,7 @@
     const science = window.PrincipiaLearningScience?.directive?.({
       topic: plan.topic, goal: plan.goal, energy: plan.energy, confidence: plan.confidence,
       percent: context.percent, errorCount: context.errorCount, fatigue: context.fatigue,
-      distracted: context.distracted, minutes: plan.estimatedMinutes, phase: context.phase
+      distracted: context.distracted, socialLearning: context.socialLearning, minutes: plan.estimatedMinutes, phase: context.phase
     }) || '';
     return [
       'Bạn là gia sư PRINCIPIA. Hãy áp dụng quy trình sư phạm sau một cách tự nhiên, tuyệt đối không nêu tên phương pháp hay nói về thuật toán chọn phương pháp.',
