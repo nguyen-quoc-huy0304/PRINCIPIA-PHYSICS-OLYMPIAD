@@ -6,7 +6,7 @@ This inventory separates published source counts from components actually vendor
 
 | Source | Published count | Reuse / integration status |
 |---|---:|---|
-| Uiverse | 7,475 UI elements | HTML/CSS/React/Figma formats; inspect the individual creator/license notice before copying. |
+| Uiverse | 7,411 UI elements observed on the live page during this review | HTML/CSS/React/Figma formats; inspect the individual creator/license notice before copying. |
 | Kokonut UI | 116 public components; Pro is separate | React + Tailwind CSS v4 + shadcn; adapt component-by-component for this vanilla HTML/CSS/JS app. |
 | Animate UI | 48 listed primitives/elements | React + Motion + Radix/Base UI/React Aria; not directly drop-in for this app. |
 | Hairline UI | 224 components | React 19 + Tailwind v4 + shadcn; MIT according to its published page; requires a vanilla adapter. |
