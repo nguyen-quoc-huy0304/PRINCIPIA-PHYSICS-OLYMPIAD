@@ -12,7 +12,24 @@
     ['.modal,.modal-card,.modalbox,.pd-modal', 'dialog-surface'],
     ['.progress,.xpbar,[role="progressbar"]', 'progress'],
     ['.stat', 'metric'],
-    ['.tile', 'app-card']
+    ['.tile', 'app-card'],
+    ['.badge,.pill,.tag', 'status-chip'],
+    ['.segmented-control,[role="tablist"]', 'segmented-tabs'],
+    ['.switch,.toggle,[role="switch"]', 'toggle-control'],
+    ['.skeleton,.loading-placeholder', 'skeleton'],
+    ['.empty-state,.empty,.no-results', 'empty-state'],
+    ['.accordion,.faq-item,details', 'accordion'],
+    ['.tooltip,[data-tooltip]', 'tooltip'],
+    ['.command-palette,.command-menu', 'command-surface'],
+    ['pre,code,.code-block', 'code-surface'],
+    ['table,.data-table', 'data-table'],
+    ['.notification,.toast,.alert', 'feedback-surface'],
+    ['.search-box,.search-field', 'search-surface'],
+    ['.filter-chip,.chip,.tag-chip', 'filter-chip'],
+    ['.profile-card,.user-card', 'profile-card'],
+    ['.timeline,.timeline-item', 'timeline-surface'],
+    ['.calendar,.calendar-grid', 'calendar-surface'],
+    ['.chart,.chart-container,.graph-panel', 'chart-surface']
   ];
   const excluded = '.principia-mobile-nav,#proSiteEditorPanel,#principiaM3ECanvasWorkspace';
   function mark(root = document) {
