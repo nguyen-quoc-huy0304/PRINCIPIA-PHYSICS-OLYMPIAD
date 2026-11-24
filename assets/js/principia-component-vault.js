@@ -192,7 +192,7 @@
     const observer=new MutationObserver(()=>mount());
     observer.observe(document.body,{childList:true,subtree:true});
     window.addEventListener('pagehide',()=>observer.disconnect(),{once:true});
-    window.PrincipiaComponentVault=Object.freeze({refresh:mount,count:catalog.length,sources:SOURCES.length});
+    window.PrincipiaComponentVault=Object.freeze({refresh:mount,count:catalogCount,structures:ITEMS.length,skins:SKINS.length,sources:SOURCES.length});
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
