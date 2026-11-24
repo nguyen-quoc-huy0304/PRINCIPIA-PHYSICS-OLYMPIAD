@@ -2,8 +2,8 @@
 (() => {
   'use strict';
 
-  const MAX_QUESTION = 3000;
-  const MAX_ANSWER = 3000;
+  const MAX_QUESTION = 2200;
+  const MAX_ANSWER = 2200;
   let pending = false;
 
   function parseAssessment(raw) {
