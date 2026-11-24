@@ -1,0 +1,12 @@
+.pr-mascot-studio{position:fixed;z-index:2147483301;right:18px;bottom:244px;width:min(310px,calc(100vw - 28px));padding:14px;border:1px solid var(--line,rgba(255,255,255,.18));border-radius:16px;background:var(--card,rgba(20,22,38,.97));color:var(--text,#f5f6ff);box-shadow:0 18px 48px rgba(0,0,0,.34);backdrop-filter:blur(18px);display:none;gap:12px;font:13px/1.45 system-ui,sans-serif}
+.pr-mascot-studio.is-open{display:grid}
+.pr-mascot-studio-heading{display:flex;align-items:center;justify-content:space-between;font-weight:800;font-size:14px}
+.pr-mascot-studio-heading button{width:30px;height:30px;border:1px solid var(--line,rgba(255,255,255,.2));border-radius:9px;background:transparent;color:inherit;font:inherit;font-size:19px;cursor:pointer}
+.pr-mascot-studio-description{margin:0;color:var(--muted,#aab2c8);font-size:12px}
+.pr-mascot-shape-choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.pr-mascot-shape-choices button{min-height:38px;padding:7px 5px;border:1px solid var(--line,rgba(255,255,255,.18));border-radius:10px;background:rgba(255,255,255,.04);color:inherit;font:600 12px system-ui;cursor:pointer}
+.pr-mascot-shape-choices button[aria-pressed=true]{border-color:var(--pr-ref-accent,#a992ff);background:rgba(169,146,255,.16);box-shadow:inset 0 0 0 1px var(--pr-ref-accent,#a992ff)}
+.pr-mascot-scale{display:grid;gap:7px;font-size:12px}
+.pr-mascot-scale input{width:100%;accent-color:var(--pr-ref-accent,#a992ff)}
+@media(max-width:760px){.pr-mascot-studio{right:10px;bottom:205px;width:min(300px,calc(100vw - 20px))}}
+@media(prefers-reduced-motion:reduce){.pr-mascot-studio *{scroll-behavior:auto!important;transition:none!important}}
