@@ -274,24 +274,36 @@
     const difficulty = modal().querySelector('#ppmDifficulty')?.value || 'medium';
     const frequency = Number(modal().querySelector('#ppmFrequency')?.value || 2);
     state.persona = persona; state.difficulty = difficulty; state.frequency = frequency; saveState();
-    const stylesByPersona = {
-      curious: ['Tại sao định luật này đúng?', 'Nếu thay đổi một điều kiện thì kết quả ra sao?', 'Có ví dụ thực tế nào minh họa không?'],
-      skeptical: ['Giả thiết nào đang được dùng?', 'Có phản ví dụ nào không?', 'Làm sao kiểm chứng kết luận bằng đơn vị hoặc giới hạn?'],
-      beginner: ['Bạn có thể giải thích bằng lời đơn giản hơn?', 'Từng đại lượng trong công thức có nghĩa gì?', 'Tại sao phải làm bước này trước?'],
-      olympiad: ['Có cách giải thứ hai ngắn hơn không?', 'Nếu bỏ giả thiết lý tưởng thì mô hình thay đổi thế nào?', 'Có thể tổng quát hóa kết quả không?']
+    const personaNames = {
+      curious: 'học sinh tò mò, thường hỏi vì sao và tìm ví dụ',
+      skeptical: 'học sinh hoài nghi, yêu cầu bằng chứng và kiểm tra giả thiết',
+      beginner: 'học sinh mới học, cần giải thích rõ các khái niệm nền',
+      olympiad: 'học sinh Olympic, thích truy vấn sâu và tìm cách tổng quát'
     };
-    const level = difficulty === 'easy' ? 0 : difficulty === 'hard' ? 2 : 1;
-    const questions = (stylesByPersona[persona] || stylesByPersona.curious).slice(0, frequency).map((q, i) => '<li>' + esc(q) + (level === 2 ? ' Hãy chứng minh chặt chẽ.' : level === 0 ? ' Giải thích từng bước.' : '') + '</li>').join('');
+    const pace = {
+      1: 'Nhịp thấp: mỗi lượt chỉ hỏi một câu trọng tâm, chờ giáo viên trả lời.',
+      2: 'Nhịp vừa: hỏi một câu chính và tối đa một câu hỏi phụ khi câu trả lời còn thiếu.',
+      3: 'Nhịp cao: hỏi liên tục theo chuỗi tối đa ba câu ngắn, tăng dần độ sâu; vẫn chờ giáo viên trả lời trước khi chuyển chủ đề.'
+    };
+    const notes = modal().querySelector('#ppmNotes')?.value || state.notes || '';
+    const lesson = notes.trim() || 'Bài học hiện tại: ' + (document.querySelector('#app h1,#app h2,.page-title')?.textContent?.trim() || document.title || 'Vật lý');
+    const prompt = [
+      'Bạn là AI Student trong lớp học PRINCIPIA. Người dùng là giáo viên đang dạy bạn Vật lý.',
+      'Nhân cách: ' + personaNames[persona] + '. Độ khó: ' + difficulty + '. ' + pace[frequency] ,
+      'NỘI DUNG BÀI GIẢNG:\n' + lesson.slice(0, 12000),
+      'BẮT BUỘC: đọc nội dung bài giảng, xác định một ý quan trọng hoặc chỗ dễ hiểu nhầm rồi mở đầu bằng một câu hỏi cụ thể bám sát nội dung đó; không dùng câu hỏi chung chung có sẵn.',
+      'Sau mỗi câu trả lời của giáo viên: đánh giá ngắn xem đã đúng và đủ chưa; nếu thiếu, hỏi tiếp đúng vào lỗ hổng đó; nếu tốt, chuyển sang một câu hỏi sâu hơn hoặc một tình huống áp dụng mới.',
+      'Duy trì vai học sinh và cuộc hội thoại nhiều lượt. Không tự giảng thay giáo viên, không tự đưa đáp án ngay. Chỉ xin gợi ý khi thật sự bí. Khi giáo viên yêu cầu kết thúc, tóm tắt điều bạn đã hiểu và điểm còn chưa rõ.',
+      'Bắt đầu ngay bằng câu hỏi đầu tiên.'
+    ].join('\n\n');
     const target = modal().querySelector('#ppmStudentQuestions');
     if (target) {
-      target.innerHTML = '<b>Học sinh hỏi:</b><ol>' + questions + '</ol><p>Hãy trả lời bằng lời của bạn, sau đó tự kiểm tra bằng ví dụ.</p><button type="button" class="ppm-button ppm-primary" data-student-ai>Tiếp tục đối thoại với AI Student</button>';
+      target.innerHTML = '<b>Phiên AI Student đã sẵn sàng.</b><p>AI sẽ đọc nội dung bài giảng, hỏi theo nhân cách và độ khó đã chọn, rồi tiếp tục truy vấn dựa trên từng câu trả lời của giáo viên.</p><button type="button" class="ppm-button ppm-primary" data-student-ai>Bắt đầu đối thoại với AI Student</button>';
       target.querySelector('[data-student-ai]').addEventListener('click', () => {
-        const personaName = ({ curious: 'tò mò', skeptical: 'hoài nghi', beginner: 'mới học', olympiad: 'học sinh Olympic' })[persona];
-        const context = modal().querySelector('#ppmNotes')?.value || state.notes;
-        const prompt = 'Bạn đóng vai một học sinh ' + personaName + ' đang được người dùng dạy Vật lý. Độ khó: ' + difficulty + '. Tần suất: ' + frequency + ' câu hỏi mỗi lượt. Hãy dựa trên nội dung bài giảng sau và hỏi từng câu một; không tự giảng thay giáo viên. Nếu giáo viên trả lời thiếu logic, hãy hỏi tiếp một câu Socratic lịch sự. Nội dung bài giảng: ' + context.slice(0, 5000);
         close();
         if (window.principiaLocalAI && typeof window.principiaLocalAI.open === 'function') window.principiaLocalAI.open(prompt);
         else if (typeof window.principiaSuiteAI === 'function') window.principiaSuiteAI();
+        else alert('Chưa tải được AI Student. Hãy tải lại trang.');
       });
     }
   }
