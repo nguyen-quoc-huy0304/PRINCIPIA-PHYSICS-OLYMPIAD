@@ -55,3 +55,14 @@ test('admin tools refresh after Firebase restores or clears the authenticated se
     assert.match(source, /addEventListener\('principia:auth-state-changed'/);
   }
 });
+
+
+test('AI Student uses the actual lesson context and continues Socratic dialogue', () => {
+  const mastery = read('assets/js/principia-pro-mastery.js');
+  assert.match(mastery, /NỘI DUNG BÀI GIẢNG/);
+  assert.match(mastery, /câu hỏi cụ thể bám sát nội dung đó/);
+  assert.match(mastery, /Sau mỗi câu trả lời của giáo viên/);
+  assert.match(mastery, /Duy trì vai học sinh và cuộc hội thoại nhiều lượt/);
+  assert.match(mastery, /principiaLocalAI\.open\(prompt\)/);
+  assert.match(mastery, /Nhịp cao: hỏi liên tục theo chuỗi tối đa ba câu ngắn/);
+});
