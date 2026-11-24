@@ -7,7 +7,7 @@ const read = path => fs.readFileSync(path, 'utf8');
 test('admin policy trusts only the authenticated Firebase user, never localStorage identity', () => {
   const policy = read('assets/js/core/permissions.js');
   assert.match(policy, /authenticatedUser\(\)/);
-  assert.match(policy, /w\\.firebase\\?\\.auth\(\)\.currentUser/);
+  assert.match(policy, /w\.firebase\?\.auth\(\)\.currentUser/);
   assert.match(policy, /String\(user\.email\|\|''\)\.toLowerCase\(\)===OWNER_EMAIL/);
   assert.doesNotMatch(policy, /function isOwner\(\)\{const a=account\(\)/);
   assert.match(policy, /function role\(\)\{return isOwner\(\)\?'admin':'viewer'\}/);
