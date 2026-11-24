@@ -195,9 +195,9 @@
   const style=document.createElement('style');style.id='principiaDockPositionStyles';
   style.textContent=
    'html>#principiaActionDockRoot{position:fixed!important;inset:0!important;top:0!important;right:0!important;bottom:0!important;left:0!important;width:100vw!important;height:100vh!important;height:100dvh!important;min-width:100vw!important;min-height:100dvh!important;max-width:none!important;max-height:none!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;pointer-events:none!important;z-index:2147483000!important;display:block!important;visibility:visible!important;transform:none!important;contain:none!important;overflow:visible!important}'+
-   ' html>button#principiaDockAI,html>button#principiaDockBrowser,html>button#proSiteEditorFab{position:fixed!important;transform:none!important;margin:0!important;pointer-events:auto!important;visibility:visible!important;display:grid!important;z-index:2147483005!important;touch-action:none!important;cursor:grab!important}'+
+   ' body>button#principiaDockAI,body>button#principiaDockBrowser,body>button#proSiteEditorFab{position:fixed!important;transform:none!important;margin:0!important;pointer-events:auto!important;visibility:visible!important;display:grid!important;z-index:2147483005!important;touch-action:none!important;cursor:grab!important}'+
    'html body #principiaSearchTrigger,html body #principiaDownloadFab{display:none!important;visibility:hidden!important;pointer-events:none!important}'+
-   '';
+   'body.principia-welcome-active #principiaActionDockRoot>#principiaDockAI,body.principia-welcome-active #principiaActionDockRoot>#principiaDockBrowser,body.principia-welcome-active #principiaActionDockRoot>#principiaDockFiles{display:none!important;visibility:hidden!important;pointer-events:none!important}';
   document.head.appendChild(style);
  }
  function syncEditorPanelPosition(pencil){
@@ -239,10 +239,10 @@
   nodes.forEach(node=>{
    if(!node)return;
    if(node.id==='proSiteEditorFab'&&welcomeActive){
-    if(node.parentElement!==document.documentElement)document.documentElement.appendChild(node);
+    if(node.parentElement!==document.body)document.body.appendChild(node);
     return;
    }
-   if(node.parentElement!==document.documentElement)document.documentElement.appendChild(node);
+   if(node.parentElement!==document.body)document.body.appendChild(node);
    node.style.setProperty('position','fixed','important');
    node.style.setProperty('inset','auto','important');
    node.style.setProperty('transform','none','important');
@@ -306,22 +306,22 @@
    ai.innerHTML='<span aria-hidden="true">AI</span>';ai.addEventListener('click',()=>{if(typeof window.toggleChatBox==='function')window.toggleChatBox()});
   }
   ai.id=IDS.ai;ai.title='Mở trợ lý AI';ai.setAttribute('aria-label','Mở trợ lý AI');
-  if(ai.parentElement!==document.documentElement)document.documentElement.appendChild(ai);
+  if(ai.parentElement!==document.body)document.body.appendChild(ai);
   Object.assign(ai.style,{position:'fixed',right:'18px',bottom:'18px',left:'auto',top:'auto',zIndex:'2147483005',width:'46px',height:'46px',minWidth:'46px',minHeight:'46px',maxWidth:'46px',maxHeight:'46px',display:welcome()?'none':'grid',placeItems:'center',borderRadius:'16px',transform:'none',margin:'0',pointerEvents:'auto',touchAction:'none',userSelect:'none',cursor:'grab'});
   ai.style.display=welcome()?'none':'grid';
   ai.setAttribute('aria-hidden',welcome()?'true':'false');
   const browser=button(IDS.browser,'Tìm kiếm Internet','⌕',isMobile()?138:74);
-  if(browser.parentElement!==document.documentElement)document.documentElement.appendChild(browser);
+  if(browser.parentElement!==document.body)document.body.appendChild(browser);
   browser.onclick=openBrowser;
   installFileSearchBar(root);
   const oldSearch=document.getElementById('principiaSearchTrigger');if(oldSearch){oldSearch.style.setProperty('display','none','important');oldSearch.style.setProperty('visibility','hidden','important');oldSearch.style.setProperty('pointer-events','none','important');oldSearch.setAttribute('aria-hidden','true');oldSearch.tabIndex=-1;}
   const download=document.getElementById('principiaDownloadFab');if(download){download.style.setProperty('display','none','important');download.style.setProperty('visibility','hidden','important');download.style.setProperty('pointer-events','none','important');download.style.setProperty('width','0','important');download.style.setProperty('height','0','important');download.setAttribute('aria-hidden','true');download.tabIndex=-1;}
   const pencil=document.getElementById('proSiteEditorFab');
   if(pencil){
-   const target=document.documentElement;
+   const target=document.body;
    if(pencil.parentElement!==target)target.appendChild(pencil);
-   Object.assign(pencil.style,{position:'fixed',right:'18px',bottom:isMobile()?'194px':'130px',left:'auto',top:'auto',zIndex:'2147483005',width:'46px',height:'46px',minWidth:'46px',minHeight:'46px',display:welcome()?'none':'grid',placeItems:'center',margin:'0',pointerEvents:'auto',touchAction:'none',userSelect:'none',cursor:'grab'});
-   pencil.setAttribute('aria-hidden',welcome()?'true':'false');
+   Object.assign(pencil.style,{position:'fixed',right:'18px',bottom:isMobile()?'194px':'130px',left:'auto',top:'auto',zIndex:'2147483005',width:'46px',height:'46px',minWidth:'46px',minHeight:'46px',display:'grid',placeItems:'center',margin:'0',pointerEvents:'auto',touchAction:'none',userSelect:'none',cursor:'grab'});
+   pencil.setAttribute('aria-hidden','false');
    applyLauncherPosition(pencil,isMobile()?194:130);
    bindLauncherDrag(pencil,()=>syncEditorPanelPosition(pencil));
   }
