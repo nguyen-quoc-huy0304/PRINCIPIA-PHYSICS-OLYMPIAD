@@ -86,7 +86,7 @@
     };
     const css=base.css.replace(/#[0-9a-f]{6}/gi,color=>colorMap[color.toLowerCase()]||color);
     const skinCSS='.'+wrapper+'{--pv-accent:'+accent+';--pv-accent2:'+accent2+';--pv-skin-shadow:0 12px 32px '+accent+'22}';
-    return {...base,id,name:base.name+' — '+skinName,skin:skinName,html:'<div class="'+wrapper+'">'+base.html+'</div>',css:css+'\\n'+skinCSS};
+    return {...base,id,name:base.name+' — '+skinName,skin:skinName,html:'<div class="'+wrapper+'">'+base.html+'</div>',css:css+'\n'+skinCSS};
   }));
   function make(tag,attrs={},text=''){
     const node=document.createElement(tag);
@@ -99,7 +99,7 @@
     if(!panel||panel.querySelector('#'+rootId))return;
     const section=make('section',{id:rootId});
     section.className='pr-vault';
-    const header=make('button',{type:'button','aria-expanded':'false',class:'pr-vault-toggle'},'▦ Component Vault · '+catalog.length+' source patterns');
+    const header=make('button',{type:'button','aria-expanded':'false',class:'pr-vault-toggle'},'▦ Component Vault · '+catalog.length+' mẫu');
     const body=make('div',{class:'pr-vault-body',hidden:''});
     const sourceRow=make('div',{class:'pr-vault-sources'});
     SOURCES.forEach(([name,url])=>{const a=make('a',{href:url,target:'_blank',rel:'noopener noreferrer'},name);sourceRow.append(a)});
@@ -133,7 +133,7 @@
       const preview=make('div',{class:'pr-vault-preview'});
       const frame=make('div',{class:'pr-vault-frame'});
       const previewStyle=make('style');
-      previewStyle.textContent=variantCSS[activeVariant]+'\\n'+item.css;
+      previewStyle.textContent=variantCSS[activeVariant]+'\n'+item.css;
       const previewContent=make('div',{class:'pr-vault-content'});
       previewContent.innerHTML=item.html;
       frame.append(previewStyle,previewContent);
