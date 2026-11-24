@@ -78,7 +78,33 @@
   weightLabel.append(weightText,weight);
   const note=make('p',{class:'pr-icon-studio-note'},'Chọn icon để sao chép SVG. Các icon điều hướng mặc định được thay bằng icon vector; logo, ảnh thương hiệu và icon tùy chỉnh được giữ nguyên.');
   const grid=make('div',{id:'prIconStudioGrid',class:'pr-icon-studio-grid'});
-  body.append(enabledLabel,sizeLabel,colorLabel,weightLabel,note,grid);
+  const mapping=make('div',{class:'pr-icon-slot-mapping'});
+  const mappingTitle=make('strong',{},'Ánh xạ icon theo chức năng');
+  const mappingHint=make('p',{class:'pr-icon-studio-note'},'Chọn icon riêng cho từng nhóm chức năng. Chỉ thay icon, không thay nhãn hoặc hành vi nút.');
+  mapping.append(mappingTitle,mappingHint);
+  const registry=window.PrincipiaLiveIcons;
+  const overrides=registry?.getOverrides?.()||{};
+  (registry?.slots||[]).forEach(slot=>{
+   const label=make('label',{class:'pr-icon-slot-row'});
+   const name=make('span',{},slot.label);
+   const select=make('select',{'aria-label':'Icon cho '+slot.label});
+   select.append(make('option',{value:''},'Mặc định'));
+   (registry.names||[]).forEach(iconName=>select.append(make('option',{value:iconName},iconName)));
+   select.value=overrides[slot.key]||'';
+   select.addEventListener('change',()=>{
+    const next=registry.getOverrides();
+    if(select.value)next[slot.key]=select.value;else delete next[slot.key];
+    registry.setOverrides(next);
+   });
+   label.append(name,select);mapping.append(label);
+  });
+  const resetMapping=make('button',{type:'button',class:'pr-icon-slot-reset'},'Đặt lại ánh xạ icon');
+  resetMapping.addEventListener('click',()=>{
+   registry?.setOverrides?.({});
+   mapping.querySelectorAll('select').forEach(select=>{select.value=''});
+  });
+  mapping.append(resetMapping);
+  body.append(enabledLabel,sizeLabel,colorLabel,weightLabel,note,grid,mapping);
   section.append(header,body);
   const vault=panel.querySelector('#principia-component-vault');
   if(vault)panel.insertBefore(section,vault);else panel.append(section);
