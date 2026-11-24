@@ -80,7 +80,7 @@
   const grid=make('div',{id:'prIconStudioGrid',class:'pr-icon-studio-grid'});
   body.append(enabledLabel,sizeLabel,colorLabel,weightLabel,note,grid);
   section.append(header,body);
-  const vault=panel.querySelector('#principiaComponentVault');
+  const vault=panel.querySelector('#principia-component-vault');
   if(vault)panel.insertBefore(section,vault);else panel.append(section);
   const sync=()=>{enabled.checked=settings.enabled;size.value=String(settings.size);sizeValue.value=settings.size+' px';color.value=settings.color;weight.value=settings.weight};
   const update=()=>{persist();apply();sync()};
