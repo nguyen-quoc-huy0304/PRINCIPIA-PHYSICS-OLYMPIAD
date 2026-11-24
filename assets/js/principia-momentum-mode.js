@@ -33,10 +33,11 @@
         mode: Object.hasOwn(MODES, raw.mode) ? raw.mode : 'steady',
         energy: [1, 2, 3].includes(raw.energy) ? raw.energy : 2,
         duration: DURATIONS.includes(raw.duration) ? raw.duration : 25,
-        target: TARGETS.includes(raw.target) ? raw.target : 60
+        target: TARGETS.includes(raw.target) ? raw.target : 60,
+        lastResult: raw.lastResult && Number.isFinite(raw.lastResult.percent) && raw.lastResult.percent >= 0 && raw.lastResult.percent <= 100 && Number.isFinite(raw.lastResult.errorCount) ? { percent: raw.lastResult.percent, errorCount: Math.max(0, Math.min(100, raw.lastResult.errorCount)) } : null
       };
     } catch (_) {
-      return { sessions: [], mode: 'steady', energy: 2, duration: 25, target: 60 };
+      return { sessions: [], mode: 'steady', energy: 2, duration: 25, target: 60, lastResult: null };
     }
   }
 
@@ -64,10 +65,6 @@
       cursor.setDate(cursor.getDate() - 1);
     }
     return count;
-  }
-
-  function escapeHtml(value) {
-    return String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
   }
 
   function injectEntry() {
@@ -218,7 +215,8 @@
     state.sessions = state.sessions.slice(-MAX_SESSIONS);
     save();
     paint();
-    setStatus('Đã hoàn thành phiên tập trung. Nghỉ ngắn, uống nước rồi quyết định bước tiếp theo.');
+    const completedToday = state.sessions.filter(item => item.date === todayKey() && item.completed).length;
+    setStatus(completedToday % 3 === 0 ? 'Bạn đã hoàn thành 3 phiên. Nghỉ dài 15–20 phút trước khi quyết định học tiếp.' : 'Đã hoàn thành phiên tập trung. Nghỉ 5 phút, uống nước rồi quyết định bước tiếp theo.');
     window.dispatchEvent(new CustomEvent('principia:momentum-session-completed', {
       detail: { minutes: selectedDuration, todayMinutes: todayMinutes(), target: selectedTarget }
     }));
@@ -229,7 +227,24 @@
     if (status) status.textContent = message;
   }
 
+  function recommendedMode() {
+    if (selectedEnergy === 1 || (state.lastResult && (state.lastResult.percent < 50 || state.lastResult.errorCount >= 3))) return 'gentle';
+    if (selectedEnergy === 3 && state.lastResult && state.lastResult.percent >= 85 && state.lastResult.errorCount === 0) return 'intense';
+    return selectedMode;
+  }
+
+  function recordQuiz(event) {
+    const detail = event?.detail || {};
+    const percent = Number(detail.percent);
+    if (!Number.isFinite(percent) || percent < 0 || percent > 100) return;
+    state.lastResult = { percent, errorCount: Array.isArray(detail.mistakes) ? Math.min(100, detail.mistakes.length) : 0 };
+    save();
+    const root = document.getElementById('principiaMomentumDialog');
+    if (root && !root.hidden) setStatus(percent < 50 || state.lastResult.errorCount >= 3 ? 'Mình sẽ đề xuất nhịp nhẹ hơn để xử lý đúng phần còn vướng.' : percent >= 85 && selectedEnergy === 3 ? 'Bạn có thể thử một thử thách khó hơn ở lượt tiếp theo.' : 'Đã cập nhật gợi ý theo kết quả học gần đây.');
+  }
+
   function startAI() {
+    const mode = recommendedMode();
     const profile = {
       gentle: 'Năng lượng thấp hoặc cần khởi động: giao một nhiệm vụ 5 phút, rõ ràng, dễ bắt đầu.',
       steady: 'Năng lượng vừa: chia thành chặng 15–25 phút, có đầu ra kiểm tra được.',
@@ -237,8 +252,8 @@
     };
     const extra = [
       'HƯỚNG DẪN NHỊP HỌC CÁ NHÂN:',
-      MODES[selectedMode].instruction,
-      profile[selectedMode],
+      MODES[mode].instruction,
+      profile[mode],
       'Mức năng lượng do người học tự chọn: ' + selectedEnergy + '/3.',
       'Mục tiêu hôm nay: ' + selectedTarget + ' phút.',
       'Không suy đoán nguyên nhân tâm trạng, không hỏi chuyện riêng tư, không cổ súy học đến kiệt sức. Nếu người học có dấu hiệu quá tải, đề xuất nghỉ ngắn hoặc giảm độ khó.',
@@ -246,7 +261,7 @@
     ].join('\n');
     close();
     if (window.PrincipiaLearningOrchestrator?.begin) {
-      window.PrincipiaLearningOrchestrator.begin({ goal: selectedMode === 'gentle' ? 'understand' : 'solve', phase: 'momentum', extra });
+      window.PrincipiaLearningOrchestrator.begin({ goal: mode === 'gentle' ? 'understand' : 'solve', phase: 'momentum', extra });
     } else if (window.principiaLocalAI?.open) {
       window.principiaLocalAI.open('Bạn là gia sư PRINCIPIA. ' + extra);
     } else if (window.notify) {
@@ -264,10 +279,12 @@
     }, { once: true });
   }
 
+  window.addEventListener('principia:quiz-completed', recordQuiz);
+
   window.PrincipiaMomentumMode = Object.freeze({
     open,
     close,
-    stats: () => ({ todayMinutes: todayMinutes(), target: selectedTarget, streak: streak(), sessions: state.sessions.length, mode: selectedMode })
+    stats: () => ({ todayMinutes: todayMinutes(), target: selectedTarget, streak: streak(), sessions: state.sessions.length, mode: selectedMode, recommendedMode: recommendedMode() })
   });
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once: true });
