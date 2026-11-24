@@ -17,7 +17,6 @@
  --pr-rd-mint:#83dfc4;
  --pr-rd-shadow:0 18px 48px rgba(0,0,0,.24);
  --pr-rd-ease:cubic-bezier(.22,1,.36,1);
- color-scheme:dark;
 }
 html,body{color:var(--pr-rd-text)}
 body{
@@ -178,16 +177,16 @@ body{
  box-shadow:0 16px 48px rgba(0,0,0,.32),inset 0 1px rgba(255,255,255,.08);
  -webkit-backdrop-filter:blur(20px) saturate(145%);backdrop-filter:blur(20px) saturate(145%);
 }
-#app :is(.principia-mobile-nav,.principia-mobile-topbar){
+#app :is(.principia-mobile-nav,.principia-mobile-topbar),body>.principia-mobile-nav{
  border-color:rgba(171,185,239,.18);
 }
-#app .principia-mobile-nav{
+#app .principia-mobile-nav,body>.principia-mobile-nav{
  background:rgba(11,18,36,.96);
  box-shadow:0 -12px 36px rgba(0,0,0,.32);
  -webkit-backdrop-filter:blur(24px) saturate(150%);
  backdrop-filter:blur(24px) saturate(150%);
 }
-#app .principia-mobile-nav .nav.active{
+#app .principia-mobile-nav .nav.active,body>.principia-mobile-nav .nav.active{
  color:#e8e1ff;background:rgba(137,119,239,.2);
  box-shadow:inset 0 0 0 1px rgba(177,161,255,.22),0 5px 18px rgba(0,0,0,.14);
 }
@@ -209,3 +208,67 @@ body{
  #app :is(.nav,.tab,button,input,textarea,select){transition:none!important}
  #app .tile:hover,#app button:hover{transform:none!important}
 }
+
+/* Day theme follows the user's existing theme switch; no forced dark palette. */
+html[data-pr-theme="light"] body{
+ color:#1c2742;
+ background:
+  radial-gradient(ellipse at 8% 0%,rgba(145,127,239,.12),transparent 36%),
+  radial-gradient(ellipse at 96% 12%,rgba(67,166,193,.09),transparent 32%),
+  linear-gradient(145deg,#f7f8ff 0%,#edf2fc 54%,#f7fbff 100%);
+}
+html[data-pr-theme="light"] #app,
+html[data-pr-theme="light"] #app .main,
+html[data-pr-theme="light"] #app .principia-mobile-main{color:#1c2742}
+html[data-pr-theme="light"] #app :is(h1,h2,h3,h4,h5){color:#182440}
+html[data-pr-theme="light"] #app :is(p,.muted,.small,.description,.subtitle){color:#5e6b86}
+html[data-pr-theme="light"] #app :is(.top,.principia-mobile-topbar .top){
+ border-color:rgba(79,99,148,.17);
+ background:linear-gradient(110deg,rgba(255,255,255,.88),rgba(237,243,255,.78));
+ box-shadow:0 10px 32px rgba(50,68,112,.09),inset 0 1px #fff;
+}
+html[data-pr-theme="light"] #app .hero{
+ background:
+  radial-gradient(ellipse at 82% 15%,rgba(120,211,231,.28),transparent 34%),
+  radial-gradient(ellipse at 10% 100%,rgba(169,151,255,.28),transparent 48%),
+  linear-gradient(118deg,#e8e6ff,#e5efff 68%,#e1f4f6);
+ border-color:rgba(115,104,190,.22);
+ box-shadow:0 20px 55px rgba(83,92,157,.13),inset 0 1px #fff;
+}
+html[data-pr-theme="light"] #app .hero :is(h1,h2,h3){color:#22234e}
+html[data-pr-theme="light"] #app .hero p{color:#4d5c7e}
+html[data-pr-theme="light"] #app :is(.panel,.card,.stat,.tile,.tl-card,.reward-card,.sticker-card,.pm-card,.feature-card,.learning-card,.dashboard-card,.module-card){
+ color:#1c2742;border-color:rgba(77,99,151,.16);
+ background:linear-gradient(145deg,rgba(255,255,255,.96),rgba(239,244,254,.94));
+ box-shadow:0 10px 30px rgba(42,58,98,.08),inset 0 1px #fff;
+}
+html[data-pr-theme="light"] #app :is(.panel,.card,.stat,.tile,.feature-card,.learning-card,.dashboard-card,.module-card):hover{
+ border-color:rgba(128,112,213,.38);
+ box-shadow:0 17px 38px rgba(42,58,98,.12),0 0 22px rgba(128,112,213,.07),inset 0 1px #fff;
+}
+html[data-pr-theme="light"] #app .stat strong,
+html[data-pr-theme="light"] #app .stat .value{
+ background:linear-gradient(100deg,#453d92,#6d62c5 56%,#2687a8);
+ -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+}
+html[data-pr-theme="light"] #app :is(.sectionhead h2,.panel h2,.panel h3){color:#1c2742}
+html[data-pr-theme="light"] #app :is(.nav,.tab,.pill,.badge,.chip,.tag){color:#53627f;border-color:rgba(76,97,145,.16)}
+html[data-pr-theme="light"] #app .nav:hover{color:#39316f;background:rgba(132,116,219,.1)}
+html[data-pr-theme="light"] #app .nav.active{color:#40377f;background:linear-gradient(105deg,rgba(143,126,229,.18),rgba(89,171,199,.1));border-color:rgba(128,112,213,.28);box-shadow:inset 3px 0 #8172d8,0 6px 18px rgba(75,67,140,.08)}
+html[data-pr-theme="light"] #app .tab.active{color:#39316f;background:linear-gradient(115deg,rgba(143,126,229,.16),rgba(89,171,199,.1));border-color:rgba(128,112,213,.3)}
+html[data-pr-theme="light"] #app :is(button.secondary,.secondary,.iconbtn,.toolbar button,.modalactions button){color:#33415f;background:linear-gradient(145deg,#fff,#edf2fc);border-color:rgba(76,97,145,.2)}
+html[data-pr-theme="light"] #app :is(input:not([type=checkbox]):not([type=radio]),textarea,select){color:#1c2742;background:rgba(255,255,255,.94);border-color:rgba(76,97,145,.22)}
+html[data-pr-theme="light"] #app :is(input,textarea,select)::placeholder{color:#8590a8}
+html[data-pr-theme="light"] #app :is(.choice,.option,.answer-option){color:#273550;background:rgba(255,255,255,.8);border-color:rgba(76,97,145,.18)}
+html[data-pr-theme="light"] #app :is(.modal,.modal-card,.modalbox,.dialog,.popover-content){color:#1c2742;background:linear-gradient(145deg,#fff,#eef3fc);border-color:rgba(76,97,145,.2);box-shadow:0 28px 80px rgba(32,46,83,.2)}
+html[data-pr-theme="light"] #app th{color:#273550;background:rgba(220,229,248,.75)}
+html[data-pr-theme="light"] #app td{color:#445471}
+html[data-pr-theme="light"] #app pre,
+html[data-pr-theme="light"] #app code,
+html[data-pr-theme="light"] .math-block,
+html[data-pr-theme="light"] .equation-block{color:#273550;background:rgba(230,237,250,.86);border-color:rgba(76,97,145,.18)}
+html[data-pr-theme="light"] #app :is(.toast,.xp-toast,.pr-experience-toast){color:#1c2742;background:rgba(255,255,255,.96);border-color:rgba(76,97,145,.2);box-shadow:0 14px 38px rgba(32,46,83,.14)}
+html[data-pr-theme="light"] #app .principia-mobile-nav,
+html[data-pr-theme="light"] body>.principia-mobile-nav{background:rgba(249,251,255,.96);border-color:rgba(76,97,145,.18);box-shadow:0 -10px 28px rgba(32,46,83,.12)}
+html[data-pr-theme="light"] #app .principia-mobile-nav .nav.active,
+html[data-pr-theme="light"] body>.principia-mobile-nav .nav.active{color:#433a83;background:rgba(135,119,218,.14)}
