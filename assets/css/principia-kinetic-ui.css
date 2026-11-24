@@ -1,0 +1,17 @@
+/* PRINCIPIA Kinetic UI — responsive desktop root, beam and magnetic primitives. */
+@media(min-width:901px){#app>.layout{display:grid!important;grid-template-columns:clamp(236px,19vw,286px) minmax(0,1fr)!important;min-height:100vh;background:transparent!important}#app>.layout>.sidebar{position:sticky!important;top:0!important;height:100vh!important;min-height:100vh!important}#app>.layout>.main{width:100%!important;max-width:1700px!important;margin:0!important;padding:clamp(22px,3vw,46px) clamp(20px,3.5vw,56px)!important}}
+#app .layout,#app .main,#app .sidebar{background-color:transparent}
+#app .sidebar{background:linear-gradient(180deg,rgba(10,17,37,.94),rgba(8,14,30,.84))!important;border-right:1px solid rgba(159,180,239,.18)!important;box-shadow:16px 0 54px rgba(0,0,0,.17),inset -1px 0 rgba(255,255,255,.035);-webkit-backdrop-filter:blur(25px) saturate(145%);backdrop-filter:blur(25px) saturate(145%)}
+#app .sidebar .nav{min-height:43px;border:1px solid transparent!important;transition:background .25s,border-color .25s,transform .25s,color .25s!important}
+#app .sidebar .nav:hover{transform:translateX(3px);background:linear-gradient(100deg,rgba(131,108,236,.18),rgba(68,145,192,.08))!important;border-color:rgba(168,163,255,.18)!important;color:#fff!important}
+#app .sidebar .nav.active{background:linear-gradient(105deg,rgba(130,106,239,.28),rgba(61,144,190,.12))!important;border-color:rgba(177,163,255,.25)!important;box-shadow:inset 3px 0 #ad9aff,0 8px 24px rgba(48,50,120,.16)!important;color:#fff!important}
+.pr-kinetic-beam{position:relative!important;isolation:isolate}.pr-kinetic-beam-light{position:absolute;inset:0;z-index:3;pointer-events:none;border-radius:inherit;padding:1px;opacity:0;background:conic-gradient(from var(--pr-kinetic-angle,0deg),transparent 0 69%,rgba(172,158,255,.85) 78%,rgba(103,211,232,.8) 84%,transparent 94% 100%);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;transition:opacity .28s ease}
+@property --pr-kinetic-angle{syntax:"<angle>";inherits:false;initial-value:0deg}@keyframes pr-kinetic-beam-rotate{to{--pr-kinetic-angle:360deg}}
+.pr-kinetic-beam:hover>.pr-kinetic-beam-light{opacity:1;animation:pr-kinetic-beam-rotate 5.5s linear infinite}
+#app .pr-magnetic-active,#principiaLabCodeStudio .pr-magnetic-active{translate:var(--pr-magnetic-x,0) var(--pr-magnetic-y,0);transition:translate .2s cubic-bezier(.2,.8,.2,1),filter .2s}
+#app .principia-bundled-pose{transform:perspective(500px) rotateX(var(--pr-mascot-y,0deg)) rotateY(var(--pr-mascot-x,0deg));transform-style:preserve-3d;transition:transform .18s ease-out}
+html[data-theme="light"] #app .sidebar{background:linear-gradient(180deg,rgba(247,249,255,.94),rgba(233,240,252,.86))!important;border-color:rgba(83,106,158,.18)!important}
+html[data-theme="light"] #app .sidebar .nav{color:#53627f!important}
+html[data-theme="light"] #app .sidebar .nav:hover,html[data-theme="light"] #app .sidebar .nav.active{color:#493e91!important}
+@media(max-width:900px){#app>.layout{display:none!important}#app .principia-mobile-shell,#app .principia-mobile-main{background:transparent!important}}
+@media(prefers-reduced-motion:reduce){.pr-kinetic-beam-light{display:none!important}#app .pr-magnetic-active,#principiaLabCodeStudio .pr-magnetic-active{translate:none!important}#app .principia-bundled-pose{transform:none!important}}
