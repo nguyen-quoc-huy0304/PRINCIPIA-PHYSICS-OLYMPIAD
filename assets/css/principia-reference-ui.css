@@ -81,3 +81,10 @@
  #app .pr-motion-item{opacity:0;transform:translate3d(0,14px,0);transition:opacity .55s var(--pr-ref-motion),transform .55s var(--pr-ref-motion)}
  #app .pr-motion-item.pr-in-view{opacity:1;transform:translate3d(0,0,0)}
 }
+
+/* Keyboard focus treatment for buttons enhanced by this layer. */
+#app button[data-pr-ui-button]:focus-visible{
+ outline:2px solid var(--pr-ref-accent);
+ outline-offset:3px;
+ box-shadow:0 0 0 5px color-mix(in srgb,var(--pr-ref-accent) 20%,transparent);
+}
