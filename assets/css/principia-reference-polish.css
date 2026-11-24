@@ -1,0 +1,100 @@
+/* PRINCIPIA reference-inspired motion polish. No runtime dependency; respects reduced motion. */
+:root{
+ --pr-motion-fast:180ms;
+ --pr-motion-base:260ms;
+ --pr-ease:cubic-bezier(.2,.75,.25,1);
+ --pr-glow:rgba(139,124,255,.18);
+}
+.panel,.card,.stat,.tile,.quiz-card,.lesson-content-panel,.ppm-card{
+ transition:transform var(--pr-motion-base) var(--pr-ease),border-color var(--pr-motion-base) ease,box-shadow var(--pr-motion-base) ease,background-color var(--pr-motion-base) ease;
+}
+.panel,.card,.lesson-content-panel{
+ border-color:color-mix(in srgb,var(--line,#39435b) 82%,transparent);
+}
+.panel:hover,.card:hover,.lesson-content-panel:hover{
+ border-color:color-mix(in srgb,var(--line,#65729a) 65%,#9c8bff);
+ box-shadow:0 14px 34px rgba(4,8,24,.18),0 0 0 1px rgba(157,139,255,.06);
+}
+.tile{
+ transform:translateZ(0);
+ transition:transform var(--pr-motion-base) var(--pr-ease),box-shadow var(--pr-motion-base) ease,border-color var(--pr-motion-base) ease;
+}
+.tile:hover{
+ transform:translateY(-4px);
+ box-shadow:0 16px 34px rgba(3,8,24,.24),0 0 24px var(--pr-glow);
+}
+.nav{
+ position:relative;
+ overflow:hidden;
+ transition:background-color var(--pr-motion-fast) ease,color var(--pr-motion-fast) ease,transform var(--pr-motion-fast) var(--pr-ease);
+}
+.nav:active{transform:scale(.985)}
+.nav:before{
+ content:"";
+ position:absolute;
+ left:0;top:20%;bottom:20%;
+ width:3px;border-radius:0 4px 4px 0;
+ background:linear-gradient(180deg,#b7a6ff,#5fd1df);
+ transform:scaleY(0);
+ transform-origin:center;
+ transition:transform var(--pr-motion-base) var(--pr-ease);
+}
+.nav.active:before{transform:scaleY(1)}
+button.primary,.ppm-primary{
+ position:relative;
+ isolation:isolate;
+ overflow:hidden;
+ transition:transform var(--pr-motion-fast) var(--pr-ease),box-shadow var(--pr-motion-base) ease,filter var(--pr-motion-fast) ease;
+ box-shadow:0 7px 20px rgba(91,75,190,.22);
+}
+button.primary:after,.ppm-primary:after{
+ content:"";
+ position:absolute;
+ z-index:-1;
+ top:-60%;bottom:-60%;left:-38%;
+ width:24%;
+ background:linear-gradient(90deg,transparent,rgba(255,255,255,.28),transparent);
+ transform:translateX(-180%) rotate(18deg);
+ transition:transform .72s var(--pr-ease);
+ pointer-events:none;
+}
+button.primary:hover,.ppm-primary:hover{
+ transform:translateY(-2px);
+ box-shadow:0 11px 28px rgba(91,75,190,.3);
+ filter:saturate(1.08);
+}
+button.primary:hover:after,.ppm-primary:hover:after{transform:translateX(650%) rotate(18deg)}
+button.secondary,.pill,.principia-music-pill{
+ transition:transform var(--pr-motion-fast) var(--pr-ease),border-color var(--pr-motion-fast) ease,background-color var(--pr-motion-fast) ease;
+}
+button.secondary:hover,.pill:hover,.principia-music-pill:hover{
+ transform:translateY(-1px);
+ border-color:rgba(169,149,255,.6);
+}
+.stat strong,.stat .value{font-variant-numeric:tabular-nums}
+#body>.sectionhead,#body>.panel,#body>.grid,#body>.toolbar{
+ animation:principia-rise-in .42s var(--pr-ease) both;
+}
+#body>.panel:nth-child(2){animation-delay:35ms}
+#body>.panel:nth-child(3){animation-delay:70ms}
+#body>.panel:nth-child(4){animation-delay:105ms}
+@keyframes principia-rise-in{
+ from{opacity:0;transform:translateY(8px)}
+ to{opacity:1;transform:translateY(0)}
+}
+@media(hover:none){
+ .tile:hover,.panel:hover,.card:hover,.lesson-content-panel:hover{transform:none}
+}
+@media(max-width:600px){
+ .tile:hover{transform:none}
+ button.primary:hover,.ppm-primary:hover,.nav:hover{transform:none}
+}
+@media(prefers-reduced-motion:reduce){
+ *,*::before,*::after{
+  animation-duration:.01ms!important;
+  animation-iteration-count:1!important;
+  scroll-behavior:auto!important;
+  transition-duration:.01ms!important;
+ }
+ #body>.sectionhead,#body>.panel,#body>.grid,#body>.toolbar{animation:none}
+}
