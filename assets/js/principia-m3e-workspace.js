@@ -30,6 +30,7 @@
  function openWorkspace(){
   const overlay=ensureWorkspace(),frame=overlay.querySelector('iframe');
   if(!frame.src)frame.src=PROJECT_URL;
+  if(!overlay.hidden)return;
   previousOverflow=document.body.style.overflow;
   document.body.style.overflow='hidden';
   overlay.hidden=false;
@@ -56,7 +57,7 @@
   if(firstControl)firstControl.insertAdjacentElement('beforebegin',button);else panel.prepend(button);
  }
  function attachMoreEntry(){
-  if(typeof window.getPrincipiaPage==='function'&&window.getPrincipiaPage()!=='more')return;
+  if(typeof window.getPrincipiaPage!=='function'||window.getPrincipiaPage()!=='more')return;
   const body=document.getElementById('body');
   if(!body||body.querySelector('[data-principia-m3e-entry]'))return;
   const panel=document.createElement('section');
