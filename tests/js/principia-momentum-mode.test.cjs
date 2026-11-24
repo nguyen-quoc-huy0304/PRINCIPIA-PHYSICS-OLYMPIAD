@@ -15,6 +15,9 @@ test('momentum mode is opt-in, private by default, and integrated with adaptive 
   assert.match(source, /Không cần kể lý do/);
   assert.match(source, /Không tự động gửi cảm xúc hoặc thông tin riêng tư/);
   assert.match(source, /PrincipiaLearningOrchestrator\.begin/);
+  assert.match(source, /principia:quiz-completed/);
+  assert.match(source, /function recommendedMode/);
+  assert.match(source, /function recordQuiz/);
   assert.match(source, /principia:momentum-session-completed/);
   assert.match(source, /MAX_SESSIONS = 200/);
   assert.match(source, /data-daily-progress/);
@@ -40,6 +43,7 @@ test('momentum timer uses absolute end time and cleans up its interval', () => {
   assert.match(source, /window\.clearInterval\(timer\)/);
   assert.match(source, /function completeSession/);
   assert.match(source, /function resetTimer/);
+  assert.match(source, /completedToday % 3 === 0/);
 });
 
 test('momentum mode exposes aggregate progress without exposing private emotional context', () => {
