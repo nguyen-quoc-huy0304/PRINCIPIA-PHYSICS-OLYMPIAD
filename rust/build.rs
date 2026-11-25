@@ -2,6 +2,8 @@ fn main() {
     println!("cargo:rerun-if-changed=../src/physics/engine.cpp");
     println!("cargo:rerun-if-changed=../src/physics/engine.h");
     println!("cargo:rerun-if-changed=../src/physics/engine_test.cpp");
+    println!("cargo:rerun-if-changed=../src/physics/vector3.cpp");
+    println!("cargo:rerun-if-changed=../src/physics/vector3.h");
 
     // The web build uses the pure-Rust physics/game modules; do not invoke
     // the native C++ compiler for wasm32-unknown-unknown.
@@ -13,6 +15,7 @@ fn main() {
     cc::Build::new()
         .cpp(true)
         .file("../src/physics/engine.cpp")
+        .file("../src/physics/vector3.cpp")
         .include("../src/physics")
         .opt_level(3)
         .define("NDEBUG", None)
