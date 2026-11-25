@@ -207,6 +207,20 @@ fn random_event(state: &mut Value, day: &str, event_id: &str) -> Result<bool, &'
     Ok(true)
 }
 
+fn buy_card(state: &mut Value, id: &str) -> Result<bool, &'static str> {
+    if !matches!(id, "newton" | "faraday" | "curie" | "einstein" | "galileo" | "tesla") {
+        return Err("unknown science card");
+    }
+    if contains(ensure_array(state, "collection"), &json!(id)) || number(state.get("coins")) < 100 {
+        return Ok(false);
+    }
+    let coins = number(state.get("coins"));
+    state["coins"] = json!(coins - 100);
+    ensure_array(state, "collection").push(json!(id));
+    award(state, 10, 0);
+    Ok(true)
+}
+
 fn contribute_guild(state: &mut Value) -> bool {
     let xp = number(state.get("xp"));
     if xp < 50 { return false; }
@@ -264,6 +278,7 @@ pub fn apply_action(state_json: &str, action_json: &str) -> Result<String, &'sta
             action.get("day").and_then(Value::as_str).ok_or("event day is required")?,
             action.get("eventId").and_then(Value::as_str).ok_or("event id is required")?,
         )?}),
+        "buyCard" => json!({"ok":buy_card(&mut state, action.get("id").and_then(Value::as_str).ok_or("card id is required")?)?}),
         "guildContribute" => json!({"ok":contribute_guild(&mut state)}),
         "learningActivity" => {
             learning_activity(&mut state, action.get("kind").and_then(Value::as_str).ok_or("activity kind is required")?,
@@ -337,6 +352,19 @@ mod tests {
         assert_eq!(first["result"]["ok"], true);
         assert_eq!(second["result"]["ok"], false);
         assert_eq!(second["state"]["xp"], 30);
+    }
+
+    #[test]
+    fn card_purchase_is_idempotent_and_spends_currency_once() {
+        let mut original = state();
+        original["coins"] = json!(100);
+        let first = apply(&original, json!({"type":"buyCard","id":"newton"}));
+        assert_eq!(first["result"]["ok"], true);
+        assert_eq!(first["state"]["coins"], 0);
+        assert_eq!(first["state"]["collection"][0], "newton");
+        let second = apply(&first["state"], json!({"type":"buyCard","id":"newton"}));
+        assert_eq!(second["result"]["ok"], false);
+        assert_eq!(second["state"]["xp"], 10);
     }
 
     #[test]
