@@ -23,7 +23,32 @@ window.principiaForcePuzzleExport=function(){try{const data={app:'PRINCIPIA Forc
 window.principiaForcePuzzleClearHistory=function(){if(!confirm('Xóa lịch sử 20 lượt giải đã lưu? Điểm và kỷ lục vẫn được giữ.'))return;state.history=[];save();if(typeof window.render==='function')window.render();};
 window.principiaForcePuzzleDifficulty=function(v){if(!['easy','normal','hard'].includes(v))return;const old={score:state.score,best:state.best,attempts:state.attempts,history:state.history};state=fresh(v);Object.assign(state,old);state.difficulty=v;save();if(typeof window.render==='function')window.render();};
 window.principiaForcePuzzleUpdate=function(axis,value){if(axis!=='x'&&axis!=='y')return;state[axis]=clamp(Number(value)||0,-20,20);update();};
-window.principiaForcePuzzleCheck=function(){const result=scoreFor(state.x,state.y,state.target);state.attempts++;state.score+=result.points;state.best=Math.max(state.best,result.points);state.history=Array.isArray(state.history)?state.history:[];state.history.push({date:new Date().toLocaleString(),x:state.x,y:state.y,error:result.error,points:result.points});state.history=state.history.slice(-20);const exact=result.error<0.75;state.last=(exact?'🎯 Cân bằng tốt!':result.error<2?'✨ Gần đạt cân bằng!':'💡 Hệ vẫn còn hợp lực.')+' Sai số '+result.error.toFixed(2)+' N · +'+result.points+' điểm. Lực cân bằng lý thuyết: ('+state.target.x+', '+state.target.y+') N.';save();const el=document.getElementById('pfpResult');if(el)el.textContent=state.last;const stats=document.querySelectorAll('.pfp-stats b');if(stats.length===3){stats[0].textContent=state.score;stats[1].textContent=state.best;stats[2].textContent=state.attempts;}};
+let scoring=false;
+window.principiaForcePuzzleCheck=async function(){
+ if(scoring)return;
+ scoring=true;
+ const button=document.querySelector('.pfp-actions .primary');
+ if(button){button.disabled=true;button.textContent='ĐANG TÍNH…';}
+ try{
+  const physics=window.PrincipiaPhysics;
+  if(!physics||typeof physics.compute!=='function')throw new Error('Rust/WASM physics engine chưa sẵn sàng.');
+  const result=await physics.compute('forceBalance',{x:state.x,y:state.y,targetX:state.target.x,targetY:state.target.y});
+  if(!result||![result.error,result.points].every(Number.isFinite)||typeof result.balanced!=='boolean'||result.points<0||result.points>100)throw new Error('Rust trả về kết quả cân bằng lực không hợp lệ.');
+  state.attempts++;state.score+=result.points;state.best=Math.max(state.best,result.points);
+  state.history=Array.isArray(state.history)?state.history:[];
+  state.history.push({date:new Date().toLocaleString(),x:state.x,y:state.y,error:result.error,points:result.points,backend:'Rust/WASM'});
+  state.history=state.history.slice(-20);
+  state.last=(result.balanced?'🎯 Cân bằng tốt!':result.error<2?'✨ Gần đạt cân bằng!':'💡 Hệ vẫn còn hợp lực.')+' Sai số '+result.error.toFixed(2)+' N · +'+result.points+' điểm. Lực cân bằng lý thuyết: ('+state.target.x+', '+state.target.y+') N. · Rust/WASM';
+  save();
+  const el=document.getElementById('pfpResult');if(el)el.textContent=state.last;
+  const stats=document.querySelectorAll('.pfp-stats b');if(stats.length===3){stats[0].textContent=state.score;stats[1].textContent=state.best;stats[2].textContent=state.attempts;}
+ }catch(error){
+  const el=document.getElementById('pfpResult');if(el)el.textContent='Không thể chấm điểm bằng Rust/WASM: '+String(error.message||error);
+ }finally{
+  scoring=false;
+  if(button){button.disabled=false;button.textContent='Kiểm tra lực ↗';}
+ }
+};
 window.principiaForcePuzzleNew=function(){const old={score:state.score,best:state.best,attempts:state.attempts};state=fresh();Object.assign(state,old);save();if(typeof window.render==='function')window.render();};
 function install(){style();if(typeof window.labPage!=='function'||window.__principiaForcePuzzleInstalled)return;const previous=window.labPage;window.labPage=function(){return previous.apply(this,arguments)+panel();};window.__principiaForcePuzzleInstalled=true;}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
