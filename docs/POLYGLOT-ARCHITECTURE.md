@@ -10,11 +10,8 @@ This policy applies to future development. It does not require rewriting the exi
 | C++17/20 | Performance-sensitive native kernels, simulation, reusable WASM code | Use only where profiling justifies it |
 | Rust | Default for new core logic, safe concurrency, validation, native services | Keep existing modules; do not rewrite working code |
 | Go | Small network services, concurrency-heavy tools, integration/contract tests | Prefer when simpler deployment and fast iteration matter |
-| C#/.NET | Desktop/system integration, independent numerical test oracles, tooling | Do not add to end-user runtime unless needed |
 | Zig | Small native utilities, predictable low-level modules, C interop, WASM/native experiments | Evaluate with a prototype and benchmarks before adopting broadly |
 | Fortran | Numerical/scientific kernels where mature numerical libraries or array computation provide a clear advantage | Isolate behind C ABI; use only for measured scientific workloads |
-| Java | Existing integrations that already require it | Avoid introducing new Java runtime dependencies without a clear need |
-| Python | Offline research, data preparation, one-off tooling and reference experiments | Keep out of latency-sensitive app runtime; do not rewrite existing tools without evidence |
 | CSS | Existing web presentation layer | Keep for layout and visual styling; CSS is not a general-purpose runtime language and replacing it does not inherently improve performance |
 
 ## Architecture rules
@@ -28,7 +25,7 @@ This policy applies to future development. It does not require rewriting the exi
 7. Do not claim a language is faster without measuring the same workload on the target platform.
 8. Avoid adding Java/Python to the end-user runtime for performance-critical paths. Existing Java/Python code is not automatically deleted; replace only when profiling shows a real bottleneck and a safe migration path exists.
 9. CSS remains the normal browser styling technology. Optimize critical CSS, layout and rendering rather than replacing CSS with a systems language.
-10. Keep Go and C# test tools in CI only unless a product feature genuinely requires them.
+10. Keep build and test automation in Go, Rust, C/C++ or the platform's existing JavaScript tooling; avoid introducing Python, Java or .NET runtimes into the application pipeline.
 11. Tests run against the same source repository and production application code. Do not create extra websites, preview sites or parallel V1/V2 deployments.
 12. Scientific modules must document units, assumptions, numerical tolerances, edge cases and independent reference tests. No promise of absolute accuracy.
 
