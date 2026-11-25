@@ -179,6 +179,24 @@
     return choose(Object.assign({}, state.profile, context));
   }
 
+  async function getNextWithRust(context = {}) {
+    const legacy = getNext(context);
+    try {
+      const plan = await window.PrincipiaWasmPhysics.recommend({
+        goal: context.goal || 'auto',
+        percent: Number.isFinite(Number(context.percent)) ? Number(context.percent) : null,
+        errorCount: Number(context.errorCount) || 0,
+        phase: clean(context.phase, 100),
+        energy: [1, 2, 3].includes(Number(context.energy)) ? Number(context.energy) : 2,
+        confidence: Number.isFinite(Number(context.confidence)) ? Math.max(1, Math.min(5, Number(context.confidence))) : 3,
+        topic: legacy.topic
+      });
+      return { ...legacy, goal: plan.goal, steps: plan.steps, estimatedMinutes: plan.focusMinutes, nextAction: plan.nextAction, engine: 'rust-wasm' };
+    } catch (_) {
+      return { ...legacy, engine: 'javascript-fallback' };
+    }
+  }
+
   function begin(context = {}) {
     const plan = getNext(context);
     state.sessions += 1;
@@ -252,7 +270,7 @@
   }
 
   window.PrincipiaLearningOrchestrator = Object.freeze({
-    recommend: getNext, begin, directive, startFocus,
+    recommend: getNext, recommendWithRust: getNextWithRust, begin, directive, startFocus,
     getProfile: () => JSON.parse(JSON.stringify(state.profile)),
     stats: () => ({ sessions: state.sessions, recentChoices: state.recent.length })
   });
