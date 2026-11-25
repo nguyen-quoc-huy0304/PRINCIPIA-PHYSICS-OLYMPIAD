@@ -186,6 +186,12 @@ pub fn level_validate_json(input_json: &str) -> Result<String, JsValue> {
     serde_json::to_string(&normalized).map_err(|error| JsValue::from_str(&error.to_string()))
 }
 
+#[wasm_bindgen]
+pub fn season_missions_json(metrics_json: &str, date: &str) -> Result<String, JsValue> {
+    crate::season::missions_json(metrics_json, date)
+        .map_err(|error| JsValue::from_str(error))
+}
+
 fn input_error(message: &str) -> JsValue { JsValue::from_str(message) }
 
 #[wasm_bindgen]
