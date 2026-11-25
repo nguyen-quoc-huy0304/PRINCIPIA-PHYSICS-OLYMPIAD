@@ -47,6 +47,7 @@ func (a api) routes() http.Handler {
 		writeJSON(w, http.StatusOK, map[string]string{"status": "ok", "service": "principia-go-api"})
 	})
 	mux.HandleFunc("POST /v1/compute", a.compute)
+	mux.HandleFunc("POST /v1/game/trajectory", gameTrajectoryHandler)
 	mux.HandleFunc("POST /v1/ai/generate", a.generateAI)
 	return a.cors(mux)
 }
