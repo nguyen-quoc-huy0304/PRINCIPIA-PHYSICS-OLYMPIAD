@@ -166,6 +166,26 @@ pub fn research_summary_json(points_json: &str) -> Result<String, JsValue> {
     })).map_err(|error| JsValue::from_str(&error.to_string()))
 }
 
+#[wasm_bindgen]
+pub fn level_validate_question_json(input_json: &str) -> Result<String, JsValue> {
+    if input_json.len() > 16 * 1024 { return Err(JsValue::from_str("Question exceeds 16 KiB")); }
+    let value: serde_json::Value = serde_json::from_str(input_json)
+        .map_err(|_| JsValue::from_str("Question must be valid JSON"))?;
+    let normalized = crate::level_studio::validate_question(&value)
+        .map_err(|error| JsValue::from_str(error))?;
+    serde_json::to_string(&normalized).map_err(|error| JsValue::from_str(&error.to_string()))
+}
+
+#[wasm_bindgen]
+pub fn level_validate_json(input_json: &str) -> Result<String, JsValue> {
+    if input_json.len() > 128 * 1024 { return Err(JsValue::from_str("Level exceeds 128 KiB")); }
+    let value: serde_json::Value = serde_json::from_str(input_json)
+        .map_err(|_| JsValue::from_str("Level must be valid JSON"))?;
+    let normalized = crate::level_studio::validate_level(&value)
+        .map_err(|error| JsValue::from_str(error))?;
+    serde_json::to_string(&normalized).map_err(|error| JsValue::from_str(&error.to_string()))
+}
+
 fn input_error(message: &str) -> JsValue { JsValue::from_str(message) }
 
 #[wasm_bindgen]
