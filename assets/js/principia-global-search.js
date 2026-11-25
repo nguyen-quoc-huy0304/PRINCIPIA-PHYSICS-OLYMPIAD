@@ -2,13 +2,20 @@
 (()=> {
  'use strict';
  const escHTML=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const safeText=value=>value==null?'':(typeof value==='string'||typeof value==='number'||typeof value==='boolean'?String(value):'');
+ const normalizeQuestions=questions=>Array.isArray(questions)?questions.filter(q=>typeof q==='string'||(q&&typeof q==='object'&&!Array.isArray(q))).map(q=>{
+  const source=typeof q==='string'?{q}:q;
+  const answers=Array.isArray(source.a)?source.a.filter(a=>a!=null&&(typeof a==='string'||typeof a==='number'||typeof a==='boolean')).map(String):[];
+  return {q:safeText(source.q),a:answers,explanation:safeText(source.explanation)};
+ }):[];
  const flatten=(nodes,out=[],kind='lesson',trail=[])=>{
   if(!Array.isArray(nodes))return out;
   for(const n of nodes){
    if(!n||typeof n!=='object')continue;
    const path=[...trail,n.name||''].filter(Boolean);
    const nodeKind=n.type==='quiz'?'quiz':n.type==='fun'?'fun':n.type==='lesson'?'lesson':kind;
-   if(n.name||n.content||n.questions?.length)out.push({id:n.id,name:n.name||'Không tên',content:n.content||'',path:path.join(' › '),kind:nodeKind,questions:n.questions||[]});
+   const questions=normalizeQuestions(n.questions);
+   if(n.name||n.content||questions.length)out.push({id:n.id,name:n.name||'Không tên',content:n.content||'',path:path.join(' › '),kind:nodeKind,questions});
    if(Array.isArray(n.children))flatten(n.children,out,nodeKind,path);
   }
   return out;
@@ -20,7 +27,7 @@
   try{if(typeof funData!=='undefined')flatten(funData,all,'fun')}catch(_){}
   const seen=new Set();return all.filter(x=>x.id&&!seen.has(x.kind+':'+x.id)&&seen.add(x.kind+':'+x.id));
  }
- window.PrincipiaGlobalSearchCore=Object.freeze({escapeHTML:escHTML,flatten});
+ window.PrincipiaGlobalSearchCore=Object.freeze({escapeHTML:escHTML,flatten,normalizeQuestions});
  let overlay=null,items=[],active=0,selectedKind='all',lastQuery='';
  const readRecent=()=>{try{const v=JSON.parse(localStorage.getItem('principia_global_search_recent_v1')||'[]');return Array.isArray(v)?v.filter(x=>typeof x==='string').slice(0,6):[]}catch(_){return[]}};
  const saveRecent=q=>{const v=String(q||'').trim();if(v.length<2)return;try{localStorage.setItem('principia_global_search_recent_v1',JSON.stringify([v,...readRecent().filter(x=>x.toLocaleLowerCase('vi')!==v.toLocaleLowerCase('vi'))].slice(0,6)))}catch(_){}};
