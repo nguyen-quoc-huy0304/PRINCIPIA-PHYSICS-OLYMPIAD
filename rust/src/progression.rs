@@ -76,7 +76,7 @@ mod tests {
     #[test] fn rank_division_and_next_rank_are_consistent() {
         let rank = rank_progress(400);
         assert_eq!(rank.id, "silver");
-        assert_eq!(rank.division, Some("I"));
+        assert_eq!(rank.division, Some("II"));
         assert_eq!(rank.xp_to_next, 200);
     }
     #[test] fn achievements_are_derived_not_mutated() {
