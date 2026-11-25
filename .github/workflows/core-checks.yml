@@ -18,7 +18,7 @@ jobs:
       - name: Check Rust WebAssembly boundary
         run: |
           rustup target add wasm32-unknown-unknown
-          cargo check --manifest-path rust/Cargo.toml --target wasm32-unknown-unknown
+          cargo check --manifest-path rust/Cargo.toml --target wasm32-unknown-unknown --lib
       - name: Benchmark native C++ FFI against Rust baseline
         run: cargo bench --manifest-path rust/Cargo.toml --bench physics
   polyglot-contracts:
