@@ -35,6 +35,8 @@ jobs:
         env:
           PRINCIPIA_CORE_BIN: ${{ github.workspace }}/rust/target/release/principia-core-server
         run: cd tests/go && go test -v ./...
+      - name: Test Go HTTP API gateway
+        run: cd services/go-api && go test -race ./...
       - name: Cross-check scientific outputs with C# oracle
         env:
           PRINCIPIA_CORE_BIN: ${{ github.workspace }}/rust/target/release/principia-core-server
