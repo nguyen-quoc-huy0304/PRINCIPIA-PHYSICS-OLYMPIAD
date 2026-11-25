@@ -331,7 +331,7 @@ function lessonPlayPage(){
  if(!questions.length)return `<div class="panel"><h2>${esc(l.name)}</h2><p class="muted">Bài học chưa có câu hỏi.</p><button class="secondary" onclick="setPage('lesson')">Quay lại</button></div>`;
  if(i>=questions.length){
   let score=answerResults.filter(Boolean).length;
-  return `<div class="panel"><div class="eyebrow">LESSON QUIZ COMPLETED</div><div class="tileicon">🏆</div><h1>${score}/${questions.length}</h1><p class="muted">Bạn trả lời đúng ${score} câu.</p><button class="primary" onclick="answers=[];render()">Làm lại</button> <button class="secondary" onclick="setPage('lesson')">Quay lại bài học</button></div>`;
+  return `<div class="panel"><div class="eyebrow">LESSON QUIZ COMPLETED</div><div class="tileicon">🏆</div><h1>${score}/${questions.length}</h1><p class="muted">Bạn trả lời đúng ${score} câu.</p><button class="primary" onclick="answers=[];answerResults=[];render()">Làm lại</button> <button class="secondary" onclick="setPage('lesson')">Quay lại bài học</button></div>`;
  }
  let q=questions[i];
  return `<div class="breadcrumb"><button onclick="setPage('lesson')">← Quay lại bài học</button></div><div class="panel"><div class="muted small">CÂU ${i+1}/${questions.length}</div><div class="progress"><div style="width:${i/questions.length*100}%"></div></div><h2 style="margin-top:25px">${esc(q.q)}</h2>${principiaQuestionMedia(q)}${(q.a||[]).map((a,j)=>`<label class="choice"><input type="radio" name="ans" value="${j}">${esc(a)}</label>`).join('')}<button class="primary" onclick="answerQuestion()">Xác nhận →</button></div>`;
