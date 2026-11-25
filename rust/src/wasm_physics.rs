@@ -146,6 +146,26 @@ pub fn physics_pendulum_json(length_m: f64, gravity_mps2: f64, amplitude_degrees
     })).map_err(|error| JsValue::from_str(&error.to_string()))
 }
 
+#[wasm_bindgen]
+pub fn research_summary_json(points_json: &str) -> Result<String, JsValue> {
+    if points_json.len() > 512 * 1024 { return Err(JsValue::from_str("Research points exceed 512 KiB")); }
+    let values: Vec<[f64; 2]> = serde_json::from_str(points_json)
+        .map_err(|_| JsValue::from_str("Research points must be an array of [x, y] pairs"))?;
+    if values.len() < 2 || values.len() > 10_000 {
+        return Err(JsValue::from_str("Research summary requires 2 to 10000 points"));
+    }
+    let points: Vec<(f64, f64)> = values.iter().map(|point| (point[0], point[1])).collect();
+    let result = crate::research::summarize(&points).map_err(|error| JsValue::from_str(error))?;
+    serde_json::to_string(&serde_json::json!({
+        "count": result.count,
+        "mean": result.mean,
+        "standardDeviation": result.standard_deviation,
+        "standardError": result.standard_error,
+        "slope": result.slope,
+        "intercept": result.intercept
+    })).map_err(|error| JsValue::from_str(&error.to_string()))
+}
+
 fn input_error(message: &str) -> JsValue { JsValue::from_str(message) }
 
 #[wasm_bindgen]
