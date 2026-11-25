@@ -2,7 +2,7 @@
   'use strict';
 
   let collisionCore = null;
-  if (window.PrincipiaWasmPhysics && typeof window.PrincipiaWasmPhysics.load === 'function') {
+  if (typeof window !== 'undefined' && window.PrincipiaWasmPhysics && typeof window.PrincipiaWasmPhysics.load === 'function') {
     window.PrincipiaWasmPhysics.load().then((module) => { collisionCore = module; }).catch(() => {});
   }
 
