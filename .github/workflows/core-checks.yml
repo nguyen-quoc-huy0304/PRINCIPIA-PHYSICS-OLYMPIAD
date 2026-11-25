@@ -66,3 +66,5 @@ jobs:
           g++ -std=c++17 -O2 -Wall -Wextra -Werror src/physics/engine.cpp /tmp/principia-c-test.o -o /tmp/principia-c-abi-test
           /tmp/principia-physics-test
           /tmp/principia-c-abi-test
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror src/physics/vector3.cpp src/physics/vector3_test.cpp -o /tmp/principia-vector3-test
+          /tmp/principia-vector3-test
