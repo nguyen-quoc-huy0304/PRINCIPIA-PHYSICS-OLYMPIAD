@@ -61,7 +61,7 @@ pub fn claim_mission(state_json: &str, mission_id: &str, today: &str) -> Result<
     };
     let key = format!("{period}:{mission_id}");
     let claims = state.get("claims").and_then(Value::as_array).cloned().unwrap_or_default();
-    let already_claimed = claims.iter().any(|item| item.as_str() == Some(&key));
+    let already_claimed = claims.iter().any(|item| item.as_str() == Some(key.as_str()));
     let ok = value >= target && !already_claimed;
     if ok {
         if !state.get("claims").is_some_and(Value::is_array) { state["claims"] = json!([]); }
