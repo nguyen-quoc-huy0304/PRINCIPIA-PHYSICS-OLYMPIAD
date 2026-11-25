@@ -1368,7 +1368,7 @@ function openSelectedAI(){const a=getSelectedAI();if(!a){notify('Hãy thêm mộ
 function sendChat(){const inp=document.getElementById('chatInput'),txt=inp?.value.trim()||'';if(!txt&&!chatImgData)return;const a=getSelectedAI();if(!a){notify('Hãy thêm và chọn một AI');return}const history=principiaChatHistory();history.push({role:'user',text:txt||'Đã gửi ảnh đính kèm',image:chatImgData?'Ảnh đính kèm (lưu trong lịch sử thiết bị)':'' ,at:Date.now()});savePrincipiaChatHistory(history);renderPrincipiaChatHistory();if(txt){try{const ta=document.createElement('textarea');ta.value=txt;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove()}catch(e){}}if(chatImgData)notify('Ảnh được lưu trong lịch sử PRINCIPIA; để gửi ảnh cho AI hãy mở tab riêng và đính kèm thủ công.');if(txt)notify('Đã lưu tin nhắn. AI '+a.name+' chưa được kết nối API trong phiên bản này.');if(inp)inp.value='';chatImgData=null;const n=document.getElementById('chatImgName');if(n)n.textContent='';const f=document.querySelector('#chatBox input[type=file]');if(f)f.value='';renderPrincipiaChatHistory()}
 
 
-let inlineLessonQuizState = { items: [], picked: {} };
+let inlineLessonQuizState = { items: [], picked: {}, pending: {} };
 
 function extractCurrentLessonTheoryText(){
   const areaVal = document.getElementById('clNoteArea')?.value?.trim() || '';
@@ -1444,15 +1444,26 @@ function generateQuizFromLessonTheory(){
   renderInlineLessonAiQuiz();
 }
 
-function pickInlineLessonQuizAns(qIdx, optIdx){
-  if(inlineLessonQuizState.picked[qIdx] !== undefined) return;
-  inlineLessonQuizState.picked[qIdx] = optIdx;
-  const item = inlineLessonQuizState.items[qIdx];
-  if(item && optIdx === item.correct){
-    xp += 15;dailyReward();
-    saveAll();
+async function pickInlineLessonQuizAns(qIdx, optIdx){
+  const item=inlineLessonQuizState.items[qIdx];
+  if(!item||inlineLessonQuizState.picked[qIdx]!==undefined||inlineLessonQuizState.pending[qIdx])return;
+  inlineLessonQuizState.pending[qIdx]=true;
+  let result;
+  try{
+    const adapter=window.PrincipiaAssessmentAdapter;
+    if(!adapter||typeof adapter.gradeQuestion!=='function')throw new Error('Assessment adapter unavailable');
+    result=await adapter.gradeQuestion(item,optIdx,{id:'inline-lesson-'+qIdx,title:'PRINCIPIA theory quiz'});
+  }catch(error){
+    result={correct:Number(optIdx)===Number(item.correct),backend:'javascript-fallback'};
+  }
+  delete inlineLessonQuizState.pending[qIdx];
+  if(inlineLessonQuizState.picked[qIdx]!==undefined)return;
+  inlineLessonQuizState.picked[qIdx]=Number(optIdx);
+  window.PRINCIPIA_LAST_ASSESSMENT_BACKEND=result.backend;
+  if(result.correct){
+    xp+=15;dailyReward();saveAll();
     showXpToast('+15 XP · Trả lời đúng Quiz lý thuyết');
-  } else {
+  }else{
     showXpToast('Chưa đúng rồi, xem lại ý lý thuyết nhé!');
   }
   renderInlineLessonAiQuiz();
