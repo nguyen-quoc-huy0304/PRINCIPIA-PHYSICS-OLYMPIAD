@@ -33,6 +33,7 @@ pub mod level_studio;
 pub mod progression;
 pub mod research;
 pub mod season;
+pub mod rank_arena;
 pub mod store;
 
 pub const APP_NAME: &str = "PRINCIPIA";
