@@ -135,8 +135,25 @@ func validateFields(request map[string]any, fields []string) error {
 			return errors.New("missing required field: " + field)
 		}
 		if field == "points" {
-			if _, ok := value.([]any); !ok {
-				return errors.New("points must be an array")
+			points, ok := value.([]any)
+			if !ok || len(points) < 2 || len(points) > 10000 {
+				return errors.New("points must contain between 2 and 10000 pairs")
+			}
+			for _, rawPoint := range points {
+				pair, ok := rawPoint.([]any)
+				if !ok || len(pair) != 2 {
+					return errors.New("each point must contain exactly two numbers")
+				}
+				for _, rawCoordinate := range pair {
+					number, ok := rawCoordinate.(json.Number)
+					if !ok {
+						return errors.New("point coordinates must be numeric")
+					}
+					parsed, err := number.Float64()
+					if err != nil || math.IsNaN(parsed) || math.IsInf(parsed, 0) {
+						return errors.New("point coordinates must be finite")
+					}
+				}
 			}
 			continue
 		}
