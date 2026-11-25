@@ -265,19 +265,45 @@
  function toggleExamMark(i){if(!exam||!Number.isInteger(i)||i<0||i>=exam.questions.length)return;exam.marked=Array.isArray(exam.marked)?exam.marked:[];const at=exam.marked.indexOf(i);if(at>=0)exam.marked.splice(at,1);else exam.marked.push(i);examCurrentIndex=i;exam.currentIndex=i;saveExamDraft();renderExam();jumpExamQuestion(i)}
  function choose(i,j){if(!exam||exam.submitted||!Number.isInteger(i)||!Number.isInteger(j)||!exam.questions[i]||j<0||j>=exam.questions[i].a.length)return;exam.answers[i]=j;examCurrentIndex=i;exam.currentIndex=i;saveExamDraft();renderExam();jumpExamQuestion(i)}
  function handleExamKeys(e){if(!exam||exam.submitted||!root||root.style.display==='none'||e.ctrlKey||e.metaKey||e.altKey)return;const tag=(e.target&&e.target.tagName||'').toLowerCase();if(['input','textarea','select'].includes(tag)||e.target?.isContentEditable)return;if(/^[1-9]$/.test(e.key)){const q=exam.questions[examCurrentIndex];if(q&&Number(e.key)<=q.a.length){e.preventDefault();choose(examCurrentIndex,Number(e.key)-1)}}else if(e.key==='ArrowRight'){e.preventDefault();examNext()}else if(e.key==='ArrowLeft'){e.preventDefault();examPrevious()}}
- function submitExam(auto){
-  if(!exam||exam.submitted)return;
-  const qs=exam.questions,unanswered=qs.length-Object.keys(exam.answers).length;
+ async function submitExam(auto){
+  const current=exam;
+  if(!current||current.submitted||current.grading)return;
+  const qs=current.questions,unanswered=qs.length-Object.keys(current.answers).length;
   if(!auto&&unanswered>0&&!confirm('Bạn còn '+unanswered+' câu chưa trả lời. Vẫn nộp bài?'))return;
-  const score=qs.reduce((s,q,i)=>s+(exam.answers[i]===q.correct?1:0),0);
-  exam.submitted=true;stopTimer();markStudyDay();
-  const finishedAt=Date.now(),durationSeconds=Math.max(0,Math.round((finishedAt-(exam.startedAt||finishedAt))/1000));
-  const attempt={date:new Date(finishedAt).toISOString(),score:score,total:qs.length,percent:Math.round(score/qs.length*100),mode:'olympic',durationSeconds};
-  state.attempts.push(attempt);qs.forEach((q,i)=>{if(exam.answers[i]!==q.correct){state.errors.unshift({title:q.q,body:'Bạn chọn: '+(q.a[exam.answers[i]]||'Chưa trả lời')+'\\nĐáp án đúng: '+q.a[q.correct]+'\\nNguồn: '+q.path,date:new Date().toISOString()})}});if(state.errors.length>300)state.errors=state.errors.slice(0,300);if(state.attempts.length>300)state.attempts=state.attempts.slice(-300);save();
-  const mistakes=qs.map((q,i)=>exam.answers[i]===q.correct?null:{question:String(q.q||''),selectedIndex:exam.answers[i],selectedText:String(q.a?.[exam.answers[i]]||'Chưa trả lời'),correctIndex:q.correct,correctText:String(q.a?.[q.correct]||''),source:String(exam.topic||'Luyện Olympic'),timestamp:new Date().toISOString()}).filter(Boolean);
-  window.dispatchEvent(new CustomEvent('principia:quiz-completed',{detail:{source:String(exam.topic||'Luyện Olympic'),mode:'olympic',score,total:qs.length,percent:Math.round(score/qs.length*100),mistakes}}));
+  current.grading=true;
+  let score,gradeBackend='Rust/WASM';
+  try{
+   const payload={
+    id:'principia-olympic-'+Date.now(),
+    title:String(current.topic||'Luyện Olympic').slice(0,240),
+    passPercent:60,
+    questions:qs.map(q=>({prompt:String(q.q||''),options:q.a.map(String),correctIndex:q.correct,points:1,explanation:null})),
+    answers:qs.map((q,i)=>({questionIndex:i,selectedOption:Number.isInteger(current.answers[i])?current.answers[i]:null}))
+   };
+   const grade=await window.PrincipiaWasmPhysics.gradeQuiz(payload);
+   if(!grade||!Array.isArray(grade.details)||grade.details.length!==qs.length||
+      !Number.isFinite(Number(grade.correctCount))||Number(grade.correctCount)<0||
+      Number(grade.correctCount)>qs.length)throw new Error('Rust returned an invalid quiz grade');
+   score=Number(grade.correctCount);
+  }catch(error){
+   gradeBackend='JavaScript fallback';
+   score=qs.reduce((sum,q,i)=>sum+(current.answers[i]===q.correct?1:0),0);
+  }
+  if(exam!==current||current.submitted)return;
+  current.submitted=true;current.grading=false;stopTimer();markStudyDay();
+  const finishedAt=Date.now(),durationSeconds=Math.max(0,Math.round((finishedAt-(current.startedAt||finishedAt))/1000));
+  const attempt={date:new Date(finishedAt).toISOString(),score,total:qs.length,percent:Math.round(score/qs.length*100),mode:'olympic',durationSeconds,backend:gradeBackend};
+  state.attempts.push(attempt);
+  qs.forEach((q,i)=>{if(current.answers[i]!==q.correct){state.errors.unshift({title:q.q,body:'Bạn chọn: '+(q.a[current.answers[i]]||'Chưa trả lời')+'\\nĐáp án đúng: '+q.a[q.correct]+'\\nNguồn: '+q.path,date:new Date().toISOString()})}});
+  if(state.errors.length>300)state.errors=state.errors.slice(0,300);
+  if(state.attempts.length>300)state.attempts=state.attempts.slice(-300);
+  save();
+  const mistakes=qs.map((q,i)=>current.answers[i]===q.correct?null:{question:String(q.q||''),selectedIndex:current.answers[i],selectedText:String(q.a?.[current.answers[i]]||'Chưa trả lời'),correctIndex:q.correct,correctText:String(q.a?.[q.correct]||''),source:String(current.topic||'Luyện Olympic'),timestamp:new Date().toISOString()}).filter(Boolean);
+  window.dispatchEvent(new CustomEvent('principia:quiz-completed',{detail:{source:String(current.topic||'Luyện Olympic'),mode:'olympic',score,total:qs.length,percent:Math.round(score/qs.length*100),mistakes,backend:gradeBackend}}));
   try{if(typeof xp!=='undefined'&&typeof saveAll==='function'){xp+=Math.max(5,score*5);saveAll()}}catch(_){}
-  lastExamReview=qs.map((q,i)=>({q,choice:exam.answers[i],correct:exam.answers[i]===q.correct,index:i}));lastExamDurationSeconds=durationSeconds;clearExamDraft();exam=null;renderExamResult(false,score,qs.length,auto,durationSeconds);
+  lastExamReview=qs.map((q,i)=>({q,choice:current.answers[i],correct:current.answers[i]===q.correct,index:i}));
+  lastExamDurationSeconds=durationSeconds;clearExamDraft();exam=null;
+  renderExamResult(false,score,qs.length,auto,durationSeconds);
   try{if(state.notifications&&'Notification'in window&&Notification.permission==='granted')new Notification('PRINCIPIA · Kết quả luyện tập',{body:'Bạn đạt '+score+'/'+qs.length+' câu.'})}catch(_){}
  }
  function exitExam(){if(exam&&!confirm('Thoát bài thi? Bản nháp sẽ được lưu để bạn có thể tiếp tục sau.'))return;saveExamDraft();exam=null;stopTimer();home()}
