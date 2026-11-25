@@ -292,6 +292,19 @@
 
   function claimMission(id) {
     const today = todayKey();
+    if (rankArenaCore && typeof rankArenaCore.rank_arena_claim_mission_json === 'function') {
+      try {
+        const response = JSON.parse(rankArenaCore.rank_arena_claim_mission_json(JSON.stringify(state), id, today));
+        if (!response || !response.state || !response.result || typeof response.result.ok !== 'boolean') {
+          throw new Error('Rust returned an invalid ranked mission result');
+        }
+        state = response.state;
+        updateAchievements();
+        saveState();
+        renderHome();
+        return;
+      } catch (_) {}
+    }
     if (state.daily !== today) { state.daily = today; state.dailyMatches = 0; }
     const thisWeek = weekKey();
     const weekMatches = state.matches.filter(item => String(item.date || '').slice(0, 10) >= thisWeek);
