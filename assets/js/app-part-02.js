@@ -879,7 +879,7 @@ async function answerQuestion(){
  quizAnswerPending=true;
  const button=selected.closest('.panel')?.querySelector('button.primary');
  if(button){button.disabled=true;button.textContent='ĐANG CHẤM…';}
- let correct;
+ let correct,backend='javascript-fallback';
  try{
   const engine=window.PrincipiaWasmPhysics;
   if(!engine||typeof engine.gradeQuiz!=='function')throw new Error('Rust/WASM assessment unavailable');
@@ -890,14 +890,14 @@ async function answerQuestion(){
   });
   if(!grade||!Array.isArray(grade.details)||!grade.details[0]||typeof grade.details[0].isCorrect!=='boolean')throw new Error('Rust returned an invalid assessment');
   correct=grade.details[0].isCorrect;
+  backend='rust-wasm';
  }catch(error){
   correct=choice===Number(question.correct);
-  window.PRINCIPIA_LAST_ASSESSMENT_BACKEND='javascript-fallback';
  }
  if(activeQuiz===quiz&&answers.length===index){
   answers.push(choice);
   answerResults.push(correct);
-  if(window.PrincipiaWasmPhysics&&correct!==undefined)window.PRINCIPIA_LAST_ASSESSMENT_BACKEND='rust-wasm-or-fallback';
+  window.PRINCIPIA_LAST_ASSESSMENT_BACKEND=backend;
   render();
  }
  quizAnswerPending=false;
