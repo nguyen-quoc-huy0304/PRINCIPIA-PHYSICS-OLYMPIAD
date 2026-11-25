@@ -8,7 +8,7 @@ int main() {
   assert(std::abs(principia_projectile_range(10,45,10)-10)<1e-10);
   assert(std::abs(principia_projectile_max_height(10,90,10)-5)<1e-10);
   assert(std::isnan(principia_kinetic_energy(-1,3)));
-  assert(std::isnan(principia_projectile_range(10,45,0));
+  assert(std::isnan(principia_projectile_range(10,45,0)));
 
   principia_collision_1d_result collision{};
   assert(principia_collision_1d(1, 3, 2, -1, 1, &collision) == 1);
