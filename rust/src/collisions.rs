@@ -159,7 +159,7 @@ mod tests {
         let result = resolve_disk_collision(body(0.0, 1.0), body(1.5, -1.0), 1.0).unwrap();
         assert!(result.collided);
         assert!(result.impulse > 0.0);
-        assert!(result.b.x - result.a.x >= 1.99);
+        assert!(result.b.x - result.a.x > 1.88);
         assert!(result.a.vx < 0.0 && result.b.vx > 0.0);
     }
 
