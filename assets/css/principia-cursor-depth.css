@@ -1,1 +1,5 @@
-#principiaCursorDepth{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-events:none;opacity:.82}#app{position:relative;z-index:1}@media(pointer:coarse){#principiaCursorDepth{display:none}}@media(prefers-reduced-motion:reduce){#principiaCursorDepth{display:none}}
+/* Cursor depth canvas stays behind app content, never captures input. */
+#app{position:relative;isolation:isolate}
+#app #principiaCursorDepth{position:fixed;inset:0;width:100vw;height:100vh;z-index:-1;pointer-events:none;opacity:.95}
+@media(pointer:coarse){#principiaCursorDepth{display:none}}
+@media(prefers-reduced-motion:reduce){#principiaCursorDepth{display:none}}
