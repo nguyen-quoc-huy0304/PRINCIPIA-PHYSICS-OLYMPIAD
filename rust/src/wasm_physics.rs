@@ -74,3 +74,113 @@ pub fn physics_robot_arm_json(
         "singular": solution.singular
     })).map_err(|error| JsValue::from_str(&error.to_string()))
 }
+
+
+fn input_error(message: &str) -> JsValue { JsValue::from_str(message) }
+
+#[wasm_bindgen]
+pub fn assessment_grade_json(input_json: &str) -> Result<String, JsValue> {
+    use crate::assessment::{Answer, Question, Quiz};
+    let value: serde_json::Value = serde_json::from_str(input_json)
+        .map_err(|_| input_error("Quiz payload must be valid JSON"))?;
+    let object = value.as_object().ok_or_else(|| input_error("Quiz payload must be an object"))?;
+    let questions_value = object.get("questions").and_then(serde_json::Value::as_array)
+        .ok_or_else(|| input_error("Quiz questions are required"))?;
+    if questions_value.is_empty() || questions_value.len() > 200 {
+        return Err(input_error("Quiz must contain 1 to 200 questions"));
+    }
+    let mut questions = Vec::with_capacity(questions_value.len());
+    for (index, item) in questions_value.iter().enumerate() {
+        let prompt = item.get("prompt").and_then(serde_json::Value::as_str)
+            .filter(|text| !text.trim().is_empty() && text.len() <= 4000)
+            .ok_or_else(|| input_error("Invalid question prompt"))?;
+        let options_value = item.get("options").and_then(serde_json::Value::as_array)
+            .filter(|options| (2..=12).contains(&options.len()))
+            .ok_or_else(|| input_error("Each question needs 2 to 12 options"))?;
+        let mut options = Vec::with_capacity(options_value.len());
+        for option in options_value {
+            let text = option.as_str().filter(|text| !text.trim().is_empty() && text.len() <= 1000)
+                .ok_or_else(|| input_error("Invalid answer option"))?;
+            options.push(text.to_owned());
+        }
+        let correct_index = item.get("correctIndex").and_then(serde_json::Value::as_u64)
+            .and_then(|value| usize::try_from(value).ok())
+            .ok_or_else(|| input_error("Invalid correct option index"))?;
+        let points = item.get("points").and_then(serde_json::Value::as_u64)
+            .unwrap_or(1).try_into().map_err(|_| input_error("Invalid question points"))?;
+        let explanation = item.get("explanation").and_then(serde_json::Value::as_str)
+            .map(str::to_owned);
+        questions.push(Question { prompt: prompt.to_owned(), options, correct_index, explanation, points });
+        if index >= 200 { return Err(input_error("Too many questions")); }
+    }
+    let answers_value = object.get("answers").and_then(serde_json::Value::as_array)
+        .ok_or_else(|| input_error("Quiz answers are required"))?;
+    if answers_value.len() > questions.len() { return Err(input_error("Too many answers")); }
+    let mut answers = Vec::with_capacity(answers_value.len());
+    for item in answers_value {
+        let question_index = item.get("questionIndex").and_then(serde_json::Value::as_u64)
+            .and_then(|value| usize::try_from(value).ok())
+            .ok_or_else(|| input_error("Invalid answer question index"))?;
+        let selected_option = match item.get("selectedOption") {
+            None | Some(serde_json::Value::Null) => None,
+            Some(value) => Some(value.as_u64().and_then(|v| usize::try_from(v).ok())
+                .ok_or_else(|| input_error("Invalid selected option"))?),
+        };
+        answers.push(Answer { question_index, selected_option });
+    }
+    let quiz = Quiz {
+        id: object.get("id").and_then(serde_json::Value::as_str).unwrap_or("browser-quiz").to_owned(),
+        title: object.get("title").and_then(serde_json::Value::as_str).unwrap_or("Quiz").to_owned(),
+        questions,
+        pass_percent: object.get("passPercent").and_then(serde_json::Value::as_u64)
+            .unwrap_or(60).try_into().map_err(|_| input_error("Invalid pass percentage"))?,
+        time_limit_seconds: None,
+    };
+    let grade = quiz.grade(&answers).map_err(|error| input_error(&format!("Quiz grading failed: {error:?}")))?;
+    serde_json::to_string(&serde_json::json!({
+        "earnedPoints": grade.earned_points,
+        "totalPoints": grade.total_points,
+        "percent": grade.percent,
+        "correctCount": grade.correct_count,
+        "unansweredCount": grade.unanswered_count,
+        "passed": grade.passed,
+        "details": grade.details.iter().map(|item| serde_json::json!({
+            "questionIndex": item.question_index,
+            "selectedOption": item.selected_option,
+            "correctOption": item.correct_option,
+            "isCorrect": item.is_correct,
+            "explanation": item.explanation
+        })).collect::<Vec<_>>()
+    })).map_err(|error| input_error(&error.to_string()))
+}
+
+#[wasm_bindgen]
+pub fn progress_record_json(progress_json: &str, activity: &str, day: &str) -> Result<String, JsValue> {
+    use crate::progress::{Activity, Progress};
+    if day.len() != 10 { return Err(input_error("Activity day must use YYYY-MM-DD")); }
+    let value: serde_json::Value = serde_json::from_str(progress_json)
+        .map_err(|_| input_error("Progress payload must be valid JSON"))?;
+    let mut progress = Progress {
+        experience: value.get("experience").and_then(serde_json::Value::as_u64).unwrap_or(0),
+        completed_lessons: value.get("completedLessons").and_then(serde_json::Value::as_u64).unwrap_or(0),
+        study_streak_days: value.get("studyStreakDays").and_then(serde_json::Value::as_u64)
+            .unwrap_or(0).min(u32::MAX as u64) as u32,
+        last_activity_day: value.get("lastActivityDay").and_then(serde_json::Value::as_str).map(str::to_owned),
+    };
+    let activity = match activity {
+        "lesson" => Activity::LessonCompleted,
+        "quiz" => Activity::QuizSubmitted,
+        "assignment" => Activity::AssignmentSubmitted,
+        "experiment" => Activity::ExperimentCompleted,
+        _ => return Err(input_error("Unsupported progress activity")),
+    };
+    progress.record(activity, day).map_err(input_error)?;
+    serde_json::to_string(&serde_json::json!({
+        "experience": progress.experience,
+        "completedLessons": progress.completed_lessons,
+        "studyStreakDays": progress.study_streak_days,
+        "lastActivityDay": progress.last_activity_day,
+        "level": progress.level(),
+        "experienceIntoLevel": progress.experience_into_level()
+    })).map_err(|error| input_error(&error.to_string()))
+}
