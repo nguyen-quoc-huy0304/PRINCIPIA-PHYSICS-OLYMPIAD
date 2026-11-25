@@ -163,7 +163,7 @@ func validateRegressionPoints(value any) error {
 	if !ok || len(points) < 2 || len(points) > 10_000 {
 		return errors.New("points must contain 2 to 10000 coordinate pairs")
 	}
-	for index, raw := range points {
+	for _, raw := range points {
 		pair, ok := raw.([]any)
 		if !ok || len(pair) != 2 {
 			return errors.New("each point must contain exactly two numbers")
@@ -178,7 +178,6 @@ func validateRegressionPoints(value any) error {
 				return errors.New("point coordinates must be finite")
 			}
 		}
-		_ = index
 	}
 	return nil
 }
