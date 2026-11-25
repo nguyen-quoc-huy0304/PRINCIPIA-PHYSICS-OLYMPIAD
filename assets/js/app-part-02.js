@@ -1428,7 +1428,7 @@ function generateQuizFromLessonTheory(){
   const title = document.getElementById('clLessonHeading')?.textContent?.trim() || 'Bài học';
   const theory = extractCurrentLessonTheoryText();
   const items = buildQuizFromTheoryText(theory, title);
-  inlineLessonQuizState = { items, picked: {} };
+  inlineLessonQuizState = { items, picked: {}, pending: {} };
 
   if(curLessonId){
     const l = find(curLessonId, data);
