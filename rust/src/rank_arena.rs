@@ -34,6 +34,45 @@ pub fn tier(rp: u64) -> Value {
     })
 }
 
+pub fn claim_mission(state_json: &str, mission_id: &str, today: &str) -> Result<String, &'static str> {
+    if state_json.len() > 64 * 1024 || mission_id.len() > 40 { return Err("rank mission payload exceeds size limit"); }
+    let week = crate::season::week_key(today)?;
+    let mut state: Value = serde_json::from_str(state_json).map_err(|_| "invalid rank state JSON")?;
+    if !state.is_object() { return Err("rank state must be an object"); }
+    if state.get("daily").and_then(Value::as_str) != Some(today) {
+        state["daily"] = json!(today);
+        state["dailyMatches"] = json!(0);
+    }
+    let matches = state.get("matches").and_then(Value::as_array).cloned().unwrap_or_default();
+    let today_matches: Vec<&Value> = matches.iter().filter(|item| item.get("date").and_then(Value::as_str)
+        .is_some_and(|date| date.get(..10) == Some(today))).collect();
+    let week_matches: Vec<&Value> = matches.iter().filter(|item| item.get("date").and_then(Value::as_str)
+        .is_some_and(|date| date.get(..10).is_some_and(|day| day >= week.as_str()))).collect();
+    let today_wins = today_matches.iter().filter(|item| item.get("result").and_then(Value::as_str) == Some("win")).count() as u64;
+    let week_wins = week_matches.iter().filter(|item| item.get("result").and_then(Value::as_str) == Some("win")).count() as u64;
+    let daily_matches = count(state.get("dailyMatches"));
+    let (value, target, reward, period) = match mission_id {
+        "daily-1" => (daily_matches, 1, 15, today),
+        "daily-3" => (daily_matches, 3, 25, today),
+        "wins-2" => (today_wins, 2, 30, today),
+        "weekly-play5" => (week_matches.len() as u64, 5, 40, week.as_str()),
+        "weekly-win3" => (week_wins, 3, 60, week.as_str()),
+        _ => return Err("unknown ranked mission"),
+    };
+    let key = format!("{period}:{mission_id}");
+    let claims = state.get("claims").and_then(Value::as_array).cloned().unwrap_or_default();
+    let already_claimed = claims.iter().any(|item| item.as_str() == Some(&key));
+    let ok = value >= target && !already_claimed;
+    if ok {
+        if !state.get("claims").is_some_and(Value::is_array) { state["claims"] = json!([]); }
+        state.get_mut("claims").and_then(Value::as_array_mut).ok_or("claims must be an array")?.push(json!(key));
+        state["rp"] = json!(count(state.get("rp")).saturating_add(reward).min(1_000_000));
+    }
+    serde_json::to_string(&json!({
+        "state":state,"result":{"ok":ok,"reward":if ok {reward} else {0},"rp":count(state.get("rp"))}
+    })).map_err(|_| "could not encode ranked mission result")
+}
+
 pub fn finish_match(state_json: &str, match_json: &str) -> Result<String, &'static str> {
     if state_json.len() > 64 * 1024 || match_json.len() > 4096 {
         return Err("rank arena payload exceeds size limit");
@@ -133,6 +172,19 @@ mod tests {
         assert_eq!(tier(150)["label"], "Bạc II");
         assert_eq!(tier(200)["label"], "Bạc I");
         assert_eq!(tier(1900)["label"], "Thách đấu");
+    }
+
+    #[test]
+    fn mission_claim_is_idempotent_and_week_scoped() {
+        let mut original = state();
+        original["daily"] = json!("2026-11-25");
+        original["dailyMatches"] = json!(1);
+        let first: Value = serde_json::from_str(&claim_mission(&original.to_string(), "daily-1", "2026-11-25").unwrap()).unwrap();
+        assert_eq!(first["result"]["ok"], true);
+        assert_eq!(first["state"]["rp"], 115);
+        let second: Value = serde_json::from_str(&claim_mission(&first["state"].to_string(), "daily-1", "2026-11-25").unwrap()).unwrap();
+        assert_eq!(second["result"]["ok"], false);
+        assert_eq!(second["state"]["rp"], 115);
     }
 
     #[test]
