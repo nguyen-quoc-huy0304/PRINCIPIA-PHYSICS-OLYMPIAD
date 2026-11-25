@@ -1,5 +1,6 @@
 // PRINCIPIA Physics Core — C++17 native/WASM numerical kernel. SI units.
 #include "engine.h"
+#include <algorithm>
 #include <cmath>
 #include <initializer_list>
 #include <limits>
