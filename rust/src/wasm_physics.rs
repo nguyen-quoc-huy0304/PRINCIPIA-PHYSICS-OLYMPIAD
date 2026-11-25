@@ -247,3 +247,41 @@ pub fn learning_review_schedule_json(quality: u8, previous_interval_days: u32, e
         "mastered": schedule.mastered
     })).map_err(|error| input_error(&error.to_string()))
 }
+
+
+#[wasm_bindgen]
+pub fn progression_summary_json(input_json: &str) -> Result<String, JsValue> {
+    use crate::progression::{achievements, level_progress, rank_progress, AchievementInput};
+    let value: serde_json::Value = serde_json::from_str(input_json)
+        .map_err(|_| input_error("Progression input must be valid JSON"))?;
+    let xp = value.get("xp").and_then(serde_json::Value::as_u64).unwrap_or(0);
+    let metric = |key: &str| value.get(key).and_then(serde_json::Value::as_u64).unwrap_or(0);
+    let input = AchievementInput {
+        sessions: metric("sessions"),
+        questions: metric("questions"),
+        best_percent: metric("bestPercent").unwrap_or(0).min(100) as u8,
+        lessons: metric("lessons"),
+        streak: metric("streak").min(u32::MAX as u64) as u32,
+        experiments: metric("experiments"),
+        levels_created: metric("levelsCreated"),
+    };
+    let level = level_progress(xp);
+    let rank = rank_progress(xp);
+    let achievements = achievements(input);
+    serde_json::to_string(&serde_json::json!({
+        "level": {
+            "level": level.level, "title": level.title, "xp": level.xp,
+            "currentThreshold": level.current_threshold, "nextThreshold": level.next_threshold,
+            "progress": level.progress_percent, "xpToNext": level.xp_to_next
+        },
+        "rank": {
+            "id": rank.id, "name": rank.name, "xp": rank.xp, "division": rank.division,
+            "nextName": rank.next_name, "xpToNext": rank.xp_to_next,
+            "progress": rank.progress_percent
+        },
+        "achievements": achievements.iter().map(|item| serde_json::json!({
+            "id": item.id, "name": item.name, "unlocked": item.unlocked,
+            "value": item.value, "target": item.target
+        })).collect::<Vec<_>>()
+    })).map_err(|error| input_error(&error.to_string()))
+}
