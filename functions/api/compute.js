@@ -22,8 +22,8 @@ function json(body, status = 200) {
 
 function validateRequest(input) {
   if (!input || typeof input !== "object" || Array.isArray(input)) throw new Error("INVALID_REQUEST");
+  if (!Object.prototype.hasOwnProperty.call(OPERATIONS, input.op)) throw new Error("UNSUPPORTED_OPERATION");
   const fields = OPERATIONS[input.op];
-  if (!fields) throw new Error("UNSUPPORTED_OPERATION");
   const allowed = new Set(["op", "id", ...fields]);
   if (Object.keys(input).some((key) => !allowed.has(key))) throw new Error("UNKNOWN_FIELD");
   for (const field of fields) {
