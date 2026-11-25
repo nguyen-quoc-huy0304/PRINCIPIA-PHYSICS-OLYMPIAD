@@ -80,6 +80,13 @@ const api={
       if(!result||!Number.isFinite(Number(result.slope))||!Number.isFinite(Number(result.intercept)))throw new Error('Native data analysis core returned an invalid fit');
       lastBackend='rust-linear-regression';return result;
     }
+    if(root.PrincipiaWasmPhysics&&typeof root.PrincipiaWasmPhysics.compute==='function'){
+      try{
+        const result=await root.PrincipiaWasmPhysics.compute('linearRegression',{points});
+        if(!result||!Number.isFinite(Number(result.slope))||!Number.isFinite(Number(result.intercept)))throw new Error('Rust regression returned an invalid fit');
+        lastBackend='rust-wasm-regression';return result;
+      }catch(error){lastBackend='javascript-analytical-fallback';}
+    }
     const n=points.length,mx=points.reduce((s,p)=>s+p[0],0)/n,my=points.reduce((s,p)=>s+p[1],0)/n;
     const sxx=points.reduce((s,p)=>s+(p[0]-mx)**2,0),sxy=points.reduce((s,p)=>s+(p[0]-mx)*(p[1]-my),0),syy=points.reduce((s,p)=>s+(p[1]-my)**2,0);
     if(!Number.isFinite(sxx)||!Number.isFinite(sxy)||!Number.isFinite(syy))throw new RangeError('Dữ liệu vượt miền số hỗ trợ.');
@@ -100,6 +107,13 @@ const api={
       const r=await root.principiaDesktop.computePhysics('robotArmIK',{l1M:l1,l2M:l2,targetXM:x,targetYM:y,elbowBranch:branch});
       if(!r||!Number.isFinite(Number(r.shoulderDeg))||!Number.isFinite(Number(r.elbowDeg)))throw new Error('Native robotics core returned an invalid solution');
       lastBackend='rust-robotics';return r;
+    }
+    if(root.PrincipiaWasmPhysics&&typeof root.PrincipiaWasmPhysics.compute==='function'){
+      try{
+        const result=await root.PrincipiaWasmPhysics.compute('robotArmIK',{l1M:l1,l2M:l2,targetXM:x,targetYM:y,elbowBranch:branch});
+        if(!result||!Number.isFinite(Number(result.shoulderDeg))||!Number.isFinite(Number(result.elbowDeg)))throw new Error('Rust robotics returned an invalid solution');
+        lastBackend='rust-wasm-robotics';return result;
+      }catch(error){lastBackend='javascript-analytical-fallback';}
     }
     const r2=x*x+y*y,r=Math.sqrt(r2),tol=1e-12*Math.max(l1+l2,1);
     if(r>l1+l2+tol||r<Math.abs(l1-l2)-tol)throw new RangeError('Điểm đích nằm ngoài vùng với tới của robot.');
