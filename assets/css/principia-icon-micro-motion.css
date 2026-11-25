@@ -1,0 +1,1 @@
+button i.fa-solid,button i.fa-regular,button i.fa-brands,[role=button] i{transform-origin:center;transition:color .18s ease}@media(prefers-reduced-motion:reduce){button i,[role=button] i{animation:none!important;transition:none!important}}
