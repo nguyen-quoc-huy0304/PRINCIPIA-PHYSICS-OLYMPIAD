@@ -59,7 +59,7 @@ mod tests {
         let result = summarize(&[(0.0, 1.0), (1.0, 3.0), (2.0, 5.0)]).unwrap();
         assert_eq!(result.count, 3);
         assert!((result.mean - 3.0).abs() < 1e-12);
-        assert!((result.standard_deviation - 2.0_f64.sqrt() * 2.0).abs() < 1e-12);
+        assert!((result.standard_deviation - 2.0).abs() < 1e-12);
         assert_eq!(result.slope, Some(2.0));
         assert_eq!(result.intercept, Some(1.0));
     }
