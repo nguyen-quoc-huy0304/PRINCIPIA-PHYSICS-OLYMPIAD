@@ -3,6 +3,8 @@
 
 #[cfg(not(target_arch = "wasm32"))]
 pub mod cpp_physics;
+#[cfg(not(target_arch = "wasm32"))]
+pub mod cpp_vector3;
 pub mod access;
 pub mod content;
 pub mod session;
