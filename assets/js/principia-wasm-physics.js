@@ -28,8 +28,10 @@ async function compute(operation,params){
     case 'robotArmIK': return JSON.parse(wasm.physics_robot_arm_json(p.l1M,p.l2M,p.targetXM,p.targetYM,p.elbowBranch));
     case 'gradeQuiz': return JSON.parse(wasm.assessment_grade_json(JSON.stringify(p)));
     case 'recordProgress': return JSON.parse(wasm.progress_record_json(JSON.stringify(p.progress||{}),p.activity,p.day));
+    case 'learningRecommend': return JSON.parse(wasm.learning_recommend_json(JSON.stringify(p)));
+    case 'reviewSchedule': return JSON.parse(wasm.learning_review_schedule_json(p.quality,p.previousIntervalDays,p.easeFactor));
     default: throw new TypeError('Unsupported Rust/WASM physics operation: '+operation);
   }
 }
-root.PrincipiaWasmPhysics=Object.freeze({compute,load:loadWasm,gradeQuiz:(payload)=>compute('gradeQuiz',payload),recordProgress:(progress,activity,day)=>compute('recordProgress',{progress,activity,day})});
+root.PrincipiaWasmPhysics=Object.freeze({compute,load:loadWasm,gradeQuiz:(payload)=>compute('gradeQuiz',payload),recordProgress:(progress,activity,day)=>compute('recordProgress',{progress,activity,day}),recommend:(context)=>compute('learningRecommend',context),scheduleReview:(quality,previousIntervalDays,easeFactor)=>compute('reviewSchedule',{quality,previousIntervalDays,easeFactor})});
 })(window);
