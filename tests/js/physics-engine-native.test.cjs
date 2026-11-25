@@ -73,3 +73,39 @@ test('force-balance rejects malformed native output', async () => {
   assert.equal(result.points, 100);
   assert.equal(engine.backend, 'rust-wasm-force-balance');
 });
+
+test('force-balance scoring uses the Go API before browser WASM', async () => {
+  let request;
+  const engine = loadEngine({
+    async fetch(url, init) {
+      request = { url, init, body: JSON.parse(init.body) };
+      return { ok: true, async json() {
+        return { ok: true, value: { error: 0, points: 100, balanced: true } };
+      } };
+    },
+    PrincipiaWasmPhysics: {
+      async compute() { throw new Error('WASM should not be called'); }
+    }
+  });
+  const result = await engine.scoreForceBalance({ x: 0, y: 0, targetX: 0, targetY: 0 });
+  assert.equal(result.points, 100);
+  assert.equal(request.url, '/api/compute');
+  assert.equal(request.body.op, 'forceBalance');
+  assert.equal(engine.backend, 'go-rust-force-balance');
+});
+
+test('scalar physics calculations use Go API when configured', async () => {
+  let request;
+  const engine = loadEngine({
+    async fetch(url, init) {
+      request = JSON.parse(init.body);
+      return { ok: true, async json() { return { ok: true, value: 11 }; } };
+    }
+  });
+  const value = await engine.compute('velocity', { initial: 3, acceleration: 2, seconds: 4 });
+  assert.equal(value, 11);
+  assert.deepEqual(JSON.parse(JSON.stringify(request)), {
+    op: 'velocity', initial: 3, acceleration: 2, seconds: 4
+  });
+  assert.equal(engine.backend, 'go-rust-cpp');
+});
