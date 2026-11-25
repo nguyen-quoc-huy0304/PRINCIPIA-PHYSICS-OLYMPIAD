@@ -39,3 +39,19 @@ test('Thách đấu is the terminal rank and has no next threshold',()=>{
  assert.equal(rank.nextThreshold,null);
  assert.equal(rank.progress,100);
 });
+
+test('Rust/WASM rank adapter preserves the UI contract',async()=>{
+ const previous=global.PrincipiaWasmPhysics;
+ global.PrincipiaWasmPhysics={progression:async({xp})=>({rank:{id:'gold',name:'Vàng',xp,division:'II',nextName:'Bạch kim',xpToNext:100,progress:50}})};
+ try{
+  const rank=await require('../../assets/js/principia-rank-core.js').getRankWithRust(650);
+  assert.equal(rank.id,'gold');
+  assert.equal(rank.label,'Vàng II');
+  assert.equal(rank.rankPoints,650);
+  assert.equal(rank.progress,50);
+  assert.equal(rank.xpToNext,450);
+ }finally{
+  if(previous===undefined)delete global.PrincipiaWasmPhysics;
+  else global.PrincipiaWasmPhysics=previous;
+ }
+});
