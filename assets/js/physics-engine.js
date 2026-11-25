@@ -32,6 +32,16 @@ async function compute(operation,params){
       lastBackend='javascript-fallback';
     }
   }
+  if(root.PrincipiaWasmPhysics&&typeof root.PrincipiaWasmPhysics.compute==='function'){
+    try{
+      const value=await root.PrincipiaWasmPhysics.compute(operation,p);
+      if(!Number.isFinite(Number(value)))throw new Error('Rust/WASM core returned a non-finite result');
+      lastBackend='rust-wasm';
+      return Number(value);
+    }catch(error){
+      lastBackend='javascript-fallback';
+    }
+  }
   const value=fallback[operation](p);
   if(!Number.isFinite(value))throw new RangeError('Physics result is outside the supported numeric range');
   lastBackend='javascript-fallback';
