@@ -55,6 +55,24 @@ func TestComputeRejectsTrailingJSON(t *testing.T) {
 	}
 }
 
+func TestComputeValidatesRegressionPointShapeAndBounds(t *testing.T) {
+	cases := []string{
+		`{"op":"linearRegression","points":[]}`,
+		`{"op":"linearRegression","points":[[1,2]]}`,
+		`{"op":"linearRegression","points":[[1,2,3],[2,4,6]]}`,
+		`{"op":"linearRegression","points":[[1,"2"],[2,4]]}`,
+		`{"op":"linearRegression","points":[[1,2],[2,1e999]]}`,
+	}
+	for _, body := range cases {
+		request := httptest.NewRequest(http.MethodPost, "/v1/compute", bytes.NewBufferString(body))
+		response := httptest.NewRecorder()
+		(api{}).compute(response, request)
+		if response.Code != http.StatusUnprocessableEntity {
+			t.Errorf("body %s: expected 422, got %d", body, response.Code)
+		}
+	}
+}
+
 func TestValidateFieldsRequiresJSONNumbers(t *testing.T) {
 	var request map[string]any
 	if err := json.Unmarshal([]byte(`{"op":"velocity","initial":1,"acceleration":2,"seconds":3}`), &request); err != nil {
