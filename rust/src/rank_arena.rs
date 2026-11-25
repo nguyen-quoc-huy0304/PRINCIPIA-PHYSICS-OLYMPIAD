@@ -68,8 +68,9 @@ pub fn claim_mission(state_json: &str, mission_id: &str, today: &str) -> Result<
         state.get_mut("claims").and_then(Value::as_array_mut).ok_or("claims must be an array")?.push(json!(key));
         state["rp"] = json!(count(state.get("rp")).saturating_add(reward).min(1_000_000));
     }
+    let current_rp = count(state.get("rp"));
     serde_json::to_string(&json!({
-        "state":state,"result":{"ok":ok,"reward":if ok {reward} else {0},"rp":count(state.get("rp"))}
+        "state":state,"result":{"ok":ok,"reward":if ok {reward} else {0},"rp":current_rp}
     })).map_err(|_| "could not encode ranked mission result")
 }
 
