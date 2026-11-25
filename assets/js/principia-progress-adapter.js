@@ -19,7 +19,7 @@
   if(!bridge||typeof bridge.load!=='function')throw new Error('Rust/WASM progress core is unavailable');
   const wasm=await bridge.load();
   if(typeof wasm.progress_award_custom_json!=='function')throw new Error('Rust progress export is missing');
-  const result=JSON.parse(wasm.progress_award_custom_json(JSON.stringify(progress),activity,day,reward));
+  const result=JSON.parse(wasm.progress_award_custom_json(JSON.stringify(progress),activity,day,BigInt(reward)));
   if(!result||!['experience','completedLessons','studyStreakDays','level','experienceIntoLevel'].every(key=>Number.isSafeInteger(result[key])&&result[key]>=0)||
      typeof result.lastActivityDay!=='string')throw new Error('Rust returned invalid progress state');
   return result;
