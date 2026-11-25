@@ -1368,7 +1368,7 @@ function openSelectedAI(){const a=getSelectedAI();if(!a){notify('Hãy thêm mộ
 function sendChat(){const inp=document.getElementById('chatInput'),txt=inp?.value.trim()||'';if(!txt&&!chatImgData)return;const a=getSelectedAI();if(!a){notify('Hãy thêm và chọn một AI');return}const history=principiaChatHistory();history.push({role:'user',text:txt||'Đã gửi ảnh đính kèm',image:chatImgData?'Ảnh đính kèm (lưu trong lịch sử thiết bị)':'' ,at:Date.now()});savePrincipiaChatHistory(history);renderPrincipiaChatHistory();if(txt){try{const ta=document.createElement('textarea');ta.value=txt;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove()}catch(e){}}if(chatImgData)notify('Ảnh được lưu trong lịch sử PRINCIPIA; để gửi ảnh cho AI hãy mở tab riêng và đính kèm thủ công.');if(txt)notify('Đã lưu tin nhắn. AI '+a.name+' chưa được kết nối API trong phiên bản này.');if(inp)inp.value='';chatImgData=null;const n=document.getElementById('chatImgName');if(n)n.textContent='';const f=document.querySelector('#chatBox input[type=file]');if(f)f.value='';renderPrincipiaChatHistory()}
 
 
-let inlineLessonQuizState = { items: [], picked: {}, pending: {} };
+let inlineLessonQuizState = { items: [], picked: {}, results: {}, pending: {} };
 
 function extractCurrentLessonTheoryText(){
   const areaVal = document.getElementById('clNoteArea')?.value?.trim() || '';
@@ -1428,7 +1428,7 @@ function generateQuizFromLessonTheory(){
   const title = document.getElementById('clLessonHeading')?.textContent?.trim() || 'Bài học';
   const theory = extractCurrentLessonTheoryText();
   const items = buildQuizFromTheoryText(theory, title);
-  inlineLessonQuizState = { items, picked: {}, pending: {} };
+  inlineLessonQuizState = { items, picked: {}, results: {}, pending: {} };
 
   if(curLessonId){
     const l = find(curLessonId, data);
@@ -1459,6 +1459,7 @@ async function pickInlineLessonQuizAns(qIdx, optIdx){
   delete inlineLessonQuizState.pending[qIdx];
   if(inlineLessonQuizState.picked[qIdx]!==undefined)return;
   inlineLessonQuizState.picked[qIdx]=Number(optIdx);
+  inlineLessonQuizState.results[qIdx]=result.correct;
   window.PRINCIPIA_LAST_ASSESSMENT_BACKEND=result.backend;
   if(result.correct){
     xp+=15;dailyReward();saveAll();
@@ -1480,7 +1481,7 @@ function renderInlineLessonAiQuiz(){
 
   const total = items.length;
   const answeredCount = Object.keys(picked).length;
-  const correctCount = Object.entries(picked).filter(([qi, ai]) => items[Number(qi)]?.correct === ai).length;
+  const correctCount = Object.values(inlineLessonQuizState.results).filter(Boolean).length;
 
   box.innerHTML = `
     <div class="panel" style="margin:0;">
