@@ -175,7 +175,7 @@ func validateFields(request map[string]any, fields []string) error {
 	case "studyPlan":
 		if err := validateIntegerRange(request["energy"], "energy", 1, 3); err != nil { return err }
 		if err := validateIntegerRange(request["confidence"], "confidence", 1, 5); err != nil { return err }
-		if err := validateIntegerRange(request["errorCount"], "errorCount", 0, math.MaxUint32); err != nil { return err }
+		if err := validateIntegerRange(request["errorCount"], "errorCount", 0, int64(1<<32 - 1)); err != nil { return err }
 		if value, exists := request["percent"]; exists && value != nil {
 			n := value.(json.Number); v, err := n.Float64()
 			if err != nil || math.IsNaN(v) || math.IsInf(v, 0) || v < 0 || v > 100 { return errors.New("percent must be between 0 and 100") }
