@@ -15,7 +15,6 @@
    return JSON.parse(seasonCore.season_missions_json(JSON.stringify(payload),dateKey(now)));
   }
 
-  const key=weekKey(now),m=metrics||{};
   const defs=[['practice','Chiến binh luyện tập','Hoàn thành 3 lượt luyện',countMetric(m.sessions),3,60],['questions','Bậc thầy câu hỏi','Trả lời 30 câu hỏi',countMetric(m.questions),30,80],['notes','Nhà ghi chép','Lưu 2 ghi chú học tập',countMetric(m.notes),2,40]];
   return defs.map(([id,name,description,value,target,xp])=>({id,name,description,value:Math.max(0,value),target,xp,complete:value>=target,progress:Math.min(100,Math.round(Math.max(0,value)/target*100)),week:key}));
  }
