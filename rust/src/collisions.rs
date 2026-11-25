@@ -101,15 +101,13 @@ pub fn resolve_disk_collision(a: DiskBody, b: DiskBody, restitution: f64) -> Res
     a.y -= ny * correction * inv_a;
     b.x += nx * correction * inv_b;
     b.y += ny * correction * inv_b;
-    if relative_normal < 0.0 {
-        let impulse = -(1.0 + restitution) * relative_normal / (inv_a + inv_b);
-        a.vx -= impulse * inv_a * nx;
-        a.vy -= impulse * inv_a * ny;
-        b.vx += impulse * inv_b * nx;
-        b.vy += impulse * inv_b * ny;
-    }
     let impulse = if relative_normal < 0.0 {
-        -(1.0 + restitution) * relative_normal / (inv_a + inv_b)
+        let value = -(1.0 + restitution) * relative_normal / (inv_a + inv_b);
+        a.vx -= value * inv_a * nx;
+        a.vy -= value * inv_a * ny;
+        b.vx += value * inv_b * nx;
+        b.vy += value * inv_b * ny;
+        value
     } else { 0.0 };
     validate_body(a)?;
     validate_body(b)?;
