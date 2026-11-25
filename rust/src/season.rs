@@ -41,19 +41,26 @@ fn parse_day(value: &str) -> Result<(i64, i64, i64), &'static str> {
     Ok((year, month, day))
 }
 
-pub fn iso_week_key(date: &str) -> Result<String, &'static str> {
+fn civil_from_days(days: i64) -> (i64, i64, i64) {
+    let z = days + 719468;
+    let era = if z >= 0 { z } else { z - 146096 } / 146097;
+    let doe = z - era * 146097;
+    let yoe = (doe - doe / 1460 + doe / 36524 - doe / 146096) / 365;
+    let mut year = yoe + era * 400;
+    let doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
+    let mp = (5 * doy + 2) / 153;
+    let day = doy - (153 * mp + 2) / 5 + 1;
+    let month = mp + if mp < 10 { 3 } else { -9 };
+    year += i64::from(month <= 2);
+    (year, month, day)
+}
+
+pub fn week_key(date: &str) -> Result<String, &'static str> {
     let (year, month, day) = parse_day(date)?;
     let ordinal = days_from_civil(year, month, day);
-    let week_start = |y: i64| {
-        let jan4 = days_from_civil(y, 1, 4);
-        let weekday = (jan4 + 3).rem_euclid(7);
-        jan4 - weekday
-    };
-    let mut iso_year = year;
-    if ordinal < week_start(iso_year) { iso_year -= 1; }
-    else if ordinal >= week_start(iso_year + 1) { iso_year += 1; }
-    let week = (ordinal - week_start(iso_year)).div_euclid(7) + 1;
-    Ok(format!("{iso_year}-W{week:02}"))
+    let weekday = (ordinal + 3).rem_euclid(7);
+    let (week_year, week_month, week_day) = civil_from_days(ordinal - weekday);
+    Ok(format!("{week_year:04}-{week_month:02}-{week_day:02}"))
 }
 
 fn count_metric(value: Option<&Value>) -> u64 {
@@ -65,7 +72,7 @@ fn count_metric(value: Option<&Value>) -> u64 {
 }
 
 pub fn missions(metrics: &Value, date: &str) -> Result<Vec<SeasonMission>, &'static str> {
-    let week = iso_week_key(date)?;
+    let week = week_key(date)?;
     let sessions = count_metric(metrics.get("sessions"));
     let questions = count_metric(metrics.get("questions"));
     let notes = count_metric(metrics.get("notes"));
@@ -97,10 +104,10 @@ mod tests {
 
     #[test]
     fn iso_week_changes_on_monday_and_handles_year_boundary() {
-        assert_eq!(iso_week_key("2026-11-16"), Ok("2026-W47".into()));
-        assert_eq!(iso_week_key("2026-11-22"), Ok("2026-W47".into()));
-        assert_eq!(iso_week_key("2026-11-23"), Ok("2026-W48".into()));
-        assert_eq!(iso_week_key("2021-01-01"), Ok("2020-W53".into()));
+        assert_eq!(week_key("2026-11-16"), Ok("2026-11-16".into()));
+        assert_eq!(week_key("2026-11-22"), Ok("2026-11-16".into()));
+        assert_eq!(week_key("2026-11-23"), Ok("2026-11-23".into()));
+        assert_eq!(week_key("2021-01-01"), Ok("2020-12-28".into()));
     }
 
     #[test]
