@@ -188,9 +188,33 @@
   html+=reviewSide?btn('Quên · 1 ngày','principiaSuiteRateReview(0)')+btn('Khó · 2 ngày','principiaSuiteRateReview(1)')+btn('Nhớ · 4 ngày','principiaSuiteRateReview(2)')+btn('Dễ · 7 ngày','principiaSuiteRateReview(3)'):btn('Xem đáp án','principiaSuiteFlipReview()','primary');
   html+=btn('Bỏ qua','principiaSuiteSkipReview()')+btn('Về trung tâm','principiaSuiteHome()');open('Ôn tập thông minh',html);
  }
- function rateReview(r){
-  const q=reviewQueue[reviewIndex];if(!q||!Number.isInteger(r)||r<0||r>3)return;const previous=Number((state.review||{})[q.path+'|'+q.q]?.interval)||0;const days=[1,Math.max(2,previous||2),Math.max(4,(previous||2)*2),Math.max(7,(previous||2)*3)][r],interval=Math.min(60,days),next=new Date();next.setDate(next.getDate()+interval);
-  markStudyDay();state.review=state.review||{};state.review[q.path+'|'+q.q]={interval:interval,due:localDateKey(next),last:new Date().toISOString(),rating:r};save();reviewIndex++;reviewSide=false;reviewCard();
+ async function rateReview(r){
+  const q=reviewQueue[reviewIndex];
+  if(!q||!Number.isInteger(r)||r<0||r>3||rateReview.pending)return;
+  const key=q.path+'|'+q.q,record=(state.review||{})[key]||{};
+  const previous=Math.max(0,Math.min(36500,Number(record.interval)||0));
+  const ease=Number.isFinite(Number(record.easeFactor))?Number(record.easeFactor):2.5;
+  const selectedIndex=reviewIndex;
+  rateReview.pending=true;
+  let interval,easeFactor=ease,reviewBackend='Rust/WASM';
+  try{
+   const quality=[0,2,4,5][r];
+   const result=await window.PrincipiaWasmPhysics.scheduleReview(quality,previous,ease);
+   if(!result||!Number.isInteger(Number(result.intervalDays))||
+      Number(result.intervalDays)<1||Number(result.intervalDays)>36500||
+      !Number.isFinite(Number(result.easeFactor)))throw new Error('Rust returned an invalid review schedule');
+   interval=Number(result.intervalDays);easeFactor=Number(result.easeFactor);
+  }catch(error){
+   reviewBackend='JavaScript fallback';
+   const days=[1,Math.max(2,previous||2),Math.max(4,(previous||2)*2),Math.max(7,(previous||2)*3)][r];
+   interval=Math.min(60,days);
+  }
+  rateReview.pending=false;
+  if(reviewQueue[selectedIndex]!==q||reviewIndex!==selectedIndex)return;
+  const next=new Date();next.setDate(next.getDate()+interval);
+  markStudyDay();state.review=state.review||{};
+  state.review[key]={interval,due:localDateKey(next),last:new Date().toISOString(),rating:r,easeFactor,backend:reviewBackend};
+  save();reviewIndex++;reviewSide=false;reviewCard();
  }
  function skipReview(){reviewIndex++;reviewSide=false;reviewCard()}
  function savedExamDraft(){try{const raw=localStorage.getItem('principia_olympic_exam_draft_v1');if(!raw)return null;const d=JSON.parse(raw);return d&&Array.isArray(d.questions)&&d.questions.length&&d.answers&&Number.isFinite(d.end)&&d.end>Date.now()&&!d.submitted?d:null}catch(_){return null}}
