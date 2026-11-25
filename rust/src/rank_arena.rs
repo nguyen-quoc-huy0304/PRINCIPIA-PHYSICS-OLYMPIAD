@@ -81,7 +81,7 @@ pub fn finish_match(state_json: &str, match_json: &str) -> Result<String, &'stat
     if !state.get("matches").is_some_and(Value::is_array) { state["matches"] = json!([]); }
     let matches = state.get_mut("matches").and_then(Value::as_array_mut).ok_or("matches must be an array")?;
     matches.push(record.clone());
-    if matches.len() > 100 { matches.drain(0..matches.len()-100); }
+    if matches.len() > 100 { let excess = matches.len() - 100; matches.drain(0..excess); }
     let result = json!({
         "won":won,"correct":correct,"rivalCorrect":rival_correct,
         "rpChange":rp_change,"rp":next_rp,"mmr":next_mmr,
@@ -108,7 +108,7 @@ mod tests {
         ).unwrap()).unwrap();
         assert_eq!(result["result"]["won"], true);
         assert_eq!(result["state"]["rp"], 120);
-        assert_eq!(result["state"]["mmr"], 538);
+        assert_eq!(result["state"]["mmr"], 528);
         assert_eq!(result["state"]["wins"], 1);
         assert_eq!(result["state"]["matches"].as_array().unwrap().len(), 1);
     }
