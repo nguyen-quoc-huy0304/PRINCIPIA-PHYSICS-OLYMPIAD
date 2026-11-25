@@ -104,7 +104,7 @@ let page='account',stack=[],activeLesson=null,search='',pageHistory=[];
 function rememberPage(){pageHistory.push({page,stack:[...stack],activeLesson,activeQuiz:activeQuiz?JSON.parse(JSON.stringify(activeQuiz)):null,answers:[...answers]});if(pageHistory.length>60)pageHistory.shift();}
 function goBack(){if(page==='play'&&activeQuiz&&(answers||[]).length>0){if(!confirm('Bài làm chưa hoàn thành. Bạn vẫn muốn quay lại?'))return;}const prev=pageHistory.pop();if(!prev){if(page!=='home'){page='home';stack=[];activeLesson=null;activeQuiz=null;render();}return;}page=prev.page;stack=prev.stack;activeLesson=prev.activeLesson;activeQuiz=prev.activeQuiz;answers=prev.answers;render();}
 window.getPrincipiaPage=()=>page;window.setPrincipiaPage=p=>{page=p;};
-let activeQuiz=null,answers=[],dragId=null;
+let activeQuiz=null,answers=[],answerResults=[],quizAnswerPending=false,dragId=null;
 
 function load(k,def){
  try{
@@ -139,8 +139,8 @@ function currentNodes(){let nodes=tree();for(const id of stack){let n=find(id,no
 function crumb(){let html=`<button onclick="stack=[];render()">Trang chủ</button>`;let nodes=tree();for(let i=0;i<stack.length;i++){let n=find(stack[i],nodes);if(n)html+=` / <button onclick="stack=stack.slice(0,${i+1});render()">${esc(n.name)}</button>`}return html}
 function enter(id){rememberPage();stack.push(id);render()}
 function openLesson(id){rememberPage();activeLesson=id;dailyReward();page='lesson';stack=[];render()}
-function openQuiz(id){rememberPage();activeQuiz={id,kind:'quiz'};answers=[];page='play';render()}
-function openFun(id){rememberPage();activeQuiz={id,kind:'fun'};answers=[];page='play';render()}
+function openQuiz(id){rememberPage();activeQuiz={id,kind:'quiz'};answers=[];answerResults=[];page='play';render()}
+function openFun(id){rememberPage();activeQuiz={id,kind:'fun'};answers=[];answerResults=[];page='play';render()}
 function avatarHTML(){
  let acc=null;try{acc=JSON.parse(localStorage.getItem('principia_google_account')||'null')}catch(e){}
  let crowned=false;try{const st=entertainmentState(),all=[...leagueBots(),{name:profile.name||'Bạn',points:st.points,you:true}].sort((a,b)=>b.points-a.points);crowned=all.findIndex(x=>x.you)===0}catch(e){}
@@ -318,8 +318,8 @@ function playPage(){
  if(!questions.length)return `<div class="panel"><h2>${esc(q.name)}</h2><p class="muted">Bài này chưa có câu hỏi.</p><button class="primary" onclick="editNode('${q.id}')">Thêm câu hỏi</button></div>`;
  let i=answers.length;
  if(i>=questions.length){
-  let score=questions.reduce((s,x,j)=>s+(answers[j]===x.correct?1:0),0);
-  return `<div class="panel"><div class="eyebrow">COMPLETED</div><div class="tileicon">🏆</div><h1>${score}/${questions.length}</h1><h2>${score===questions.length?'Xuất sắc!':'Hoàn thành thử thách!'}</h2><p class="muted">Bạn trả lời đúng ${score} câu.</p><button class="primary" onclick="answers=[];render()">Làm lại</button> <button class="secondary" onclick="setPage('${activeQuiz.kind==='fun'?'fun':'quiz'}')">Quay lại</button></div>`;
+  let score=answerResults.filter(Boolean).length;
+  return `<div class="panel"><div class="eyebrow">COMPLETED</div><div class="tileicon">🏆</div><h1>${score}/${questions.length}</h1><h2>${score===questions.length?'Xuất sắc!':'Hoàn thành thử thách!'}</h2><p class="muted">Bạn trả lời đúng ${score} câu.</p><button class="primary" onclick="answers=[];answerResults=[];render()">Làm lại</button> <button class="secondary" onclick="setPage('${activeQuiz.kind==='fun'?'fun':'quiz'}')">Quay lại</button></div>`;
  }
  let item=questions[i];
  return `<div class="breadcrumb"><button onclick="setPage('${activeQuiz.kind==='fun'?'fun':'quiz'}')">Quay lại</button> / ${esc(q.name)}</div><div class="panel"><div class="muted small">CÂU ${i+1}/${questions.length}</div><div class="progress"><div style="width:${i/questions.length*100}%"></div></div><h2 style="margin-top:25px">${esc(item.q)}</h2>${principiaQuestionMedia(item)}${item.a.map((a,j)=>`<label class="choice"><input type="radio" name="ans" value="${j}">${esc(a)}</label>`).join('')}<button class="primary" onclick="answerQuestion()">Xác nhận →</button></div>`;
@@ -330,7 +330,7 @@ function lessonPlayPage(){
  const questions=l.quiz||[]; let i=answers.length;
  if(!questions.length)return `<div class="panel"><h2>${esc(l.name)}</h2><p class="muted">Bài học chưa có câu hỏi.</p><button class="secondary" onclick="setPage('lesson')">Quay lại</button></div>`;
  if(i>=questions.length){
-  let score=questions.reduce((sum,q,j)=>sum+(answers[j]===q.correct?1:0),0);
+  let score=answerResults.filter(Boolean).length;
   return `<div class="panel"><div class="eyebrow">LESSON QUIZ COMPLETED</div><div class="tileicon">🏆</div><h1>${score}/${questions.length}</h1><p class="muted">Bạn trả lời đúng ${score} câu.</p><button class="primary" onclick="answers=[];render()">Làm lại</button> <button class="secondary" onclick="setPage('lesson')">Quay lại bài học</button></div>`;
  }
  let q=questions[i];
@@ -853,7 +853,7 @@ function dropItem(e,id){
 }
 function lessonQuiz(id){
  let l=find(id,data);if(!l.quiz?.length){notify('Bài học chưa có câu hỏi');return}
- activeQuiz={id,kind:'lesson'};answers=[];page='lessonplay';render();
+ activeQuiz={id,kind:'lesson'};answers=[];answerResults=[];page='lessonplay';render();
 }
 function editLessonQuiz(id){
  if(!requireAdmin())return;
@@ -865,9 +865,42 @@ function saveLessonQuiz(id){
  let l=find(id,data);l.quiz=[...$('#questions').children].map(el=>({q:el.querySelector('.qq').value,a:[...el.querySelectorAll('.qa')].map(x=>x.value),correct:+el.querySelector('.qc').value})).filter(q=>q.q&&q.a.some(Boolean));
  saveAll();closeModal();render();notify('Đã lưu câu hỏi');
 }
-function answerQuestion(){
- let a=document.querySelector('input[name="ans"]:checked');if(!a){notify('Hãy chọn đáp án');return}
- answers.push(+a.value);render();
+async function answerQuestion(){
+ if(quizAnswerPending)return;
+ const selected=document.querySelector('input[name="ans"]:checked');
+ if(!selected){notify('Hãy chọn đáp án');return}
+ const quiz=activeQuiz,index=answers.length;
+ if(!quiz||!Number.isInteger(index))return;
+ const source=quiz.kind==='quiz'?quizData:quiz.kind==='fun'?funData:data;
+ const node=find(quiz.id,source);
+ const questions=quiz.kind==='lesson'?(node?.quiz||[]):(node?.questions||[]);
+ const question=questions[index],choice=Number(selected.value);
+ if(!question||!Array.isArray(question.a)||!Number.isInteger(choice)||choice<0||choice>=question.a.length){notify('Câu hỏi hoặc lựa chọn không hợp lệ.');return}
+ quizAnswerPending=true;
+ const button=selected.closest('.panel')?.querySelector('button.primary');
+ if(button){button.disabled=true;button.textContent='ĐANG CHẤM…';}
+ let correct;
+ try{
+  const engine=window.PrincipiaWasmPhysics;
+  if(!engine||typeof engine.gradeQuiz!=='function')throw new Error('Rust/WASM assessment unavailable');
+  const grade=await engine.gradeQuiz({
+   id:String(quiz.id||'quiz').slice(0,120),title:'PRINCIPIA quiz',passPercent:60,
+   questions:[{prompt:String(question.q||'Câu hỏi').slice(0,4000),options:question.a.map(option=>String(option).slice(0,1000)),correctIndex:Number(question.correct),points:1}],
+   answers:[{questionIndex:0,selectedOption:choice}]
+  });
+  if(!grade||!Array.isArray(grade.details)||!grade.details[0]||typeof grade.details[0].isCorrect!=='boolean')throw new Error('Rust returned an invalid assessment');
+  correct=grade.details[0].isCorrect;
+ }catch(error){
+  correct=choice===Number(question.correct);
+  window.PRINCIPIA_LAST_ASSESSMENT_BACKEND='javascript-fallback';
+ }
+ if(activeQuiz===quiz&&answers.length===index){
+  answers.push(choice);
+  answerResults.push(correct);
+  if(window.PrincipiaWasmPhysics&&correct!==undefined)window.PRINCIPIA_LAST_ASSESSMENT_BACKEND='rust-wasm-or-fallback';
+  render();
+ }
+ quizAnswerPending=false;
 }
 function completeLesson(id){
  if(!completed.includes(id)){completed.push(id);xp+=10;dailyReward();saveAll();notify('+10 XP · Bài học hoàn thành')}
