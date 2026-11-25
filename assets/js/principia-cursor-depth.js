@@ -5,7 +5,7 @@ if(reduce||!fine)return;
 const host=document.getElementById('app')||document.body,canvas=document.createElement('canvas');
 canvas.id='principiaCursorDepth';canvas.setAttribute('aria-hidden','true');host.prepend(canvas);
 const ctx=canvas.getContext('2d',{alpha:true,desynchronized:true});if(!ctx){canvas.remove();return}
-let w=0,h=0,dpr=1,raf=0,last=0,px=-999,py=-999,mx=-999,my=-999,speed=0,prevX=0,prevY=0,particles=[],waves=[];
+let w=0,h=0,dpr=1,raf=0,last=0,px=-999,py=-999,mx=-999,my=-999,speed=0,prevX=0,prevY=0,particles=[],waves=[],sparks=[];
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 function resize(){w=innerWidth;h=innerHeight;dpr=Math.min(devicePixelRatio||1,w<720?.65:.9);canvas.width=w*dpr;canvas.height=h*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);
 particles=Array.from({length:Math.min(125,Math.max(45,Math.round(w*h/10500)))},()=>{const layer=Math.floor(Math.random()*3);return{x:Math.random()*w,y:Math.random()*h,vx:(Math.random()-.5)*(.16+layer*.06),vy:(Math.random()-.5)*(.16+layer*.06),r:.5+Math.random()*1.3,layer,phase:Math.random()*6.28}})}
@@ -19,9 +19,9 @@ for(let i=0;i<list.length;i++)for(let j=i+1;j<list.length;j++){const a=list[i],b
 }
 if(mx>-500){const radius=110+speed*.5,glow=ctx.createRadialGradient(mx,my,0,mx,my,radius);glow.addColorStop(0,'rgba(125,145,255,.13)');glow.addColorStop(.5,'rgba(125,145,255,.045)');glow.addColorStop(1,'rgba(125,145,255,0)');ctx.fillStyle=glow;ctx.fillRect(mx-radius,my-radius,radius*2,radius*2)}
 waves=waves.filter(a=>a.age<850);for(const a of waves){a.age+=dt;const k=a.age/850;ctx.beginPath();ctx.arc(a.x,a.y,a.age*.23,0,Math.PI*2);ctx.strokeStyle='rgba(145,170,255,'+((1-k)*.24)+')';ctx.lineWidth=1.2*(1-k);ctx.stroke();ctx.beginPath();ctx.arc(a.x,a.y,a.age*.15,0,Math.PI*2);ctx.strokeStyle='rgba(110,145,255,'+((1-k)*.1)+')';ctx.stroke()}
-if(speed>2&&mx>-500){ctx.beginPath();ctx.moveTo(mx,my);ctx.lineTo(mx-(px-mx)*.65,my-(py-my)*.65);ctx.strokeStyle='rgba(135,155,255,'+clamp(speed/80,.02,.14)+')';ctx.lineWidth=clamp(speed/30,.5,2);ctx.stroke()}
+if(speed>2&&mx>-500){ctx.beginPath();ctx.moveTo(mx,my);ctx.lineTo(mx-(px-mx)*.65,my-(py-my)*.65);ctx.strokeStyle='rgba(135,155,255,'+clamp(speed/80,.02,.14)+')';ctx.lineWidth=clamp(speed/30,.5,2);ctx.stroke()}\nsparks=sparks.filter(s=>s.life>0);for(const s of sparks){s.x+=s.vx*dt;s.y+=s.vy*dt;s.vx*=.98;s.vy*=.98;s.life-=dt;ctx.beginPath();ctx.arc(s.x,s.y,Math.max(.2,s.life/220),0,Math.PI*2);ctx.fillStyle='rgba(175,190,255,'+Math.max(0,s.life/220*.28)+')';ctx.fill()}
 raf=requestAnimationFrame(draw)}
-addEventListener('pointermove',e=>{px=e.clientX;py=e.clientY;speed=Math.min(60,Math.hypot(px-prevX,py-prevY));prevX=px;prevY=py},{passive:true});
+addEventListener('pointermove',e=>{px=e.clientX;py=e.clientY;speed=Math.min(60,Math.hypot(px-prevX,py-prevY));prevX=px;prevY=py;if(speed>5){const n=Math.min(4,Math.ceil(speed/15));for(let i=0;i<n;i++)sparks.push({x:px,y:py,vx:(Math.random()-.5)*speed*.05,vy:(Math.random()-.5)*speed*.05,life:120+Math.random()*100});if(sparks.length>90)sparks.splice(0,sparks.length-90)}},{passive:true});
 addEventListener('pointerdown',e=>{waves.push({x:e.clientX,y:e.clientY,age:0});if(waves.length>7)waves.shift()},{passive:true});
 addEventListener('resize',resize,{passive:true});document.addEventListener('visibilitychange',()=>{if(document.hidden){cancelAnimationFrame(raf);raf=0}else if(!raf)raf=requestAnimationFrame(draw)});
 resize();raf=requestAnimationFrame(draw);
