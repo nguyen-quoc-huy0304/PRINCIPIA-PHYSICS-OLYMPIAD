@@ -12,9 +12,10 @@ import (
 )
 
 func main() {
-	root, err := filepath.Abs(filepath.Join("desktop", "icons"))
+	root, err := filepath.Abs(filepath.Join("..", "..", ".."))
 	if err != nil { fatal(err) }
-	pngPath, icoPath := filepath.Join(root, "icon.png"), filepath.Join(root, "icon.ico")
+	icons := filepath.Join(root, "desktop", "icons")
+	pngPath, icoPath := filepath.Join(icons, "icon.png"), filepath.Join(icons, "icon.ico")
 	input, err := os.Open(pngPath)
 	if err != nil { fatal(err) }
 	source, err := png.Decode(input)
