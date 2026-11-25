@@ -2,6 +2,10 @@
 (function(root){
  'use strict';
  const KEY='principia_research_notebook_v1',VERSION=1,MAX_RECORDS=500,MAX_POINTS=10000;
+ let researchCore=null;
+ if(root.PrincipiaWasmPhysics&&typeof root.PrincipiaWasmPhysics.load==='function'){
+  root.PrincipiaWasmPhysics.load().then(module=>{researchCore=module;}).catch(()=>{});
+ }
  const text=(v,n)=>String(v==null?'':v).trim().slice(0,n);
  function parsePoints(raw){
   const lines=String(raw||'').split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
@@ -10,6 +14,14 @@
  }
  function summarize(points){
   if(!Array.isArray(points)||points.length<2||points.length>MAX_POINTS)throw new Error('Số điểm đo không hợp lệ.');
+  if(points.some(p=>!p||!Number.isFinite(p.x)||!Number.isFinite(p.y)))throw new Error('Dữ liệu đo không hợp lệ.');
+  if(researchCore){
+   try{
+    const result=JSON.parse(researchCore.research_summary_json(JSON.stringify(points.map(p=>[p.x,p.y]))));
+    if(result&&Number.isFinite(result.mean)&&Number.isFinite(result.standardDeviation)&&Number.isFinite(result.standardError)&&
+       (result.slope===null||Number.isFinite(result.slope))&&(result.intercept===null||Number.isFinite(result.intercept)))return result;
+   }catch(_){}
+  }
   const overflow='Số liệu quá lớn để tính thống kê an toàn. Hãy kiểm tra đơn vị hoặc thang đo.';
   const n=points.length,sumY=points.reduce((s,p)=>s+p.y,0);
   if(!Number.isFinite(sumY))throw new Error(overflow);
