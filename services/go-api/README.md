@@ -18,5 +18,6 @@ The service listens on `:8080` by default. Set `ADDR` to change the bind address
 
 - `GET /healthz`: liveness check.
 - `POST /v1/compute`: validates a supported operation and forwards the JSON-line contract to the Rust core.
+- `POST /v1/ai/generate`: verifies a Firebase ID token, validates bounded chat input, and calls Gemini using server-side credentials.
 
-The compute endpoint limits request bodies to 64 KiB, rejects unknown fields and non-finite numeric values, and applies an eight-second execution deadline. Deploy this service behind HTTPS and an authenticated gateway before exposing user-specific operations. Do not use it as an authentication substitute.
+The compute endpoint limits request bodies to 64 KiB, rejects unknown fields and non-finite numeric values, and applies an eight-second execution deadline. The AI endpoint requires `FIREBASE_WEB_API_KEY` and `GEMINI_API_KEY`; `GEMINI_MODEL` is optional. It validates bearer tokens with Firebase Identity Toolkit, limits requests to 24 KiB and 18 messages, and never forwards identity fields to Gemini. Deploy this service behind HTTPS and set `ALLOWED_ORIGIN` to the exact PRINCIPIA origin. Do not expose provider credentials to the browser.
