@@ -27,6 +27,10 @@
   let state = loadState();
   let root = null;
   let activeMatch = null;
+  let rankArenaCore = null;
+  if (window.PrincipiaWasmPhysics && typeof window.PrincipiaWasmPhysics.load === 'function') {
+    window.PrincipiaWasmPhysics.load().then(module => { rankArenaCore = module; }).catch(() => {});
+  }
 
   function loadState() {
     try {
@@ -72,6 +76,10 @@
   }
 
   function currentTier(rp) {
+    if (rankArenaCore && typeof rankArenaCore.rank_arena_tier_json === 'function') {
+      try { return JSON.parse(rankArenaCore.rank_arena_tier_json(Math.max(0, Math.floor(Number(rp) || 0)))); }
+      catch (_) {}
+    }
     let index = 0;
     for (let i = 1; i < TIERS.length; i += 1) if (rp >= TIERS[i].min) index = i;
     const tier = TIERS[index];
@@ -193,16 +201,31 @@
     show('TRẬN ĐẤU · ' + (match.index + 1) + '/' + MATCH_SIZE, '<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;color:#c7b9e9"><b>' + match.rival.icon + ' ' + match.rival.name + ' · AI ' + match.rival.style + '</b><span>' + (match.mode === 'accuracy' ? 'CHUẨN XÁC' : match.mode === 'combo' ? 'COMBO' : 'CÂN BẰNG') + '</span></div><div style="height:7px;background:#080811;border-radius:8px;margin:12px 0 18px;overflow:hidden"><div style="height:100%;width:' + progress + '%;background:#9c7bff"></div></div><small style="color:#aaa">' + escapeHtml(q.topic) + '</small><h2 style="font-size:20px;line-height:1.5;margin:10px 0 18px">' + escapeHtml(q.q) + '</h2><div style="display:grid;gap:9px">' + q.a.map((answer, i) => '<button type="button" onclick="principiaRankAnswer(' + i + ')" style="padding:14px;text-align:left;border:1px solid #51466c;border-radius:12px;background:#211e34;color:#fff;font-size:15px">' + String.fromCharCode(65 + i) + '. ' + escapeHtml(answer) + '</button>').join('') + '</div><p style="font-size:12px;color:#aaa;margin-top:16px">Chọn đáp án độc lập. Trợ lý AI không tiết lộ đáp án trong trận xếp hạng.</p>');
   }
 
-  function answerQuestion(index) {
+  async function answerQuestion(index) {
     const match = activeMatch;
-    if (!match) return;
+    if (!match || match.answering) return;
     const q = match.questions[match.index];
-    const selected = validInt(index, 0, q.a.length - 1);
-    const correct = selected === q.correct;
+    const selected = Number(index);
+    if (!Number.isInteger(selected) || selected < 0 || selected >= q.a.length) return;
+    match.answering = true;
+    if (root) root.querySelectorAll('[onclick^="principiaRankAnswer"]').forEach(button => { button.disabled = true; });
+    let correct;
+    try {
+      const adapter = window.PrincipiaAssessmentAdapter;
+      if (!adapter || typeof adapter.gradeQuestion !== 'function') throw new Error('Rust assessment adapter unavailable');
+      const grade = await adapter.gradeQuestion({ q: q.q, a: q.a, correct: q.correct }, selected, {
+        id: 'rank-arena', title: 'PRINCIPIA Ranked Arena'
+      });
+      correct = grade.correct;
+    } catch (_) {
+      correct = selected === q.correct;
+    }
+    if (activeMatch !== match || match.index >= MATCH_SIZE) return;
     match.answers.push({ correct, selected, expected: q.correct });
     match.combo = correct ? match.combo + 1 : 0;
     match.bestCombo = Math.max(match.bestCombo, match.combo);
     match.index += 1;
+    match.answering = false;
     if (match.index >= MATCH_SIZE) finishMatch();
     else renderQuestion();
   }
@@ -210,27 +233,47 @@
   function finishMatch() {
     const match = activeMatch;
     if (!match) return;
-    const correct = match.answers.filter(a => a.correct).length;
-    const accuracy = correct / MATCH_SIZE;
-    const base = match.rival.rating / 1000;
-    const modeBonus = match.mode === 'combo' ? match.bestCombo * 0.025 : 0;
-    const rivalCorrect = Math.max(1, Math.min(MATCH_SIZE, Math.round((0.48 + base * 0.28 + (Math.random() * 0.2 - 0.1)) * MATCH_SIZE)));
-    const userScore = accuracy + modeBonus;
-    const rivalScore = rivalCorrect / MATCH_SIZE + (match.mode === 'accuracy' ? 0.02 : 0);
-    const won = userScore > rivalScore || (userScore === rivalScore && correct >= 4);
-    const rpChange = won ? 20 : -8;
-    state.rp = Math.max(0, state.rp + rpChange);
-    state.mmr = validInt(state.mmr + (won ? 18 : -12) + Math.round((accuracy - 0.5) * 20), 100, 3000);
-    state.dailyMatches += 1;
-    if (won) state.wins += 1; else state.losses += 1;
-    const record = { date: new Date().toISOString(), rival: match.rival.name, mode: match.mode, correct, total: MATCH_SIZE, rivalCorrect, result: won ? 'win' : 'loss', rpChange, bestCombo: match.bestCombo };
-    state.matches.push(record);
+    const correct = match.answers.filter(answer => answer.correct).length;
+    const rivalCorrect = Math.max(1, Math.min(MATCH_SIZE,
+      Math.round((0.48 + (match.rival.rating / 1000) * 0.28 + (Math.random() * 0.2 - 0.1)) * MATCH_SIZE)));
+    const date = new Date().toISOString();
+    let outcome = null;
+    if (rankArenaCore && typeof rankArenaCore.rank_arena_finish_match_json === 'function') {
+      try {
+        const response = JSON.parse(rankArenaCore.rank_arena_finish_match_json(JSON.stringify(state), JSON.stringify({
+          rival: match.rival.name, mode: match.mode, correct, rivalCorrect,
+          bestCombo: match.bestCombo, date
+        })));
+        if (response && response.state && response.result && typeof response.result.won === 'boolean') {
+          state = response.state;
+          outcome = response.result;
+        }
+      } catch (_) {}
+    }
+    let won, rpChange;
+    if (outcome) {
+      won = outcome.won;
+      rpChange = outcome.rpChange;
+    } else {
+      const accuracy = correct / MATCH_SIZE;
+      const modeBonus = match.mode === 'combo' ? match.bestCombo * 0.025 : 0;
+      const userScore = accuracy + modeBonus;
+      const rivalScore = rivalCorrect / MATCH_SIZE + (match.mode === 'accuracy' ? 0.02 : 0);
+      won = userScore > rivalScore || (userScore === rivalScore && correct >= 4);
+      rpChange = won ? 20 : -8;
+      state.rp = Math.max(0, state.rp + rpChange);
+      state.mmr = validInt(state.mmr + (won ? 18 : -12) + Math.round((accuracy - 0.5) * 20), 100, 3000);
+      state.dailyMatches += 1;
+      if (won) state.wins += 1; else state.losses += 1;
+      state.matches.push({ date, rival: match.rival.name, mode: match.mode, correct, total: MATCH_SIZE,
+        rivalCorrect, result: won ? 'win' : 'loss', rpChange, bestCombo: match.bestCombo });
+    }
     updateAchievements();
     saveState();
     activeMatch = null;
     const tier = currentTier(state.rp);
     const answerReview = match.questions.map((q, i) => '<div style="padding:9px 0;border-bottom:1px solid #38324d"><b>' + (match.answers[i].correct ? '✓' : '✕') + ' ' + escapeHtml(q.q) + '</b><div style="font-size:12px;color:#aaa;margin-top:4px">Đáp án đúng: ' + escapeHtml(q.a[q.correct]) + '</div></div>').join('');
-    show(won ? 'CHIẾN THẮNG' : 'TRẬN ĐẤU KẾT THÚC', '<div style="text-align:center;padding:18px;border:1px solid ' + (won ? '#8d75ca' : '#75515b') + ';border-radius:16px;background:linear-gradient(140deg,#342650,#141426)"><div style="font-size:38px">' + (won ? '🏆' : '⚔️') + '</div><h2 style="font-size:26px;margin:6px 0">' + (won ? 'VICTORY' : 'DEFEAT') + '</h2><div style="font-size:22px;font-weight:850;color:' + (rpChange > 0 ? '#8be3b3' : '#f1a0a0') + '">' + (rpChange > 0 ? '+' : '') + rpChange + ' RP</div><p style="color:#c7bddb">' + match.rival.name + ' · AI · ' + rivalCorrect + '/' + MATCH_SIZE + ' câu</p><p>Bạn: ' + correct + '/' + MATCH_SIZE + ' câu đúng · Combo tốt nhất: ' + match.bestCombo + '</p><div style="font-size:21px">' + tier.icon + ' ' + tier.label + '</div></div><h3>Phân tích đáp án</h3>' + answerReview + button('Trở về đấu trường', 'principiaRankHome()', true) + button('Chơi trận tiếp', 'principiaRankStart("' + match.mode + '")'));
+    show(won ? 'CHIẾN THẮNG' : 'TRẬN ĐẤU KẾT THÚC', '<div style="text-align:center;padding:18px;border:1px solid #51466c;border-radius:16px"><h2>' + (won ? '🏆 CHIẾN THẮNG' : '⚔️ TRẬN ĐẤU KẾT THÚC') + '</h2><div style="font-size:32px;font-weight:900">' + correct + '/' + MATCH_SIZE + '</div><p>' + (won ? 'Bạn thắng ' + escapeHtml(match.rival.name) : 'Bạn thua ' + escapeHtml(match.rival.name)) + '</p><p style="font-size:18px;font-weight:800;color:' + (rpChange > 0 ? '#78e0ac' : '#f2a2a2') + '">' + (rpChange > 0 ? '+' : '') + rpChange + ' RP</p><p>' + tier.icon + ' ' + escapeHtml(tier.label) + ' · ' + state.rp + ' RP</p></div><section style="margin-top:14px"><h3>Phân tích câu trả lời</h3>' + answerReview + '</section><div style="margin-top:14px"><button type="button" onclick="principiaRankHome()">Về đấu trường</button></div>');
   }
 
   function updateAchievements() {
