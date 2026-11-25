@@ -16,6 +16,7 @@ pub mod rigid_body;
 pub mod robotics;
 pub mod data_analysis;
 pub mod game;
+pub mod gameverse;
 pub mod collisions;
 pub mod force_balance;
 pub mod game_challenge;
