@@ -192,6 +192,12 @@ pub fn season_missions_json(metrics_json: &str, date: &str) -> Result<String, Js
         .map_err(|error| JsValue::from_str(error))
 }
 
+#[wasm_bindgen]
+pub fn gameverse_apply_json(state_json: &str, action_json: &str) -> Result<String, JsValue> {
+    crate::gameverse::apply_action(state_json, action_json)
+        .map_err(|error| input_error(error))
+}
+
 fn input_error(message: &str) -> JsValue { JsValue::from_str(message) }
 
 #[wasm_bindgen]
