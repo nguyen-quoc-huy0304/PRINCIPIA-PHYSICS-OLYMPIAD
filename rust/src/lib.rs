@@ -28,6 +28,7 @@ mod wasm_physics;
 pub mod virtual_lab;
 pub mod progress;
 pub mod learning;
+pub mod level_studio;
 pub mod progression;
 pub mod research;
 pub mod store;
