@@ -11,6 +11,7 @@ pub mod session;
 pub mod assessment;
 pub mod features;
 pub mod physics;
+pub mod pendulum;
 pub mod rigid_body;
 pub mod robotics;
 pub mod data_analysis;
