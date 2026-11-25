@@ -310,6 +310,40 @@ pub fn progress_record_json(progress_json: &str, activity: &str, day: &str) -> R
 
 
 #[wasm_bindgen]
+pub fn progress_award_custom_json(
+    progress_json: &str, activity: &str, day: &str, xp_reward: u64,
+) -> Result<String, JsValue> {
+    if progress_json.len() > 16 * 1024 { return Err(input_error("Progress payload exceeds 16 KiB")); }
+    if day.len() != 10 || xp_reward > 1000 { return Err(input_error("Invalid progress day or XP reward")); }
+    use crate::progress::{Activity, Progress};
+    let value: serde_json::Value = serde_json::from_str(progress_json)
+        .map_err(|_| input_error("Progress payload must be valid JSON"))?;
+    let mut progress = Progress {
+        experience: value.get("experience").and_then(serde_json::Value::as_u64).unwrap_or(0),
+        completed_lessons: value.get("completedLessons").and_then(serde_json::Value::as_u64).unwrap_or(0),
+        study_streak_days: value.get("studyStreakDays").and_then(serde_json::Value::as_u64)
+            .unwrap_or(0).min(u32::MAX as u64) as u32,
+        last_activity_day: value.get("lastActivityDay").and_then(serde_json::Value::as_str).map(str::to_owned),
+    };
+    let activity = match activity {
+        "lesson" => Activity::LessonCompleted,
+        "quiz" => Activity::QuizSubmitted,
+        "assignment" => Activity::AssignmentSubmitted,
+        "experiment" => Activity::ExperimentCompleted,
+        _ => return Err(input_error("Unsupported progress activity")),
+    };
+    progress.record_with_reward(activity, day, xp_reward).map_err(input_error)?;
+    serde_json::to_string(&serde_json::json!({
+        "experience": progress.experience,
+        "completedLessons": progress.completed_lessons,
+        "studyStreakDays": progress.study_streak_days,
+        "lastActivityDay": progress.last_activity_day,
+        "level": progress.level(),
+        "experienceIntoLevel": progress.experience_into_level()
+    })).map_err(|error| input_error(&error.to_string()))
+}
+
+#[wasm_bindgen]
 pub fn learning_recommend_json(context_json: &str) -> Result<String, JsValue> {
     if context_json.len() > 4096 { return Err(input_error("Learning context exceeds 4 KiB")); }
     use crate::learning::{recommend, LearningGoal, LearnerContext};
