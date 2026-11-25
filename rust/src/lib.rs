@@ -21,6 +21,7 @@ mod wasm_api;
 mod wasm_physics;
 pub mod virtual_lab;
 pub mod progress;
+pub mod learning;
 pub mod store;
 
 pub const APP_NAME: &str = "PRINCIPIA";
