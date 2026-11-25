@@ -26,6 +26,9 @@ async function compute(operation,params){
     case 'projectileMaxHeight': return JSON.parse(wasm.physics_projectile_json(p.speed,p.angleDeg,p.gravity)).maxHeight;
     case 'linearRegression': return JSON.parse(wasm.physics_linear_regression_json(JSON.stringify(p.points)));
     case 'forceBalance': return JSON.parse(wasm.force_balance_score_json(p.x,p.y,p.targetX,p.targetY));
+    case 'collision1D': return JSON.parse(wasm.physics_collision_1d_json(p.massA,p.velocityA,p.massB,p.velocityB,p.restitution));
+    case 'diskCollision': return JSON.parse(wasm.physics_resolve_disk_collision_json(p.a.x,p.a.y,p.a.vx,p.a.vy,p.a.mass,p.a.radius,p.b.x,p.b.y,p.b.vx,p.b.vy,p.b.mass,p.b.radius,p.restitution));
+    case 'momentumEnergy2D': return JSON.parse(wasm.physics_momentum_energy_2d_json(JSON.stringify(p.bodies)));
     case 'robotArmIK': return JSON.parse(wasm.physics_robot_arm_json(p.l1M,p.l2M,p.targetXM,p.targetYM,p.elbowBranch));
     case 'gradeQuiz': return JSON.parse(wasm.assessment_grade_json(JSON.stringify(p)));
     case 'recordProgress': return JSON.parse(wasm.progress_record_json(JSON.stringify(p.progress||{}),p.activity,p.day));
