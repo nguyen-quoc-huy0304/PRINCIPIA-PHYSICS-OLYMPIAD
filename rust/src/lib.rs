@@ -17,6 +17,8 @@ pub mod science_mystery;
 pub mod daily_challenge;
 #[cfg(target_arch = "wasm32")]
 mod wasm_api;
+#[cfg(target_arch = "wasm32")]
+mod wasm_physics;
 pub mod virtual_lab;
 pub mod progress;
 pub mod store;
