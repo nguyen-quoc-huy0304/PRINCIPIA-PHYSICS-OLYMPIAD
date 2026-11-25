@@ -184,3 +184,66 @@ pub fn progress_record_json(progress_json: &str, activity: &str, day: &str) -> R
         "experienceIntoLevel": progress.experience_into_level()
     })).map_err(|error| input_error(&error.to_string()))
 }
+
+
+#[wasm_bindgen]
+pub fn learning_recommend_json(context_json: &str) -> Result<String, JsValue> {
+    use crate::learning::{recommend, LearningGoal, LearnerContext};
+    let value: serde_json::Value = serde_json::from_str(context_json)
+        .map_err(|_| input_error("Learning context must be valid JSON"))?;
+    let goal = match value.get("goal").and_then(serde_json::Value::as_str) {
+        None | Some("") | Some("auto") => None,
+        Some("understand") => Some(LearningGoal::Understand),
+        Some("remember") => Some(LearningGoal::Remember),
+        Some("solve") => Some(LearningGoal::Solve),
+        Some("olympiad") => Some(LearningGoal::Olympiad),
+        Some("teach") => Some(LearningGoal::Teach),
+        Some("recover") => Some(LearningGoal::Recover),
+        _ => return Err(input_error("Unsupported learning goal")),
+    };
+    let percent = value.get("percent").and_then(serde_json::Value::as_f64);
+    let context = LearnerContext {
+        goal,
+        percent,
+        error_count: value.get("errorCount").and_then(serde_json::Value::as_u64)
+            .unwrap_or(0).min(u32::MAX as u64) as u32,
+        phase: value.get("phase").and_then(serde_json::Value::as_str)
+            .unwrap_or("").chars().take(100).collect(),
+        energy: value.get("energy").and_then(serde_json::Value::as_u64)
+            .unwrap_or(2).min(u8::MAX as u64) as u8,
+        confidence: value.get("confidence").and_then(serde_json::Value::as_u64)
+            .unwrap_or(3).min(u8::MAX as u64) as u8,
+        topic: value.get("topic").and_then(serde_json::Value::as_str)
+            .unwrap_or("").chars().take(120).collect(),
+    };
+    let plan = recommend(&context)
+        .map_err(|error| input_error(&format!("Learning recommendation failed: {error:?}")))?;
+    let goal = match plan.goal {
+        LearningGoal::Understand => "understand",
+        LearningGoal::Remember => "remember",
+        LearningGoal::Solve => "solve",
+        LearningGoal::Olympiad => "olympiad",
+        LearningGoal::Teach => "teach",
+        LearningGoal::Recover => "recover",
+    };
+    serde_json::to_string(&serde_json::json!({
+        "goal": goal,
+        "difficulty": plan.difficulty,
+        "focusMinutes": plan.focus_minutes,
+        "topic": plan.topic,
+        "steps": plan.steps,
+        "nextAction": plan.next_action
+    })).map_err(|error| input_error(&error.to_string()))
+}
+
+#[wasm_bindgen]
+pub fn learning_review_schedule_json(quality: u8, previous_interval_days: u32, ease_factor: f64) -> Result<String, JsValue> {
+    let schedule = crate::learning::schedule_review(quality, previous_interval_days, ease_factor)
+        .map_err(|error| input_error(&format!("Review schedule failed: {error:?}")))?;
+    serde_json::to_string(&serde_json::json!({
+        "intervalDays": schedule.interval_days,
+        "dueAfterDays": schedule.due_after_days,
+        "easeFactor": schedule.ease_factor,
+        "mastered": schedule.mastered
+    })).map_err(|error| input_error(&error.to_string()))
+}
