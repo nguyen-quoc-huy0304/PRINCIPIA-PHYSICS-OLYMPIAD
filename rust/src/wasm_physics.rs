@@ -80,10 +80,15 @@ fn input_error(message: &str) -> JsValue { JsValue::from_str(message) }
 
 #[wasm_bindgen]
 pub fn assessment_grade_json(input_json: &str) -> Result<String, JsValue> {
+    if input_json.len() > 256 * 1024 { return Err(input_error("Quiz payload exceeds 256 KiB")); }
     use crate::assessment::{Answer, Question, Quiz};
     let value: serde_json::Value = serde_json::from_str(input_json)
         .map_err(|_| input_error("Quiz payload must be valid JSON"))?;
     let object = value.as_object().ok_or_else(|| input_error("Quiz payload must be an object"))?;
+    if object.get("id").and_then(serde_json::Value::as_str).is_some_and(|text| text.len() > 120)
+        || object.get("title").and_then(serde_json::Value::as_str).is_some_and(|text| text.len() > 240) {
+        return Err(input_error("Quiz metadata exceeds supported length"));
+    }
     let questions_value = object.get("questions").and_then(serde_json::Value::as_array)
         .ok_or_else(|| input_error("Quiz questions are required"))?;
     if questions_value.is_empty() || questions_value.len() > 200 {
@@ -108,6 +113,7 @@ pub fn assessment_grade_json(input_json: &str) -> Result<String, JsValue> {
             .ok_or_else(|| input_error("Invalid correct option index"))?;
         let points = item.get("points").and_then(serde_json::Value::as_u64)
             .unwrap_or(1).try_into().map_err(|_| input_error("Invalid question points"))?;
+        if points == 0 || points > 1000 { return Err(input_error("Question points must be between 1 and 1000")); }
         let explanation = item.get("explanation").and_then(serde_json::Value::as_str)
             .map(str::to_owned);
         questions.push(Question { prompt: prompt.to_owned(), options, correct_index, explanation, points });
@@ -156,6 +162,7 @@ pub fn assessment_grade_json(input_json: &str) -> Result<String, JsValue> {
 
 #[wasm_bindgen]
 pub fn progress_record_json(progress_json: &str, activity: &str, day: &str) -> Result<String, JsValue> {
+    if progress_json.len() > 16 * 1024 { return Err(input_error("Progress payload exceeds 16 KiB")); }
     use crate::progress::{Activity, Progress};
     if day.len() != 10 { return Err(input_error("Activity day must use YYYY-MM-DD")); }
     let value: serde_json::Value = serde_json::from_str(progress_json)
@@ -188,6 +195,7 @@ pub fn progress_record_json(progress_json: &str, activity: &str, day: &str) -> R
 
 #[wasm_bindgen]
 pub fn learning_recommend_json(context_json: &str) -> Result<String, JsValue> {
+    if context_json.len() > 4096 { return Err(input_error("Learning context exceeds 4 KiB")); }
     use crate::learning::{recommend, LearningGoal, LearnerContext};
     let value: serde_json::Value = serde_json::from_str(context_json)
         .map_err(|_| input_error("Learning context must be valid JSON"))?;
@@ -251,6 +259,7 @@ pub fn learning_review_schedule_json(quality: u8, previous_interval_days: u32, e
 
 #[wasm_bindgen]
 pub fn progression_summary_json(input_json: &str) -> Result<String, JsValue> {
+    if input_json.len() > 4096 { return Err(input_error("Progression input exceeds 4 KiB")); }
     use crate::progression::{achievements, level_progress, rank_progress, AchievementInput};
     let value: serde_json::Value = serde_json::from_str(input_json)
         .map_err(|_| input_error("Progression input must be valid JSON"))?;
