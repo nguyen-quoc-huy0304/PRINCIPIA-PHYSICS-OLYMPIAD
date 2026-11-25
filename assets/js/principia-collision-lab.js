@@ -1,6 +1,11 @@
 (function () {
   'use strict';
 
+  let collisionCore = null;
+  if (window.PrincipiaWasmPhysics && typeof window.PrincipiaWasmPhysics.load === 'function') {
+    window.PrincipiaWasmPhysics.load().then((module) => { collisionCore = module; }).catch(() => {});
+  }
+
   function collide1D(m1, u1, m2, u2, restitution) {
     const values = [m1, u1, m2, u2, restitution];
     if (!values.every(Number.isFinite)) throw new TypeError('All inputs must be finite numbers.');
@@ -74,7 +79,14 @@
     function update() {
       try {
         const [m1, u1, m2, u2, e] = read();
-        const r = collide1D(m1, u1, m2, u2, e);
+        let r;
+        try {
+          r = collisionCore
+            ? JSON.parse(collisionCore.physics_collision_1d_json(m1, u1, m2, u2, e))
+            : collide1D(m1, u1, m2, u2, e);
+        } catch (_) {
+          r = collide1D(m1, u1, m2, u2, e);
+        }
         el('v1').textContent = fmt(r.v1) + ' m/s';
         el('v2').textContent = fmt(r.v2) + ' m/s';
         el('p-before').textContent = fmt(r.momentumBefore) + ' kg·m/s';
@@ -160,7 +172,14 @@
         ctx.lineTo(b.x+b.vx*scale-6*Math.cos(angle-0.5),b.y+b.vy*scale-6*Math.sin(angle-0.5));
         ctx.lineTo(b.x+b.vx*scale-6*Math.cos(angle+0.5),b.y+b.vy*scale-6*Math.sin(angle+0.5)); ctx.closePath(); ctx.fillStyle='#fff'; ctx.fill();
       });
-      const totals=momentumAndEnergy2D(bodies);
+      let totals;
+      try {
+        totals = collisionCore
+          ? JSON.parse(collisionCore.physics_momentum_energy_2d_json(JSON.stringify(bodies)))
+          : momentumAndEnergy2D(bodies);
+      } catch (_) {
+        totals = momentumAndEnergy2D(bodies);
+      }
       energy.textContent=fmt2D(totals.kinetic)+' J (đơn vị mô phỏng)';
       momentum.textContent='px '+fmt2D(totals.px)+' · py '+fmt2D(totals.py)+' kg·m/s';
     }
@@ -230,7 +249,18 @@
         if(b.y+b.radius>height){b.y=height-b.radius;b.vy=-Math.abs(b.vy);}
       });
       const e=Number(restitutionInput.value);
-      for(let i=0;i<bodies.length;i++) for(let j=i+1;j<bodies.length;j++) resolveDiskCollision(bodies[i],bodies[j],e);
+      for(let i=0;i<bodies.length;i++) for(let j=i+1;j<bodies.length;j++) {
+        const a=bodies[i],b=bodies[j];
+        if(collisionCore){
+          try{
+            const result=JSON.parse(collisionCore.physics_resolve_disk_collision_json(
+              a.x,a.y,a.vx,a.vy,a.mass,a.radius,b.x,b.y,b.vx,b.vy,b.mass,b.radius,e
+            ));
+            if(!result||!result.a||!result.b||typeof result.collided!=='boolean')throw new Error('Invalid Rust collision result');
+            Object.assign(a,result.a);Object.assign(b,result.b);
+          }catch(_){resolveDiskCollision(a,b,e);}
+        }else resolveDiskCollision(a,b,e);
+      }
     }
     function tick(time) {
       if(!running) return;
@@ -297,7 +327,7 @@
     start.addEventListener('click',()=>{
       if(running){stop();return;}
       if(document.hidden || !onScreen){status.textContent='Mở phòng thí nghiệm trên màn hình để chạy mô phỏng.';return;}
-      running=true; start.textContent='Ⅱ Tạm dừng'; status.textContent='Đang mô phỏng va chạm 2D.'; last=0; raf=requestAnimationFrame(tick);
+      running=true; start.textContent='Ⅱ Tạm dừng'; status.textContent='Đang mô phỏng va chạm 2D · '+(collisionCore?'Rust/WASM':'JavaScript fallback')+'.'; last=0; raf=requestAnimationFrame(tick);
     });
     reset.addEventListener('click',resetWorld);
     if(add) add.addEventListener('click',addBody);
