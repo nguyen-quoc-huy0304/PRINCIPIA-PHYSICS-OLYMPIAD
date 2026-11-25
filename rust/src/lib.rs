@@ -29,6 +29,7 @@ pub mod virtual_lab;
 pub mod progress;
 pub mod learning;
 pub mod progression;
+pub mod research;
 pub mod store;
 
 pub const APP_NAME: &str = "PRINCIPIA";
