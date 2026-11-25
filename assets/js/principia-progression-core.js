@@ -56,5 +56,9 @@
   ];
   return checks.map(([id,name,description,unlocked,value,target])=>({id,name,description,unlocked,value,target,percent:Math.min(100,Math.round(value/target*100))}));
  }
- return {dateKey,recordActivity,streak,level,achievements,LEVELS};
+ async function summarizeWithRust(xp,metrics={}) {
+  if(!root.PrincipiaWasmPhysics?.progression)throw new Error('Rust WASM progression engine is unavailable');
+  return root.PrincipiaWasmPhysics.progression({xp,...metrics});
+ }
+ return {dateKey,recordActivity,streak,level,achievements,summarizeWithRust,LEVELS};
 });
