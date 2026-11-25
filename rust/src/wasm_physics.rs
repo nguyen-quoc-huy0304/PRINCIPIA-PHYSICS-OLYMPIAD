@@ -76,6 +76,62 @@ pub fn physics_robot_arm_json(
 }
 
 
+#[wasm_bindgen]
+pub fn physics_collision_1d_json(
+    mass_a: f64, velocity_a: f64, mass_b: f64, velocity_b: f64, restitution: f64,
+) -> Result<String, JsValue> {
+    let result = crate::collisions::collide_1d(mass_a, velocity_a, mass_b, velocity_b, restitution)
+        .map_err(|error| JsValue::from_str(error))?;
+    serde_json::to_string(&serde_json::json!({
+        "v1": result.v1, "v2": result.v2,
+        "momentumBefore": result.momentum_before, "momentumAfter": result.momentum_after,
+        "momentumError": result.momentum_error, "kineticBefore": result.kinetic_before,
+        "kineticAfter": result.kinetic_after, "kineticChange": result.kinetic_change,
+        "energyLoss": result.energy_loss, "restitution": result.restitution,
+        "totalMass": result.total_mass
+    })).map_err(|error| JsValue::from_str(&error.to_string()))
+}
+
+#[wasm_bindgen]
+pub fn physics_resolve_disk_collision_json(
+    ax: f64, ay: f64, avx: f64, avy: f64, amass: f64, aradius: f64,
+    bx: f64, by: f64, bvx: f64, bvy: f64, bmass: f64, bradius: f64,
+    restitution: f64,
+) -> Result<String, JsValue> {
+    let a = crate::collisions::DiskBody { x: ax, y: ay, vx: avx, vy: avy, mass: amass, radius: aradius };
+    let b = crate::collisions::DiskBody { x: bx, y: by, vx: bvx, vy: bvy, mass: bmass, radius: bradius };
+    let result = crate::collisions::resolve_disk_collision(a, b, restitution)
+        .map_err(|error| JsValue::from_str(error))?;
+    serde_json::to_string(&serde_json::json!({
+        "collided": result.collided, "impulse": result.impulse,
+        "a": {"x": result.a.x, "y": result.a.y, "vx": result.a.vx, "vy": result.a.vy},
+        "b": {"x": result.b.x, "y": result.b.y, "vx": result.b.vx, "vy": result.b.vy}
+    })).map_err(|error| JsValue::from_str(&error.to_string()))
+}
+
+#[wasm_bindgen]
+pub fn physics_momentum_energy_2d_json(bodies_json: &str) -> Result<String, JsValue> {
+    if bodies_json.len() > 16 * 1024 { return Err(JsValue::from_str("Body payload exceeds 16 KiB")); }
+    let values: serde_json::Value = serde_json::from_str(bodies_json)
+        .map_err(|_| JsValue::from_str("Body payload must be valid JSON"))?;
+    let items = values.as_array().filter(|items| (1..=12).contains(&items.len()))
+        .ok_or_else(|| JsValue::from_str("Body array must contain 1 to 12 bodies"))?;
+    let mut bodies = Vec::with_capacity(items.len());
+    for item in items {
+        let number = |key: &str| item.get(key).and_then(serde_json::Value::as_f64)
+            .ok_or_else(|| JsValue::from_str("Body contains a missing or invalid number"));
+        bodies.push(crate::collisions::DiskBody {
+            x: number("x")?, y: number("y")?, vx: number("vx")?, vy: number("vy")?,
+            mass: number("mass")?, radius: number("radius")?,
+        });
+    }
+    let totals = crate::collisions::momentum_energy_2d(&bodies)
+        .map_err(|error| JsValue::from_str(error))?;
+    serde_json::to_string(&serde_json::json!({
+        "px": totals.px, "py": totals.py, "kinetic": totals.kinetic
+    })).map_err(|error| JsValue::from_str(&error.to_string()))
+}
+
 fn input_error(message: &str) -> JsValue { JsValue::from_str(message) }
 
 #[wasm_bindgen]
