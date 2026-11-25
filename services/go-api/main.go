@@ -38,6 +38,7 @@ var operationFields = map[string][]string{
 	"gameProjectileScore": {"speed", "angleDeg", "targetM", "gravity"},
 	"rigidBodyDrop": {"initialHeightM", "gravityMps2", "radiusM", "restitution", "steps"},
 	"linearRegression": {"points"},
+	"forceBalance": {"x", "y", "targetX", "targetY"},
 	"robotArmIK": {"l1M", "l2M", "targetXM", "targetYM", "elbowBranch"},
 }
 
