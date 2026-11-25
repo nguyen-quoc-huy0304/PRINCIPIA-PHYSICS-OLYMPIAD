@@ -32,8 +32,20 @@
  }
  async function getRankWithRust(value) {
   if(!root.PrincipiaWasmPhysics?.progression)throw new Error('Rust WASM progression engine is unavailable');
-  const result=await root.PrincipiaWasmPhysics.progression({xp:Math.max(0,Math.floor(Number(value)||0))});
-  return result.rank;
+  const parsed=Number(value),xp=Number.isFinite(parsed)?Math.max(0,Math.floor(parsed)):0;
+  const result=await root.PrincipiaWasmPhysics.progression({xp});
+  const data=result?.rank;
+  const index=RANKS.findIndex(item=>item.id===data?.id);
+  if(index<0||!Number.isFinite(Number(data.progress)))throw new Error('Rust returned an invalid rank');
+  const current=RANKS[index],next=RANKS[index+1]||null;
+  const progress=Math.max(0,Math.min(100,Number(data.progress)));
+  const division=next?(progress>=66.6667?'I':progress>=33.3333?'II':'III'):null;
+  return Object.freeze({
+   ...current,xp,rankPoints:xp,currentThreshold:current.minXP,
+   nextThreshold:next?next.minXP:null,xpToNext:next?Math.max(0,next.minXP-xp):0,
+   progress,division,label:division?current.name+' '+division:current.name,
+   nextName:next?next.name:null,isMaxRank:!next
+  });
  }
  return Object.freeze({RANKS,getRank,getRankWithRust});
 });
