@@ -57,7 +57,7 @@ func (a api) cors(next http.Handler) http.Handler {
 		if a.allowedOrigin != "" && origin == a.allowedOrigin {
 			w.Header().Set("Access-Control-Allow-Origin", a.allowedOrigin)
 			w.Header().Set("Vary", "Origin")
-			w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 			w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
 		}
 		if r.Method == http.MethodOptions {
