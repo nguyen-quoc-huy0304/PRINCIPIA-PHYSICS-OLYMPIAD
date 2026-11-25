@@ -13,6 +13,15 @@ impl Default for Progress {
 }
 impl Progress {
     pub fn record(&mut self, activity: Activity, day: &str) -> Result<(), &'static str> {
+        let reward = match activity {
+            Activity::LessonCompleted => 50,
+            Activity::QuizSubmitted | Activity::AssignmentSubmitted => 30,
+            Activity::ExperimentCompleted => 40,
+        };
+        self.record_with_reward(activity, day, reward)
+    }
+
+    pub fn record_with_reward(&mut self, activity: Activity, day: &str, reward: u64) -> Result<(), &'static str> {
         let current=day_number(day).ok_or("day must be a valid YYYY-MM-DD date")?;
         if self.last_activity_day.as_deref()!=Some(day) {
             self.study_streak_days=match self.last_activity_day.as_deref().and_then(day_number) {
@@ -21,10 +30,7 @@ impl Progress {
             };
             self.last_activity_day=Some(day.to_string());
         }
-        self.experience=self.experience.saturating_add(match activity {
-            Activity::LessonCompleted=>50, Activity::QuizSubmitted=>30,
-            Activity::AssignmentSubmitted=>30, Activity::ExperimentCompleted=>40,
-        });
+        self.experience=self.experience.saturating_add(reward);
         if activity==Activity::LessonCompleted { self.completed_lessons=self.completed_lessons.saturating_add(1); }
         Ok(())
     }
@@ -50,6 +56,15 @@ fn day_number(day: &str) -> Option<i64> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test] fn custom_rewards_preserve_activity_and_streak_semantics() {
+        let mut p=Progress::default();
+        p.record_with_reward(Activity::LessonCompleted,"2026-11-22",10).unwrap();
+        assert_eq!(p.experience,10);
+        assert_eq!(p.completed_lessons,1);
+        p.record_with_reward(Activity::QuizSubmitted,"2026-11-22",15).unwrap();
+        assert_eq!(p.experience,25);
+        assert_eq!(p.study_streak_days,1);
+    }
     #[test] fn awards_experience_and_counts_lesson() {
         let mut p=Progress::default();
         p.record(Activity::LessonCompleted,"2026-11-22").unwrap();
