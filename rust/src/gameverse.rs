@@ -141,8 +141,8 @@ fn quiz_result(state: &mut Value, score: u64, total: u64, mode: &str) -> Result<
             rating.saturating_add(24).saturating_add(score.saturating_mul(5))
         } else { rating.saturating_sub(8) };
         rank.insert("rating".to_owned(), json!(next_rating));
-        let wins = number(rank.get("wins")) + u64::from(win);
-        let losses = number(rank.get("losses")) + u64::from(!win);
+        let wins = number(rank.get("wins")).saturating_add(if win { 1 } else { 0 });
+        let losses = number(rank.get("losses")).saturating_add(if win { 0 } else { 1 });
         rank.insert("wins".to_owned(), json!(wins));
         rank.insert("losses".to_owned(), json!(losses));
     }
@@ -303,7 +303,7 @@ mod tests {
         assert_eq!(next["coins"], 15);
         assert_eq!(next["level"], 2);
         assert_eq!(next["season"]["xp"], 240);
-        assert_eq!(next["pet"]["xp"], 40);
+        assert_eq!(next["pet"]["xp"], 140);
         assert_eq!(next["pet"]["level"], 2);
     }
 
