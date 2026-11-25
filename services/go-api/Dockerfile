@@ -6,9 +6,9 @@ COPY src ./src
 RUN cargo build --manifest-path rust/Cargo.toml --release --bin principia-core-server
 
 FROM golang:1.25-bookworm AS go-build
-WORKDIR /workspace
-COPY services/go-api ./services/go-api
-RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/principia-go-api ./services/go-api
+WORKDIR /workspace/services/go-api
+COPY services/go-api ./
+RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/principia-go-api .
 
 FROM gcr.io/distroless/cc-debian12:nonroot
 WORKDIR /app
