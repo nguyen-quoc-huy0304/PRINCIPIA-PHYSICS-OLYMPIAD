@@ -24,6 +24,8 @@ async function compute(operation,params){
     case 'kineticEnergy': return wasm.physics_kinetic_energy(p.massKg,p.speedMps);
     case 'projectileRange': return JSON.parse(wasm.physics_projectile_json(p.speed,p.angleDeg,p.gravity)).range;
     case 'projectileMaxHeight': return JSON.parse(wasm.physics_projectile_json(p.speed,p.angleDeg,p.gravity)).maxHeight;
+    case 'linearRegression': return JSON.parse(wasm.physics_linear_regression_json(JSON.stringify(p.points)));
+    case 'robotArmIK': return JSON.parse(wasm.physics_robot_arm_json(p.l1M,p.l2M,p.targetXM,p.targetYM,p.elbowBranch));
     default: throw new TypeError('Unsupported Rust/WASM physics operation: '+operation);
   }
 }
