@@ -598,16 +598,34 @@
  function exportErrors(){const q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';const rows=(state.errors||[]).map(x=>[x.date,x.title,x.body]);downloadText('\uFEFF'+[['Thời điểm','Câu hỏi','Ghi chú sửa lỗi'],...rows].map(r=>r.map(q).join(',')).join('\r\n'),'principia-error-log.csv','text/csv;charset=utf-8')}
  function addError(){const title=document.getElementById('plsErrorTitle').value.trim(),body=document.getElementById('plsErrorBody').value.trim();if(!title||!body){alert('Hãy nhập câu hỏi và cách sửa.');return}state.errors.unshift({title:title,body:body,date:new Date().toISOString()});save();errors()}
  function deleteError(i){if(!confirm('Xóa mục lỗi sai này?'))return;state.errors.splice(i,1);save();errors()}
- function progression(){
+ async function progression(){
   const api=window.PrincipiaProgressionCore;
   if(!api){open('Tiến trình học tập','<p>Module tiến trình chưa tải được. Hãy tải lại trang.</p>'+btn('Về trung tâm','principiaSuiteHome()'));return}
+  open('Đang đồng bộ tiến trình','<p>Đang tính cấp độ và thành tựu bằng Rust/WASM…</p>');
   const attempts=state.attempts||[],questions=attempts.reduce((s,x)=>s+(Number(x.total)||0),0),best=attempts.reduce((m,x)=>Math.max(m,Number(x.percent)||0),0);
   let lessonsDone=0;try{lessonsDone=typeof completed!=='undefined'?completed.length:0}catch(_){}
   let experiments=0,levels=0;try{experiments=JSON.parse(localStorage.getItem('principia_research_notebook_v1')||'[]').length}catch(_){}try{levels=JSON.parse(localStorage.getItem('principia_user_levels_v1')||'[]').length}catch(_){}
-  const st=api.streak(state.studyDays||[],new Date()),lv=api.level(currentXP());
-  const achievements=api.achievements({sessions:attempts.length,questions,bestPercent:best,lessons:lessonsDone,streak:st.current,experiments,levels});
-  const cards=achievements.map(a=>'<div class="panel" style="padding:12px;opacity:'+(a.unlocked?'1':'.72')+'"><div style="display:flex;justify-content:space-between;gap:8px"><b>'+esc(a.name)+'</b><b>'+(a.unlocked?'🏅':'🔒')+'</b></div><p class="small muted">'+esc(a.description)+'</p><div style="height:7px;border-radius:10px;background:var(--line,#444);overflow:hidden"><div style="height:100%;width:'+a.percent+'%;background:var(--purple,#9b87ff)"></div></div><small class="muted">'+Math.min(a.value,a.target)+'/'+a.target+' · '+a.percent+'%</small></div>').join('');
-  open('Cấp độ & chuỗi ngày','<div class="panel" style="padding:16px"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><div><small class="muted">CẤP ĐỘ '+lv.level+'</small><h2 style="margin:4px 0">'+esc(lv.title)+'</h2><b>'+lv.xp+' XP</b></div><div style="text-align:right"><div style="font-size:28px">🔥 '+st.current+'</div><small class="muted">ngày liên tiếp</small><p class="small muted">Kỷ lục: '+st.longest+' ngày</p></div></div><div style="height:9px;border-radius:12px;background:var(--line,#444);overflow:hidden;margin:12px 0 6px"><div style="height:100%;width:'+lv.progress+'%;background:var(--purple,#9b87ff)"></div></div><small class="muted">'+(lv.nextThreshold===null?'Đã đạt cấp tối đa':lv.xpToNext+' XP nữa để lên cấp '+(lv.level+1))+'</small><p class="small muted">'+(st.activeToday?'Hôm nay đã ghi nhận hoạt động học tập.':'Hoàn thành một hoạt động học tập để giữ chuỗi ngày.')+'</p></div><h3>Thành tựu ('+achievements.filter(a=>a.unlocked).length+'/'+achievements.length+')</h3><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:9px">'+cards+'</div>'+btn('Mở bộ sưu tập huy hiệu','principiaSuiteBadges()')+btn('Về trung tâm','principiaSuiteHome()'));
+  const metrics={sessions:attempts.length,questions,bestPercent:best,lessons:lessonsDone,streak:0,experiments,levelsCreated:levels};
+  const st=api.streak(state.studyDays||[],new Date());
+  metrics.streak=st.current;
+  let lv,achievements,progressBackend='Rust/WASM';
+  try{
+   const summary=await api.summarizeWithRust(currentXP(),metrics);
+   if(!summary||!summary.level||!Array.isArray(summary.achievements))throw new Error('Rust progression payload is invalid');
+   lv=summary.level;
+   const metadata=api.achievements(metrics);
+   achievements=summary.achievements.map(item=>{
+    const meta=metadata.find(entry=>entry.id===item.id)||{};
+    const value=Math.max(0,Number(item.value)||0),target=Math.max(1,Number(item.target)||1);
+    return {...meta,...item,value,target,percent:Math.min(100,Math.round(value/target*100))};
+   });
+  }catch(error){
+   progressBackend='JavaScript fallback';
+   lv=api.level(currentXP());
+   achievements=api.achievements(metrics);
+  }
+  const cards=achievements.map(a=>'<div class="panel" style="padding:12px;opacity:'+(a.unlocked?'1':'.72')+'"><div style="display:flex;justify-content:space-between;gap:8px"><b>'+esc(a.name)+'</b><b>'+(a.unlocked?'🏅':'🔒')+'</b></div><p class="small muted">'+esc(a.description||'')+'</p><div style="height:7px;border-radius:10px;background:var(--line,#444);overflow:hidden"><div style="height:100%;width:'+a.percent+'%;background:var(--purple,#9b87ff)"></div></div><small class="muted">'+Math.min(a.value,a.target)+'/'+a.target+' · '+a.percent+'%</small></div>').join('');
+  open('Cấp độ & chuỗi ngày','<div class="small muted">Bộ máy tiến trình: '+progressBackend+'</div><div class="panel" style="padding:16px"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><div><small class="muted">CẤP ĐỘ '+lv.level+'</small><h2 style="margin:4px 0">'+esc(lv.title)+'</h2><b>'+lv.xp+' XP</b></div><div style="text-align:right"><div style="font-size:28px">🔥 '+st.current+'</div><small class="muted">ngày liên tiếp</small><p class="small muted">Kỷ lục: '+st.longest+' ngày</p></div></div><div style="height:9px;border-radius:12px;background:var(--line,#444);overflow:hidden;margin:12px 0 6px"><div style="height:100%;width:'+lv.progress+'%;background:var(--purple,#9b87ff)"></div></div><small class="muted">'+(lv.nextThreshold===null?'Đã đạt cấp tối đa':lv.xpToNext+' XP nữa để lên cấp '+(lv.level+1))+'</small><p class="small muted">'+(st.activeToday?'Hôm nay đã ghi nhận hoạt động học tập.':'Hoàn thành một hoạt động học tập để giữ chuỗi ngày.')+'</p></div><h3>Thành tựu ('+achievements.filter(a=>a.unlocked).length+'/'+achievements.length+')</h3><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:9px">'+cards+'</div>'+btn('Mở bộ sưu tập huy hiệu','principiaSuiteBadges()')+btn('Về trung tâm','principiaSuiteHome()'));
  }
  function rankLeague(){
   const api=window.PrincipiaRankCore;
