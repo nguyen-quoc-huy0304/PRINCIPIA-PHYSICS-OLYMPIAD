@@ -40,4 +40,26 @@ PRINCIPIA_EXPORT double principia_projectile_max_height(double speed, double ang
   const double vy = speed*std::sin(angle_deg * PI / 180.0);
   return vy*vy/(2.0*gravity);
 }
+PRINCIPIA_EXPORT int principia_collision_1d(double mass_a, double velocity_a,
+    double mass_b, double velocity_b, double restitution,
+    principia_collision_1d_result* output) {
+  if (!output || !finite({mass_a, velocity_a, mass_b, velocity_b, restitution}) ||
+      mass_a <= 0.0 || mass_b <= 0.0 || restitution < 0.0 || restitution > 1.0) return 0;
+  const double total_mass = mass_a + mass_b;
+  const double momentum_before = mass_a * velocity_a + mass_b * velocity_b;
+  const double relative_approach = velocity_a - velocity_b;
+  const double v1 = (momentum_before - mass_b * restitution * relative_approach) / total_mass;
+  const double v2 = (momentum_before + mass_a * restitution * relative_approach) / total_mass;
+  const double momentum_after = mass_a * v1 + mass_b * v2;
+  const double kinetic_before = 0.5 * mass_a * velocity_a * velocity_a + 0.5 * mass_b * velocity_b * velocity_b;
+  const double kinetic_after = 0.5 * mass_a * v1 * v1 + 0.5 * mass_b * v2 * v2;
+  const double momentum_error = momentum_after - momentum_before;
+  const double kinetic_change = kinetic_after - kinetic_before;
+  const double energy_loss = std::max(0.0, kinetic_before - kinetic_after);
+  if (!finite({total_mass, momentum_before, relative_approach, v1, v2, momentum_after,
+      kinetic_before, kinetic_after, momentum_error, kinetic_change, energy_loss})) return 0;
+  *output = {v1, v2, momentum_before, momentum_after, momentum_error,
+      kinetic_before, kinetic_after, kinetic_change, energy_loss, restitution, total_mass};
+  return 1;
+}
 }
