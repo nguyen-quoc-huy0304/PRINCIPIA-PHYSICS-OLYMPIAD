@@ -15,6 +15,7 @@ pub mod rigid_body;
 pub mod robotics;
 pub mod data_analysis;
 pub mod game;
+pub mod force_balance;
 pub mod game_challenge;
 pub mod science_mystery;
 pub mod daily_challenge;
