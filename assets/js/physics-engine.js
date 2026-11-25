@@ -98,6 +98,23 @@ const api={
     if(![slope,intercept,rmse,rSquared].every(Number.isFinite))throw new RangeError('Kết quả hồi quy vượt miền số hỗ trợ.');
     lastBackend='javascript-analytical-fallback';return {slope,intercept,rSquared,rmse,count:n};
   },
+  async scoreForceBalance(params){
+    const p=params||{},payload={x:finite(p.x,'x'),y:finite(p.y,'y'),targetX:finite(p.targetX,'targetX'),targetY:finite(p.targetY,'targetY')};
+    const validate=result=>{
+      if(!result||!Number.isFinite(Number(result.error))||!Number.isFinite(Number(result.points))||typeof result.balanced!=='boolean'||result.error<0||result.points<0||result.points>100)throw new Error('Force-balance core returned an invalid result');
+      return {error:Number(result.error),points:Number(result.points),balanced:result.balanced};
+    };
+    if(root.principiaDesktop&&typeof root.principiaDesktop.computePhysics==='function'){
+      try{const result=validate(await root.principiaDesktop.computePhysics('forceBalance',payload));lastBackend='rust-native-force-balance';return result;}catch(error){lastBackend='rust-wasm-force-ballback';}
+    }
+    if(root.PrincipiaWasmPhysics&&typeof root.PrincipiaWasmPhysics.compute==='function'){
+      const result=validate(await root.PrincipiaWasmPhysics.compute('forceBalance',payload));lastBackend='rust-wasm-force-balance';return result;
+    }
+    const error=Math.hypot(payload.x-payload.targetX,payload.y-payload.targetY);
+    if(!Number.isFinite(error))throw new RangeError('Force error exceeds supported numeric range');
+    lastBackend='javascript-fallback';
+    return {error,points:Math.max(0,Math.round(100-error*8)),balanced:error<.75};
+  },
   async solveRobotArm(params){
     const p=params||{},l1=finite(p.l1M,'l1M'),l2=finite(p.l2M,'l2M');
     const x=finite(p.targetXM,'targetXM'),y=finite(p.targetYM,'targetYM'),branch=Number(p.elbowBranch===undefined?1:p.elbowBranch);
