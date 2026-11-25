@@ -44,6 +44,62 @@ fn dispatch(request: &Value) -> Value {
                 "targetErrorM": solution.target_error_m, "singular": solution.singular
             }));
         }
+        if op == "studyPlan" {
+            use principia_core::learning::{LearnerContext, LearningGoal};
+            let goal = match request.get("goal").and_then(Value::as_str) {
+                None | Some("") => None,
+                Some("understand") => Some(LearningGoal::Understand),
+                Some("remember") => Some(LearningGoal::Remember),
+                Some("solve") => Some(LearningGoal::Solve),
+                Some("olympiad") => Some(LearningGoal::Olympiad),
+                Some("teach") => Some(LearningGoal::Teach),
+                Some("recover") => Some(LearningGoal::Recover),
+                Some(_) => return Err("goal must be understand, remember, solve, olympiad, teach, or recover".to_string()),
+            };
+            let percent = match request.get("percent") {
+                None | Some(Value::Null) => None,
+                Some(value) => Some(value.as_f64().filter(|v| v.is_finite())
+                    .ok_or("percent must be a finite number or null")?),
+            };
+            let energy = request.get("energy").and_then(Value::as_u64)
+                .and_then(|v| u8::try_from(v).ok()).ok_or("energy must be an integer from 1 to 3")?;
+            let confidence = request.get("confidence").and_then(Value::as_u64)
+                .and_then(|v| u8::try_from(v).ok()).ok_or("confidence must be an integer from 1 to 5")?;
+            let error_count = request.get("errorCount").and_then(Value::as_u64)
+                .and_then(|v| u32::try_from(v).ok()).ok_or("errorCount must be a non-negative 32-bit integer")?;
+            let phase = request.get("phase").and_then(Value::as_str).unwrap_or("");
+            let topic = request.get("topic").and_then(Value::as_str).unwrap_or("");
+            if phase.len() > 120 || topic.len() > 120 {
+                return Err("phase and topic must be at most 120 bytes".to_string());
+            }
+            let plan = principia_core::study_engine::build_plan(&LearnerContext {
+                goal, percent, error_count, phase: phase.to_string(),
+                energy, confidence, topic: topic.to_string(),
+            }).map_err(|error| format!("Study context rejected: {error:?}"))?;
+            return Ok(json!({
+                "goal": format!("{:?}", plan.goal).to_lowercase(),
+                "difficulty": plan.difficulty,
+                "focusMinutes": plan.focus_minutes,
+                "topic": plan.topic,
+                "steps": plan.steps,
+                "nextAction": plan.next_action
+            }));
+        }
+        if op == "scheduleReview" {
+            let quality = request.get("quality").and_then(Value::as_u64)
+                .and_then(|v| u8::try_from(v).ok()).ok_or("quality must be an integer from 0 to 5")?;
+            let interval = request.get("previousIntervalDays").and_then(Value::as_u64)
+                .and_then(|v| u32::try_from(v).ok()).ok_or("previousIntervalDays must be a non-negative 32-bit integer")?;
+            let ease = number(request, "easeFactor")?;
+            let schedule = principia_core::study_engine::next_review(quality, interval, ease)
+                .map_err(|error| format!("Review schedule rejected: {error:?}"))?;
+            return Ok(json!({
+                "intervalDays": schedule.interval_days,
+                "dueAfterDays": schedule.due_after_days,
+                "easeFactor": schedule.ease_factor,
+                "mastered": schedule.mastered
+            }));
+        }
         if op == "rigidBodyDrop" {
             let steps_value = number(request, "steps")?;
             if steps_value < 0.0 || steps_value > 60000.0 || steps_value.fract() != 0.0 {
