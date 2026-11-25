@@ -31,7 +31,7 @@ test('delegates custom XP and streak updates to Rust', async () => {
   assert.equal(result.experience, 50);
   assert.equal(result.completedLessons, 3);
   assert.equal(args[1], 'lesson');
-  assert.equal(args[3], 10);
+  assert.equal(args[3], 10n);
 });
 
 test('rejects invalid progress input before invoking WASM', async () => {
