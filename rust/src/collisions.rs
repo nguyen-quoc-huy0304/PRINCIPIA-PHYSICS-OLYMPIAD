@@ -43,26 +43,65 @@ fn finite(values: &[f64]) -> bool {
     values.iter().all(|value| value.is_finite())
 }
 
+#[cfg(not(target_arch = "wasm32"))]
+#[repr(C)]
+#[derive(Default)]
+struct CppCollision1DResult {
+    v1: f64, v2: f64, momentum_before: f64, momentum_after: f64, momentum_error: f64,
+    kinetic_before: f64, kinetic_after: f64, kinetic_change: f64, energy_loss: f64,
+    restitution: f64, total_mass: f64,
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+unsafe extern "C" {
+    fn principia_collision_1d(
+        mass_a: f64, velocity_a: f64, mass_b: f64, velocity_b: f64,
+        restitution: f64, output: *mut CppCollision1DResult,
+    ) -> i32;
+}
+
 pub fn collide_1d(m1: f64, u1: f64, m2: f64, u2: f64, restitution: f64) -> Result<Collision1D, &'static str> {
     if !finite(&[m1, u1, m2, u2, restitution]) { return Err("collision inputs must be finite"); }
     if m1 <= 0.0 || m2 <= 0.0 { return Err("masses must be positive"); }
     if !(0.0..=1.0).contains(&restitution) { return Err("restitution must be between 0 and 1"); }
-    let total_mass = m1 + m2;
-    let momentum_before = m1 * u1 + m2 * u2;
-    let relative_approach = u1 - u2;
-    let v1 = (momentum_before - m2 * restitution * relative_approach) / total_mass;
-    let v2 = (momentum_before + m1 * restitution * relative_approach) / total_mass;
-    let momentum_after = m1 * v1 + m2 * v2;
-    let kinetic_before = 0.5 * m1 * u1 * u1 + 0.5 * m2 * u2 * u2;
-    let kinetic_after = 0.5 * m1 * v1 * v1 + 0.5 * m2 * v2 * v2;
-    let values = [total_mass, momentum_before, v1, v2, momentum_after, kinetic_before, kinetic_after];
-    if !finite(&values) { return Err("collision result overflow"); }
-    let momentum_error = momentum_after - momentum_before;
-    let kinetic_change = kinetic_after - kinetic_before;
-    let energy_loss = (kinetic_before - kinetic_after).max(0.0);
-    if !finite(&[momentum_error, kinetic_change, energy_loss]) { return Err("collision result overflow"); }
-    Ok(Collision1D { v1, v2, momentum_before, momentum_after, momentum_error,
-        kinetic_before, kinetic_after, kinetic_change, energy_loss, restitution, total_mass })
+
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        let mut output = CppCollision1DResult::default();
+        let status = unsafe { principia_collision_1d(m1, u1, m2, u2, restitution, &mut output) };
+        if status == 0 { return Err("C++ collision kernel rejected inputs or overflowed"); }
+        let values = [output.v1, output.v2, output.momentum_before, output.momentum_after,
+            output.momentum_error, output.kinetic_before, output.kinetic_after,
+            output.kinetic_change, output.energy_loss, output.total_mass];
+        if !finite(&values) { return Err("C++ collision kernel returned non-finite values"); }
+        return Ok(Collision1D {
+            v1: output.v1, v2: output.v2, momentum_before: output.momentum_before,
+            momentum_after: output.momentum_after, momentum_error: output.momentum_error,
+            kinetic_before: output.kinetic_before, kinetic_after: output.kinetic_after,
+            kinetic_change: output.kinetic_change, energy_loss: output.energy_loss,
+            restitution: output.restitution, total_mass: output.total_mass,
+        });
+    }
+
+    #[cfg(target_arch = "wasm32")]
+    {
+        let total_mass = m1 + m2;
+        let momentum_before = m1 * u1 + m2 * u2;
+        let relative_approach = u1 - u2;
+        let v1 = (momentum_before - m2 * restitution * relative_approach) / total_mass;
+        let v2 = (momentum_before + m1 * restitution * relative_approach) / total_mass;
+        let momentum_after = m1 * v1 + m2 * v2;
+        let kinetic_before = 0.5 * m1 * u1 * u1 + 0.5 * m2 * u2 * u2;
+        let kinetic_after = 0.5 * m1 * v1 * v1 + 0.5 * m2 * v2 * v2;
+        let momentum_error = momentum_after - momentum_before;
+        let kinetic_change = kinetic_after - kinetic_before;
+        let energy_loss = (kinetic_before - kinetic_after).max(0.0);
+        let values = [total_mass, momentum_before, v1, v2, momentum_after, kinetic_before, kinetic_after,
+            momentum_error, kinetic_change, energy_loss];
+        if !finite(&values) { return Err("collision result overflow"); }
+        Ok(Collision1D { v1, v2, momentum_before, momentum_after, momentum_error,
+            kinetic_before, kinetic_after, kinetic_change, energy_loss, restitution, total_mass })
+    }
 }
 
 fn validate_body(body: DiskBody) -> Result<(), &'static str> {
