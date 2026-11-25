@@ -41,3 +41,16 @@ npm test
 ```
 
 This runs the local Node.js test suite in `tests/js/`. The same suite is also run by the GitHub Actions core-checks workflow.
+
+## Native Go + Rust + C++ compute service
+
+The browser uses the same-origin `POST /api/compute` Cloudflare Pages Function. Set the Pages environment variable `PRINCIPIA_GO_API_URL` to the HTTPS base URL of the Go service. The proxy validates the request shape and forwards supported operations to the Go API; the Go API invokes the Rust JSON-line core, which uses the C++ numerical kernel for supported physics operations. If the service is not configured or unavailable, the browser continues with its Rust/WASM core.
+
+Build the service image from the repository root:
+
+```bash
+docker build -f services/go-api/Dockerfile -t principia-native-api .
+docker run --rm -p 8080:8080 principia-native-api
+```
+
+The container exposes `GET /healthz` and `POST /v1/compute`. Configure `PRINCIPIA_CORE_BIN` and `ALLOWED_ORIGIN` only when running the Go service outside the provided container. The Cloudflare Pages Function requires `PRINCIPIA_GO_API_URL`; no API secret is exposed to browser code.
