@@ -26,16 +26,39 @@ export async function loadGameCore() {
   return corePromise;
 }
 
-export async function getTrajectory(speed, angle, gravity, samples = 49) {
-  const wasm = await loadGameCore();
-  const raw = wasm.game_trajectory_json(speed, angle, gravity, samples);
-  const points = JSON.parse(raw);
+async function requestGo(path, payload) {
+  if (typeof fetch !== 'function') throw new Error('Go API is unavailable');
+  const response = await fetch(path, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const body = await response.json().catch(() => null);
+  if (!response.ok || !body) throw new Error(body?.error || 'Go API request failed');
+  return body;
+}
+
+function validateTrajectory(points, samples) {
   if (!Array.isArray(points) || points.length !== samples ||
       points.some((point) => !Array.isArray(point) ||
         point.length !== 2 || !point.every(Number.isFinite))) {
-    throw new Error('Rust returned an invalid trajectory');
+    throw new Error('Native core returned an invalid trajectory');
   }
   return points;
+}
+
+export async function getTrajectory(speed, angle, gravity, samples = 49) {
+  try {
+    const result = await requestGo('/api/game/trajectory', {
+      speedMps: speed, angleDeg: angle, gravityMps2: gravity, samples,
+    });
+    const points = result.points.map((point) => [point.x, point.y]);
+    return validateTrajectory(points, samples);
+  } catch (goError) {
+    const wasm = await loadGameCore();
+    const raw = wasm.game_trajectory_json(speed, angle, gravity, samples);
+    return validateTrajectory(JSON.parse(raw), samples);
+  }
 }
 
 export async function clampPlayableTarget(target, speed, gravity) {
@@ -48,14 +71,23 @@ export async function clampPlayableTarget(target, speed, gravity) {
 }
 
 export async function scoreShot(speed, angle, target, gravity) {
-  const wasm = await loadGameCore();
-  const result = JSON.parse(
-    wasm.score_projectile_json(speed, angle, target, gravity),
-  );
-  if (![result.rangeM, result.errorM, result.points].every(Number.isFinite)) {
-    throw new Error('Rust returned an invalid score');
+  try {
+    const response = await requestGo('/api/compute', {
+      op: 'gameProjectileScore', speed, angleDeg: angle, targetM: target, gravity,
+    });
+    const result = response.value;
+    if (!result || ![result.rangeM, result.errorM, result.points].every(Number.isFinite) || result.points < 0) {
+      throw new Error('Go API returned an invalid score');
+    }
+    return result;
+  } catch (goError) {
+    const wasm = await loadGameCore();
+    const result = JSON.parse(wasm.score_projectile_json(speed, angle, target, gravity));
+    if (!result || ![result.rangeM, result.errorM, result.points].every(Number.isFinite) || result.points < 0) {
+      throw new Error('Rust returned an invalid score');
+    }
+    return result;
   }
-  return result;
 }
 
 export async function generateChallenge(seed) {
