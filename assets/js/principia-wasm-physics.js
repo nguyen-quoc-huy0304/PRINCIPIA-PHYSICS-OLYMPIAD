@@ -26,8 +26,10 @@ async function compute(operation,params){
     case 'projectileMaxHeight': return JSON.parse(wasm.physics_projectile_json(p.speed,p.angleDeg,p.gravity)).maxHeight;
     case 'linearRegression': return JSON.parse(wasm.physics_linear_regression_json(JSON.stringify(p.points)));
     case 'robotArmIK': return JSON.parse(wasm.physics_robot_arm_json(p.l1M,p.l2M,p.targetXM,p.targetYM,p.elbowBranch));
+    case 'gradeQuiz': return JSON.parse(wasm.assessment_grade_json(JSON.stringify(p)));
+    case 'recordProgress': return JSON.parse(wasm.progress_record_json(JSON.stringify(p.progress||{}),p.activity,p.day));
     default: throw new TypeError('Unsupported Rust/WASM physics operation: '+operation);
   }
 }
-root.PrincipiaWasmPhysics=Object.freeze({compute,load:loadWasm});
+root.PrincipiaWasmPhysics=Object.freeze({compute,load:loadWasm,gradeQuiz:(payload)=>compute('gradeQuiz',payload),recordProgress:(progress,activity,day)=>compute('recordProgress',{progress,activity,day})});
 })(window);
