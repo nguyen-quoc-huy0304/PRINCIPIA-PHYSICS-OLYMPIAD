@@ -3,16 +3,22 @@
 
 #[cfg(not(target_arch = "wasm32"))]
 pub mod cpp_physics;
+#[cfg(not(target_arch = "wasm32"))]
+pub mod cpp_vector3;
 pub mod access;
 pub mod content;
 pub mod session;
 pub mod assessment;
 pub mod features;
 pub mod physics;
+pub mod pendulum;
 pub mod rigid_body;
 pub mod robotics;
 pub mod data_analysis;
 pub mod game;
+pub mod gameverse;
+pub mod collisions;
+pub mod force_balance;
 pub mod game_challenge;
 pub mod science_mystery;
 pub mod daily_challenge;
@@ -23,7 +29,11 @@ mod wasm_physics;
 pub mod virtual_lab;
 pub mod progress;
 pub mod learning;
+pub mod level_studio;
 pub mod progression;
+pub mod research;
+pub mod season;
+pub mod rank_arena;
 pub mod store;
 
 pub const APP_NAME: &str = "PRINCIPIA";

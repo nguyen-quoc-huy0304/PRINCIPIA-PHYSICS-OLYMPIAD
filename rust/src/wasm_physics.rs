@@ -76,6 +76,146 @@ pub fn physics_robot_arm_json(
 }
 
 
+#[wasm_bindgen]
+pub fn physics_collision_1d_json(
+    mass_a: f64, velocity_a: f64, mass_b: f64, velocity_b: f64, restitution: f64,
+) -> Result<String, JsValue> {
+    let result = crate::collisions::collide_1d(mass_a, velocity_a, mass_b, velocity_b, restitution)
+        .map_err(|error| JsValue::from_str(error))?;
+    serde_json::to_string(&serde_json::json!({
+        "v1": result.v1, "v2": result.v2,
+        "momentumBefore": result.momentum_before, "momentumAfter": result.momentum_after,
+        "momentumError": result.momentum_error, "kineticBefore": result.kinetic_before,
+        "kineticAfter": result.kinetic_after, "kineticChange": result.kinetic_change,
+        "energyLoss": result.energy_loss, "restitution": result.restitution,
+        "totalMass": result.total_mass
+    })).map_err(|error| JsValue::from_str(&error.to_string()))
+}
+
+#[wasm_bindgen]
+pub fn physics_resolve_disk_collision_json(
+    ax: f64, ay: f64, avx: f64, avy: f64, amass: f64, aradius: f64,
+    bx: f64, by: f64, bvx: f64, bvy: f64, bmass: f64, bradius: f64,
+    restitution: f64,
+) -> Result<String, JsValue> {
+    let a = crate::collisions::DiskBody { x: ax, y: ay, vx: avx, vy: avy, mass: amass, radius: aradius };
+    let b = crate::collisions::DiskBody { x: bx, y: by, vx: bvx, vy: bvy, mass: bmass, radius: bradius };
+    let result = crate::collisions::resolve_disk_collision(a, b, restitution)
+        .map_err(|error| JsValue::from_str(error))?;
+    serde_json::to_string(&serde_json::json!({
+        "collided": result.collided, "impulse": result.impulse,
+        "a": {"x": result.a.x, "y": result.a.y, "vx": result.a.vx, "vy": result.a.vy},
+        "b": {"x": result.b.x, "y": result.b.y, "vx": result.b.vx, "vy": result.b.vy}
+    })).map_err(|error| JsValue::from_str(&error.to_string()))
+}
+
+#[wasm_bindgen]
+pub fn physics_momentum_energy_2d_json(bodies_json: &str) -> Result<String, JsValue> {
+    if bodies_json.len() > 16 * 1024 { return Err(JsValue::from_str("Body payload exceeds 16 KiB")); }
+    let values: serde_json::Value = serde_json::from_str(bodies_json)
+        .map_err(|_| JsValue::from_str("Body payload must be valid JSON"))?;
+    let items = values.as_array().filter(|items| (1..=12).contains(&items.len()))
+        .ok_or_else(|| JsValue::from_str("Body array must contain 1 to 12 bodies"))?;
+    let mut bodies = Vec::with_capacity(items.len());
+    for item in items {
+        let number = |key: &str| item.get(key).and_then(serde_json::Value::as_f64)
+            .ok_or_else(|| JsValue::from_str("Body contains a missing or invalid number"));
+        bodies.push(crate::collisions::DiskBody {
+            x: number("x")?, y: number("y")?, vx: number("vx")?, vy: number("vy")?,
+            mass: number("mass")?, radius: number("radius")?,
+        });
+    }
+    let totals = crate::collisions::momentum_energy_2d(&bodies)
+        .map_err(|error| JsValue::from_str(error))?;
+    serde_json::to_string(&serde_json::json!({
+        "px": totals.px, "py": totals.py, "kinetic": totals.kinetic
+    })).map_err(|error| JsValue::from_str(&error.to_string()))
+}
+
+#[wasm_bindgen]
+pub fn physics_pendulum_json(length_m: f64, gravity_mps2: f64, amplitude_degrees: f64) -> Result<String, JsValue> {
+    let result = crate::pendulum::analyze(length_m, gravity_mps2, amplitude_degrees)
+        .map_err(|error| JsValue::from_str(error))?;
+    serde_json::to_string(&serde_json::json!({
+        "angularFrequency": result.angular_frequency_rad_s,
+        "periodSeconds": result.period_seconds,
+        "frequencyHz": result.frequency_hz,
+        "maxSpeedMps": result.max_speed_mps,
+        "maxAccelerationMps2": result.max_acceleration_mps2,
+        "approximation": "small-angle"
+    })).map_err(|error| JsValue::from_str(&error.to_string()))
+}
+
+#[wasm_bindgen]
+pub fn research_summary_json(points_json: &str) -> Result<String, JsValue> {
+    if points_json.len() > 512 * 1024 { return Err(JsValue::from_str("Research points exceed 512 KiB")); }
+    let values: Vec<[f64; 2]> = serde_json::from_str(points_json)
+        .map_err(|_| JsValue::from_str("Research points must be an array of [x, y] pairs"))?;
+    if values.len() < 2 || values.len() > 10_000 {
+        return Err(JsValue::from_str("Research summary requires 2 to 10000 points"));
+    }
+    let points: Vec<(f64, f64)> = values.iter().map(|point| (point[0], point[1])).collect();
+    let result = crate::research::summarize(&points).map_err(|error| JsValue::from_str(error))?;
+    serde_json::to_string(&serde_json::json!({
+        "count": result.count,
+        "mean": result.mean,
+        "standardDeviation": result.standard_deviation,
+        "standardError": result.standard_error,
+        "slope": result.slope,
+        "intercept": result.intercept
+    })).map_err(|error| JsValue::from_str(&error.to_string()))
+}
+
+#[wasm_bindgen]
+pub fn level_validate_question_json(input_json: &str) -> Result<String, JsValue> {
+    if input_json.len() > 16 * 1024 { return Err(JsValue::from_str("Question exceeds 16 KiB")); }
+    let value: serde_json::Value = serde_json::from_str(input_json)
+        .map_err(|_| JsValue::from_str("Question must be valid JSON"))?;
+    let normalized = crate::level_studio::validate_question(&value)
+        .map_err(|error| JsValue::from_str(error))?;
+    serde_json::to_string(&normalized).map_err(|error| JsValue::from_str(&error.to_string()))
+}
+
+#[wasm_bindgen]
+pub fn level_validate_json(input_json: &str) -> Result<String, JsValue> {
+    if input_json.len() > 128 * 1024 { return Err(JsValue::from_str("Level exceeds 128 KiB")); }
+    let value: serde_json::Value = serde_json::from_str(input_json)
+        .map_err(|_| JsValue::from_str("Level must be valid JSON"))?;
+    let normalized = crate::level_studio::validate_level(&value)
+        .map_err(|error| JsValue::from_str(error))?;
+    serde_json::to_string(&normalized).map_err(|error| JsValue::from_str(&error.to_string()))
+}
+
+#[wasm_bindgen]
+pub fn season_missions_json(metrics_json: &str, date: &str) -> Result<String, JsValue> {
+    crate::season::missions_json(metrics_json, date)
+        .map_err(|error| JsValue::from_str(error))
+}
+
+#[wasm_bindgen]
+pub fn gameverse_apply_json(state_json: &str, action_json: &str) -> Result<String, JsValue> {
+    crate::gameverse::apply_action(state_json, action_json)
+        .map_err(|error| input_error(error))
+}
+
+#[wasm_bindgen]
+pub fn rank_arena_finish_match_json(state_json: &str, match_json: &str) -> Result<String, JsValue> {
+    crate::rank_arena::finish_match(state_json, match_json)
+        .map_err(|error| input_error(error))
+}
+
+#[wasm_bindgen]
+pub fn rank_arena_claim_mission_json(state_json: &str, mission_id: &str, today: &str) -> Result<String, JsValue> {
+    crate::rank_arena::claim_mission(state_json, mission_id, today)
+        .map_err(|error| input_error(error))
+}
+
+#[wasm_bindgen]
+pub fn rank_arena_tier_json(rp: u64) -> Result<String, JsValue> {
+    serde_json::to_string(&crate::rank_arena::tier(rp))
+        .map_err(|error| input_error(&error.to_string()))
+}
+
 fn input_error(message: &str) -> JsValue { JsValue::from_str(message) }
 
 #[wasm_bindgen]
@@ -192,6 +332,40 @@ pub fn progress_record_json(progress_json: &str, activity: &str, day: &str) -> R
     })).map_err(|error| input_error(&error.to_string()))
 }
 
+
+#[wasm_bindgen]
+pub fn progress_award_custom_json(
+    progress_json: &str, activity: &str, day: &str, xp_reward: u64,
+) -> Result<String, JsValue> {
+    if progress_json.len() > 16 * 1024 { return Err(input_error("Progress payload exceeds 16 KiB")); }
+    if day.len() != 10 || xp_reward > 1000 { return Err(input_error("Invalid progress day or XP reward")); }
+    use crate::progress::{Activity, Progress};
+    let value: serde_json::Value = serde_json::from_str(progress_json)
+        .map_err(|_| input_error("Progress payload must be valid JSON"))?;
+    let mut progress = Progress {
+        experience: value.get("experience").and_then(serde_json::Value::as_u64).unwrap_or(0),
+        completed_lessons: value.get("completedLessons").and_then(serde_json::Value::as_u64).unwrap_or(0),
+        study_streak_days: value.get("studyStreakDays").and_then(serde_json::Value::as_u64)
+            .unwrap_or(0).min(u32::MAX as u64) as u32,
+        last_activity_day: value.get("lastActivityDay").and_then(serde_json::Value::as_str).map(str::to_owned),
+    };
+    let activity = match activity {
+        "lesson" => Activity::LessonCompleted,
+        "quiz" => Activity::QuizSubmitted,
+        "assignment" => Activity::AssignmentSubmitted,
+        "experiment" => Activity::ExperimentCompleted,
+        _ => return Err(input_error("Unsupported progress activity")),
+    };
+    progress.record_with_reward(activity, day, xp_reward).map_err(input_error)?;
+    serde_json::to_string(&serde_json::json!({
+        "experience": progress.experience,
+        "completedLessons": progress.completed_lessons,
+        "studyStreakDays": progress.study_streak_days,
+        "lastActivityDay": progress.last_activity_day,
+        "level": progress.level(),
+        "experienceIntoLevel": progress.experience_into_level()
+    })).map_err(|error| input_error(&error.to_string()))
+}
 
 #[wasm_bindgen]
 pub fn learning_recommend_json(context_json: &str) -> Result<String, JsValue> {

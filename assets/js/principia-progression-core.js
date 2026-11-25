@@ -1,9 +1,9 @@
 /* PRINCIPIA progression: deterministic streaks, XP levels and achievement milestones. */
 (function(root,factory){
- const api=factory();
+ const api=factory(root);
  if(typeof module==='object'&&module.exports)module.exports=api;
  if(root)root.PrincipiaProgressionCore=api;
-})(typeof window!=='undefined'?window:globalThis,function(){
+})(typeof window!=='undefined'?window:globalThis,function(root){
  'use strict';
  const LEVELS=[0,100,250,450,700,1000,1400,1900,2500,3200,4000];
  const TITLES=['Tân binh','Tập sự','Khám phá','Nhà nghiên cứu','Chuyên gia','Bậc thầy','Học giả','Huyền thoại','Thiên tài','Olympian','Grand Olympian'];

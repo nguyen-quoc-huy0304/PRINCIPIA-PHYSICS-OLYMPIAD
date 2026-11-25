@@ -16,3 +16,23 @@ test('invalid stored dates cannot extend the current streak',()=>{const d=new Da
 test('invalid stored dates cannot inflate the longest streak',()=>{assert.equal(P.streak(['2026-11-18','2026-11-19','2026-02-30'],new Date(2026,10,22)).longest,2)});
 
 test('accepts well-formed local calendar keys and rejects malformed keys',()=>{assert.deepEqual(P.recordActivity(['2026-11-21'],new Date(2026,10,22)),['2026-11-21','2026-11-22']);assert.deepEqual(P.recordActivity(['2026/11/21','abcd-11-21','2026-11-21x'],new Date(2026,10,22)),['2026-11-22'])});
+
+test('progression summary delegates levels and achievements to Rust/WASM',async()=>{
+ const previous=global.PrincipiaWasmPhysics;
+ let received;
+ global.PrincipiaWasmPhysics={progression:async metrics=>{
+  received=metrics;
+  return {level:{level:3,title:'Khám phá',xp:250,progress:0,xpToNext:200,nextThreshold:450},
+   rank:{id:'gold'},achievements:[{id:'first-session',name:'Khởi động',unlocked:true,value:1,target:1}]};
+ }};
+ try{
+  const result=await P.summarizeWithRust(250,{sessions:1});
+  assert.equal(received.xp,250);
+  assert.equal(received.sessions,1);
+  assert.equal(result.level.level,3);
+  assert.equal(result.achievements[0].unlocked,true);
+ }finally{
+  if(previous===undefined)delete global.PrincipiaWasmPhysics;
+  else global.PrincipiaWasmPhysics=previous;
+ }
+});

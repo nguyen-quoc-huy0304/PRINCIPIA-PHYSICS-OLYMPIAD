@@ -45,6 +45,24 @@ func TestVelocityJSONContract(t *testing.T) {
 	}
 }
 
+func TestForceBalanceJSONContract(t *testing.T) {
+	got := invokeCore(t, `{"id":"go-force-1","op":"forceBalance","x":3,"y":-4,"targetX":3,"targetY":-4}`)
+	if !got.OK {
+		t.Fatalf("force-balance calculation failed: %+v", got)
+	}
+	var value struct {
+		Error float64 `json:"error"`
+		Points uint32 `json:"points"`
+		Balanced bool `json:"balanced"`
+	}
+	if err := json.Unmarshal(got.Value, &value); err != nil {
+		t.Fatal(err)
+	}
+	if value.Error != 0 || value.Points != 100 || !value.Balanced {
+		t.Fatalf("unexpected force-balance result: %+v", value)
+	}
+}
+
 func TestRejectsUnknownOperation(t *testing.T) {
 	got := invokeCore(t, `{"id":2,"op":"notARealOperation"}`)
 	if got.OK || got.Error == "" {

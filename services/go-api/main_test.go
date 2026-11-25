@@ -55,6 +55,35 @@ func TestComputeRejectsTrailingJSON(t *testing.T) {
 	}
 }
 
+func TestComputeValidatesRegressionPointShapeAndBounds(t *testing.T) {
+	cases := []string{
+		`{"op":"linearRegression","points":[]}`,
+		`{"op":"linearRegression","points":[[1,2]]}`,
+		`{"op":"linearRegression","points":[[1,2,3],[2,4,6]]}`,
+		`{"op":"linearRegression","points":[[1,"2"],[2,4]]}`,
+		`{"op":"linearRegression","points":[[1,2],[2,1e999]]}`,
+	}
+	for _, body := range cases {
+		request := httptest.NewRequest(http.MethodPost, "/v1/compute", bytes.NewBufferString(body))
+		response := httptest.NewRecorder()
+		(api{}).compute(response, request)
+		if response.Code != http.StatusUnprocessableEntity {
+			t.Errorf("body %s: expected 422, got %d", body, response.Code)
+		}
+	}
+}
+
+func TestValidateFieldsAcceptsForceBalanceAndRejectsExtraFields(t *testing.T) {
+	valid := map[string]any{"op": "forceBalance", "x": json.Number("3"), "y": json.Number("-4"), "targetX": json.Number("3"), "targetY": json.Number("-4")}
+	if err := validateFields(valid, operationFields["forceBalance"]); err != nil {
+		t.Fatalf("valid force-balance request rejected: %v", err)
+	}
+	invalid := map[string]any{"op": "forceBalance", "x": json.Number("3"), "y": json.Number("-4"), "targetX": json.Number("3"), "targetY": json.Number("-4"), "admin": true}
+	if err := validateFields(invalid, operationFields["forceBalance"]); err == nil {
+		t.Fatal("expected unknown field to be rejected")
+	}
+}
+
 func TestValidateFieldsRequiresJSONNumbers(t *testing.T) {
 	var request map[string]any
 	if err := json.Unmarshal([]byte(`{"op":"velocity","initial":1,"acceleration":2,"seconds":3}`), &request); err != nil {

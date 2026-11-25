@@ -17,6 +17,17 @@ const operations=Object.freeze({
   projectileRange:p=>({speed:p.speed,angleDeg:p.angleDeg,gravity:p.gravity===undefined?G:p.gravity}),
   projectileMaxHeight:p=>({speed:p.speed,angleDeg:p.angleDeg,gravity:p.gravity===undefined?G:p.gravity})
 });
+async function requestGoCore(operation,payload){
+  if(typeof root.fetch!=='function')throw new Error('Go API fetch is unavailable');
+  const response=await root.fetch('/api/compute',{
+    method:'POST',
+    headers:{'content-type':'application/json'},
+    body:JSON.stringify({op:operation,...payload})
+  });
+  const body=await response.json().catch(()=>null);
+  if(!response.ok||!body||body.ok!==true)throw new Error(body?.error||'Go compute API request failed');
+  return body.value;
+}
 async function compute(operation,params){
   if(!Object.prototype.hasOwnProperty.call(operations,operation))throw new TypeError('Unsupported physics operation: '+operation);
   const p=operations[operation](params||{});
@@ -31,6 +42,14 @@ async function compute(operation,params){
       // Keep the lesson/lab usable if a desktop sidecar is absent or unavailable.
       lastBackend='javascript-fallback';
     }
+  }
+  if(typeof root.fetch==='function'){
+    try{
+      const value=await requestGoCore(operation,p);
+      if(!Number.isFinite(Number(value)))throw new Error('Go API returned a non-finite result');
+      lastBackend='go-rust-cpp';
+      return Number(value);
+    }catch(error){lastBackend='javascript-fallback';}
   }
   if(root.PrincipiaWasmPhysics&&typeof root.PrincipiaWasmPhysics.compute==='function'){
     try{
@@ -80,6 +99,13 @@ const api={
       if(!result||!Number.isFinite(Number(result.slope))||!Number.isFinite(Number(result.intercept)))throw new Error('Native data analysis core returned an invalid fit');
       lastBackend='rust-linear-regression';return result;
     }
+    if(typeof root.fetch==='function'){
+      try{
+        const result=await requestGoCore('linearRegression',{points});
+        if(!result||!['slope','intercept','rSquared','rmse'].every(key=>Number.isFinite(Number(result[key]))))throw new Error('Go regression returned an invalid fit');
+        lastBackend='go-rust-regression';return result;
+      }catch(error){lastBackend='javascript-analytical-fallback';}
+    }
     if(root.PrincipiaWasmPhysics&&typeof root.PrincipiaWasmPhysics.compute==='function'){
       try{
         const result=await root.PrincipiaWasmPhysics.compute('linearRegression',{points});
@@ -98,6 +124,27 @@ const api={
     if(![slope,intercept,rmse,rSquared].every(Number.isFinite))throw new RangeError('Kết quả hồi quy vượt miền số hỗ trợ.');
     lastBackend='javascript-analytical-fallback';return {slope,intercept,rSquared,rmse,count:n};
   },
+  async scoreForceBalance(params){
+    const p=params||{},payload={x:finite(p.x,'x'),y:finite(p.y,'y'),targetX:finite(p.targetX,'targetX'),targetY:finite(p.targetY,'targetY')};
+    const validate=result=>{
+      if(!result||!Number.isFinite(Number(result.error))||!Number.isFinite(Number(result.points))||typeof result.balanced!=='boolean'||result.error<0||result.points<0||result.points>100)throw new Error('Force-balance core returned an invalid result');
+      return {error:Number(result.error),points:Number(result.points),balanced:result.balanced};
+    };
+    if(root.principiaDesktop&&typeof root.principiaDesktop.computePhysics==='function'){
+      try{const result=validate(await root.principiaDesktop.computePhysics('forceBalance',payload));lastBackend='rust-native-force-balance';return result;}catch(error){lastBackend='rust-wasm-force-balance';}
+    }
+    if(typeof root.fetch==='function'){
+      try{const result=validate(await requestGoCore('forceBalance',payload));lastBackend='go-rust-force-balance';return result;}
+      catch(error){lastBackend='javascript-fallback';}
+    }
+    if(root.PrincipiaWasmPhysics&&typeof root.PrincipiaWasmPhysics.compute==='function'){
+      const result=validate(await root.PrincipiaWasmPhysics.compute('forceBalance',payload));lastBackend='rust-wasm-force-balance';return result;
+    }
+    const error=Math.hypot(payload.x-payload.targetX,payload.y-payload.targetY);
+    if(!Number.isFinite(error))throw new RangeError('Force error exceeds supported numeric range');
+    lastBackend='javascript-fallback';
+    return {error,points:Math.max(0,Math.round(100-error*8)),balanced:error<.75};
+  },
   async solveRobotArm(params){
     const p=params||{},l1=finite(p.l1M,'l1M'),l2=finite(p.l2M,'l2M');
     const x=finite(p.targetXM,'targetXM'),y=finite(p.targetYM,'targetYM'),branch=Number(p.elbowBranch===undefined?1:p.elbowBranch);
@@ -107,6 +154,13 @@ const api={
       const r=await root.principiaDesktop.computePhysics('robotArmIK',{l1M:l1,l2M:l2,targetXM:x,targetYM:y,elbowBranch:branch});
       if(!r||!Number.isFinite(Number(r.shoulderDeg))||!Number.isFinite(Number(r.elbowDeg)))throw new Error('Native robotics core returned an invalid solution');
       lastBackend='rust-robotics';return r;
+    }
+    if(typeof root.fetch==='function'){
+      try{
+        const result=await requestGoCore('robotArmIK',{l1M:l1,l2M:l2,targetXM:x,targetYM:y,elbowBranch:branch});
+        if(!result||!Number.isFinite(Number(result.shoulderDeg))||!Number.isFinite(Number(result.elbowDeg)))throw new Error('Go robotics returned an invalid solution');
+        lastBackend='go-rust-robotics';return result;
+      }catch(error){lastBackend='javascript-analytical-fallback';}
     }
     if(root.PrincipiaWasmPhysics&&typeof root.PrincipiaWasmPhysics.compute==='function'){
       try{

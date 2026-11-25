@@ -123,7 +123,7 @@ impl MysterySession {
             return Ok("Các manh mối đã thu hẹp đáp án; hãy kiểm tra bằng chứng còn lại.".to_string());
         }
         let hint = remaining.iter().find(|s| s.id == self.case.culprit_id)
-            .map(|s| format!("Thủ phạm vẫn nằm trong nhóm {} người chưa bị loại.", remaining.len()))
+            .map(|_| format!("Thủ phạm vẫn nằm trong nhóm {} người chưa bị loại.", remaining.len()))
             .unwrap_or_else(|| "Đối chiếu các manh mối đã mở với danh sách nghi phạm.".to_string());
         Ok(hint)
     }

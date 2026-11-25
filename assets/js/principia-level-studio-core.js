@@ -2,8 +2,15 @@
 (function(root){
  'use strict';
  const VERSION=1,MAX_LEVELS=100,MAX_QUESTIONS=50,MAX_TEXT=1200;
+ let levelCore=null;
+ if(root.PrincipiaWasmPhysics&&typeof root.PrincipiaWasmPhysics.load==='function'){
+  root.PrincipiaWasmPhysics.load().then(module=>{levelCore=module;}).catch(()=>{});
+ }
  const cleanText=(v,max=MAX_TEXT)=>String(v==null?'':v).trim().slice(0,max);
  function validateQuestion(q){
+  if(levelCore&&typeof levelCore.level_validate_question_json==='function'){
+   return JSON.parse(levelCore.level_validate_question_json(JSON.stringify(q)));
+  }
   if(!q||typeof q!=='object')throw new Error('Câu hỏi không hợp lệ.');
   const prompt=cleanText(q.prompt,MAX_TEXT),choices=Array.isArray(q.choices)?q.choices.map(x=>cleanText(x,300)):[];
   const answer=Number(q.answer);
@@ -13,6 +20,12 @@
   return {prompt,choices,answer,explanation:cleanText(q.explanation,MAX_TEXT)};
  }
  function validateLevel(level){
+  if(levelCore&&typeof levelCore.level_validate_json==='function'){
+   const title=cleanText(level?.title,100),description=cleanText(level?.description,300);
+   const id=cleanText(level?.id,80)||'level-'+Date.now().toString(36);
+   const payload={id,title,description,questions:level?.questions,updatedAt:cleanText(level?.updatedAt,40)||new Date().toISOString()};
+   return JSON.parse(levelCore.level_validate_json(JSON.stringify(payload)));
+  }
   if(!level||typeof level!=='object')throw new Error('Màn chơi không hợp lệ.');
   const title=cleanText(level.title,100),description=cleanText(level.description,300),id=cleanText(level.id,80)||'level-'+Date.now().toString(36);
   if(!/^[a-zA-Z0-9_-]{1,80}$/.test(id))throw new Error('Mã màn chơi chỉ được chứa chữ, số, dấu gạch ngang và gạch dưới.');

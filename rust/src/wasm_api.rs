@@ -20,6 +20,22 @@ pub fn score_projectile_json(
 
 
 #[wasm_bindgen]
+pub fn force_balance_score_json(
+    force_x_n: f64,
+    force_y_n: f64,
+    target_x_n: f64,
+    target_y_n: f64,
+) -> Result<String, JsValue> {
+    let result = crate::force_balance::score(force_x_n, force_y_n, target_x_n, target_y_n)
+        .map_err(|error| JsValue::from_str(error))?;
+    serde_json::to_string(&serde_json::json!({
+        "error": result.error_n,
+        "points": result.points,
+        "balanced": result.balanced
+    })).map_err(|error| JsValue::from_str(&error.to_string()))
+}
+
+#[wasm_bindgen]
 pub fn generate_game_challenge_json(seed: u64) -> Result<String, JsValue> {
     let challenge = crate::game_challenge::generate_challenge(seed);
     serde_json::to_string(&serde_json::json!({

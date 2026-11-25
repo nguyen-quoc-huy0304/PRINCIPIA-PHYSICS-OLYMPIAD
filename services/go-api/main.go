@@ -38,6 +38,7 @@ var operationFields = map[string][]string{
 	"gameProjectileScore": {"speed", "angleDeg", "targetM", "gravity"},
 	"rigidBodyDrop": {"initialHeightM", "gravityMps2", "radiusM", "restitution", "steps"},
 	"linearRegression": {"points"},
+	"forceBalance": {"x", "y", "targetX", "targetY"},
 	"robotArmIK": {"l1M", "l2M", "targetXM", "targetYM", "elbowBranch"},
 }
 
@@ -47,6 +48,7 @@ func (a api) routes() http.Handler {
 		writeJSON(w, http.StatusOK, map[string]string{"status": "ok", "service": "principia-go-api"})
 	})
 	mux.HandleFunc("POST /v1/compute", a.compute)
+	mux.HandleFunc("POST /v1/game/trajectory", gameTrajectoryHandler)
 	mux.HandleFunc("POST /v1/ai/generate", a.generateAI)
 	return a.cors(mux)
 }
@@ -135,8 +137,8 @@ func validateFields(request map[string]any, fields []string) error {
 			return errors.New("missing required field: " + field)
 		}
 		if field == "points" {
-			if _, ok := value.([]any); !ok {
-				return errors.New("points must be an array")
+			if err := validateRegressionPoints(value); err != nil {
+				return err
 			}
 			continue
 		}
@@ -152,6 +154,30 @@ func validateFields(request map[string]any, fields []string) error {
 	for key := range request {
 		if !allowed[key] {
 			return errors.New("unexpected field: " + key)
+		}
+	}
+	return nil
+}
+
+func validateRegressionPoints(value any) error {
+	points, ok := value.([]any)
+	if !ok || len(points) < 2 || len(points) > 10_000 {
+		return errors.New("points must contain 2 to 10000 coordinate pairs")
+	}
+	for _, raw := range points {
+		pair, ok := raw.([]any)
+		if !ok || len(pair) != 2 {
+			return errors.New("each point must contain exactly two numbers")
+		}
+		for _, coordinate := range pair {
+			number, ok := coordinate.(json.Number)
+			if !ok {
+				return errors.New("point coordinates must be numeric")
+			}
+			parsed, err := number.Float64()
+			if err != nil || math.IsNaN(parsed) || math.IsInf(parsed, 0) {
+				return errors.New("point coordinates must be finite")
+			}
 		}
 	}
 	return nil

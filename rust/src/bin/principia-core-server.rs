@@ -62,6 +62,13 @@ fn dispatch(request: &Value) -> Value {
                 "steps": lab.elapsed_steps()
             }));
         }
+        if op == "forceBalance" {
+            let result = principia_core::force_balance::score(
+                number(request, "x")?, number(request, "y")?,
+                number(request, "targetX")?, number(request, "targetY")?,
+            ).map_err(str::to_string)?;
+            return Ok(json!({"error":result.error_n,"points":result.points,"balanced":result.balanced}));
+        }
         if op == "gameProjectileScore" {
             let shot = principia_core::game::score_projectile(
                 number(request,"speed")?, number(request,"angleDeg")?,
@@ -111,6 +118,18 @@ mod tests {
         assert_eq!(response["id"], 7);
         assert_eq!(response["ok"], true);
         assert_eq!(response["value"], 11.0);
+    }
+    #[test]
+    fn dispatches_native_force_balance_scoring() {
+        let response = dispatch(&json!({"id":21,"op":"forceBalance","x":3.0,"y":-4.0,"targetX":3.0,"targetY":-4.0}));
+        assert_eq!(response["ok"], true);
+        assert_eq!(response["value"]["points"], 100);
+        assert_eq!(response["value"]["balanced"], true);
+    }
+    #[test]
+    fn rejects_non_finite_force_balance_input() {
+        let response = dispatch(&json!({"op":"forceBalance","x":f64::INFINITY,"y":0.0,"targetX":0.0,"targetY":0.0}));
+        assert_eq!(response["ok"], false);
     }
     #[test]
     fn dispatches_native_game_scoring() {

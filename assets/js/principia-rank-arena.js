@@ -27,6 +27,10 @@
   let state = loadState();
   let root = null;
   let activeMatch = null;
+  let rankArenaCore = null;
+  if (window.PrincipiaWasmPhysics && typeof window.PrincipiaWasmPhysics.load === 'function') {
+    window.PrincipiaWasmPhysics.load().then(module => { rankArenaCore = module; }).catch(() => {});
+  }
 
   function loadState() {
     try {
@@ -72,6 +76,10 @@
   }
 
   function currentTier(rp) {
+    if (rankArenaCore && typeof rankArenaCore.rank_arena_tier_json === 'function') {
+      try { return JSON.parse(rankArenaCore.rank_arena_tier_json(BigInt(Math.max(0, Math.floor(Number(rp) || 0))))); }
+      catch (_) {}
+    }
     let index = 0;
     for (let i = 1; i < TIERS.length; i += 1) if (rp >= TIERS[i].min) index = i;
     const tier = TIERS[index];
@@ -193,16 +201,31 @@
     show('TRẬN ĐẤU · ' + (match.index + 1) + '/' + MATCH_SIZE, '<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;color:#c7b9e9"><b>' + match.rival.icon + ' ' + match.rival.name + ' · AI ' + match.rival.style + '</b><span>' + (match.mode === 'accuracy' ? 'CHUẨN XÁC' : match.mode === 'combo' ? 'COMBO' : 'CÂN BẰNG') + '</span></div><div style="height:7px;background:#080811;border-radius:8px;margin:12px 0 18px;overflow:hidden"><div style="height:100%;width:' + progress + '%;background:#9c7bff"></div></div><small style="color:#aaa">' + escapeHtml(q.topic) + '</small><h2 style="font-size:20px;line-height:1.5;margin:10px 0 18px">' + escapeHtml(q.q) + '</h2><div style="display:grid;gap:9px">' + q.a.map((answer, i) => '<button type="button" onclick="principiaRankAnswer(' + i + ')" style="padding:14px;text-align:left;border:1px solid #51466c;border-radius:12px;background:#211e34;color:#fff;font-size:15px">' + String.fromCharCode(65 + i) + '. ' + escapeHtml(answer) + '</button>').join('') + '</div><p style="font-size:12px;color:#aaa;margin-top:16px">Chọn đáp án độc lập. Trợ lý AI không tiết lộ đáp án trong trận xếp hạng.</p>');
   }
 
-  function answerQuestion(index) {
+  async function answerQuestion(index) {
     const match = activeMatch;
-    if (!match) return;
+    if (!match || match.answering) return;
     const q = match.questions[match.index];
-    const selected = validInt(index, 0, q.a.length - 1);
-    const correct = selected === q.correct;
+    const selected = Number(index);
+    if (!Number.isInteger(selected) || selected < 0 || selected >= q.a.length) return;
+    match.answering = true;
+    if (root) root.querySelectorAll('[onclick^="principiaRankAnswer"]').forEach(button => { button.disabled = true; });
+    let correct;
+    try {
+      const adapter = window.PrincipiaAssessmentAdapter;
+      if (!adapter || typeof adapter.gradeQuestion !== 'function') throw new Error('Rust assessment adapter unavailable');
+      const grade = await adapter.gradeQuestion({ q: q.q, a: q.a, correct: q.correct }, selected, {
+        id: 'rank-arena', title: 'PRINCIPIA Ranked Arena'
+      });
+      correct = grade.correct;
+    } catch (_) {
+      correct = selected === q.correct;
+    }
+    if (activeMatch !== match || match.index >= MATCH_SIZE) return;
     match.answers.push({ correct, selected, expected: q.correct });
     match.combo = correct ? match.combo + 1 : 0;
     match.bestCombo = Math.max(match.bestCombo, match.combo);
     match.index += 1;
+    match.answering = false;
     if (match.index >= MATCH_SIZE) finishMatch();
     else renderQuestion();
   }
@@ -211,20 +234,40 @@
     const match = activeMatch;
     if (!match) return;
     const correct = match.answers.filter(a => a.correct).length;
-    const accuracy = correct / MATCH_SIZE;
-    const base = match.rival.rating / 1000;
-    const modeBonus = match.mode === 'combo' ? match.bestCombo * 0.025 : 0;
-    const rivalCorrect = Math.max(1, Math.min(MATCH_SIZE, Math.round((0.48 + base * 0.28 + (Math.random() * 0.2 - 0.1)) * MATCH_SIZE)));
-    const userScore = accuracy + modeBonus;
-    const rivalScore = rivalCorrect / MATCH_SIZE + (match.mode === 'accuracy' ? 0.02 : 0);
-    const won = userScore > rivalScore || (userScore === rivalScore && correct >= 4);
-    const rpChange = won ? 20 : -8;
-    state.rp = Math.max(0, state.rp + rpChange);
-    state.mmr = validInt(state.mmr + (won ? 18 : -12) + Math.round((accuracy - 0.5) * 20), 100, 3000);
-    state.dailyMatches += 1;
-    if (won) state.wins += 1; else state.losses += 1;
-    const record = { date: new Date().toISOString(), rival: match.rival.name, mode: match.mode, correct, total: MATCH_SIZE, rivalCorrect, result: won ? 'win' : 'loss', rpChange, bestCombo: match.bestCombo };
-    state.matches.push(record);
+    const rivalCorrect = Math.max(1, Math.min(MATCH_SIZE, Math.round((0.48 + (match.rival.rating / 1000) * 0.28 + (Math.random() * 0.2 - 0.1)) * MATCH_SIZE)));
+    const date = new Date().toISOString();
+    let outcome = null;
+    if (rankArenaCore && typeof rankArenaCore.rank_arena_finish_match_json === 'function') {
+      try {
+        const response = JSON.parse(rankArenaCore.rank_arena_finish_match_json(JSON.stringify(state), JSON.stringify({
+          rival: match.rival.name, mode: match.mode, correct, rivalCorrect,
+          bestCombo: match.bestCombo, date
+        })));
+        if (response && response.state && response.result && typeof response.result.won === 'boolean' &&
+            Number.isFinite(response.result.rpChange)) {
+          state = response.state;
+          outcome = response.result;
+        }
+      } catch (_) {}
+    }
+    let won, rpChange;
+    if (outcome) {
+      won = outcome.won;
+      rpChange = outcome.rpChange;
+    } else {
+      const accuracy = correct / MATCH_SIZE;
+      const modeBonus = match.mode === 'combo' ? match.bestCombo * 0.025 : 0;
+      const rivalScore = rivalCorrect / MATCH_SIZE + (match.mode === 'accuracy' ? 0.02 : 0);
+      const userScore = accuracy + modeBonus;
+      won = userScore > rivalScore || (userScore === rivalScore && correct >= 4);
+      rpChange = won ? 20 : -8;
+      state.rp = Math.max(0, state.rp + rpChange);
+      state.mmr = validInt(state.mmr + (won ? 18 : -12) + Math.round((accuracy - 0.5) * 20), 100, 3000);
+      state.dailyMatches += 1;
+      if (won) state.wins += 1; else state.losses += 1;
+      state.matches.push({ date, rival: match.rival.name, mode: match.mode, correct, total: MATCH_SIZE,
+        rivalCorrect, result: won ? 'win' : 'loss', rpChange, bestCombo: match.bestCombo });
+    }
     updateAchievements();
     saveState();
     activeMatch = null;
@@ -249,6 +292,19 @@
 
   function claimMission(id) {
     const today = todayKey();
+    if (rankArenaCore && typeof rankArenaCore.rank_arena_claim_mission_json === 'function') {
+      try {
+        const response = JSON.parse(rankArenaCore.rank_arena_claim_mission_json(JSON.stringify(state), id, today));
+        if (!response || !response.state || !response.result || typeof response.result.ok !== 'boolean') {
+          throw new Error('Rust returned an invalid ranked mission result');
+        }
+        state = response.state;
+        updateAchievements();
+        saveState();
+        renderHome();
+        return;
+      } catch (_) {}
+    }
     if (state.daily !== today) { state.daily = today; state.dailyMatches = 0; }
     const thisWeek = weekKey();
     const weekMatches = state.matches.filter(item => String(item.date || '').slice(0, 10) >= thisWeek);
