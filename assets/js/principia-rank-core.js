@@ -1,9 +1,9 @@
 /* PRINCIPIA rank league: rank is derived from earned learning XP; no streak penalties or paid boosts. */
 (function(root,factory){
- const api=factory();
+ const api=factory(root);
  if(typeof module==='object'&&module.exports)module.exports=api;
  if(root)root.PrincipiaRankCore=api;
-})(typeof window!=='undefined'?window:globalThis,function(){
+})(typeof window!=='undefined'?window:globalThis,function(root){
  'use strict';
  const RANKS=Object.freeze([
   {id:'bronze',name:'Đồng',emblem:'🥉',minXP:0},
