@@ -1,41 +1,39 @@
-# PRINCIPIA — Polyglot architecture and language policy
+# PRINCIPIA — Polyglot architecture
 
-This policy applies to future development. It does not require rewriting the existing application or replacing working code just to change languages.
+## Approved runtime languages
 
-## Language selection
+| Language | Responsibility |
+|---|---|
+| C | Stable ABI at native boundaries and small interoperability shims |
+| C++17/20 | Native physics kernels and performance-critical simulation |
+| Rust | Primary domain core, validation, game rules, robotics, data analysis and browser WebAssembly |
+| Go | HTTP API, concurrency-heavy services, build utilities and cross-language contract tests |
+| JavaScript | Browser UI orchestration, DOM events, accessibility and calling WebAssembly |
+| TypeScript | Typed browser integration only; no duplicate domain or physics implementation |
+| HTML/CSS | Document structure, responsive layout, visual styling and animation |
 
-| Language | Preferred use | Policy |
-|---|---|---|
-| C | Stable ABI and FFI declarations | Small boundary layer; no duplicate business logic |
-| C++17/20 | Performance-sensitive native kernels, simulation, reusable WASM code | Use only where profiling justifies it |
-| Rust | Default for new core logic, safe concurrency, validation, native services | Keep existing modules; do not rewrite working code |
-| Go | Small network services, concurrency-heavy tools, integration/contract tests | Prefer when simpler deployment and fast iteration matter |
-| Zig | Small native utilities, predictable low-level modules, C interop, WASM/native experiments | Evaluate with a prototype and benchmarks before adopting broadly |
-| Fortran | Numerical/scientific kernels where mature numerical libraries or array computation provide a clear advantage | Isolate behind C ABI; use only for measured scientific workloads |
-| CSS | Existing web presentation layer | Keep for layout and visual styling; CSS is not a general-purpose runtime language and replacing it does not inherently improve performance |
+Java, Python, C#, PHP, Ruby, Zig and Fortran are not approved application or build runtimes for this repository. Do not introduce them without an explicit architecture review and measured technical justification.
 
 ## Architecture rules
 
-1. Preserve the current PRINCIPIA website, UI, content, authentication and working features. No rewrite from scratch.
-2. Choose a language per module based on workload, safety, available libraries, deployment size and measured performance.
-3. Keep module boundaries explicit. Prefer a stable C ABI or documented JSON-lines protocol for cross-language calls.
-4. Avoid excessive FFI crossings and tiny calls across processes; batch work where possible.
-5. Rust remains the default safe core. C/C++/Zig/Fortran are specialized tools, not automatic replacements.
-6. Fortran and Zig must first pass a small prototype, correctness tests, dependency/license review and benchmark against the existing implementation before production adoption.
-7. Do not claim a language is faster without measuring the same workload on the target platform.
-8. Avoid adding Java/Python to the end-user runtime for performance-critical paths. Existing Java/Python code is not automatically deleted; replace only when profiling shows a real bottleneck and a safe migration path exists.
-9. CSS remains the normal browser styling technology. Optimize critical CSS, layout and rendering rather than replacing CSS with a systems language.
-10. Keep build and test automation in Go, Rust, C/C++ or the platform's existing JavaScript tooling; avoid introducing Python, Java or .NET runtimes into the application pipeline.
-11. Tests run against the same source repository and production application code. Do not create extra websites, preview sites or parallel V1/V2 deployments.
-12. Scientific modules must document units, assumptions, numerical tolerances, edge cases and independent reference tests. No promise of absolute accuracy.
+1. Preserve the official PRINCIPIA website, existing UI, content, authentication and working features.
+2. New domain rules belong in Rust. Native performance kernels belong in C/C++; expose stable C ABI functions where needed.
+3. Browser physics and scientific computation must call the Rust WebAssembly package first. JavaScript is an adapter and must not become a second physics engine.
+4. Go owns HTTP services and integration boundaries. The Go API delegates domain computation to the Rust core; it must not duplicate physics formulas.
+5. JavaScript remains only where the browser platform requires it: DOM, UI state, event handling, accessibility, and adapters to WebAssembly or network APIs.
+6. HTML and CSS remain the native web presentation technologies. Replacing them with systems languages does not improve browser compatibility.
+7. Keep interfaces explicit, validate all external inputs, cap payload sizes, and reject non-finite numerical values.
+8. Avoid excessive FFI/process crossings. Batch numerical work and serialize only at service boundaries.
+9. Do not claim a migration or performance improvement until the code is integrated and measured on target devices.
+10. Do not add Java/Python/.NET runtimes or tools to application, CI, packaging or deployment workflows.
+11. One official PRINCIPIA website only. Unit tests, CI and local profiling are allowed; do not create a parallel production site.
+12. Scientific modules must document SI units, assumptions, tolerances, edge cases and independent reference tests.
 
-## Adoption checklist for each new module
+## Migration acceptance
 
-- Define its workload and expected performance requirement.
-- Prototype against the existing Rust/C++ baseline.
-- Test correctness, invalid inputs, numerical stability and portability.
-- Benchmark on target devices, including low-memory devices.
-- Measure binary size, memory use, startup time and FFI/process overhead.
-- Review licenses and dependency maintenance.
-- Adopt only if the result is measurably better or materially easier to maintain.
-- Document the interface and keep a tested fallback where practical.
+- New/changed core logic is implemented in Rust/C/C++/Go as appropriate.
+- Browser physics uses Rust WASM before any fallback.
+- Tests cover valid values, invalid values, overflow, boundaries and cross-language parity.
+- The browser bridge has a safe error path and does not block the UI thread.
+- Build workflows do not install unrelated language runtimes.
+- Existing features remain accessible after migration.
