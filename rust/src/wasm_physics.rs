@@ -205,6 +205,12 @@ pub fn rank_arena_finish_match_json(state_json: &str, match_json: &str) -> Resul
 }
 
 #[wasm_bindgen]
+pub fn rank_arena_claim_mission_json(state_json: &str, mission_id: &str, today: &str) -> Result<String, JsValue> {
+    crate::rank_arena::claim_mission(state_json, mission_id, today)
+        .map_err(|error| input_error(error))
+}
+
+#[wasm_bindgen]
 pub fn rank_arena_tier_json(rp: u64) -> Result<String, JsValue> {
     serde_json::to_string(&crate::rank_arena::tier(rp))
         .map_err(|error| input_error(&error.to_string()))
