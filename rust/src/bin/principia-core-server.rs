@@ -162,6 +162,40 @@ fn main() {
 mod tests {
     use super::*;
     #[test]
+    fn dispatches_adaptive_study_plan() {
+        let response = dispatch(&json!({
+            "id": 21, "op": "studyPlan", "percent": 35.0,
+            "errorCount": 4, "phase": "practice", "energy": 2,
+            "confidence": 3, "topic": "Cơ học"
+        }));
+        assert_eq!(response["ok"], true);
+        assert_eq!(response["value"]["goal"], "recover");
+        assert_eq!(response["value"]["nextAction"], "retry_error");
+        assert_eq!(response["value"]["focusMinutes"], 20);
+    }
+
+    #[test]
+    fn dispatches_spaced_review_schedule() {
+        let response = dispatch(&json!({
+            "id": 22, "op": "scheduleReview", "quality": 1,
+            "previousIntervalDays": 12, "easeFactor": 2.5
+        }));
+        assert_eq!(response["ok"], true);
+        assert_eq!(response["value"]["dueAfterDays"], 1);
+        assert_eq!(response["value"]["mastered"], false);
+    }
+
+    #[test]
+    fn rejects_invalid_study_plan_energy() {
+        let response = dispatch(&json!({
+            "op": "studyPlan", "energy": 0, "confidence": 3,
+            "errorCount": 0, "percent": 80.0
+        }));
+        assert_eq!(response["ok"], false);
+        assert!(response["error"].as_str().unwrap().contains("Study context rejected"));
+    }
+
+    #[test]
     fn dispatches_native_velocity_calculation() {
         let response = dispatch(&json!({"id":7,"op":"velocity","initial":3.0,"acceleration":2.0,"seconds":4.0}));
         assert_eq!(response["id"], 7);
