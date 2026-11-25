@@ -879,21 +879,15 @@ async function answerQuestion(){
  quizAnswerPending=true;
  const button=selected.closest('.panel')?.querySelector('button.primary');
  if(button){button.disabled=true;button.textContent='ĐANG CHẤM…';}
- let correct,backend='javascript-fallback';
+ let assessment;
  try{
-  const engine=window.PrincipiaWasmPhysics;
-  if(!engine||typeof engine.gradeQuiz!=='function')throw new Error('Rust/WASM assessment unavailable');
-  const grade=await engine.gradeQuiz({
-   id:String(quiz.id||'quiz').slice(0,120),title:'PRINCIPIA quiz',passPercent:60,
-   questions:[{prompt:String(question.q||'Câu hỏi').slice(0,4000),options:question.a.map(option=>String(option).slice(0,1000)),correctIndex:Number(question.correct),points:1}],
-   answers:[{questionIndex:0,selectedOption:choice}]
-  });
-  if(!grade||!Array.isArray(grade.details)||!grade.details[0]||typeof grade.details[0].isCorrect!=='boolean')throw new Error('Rust returned an invalid assessment');
-  correct=grade.details[0].isCorrect;
-  backend='rust-wasm';
+  const adapter=window.PrincipiaAssessmentAdapter;
+  if(!adapter||typeof adapter.gradeQuestion!=='function')throw new Error('Assessment adapter unavailable');
+  assessment=await adapter.gradeQuestion(question,choice,{id:quiz.id,title:'PRINCIPIA quiz'});
  }catch(error){
-  correct=choice===Number(question.correct);
+  assessment={correct:choice===Number(question.correct),backend:'javascript-fallback',reason:String(error&&error.message||error)};
  }
+ const correct=assessment.correct,backend=assessment.backend;
  if(activeQuiz===quiz&&answers.length===index){
   answers.push(choice);
   answerResults.push(correct);
