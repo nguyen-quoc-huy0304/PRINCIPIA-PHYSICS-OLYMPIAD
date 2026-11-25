@@ -17,20 +17,36 @@ window.principiaGameSpeed=function(v){state.speed=clamp(Number(v)||16,8,40);stat
 function updateTargetDisplay(){const x=20+clamp(state.target/maxRange(state.speed,state.gravity),0,1)*560;const line=document.getElementById('pgTargetLine'),dot=document.getElementById('pgTarget'),ring=document.getElementById('pgTargetRing'),stat=document.getElementById('pgTargetStat'),ground=document.getElementById('pgTargetGround');if(line)line.setAttribute('d','M'+x+' 130V158');if(dot)dot.setAttribute('cx',x);if(ring)ring.setAttribute('cx',x);if(stat)stat.textContent=state.target+' m';if(ground)ground.textContent='MỤC TIÊU · '+state.target+' m';}
 window.principiaGameGravity=function(v){const g=Number(v);if(![1.62,9.80665,24.79].includes(g))return;state.gravity=g;state.target=clampTarget(state.target,state.speed,state.gravity);state.last='Đã đổi môi trường trọng lực. Hãy tính lại góc phóng để chạm mục tiêu.';save();if(typeof window.render==='function')window.render();refreshRustTrajectory();applyRustTargetClamp();};
 window.principiaGameAngle=function(v){state.angle=clamp(+v||45,15,75);const l=document.getElementById('pgAngleLabel'),p=document.querySelector('.pg-game-arena svg path[stroke="url(#pgTrail)"]');if(l)l.textContent=state.angle+'°';if(p)p.setAttribute('d',path(state.speed,state.angle));refreshRustTrajectory();save();};
-function animateShot(){
+async function animateShot(){
  const ball=document.getElementById('pgProjectile');if(!ball)return;
  if(shotAnimationFrame)cancelAnimationFrame(shotAnimationFrame);
- const v=state.speed,a=state.angle*Math.PI/180,g=state.gravity,r=range(v,state.angle,g),peak=v*v/(2*g),flight=2*v*Math.sin(a)/g;
+ let points;
+ try{points=await (await gameAdapter()).getTrajectory(state.speed,state.angle,state.gravity,97);}
+ catch(_){return;}
+ if(!document.contains(ball))return;
+ const maxX=Math.max(points[points.length-1][0],1);
+ const peak=Math.max(1,...points.map(point=>point[1]));
  const reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
- const place=(t)=>{const x=v*Math.cos(a)*t,y=v*Math.sin(a)*t-.5*g*t*t;ball.setAttribute('cx',(20+x/Math.max(r,1)*560).toFixed(2));ball.setAttribute('cy',(158-y/Math.max(peak,1)*130).toFixed(2));};
- if(reduced){place(flight);return;}
+ const place=progress=>{
+  const scaled=clamp(progress,0,1)*(points.length-1),index=Math.min(points.length-2,Math.floor(scaled)),fraction=scaled-index;
+  const a=points[index],b=points[index+1];
+  const x=a[0]+(b[0]-a[0])*fraction,y=a[1]+(b[1]-a[1])*fraction;
+  ball.setAttribute('cx',(20+x/maxX*560).toFixed(2));
+  ball.setAttribute('cy',(158-y/peak*130).toFixed(2));
+ };
+ if(reduced){place(1);return;}
  const start=performance.now(),duration=1250;
- const tick=now=>{const progress=clamp((now-start)/duration,0,1);place(flight*progress);if(progress<1&&!document.hidden)shotAnimationFrame=requestAnimationFrame(tick);else shotAnimationFrame=0;};
+ const tick=now=>{
+  const progress=clamp((now-start)/duration,0,1);
+  place(progress);
+  if(progress<1&&!document.hidden)shotAnimationFrame=requestAnimationFrame(tick);
+  else shotAnimationFrame=0;
+ };
  place(0);shotAnimationFrame=requestAnimationFrame(tick);
 }
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&shotAnimationFrame){cancelAnimationFrame(shotAnimationFrame);shotAnimationFrame=0;}},{passive:true});
 window.principiaLaunchGame=async function(){if(launching)return;launching=true;let completedShot=false;const button=document.querySelector('.pg-game-actions .primary');if(button){button.disabled=true;button.textContent='ĐANG TÍNH…';}try{let shot;let backendError='';if(window.principiaDesktop&&typeof window.principiaDesktop.computeGame==='function'){try{shot=await window.principiaDesktop.computeGame('gameProjectileScore',{speed:state.speed,angleDeg:state.angle,targetM:state.target,gravity:state.gravity});state.backend='Rust native';}catch(nativeError){backendError=String(nativeError.message||nativeError);}}if(!shot){try{const wasm=await rustWasmScore();shot=JSON.parse(wasm.score_projectile_json(state.speed,state.angle,state.target,state.gravity));state.backend='Rust/WASM';}catch(wasmError){const r=range(state.speed,state.angle,state.gravity),e=Math.abs(r-state.target);shot={rangeM:r,errorM:e,points:Math.max(0,Math.round(100-e*5))};state.backend='JavaScript fallback';if(backendError)state.backend+=' (Rust native/WASM chưa sẵn sàng)';}}const r=Number(shot.rangeM),e=Number(shot.errorM),p=Number(shot.points);if(!Number.isFinite(r)||!Number.isFinite(e)||!Number.isFinite(p)||p<0)throw new Error('Kết quả tính toán không hợp lệ');state.shots++;state.score+=p;state.best=Math.max(state.best,p);if(p>=95)state.perfect=(state.perfect||0)+1;state.history=Array.isArray(state.history)?state.history:[];state.history.push({date:new Date().toLocaleString(),angle:state.angle,gravity:state.gravity,rangeM:r,errorM:e,points:p,backend:state.backend});state.history=state.history.slice(-20);state.last=(e<=2?'🎯 Chính xác xuất sắc!':e<=5?'✨ Rất gần rồi!':e<=10?'👍 Có tiến bộ!':'💡 Chưa trúng mục tiêu — thử điều chỉnh góc phóng nhé.')+' Quãng bay '+r.toFixed(1)+' m · Sai số '+e.toFixed(1)+' m · +'+p+' điểm · '+state.backend+'.';save();completedShot=true;}catch(error){state.last='Không thể tính lượt chơi: '+String(error.message||error);save();}finally{launching=false;if(typeof window.render==='function')window.render();if(completedShot)animateShot();}}
 window.principiaNewGameChallenge=async function(){const old={score:state.score,best:state.best,shots:state.shots};let challenge;try{const wasm=await rustWasmScore();if(typeof wasm.generate_game_challenge_json!=='function')throw new Error('Rust challenge API chưa được build vào WASM');const seedArray=new Uint32Array(2);if(!window.crypto||typeof window.crypto.getRandomValues!=='function')throw new Error('Secure random source unavailable');window.crypto.getRandomValues(seedArray);const seed=(BigInt(seedArray[0])<<32n)|BigInt(seedArray[1]);challenge=JSON.parse(wasm.generate_game_challenge_json(seed));}catch(error){challenge=fresh();state.backend='JavaScript challenge fallback';}state={...state,...challenge,angle:45,last:'Thử thách mới đã sẵn sàng.',history:state.history||[],perfect:state.perfect||0,...old};save();if(typeof window.render==='function')window.render();};
-function install(){style();refreshRustTrajectory();if(typeof window.entertainmentPage!=='function'||window.__principiaNativeGamesInstalled)return;const old=window.entertainmentPage;window.entertainmentPage=function(){return panel()+old.apply(this,arguments);};window.__principiaNativeGamesInstalled=true;}
+function install(){style();if(typeof window.entertainmentPage!=='function'||window.__principiaNativeGamesInstalled)return;const old=window.entertainmentPage;window.entertainmentPage=function(){const markup=panel()+old.apply(this,arguments);requestAnimationFrame(()=>{refreshRustTrajectory();applyRustTargetClamp();});return markup;};window.__principiaNativeGamesInstalled=true;}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();
