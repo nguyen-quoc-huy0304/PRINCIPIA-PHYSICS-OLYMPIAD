@@ -105,7 +105,7 @@ const api={
       return {error:Number(result.error),points:Number(result.points),balanced:result.balanced};
     };
     if(root.principiaDesktop&&typeof root.principiaDesktop.computePhysics==='function'){
-      try{const result=validate(await root.principiaDesktop.computePhysics('forceBalance',payload));lastBackend='rust-native-force-balance';return result;}catch(error){lastBackend='rust-wasm-force-ballback';}
+      try{const result=validate(await root.principiaDesktop.computePhysics('forceBalance',payload));lastBackend='rust-native-force-balance';return result;}catch(error){lastBackend='rust-wasm-force-balance';}
     }
     if(root.PrincipiaWasmPhysics&&typeof root.PrincipiaWasmPhysics.compute==='function'){
       const result=validate(await root.PrincipiaWasmPhysics.compute('forceBalance',payload));lastBackend='rust-wasm-force-balance';return result;
