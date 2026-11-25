@@ -30,5 +30,10 @@
    nextName:next?next.name:null,isMaxRank:!next
   });
  }
- return Object.freeze({RANKS,getRank});
+ async function getRankWithRust(value) {
+  if(!root.PrincipiaWasmPhysics?.progression)throw new Error('Rust WASM progression engine is unavailable');
+  const result=await root.PrincipiaWasmPhysics.progression({xp:Math.max(0,Math.floor(Number(value)||0))});
+  return result.rank;
+ }
+ return Object.freeze({RANKS,getRank,getRankWithRust});
 });
