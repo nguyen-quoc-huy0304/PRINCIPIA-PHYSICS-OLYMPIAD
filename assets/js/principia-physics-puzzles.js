@@ -36,14 +36,14 @@ window.principiaForcePuzzleCheck=async function(){
   if(!result||![result.error,result.points].every(Number.isFinite)||typeof result.balanced!=='boolean'||result.points<0||result.points>100)throw new Error('Rust trả về kết quả cân bằng lực không hợp lệ.');
   state.attempts++;state.score+=result.points;state.best=Math.max(state.best,result.points);
   state.history=Array.isArray(state.history)?state.history:[];
-  state.history.push({date:new Date().toLocaleString(),x:state.x,y:state.y,error:result.error,points:result.points,backend:'Rust/WASM'});
+  state.history.push({date:new Date().toLocaleString(),x:state.x,y:state.y,error:result.error,points:result.points,backend:physics.backend});
   state.history=state.history.slice(-20);
   state.last=(result.balanced?'🎯 Cân bằng tốt!':result.error<2?'✨ Gần đạt cân bằng!':'💡 Hệ vẫn còn hợp lực.')+' Sai số '+result.error.toFixed(2)+' N · +'+result.points+' điểm. Lực cân bằng lý thuyết: ('+state.target.x+', '+state.target.y+') N. · '+(physics.backend||'native core');
   save();
   const el=document.getElementById('pfpResult');if(el)el.textContent=state.last;
   const stats=document.querySelectorAll('.pfp-stats b');if(stats.length===3){stats[0].textContent=state.score;stats[1].textContent=state.best;stats[2].textContent=state.attempts;}
  }catch(error){
-  const el=document.getElementById('pfpResult');if(el)el.textContent='Không thể chấm điểm bằng Rust/WASM: '+String(error.message||error);
+  const el=document.getElementById('pfpResult');if(el)el.textContent='Không thể chấm điểm: '+String(error.message||error);
  }finally{
   scoring=false;
   if(button){button.disabled=false;button.textContent='Kiểm tra lực ↗';}
