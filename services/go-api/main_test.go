@@ -55,7 +55,7 @@ func TestComputeRejectsTrailingJSON(t *testing.T) {
 	}
 }
 
-func TestValidateFieldsAcceptsValidRequest(t *testing.T) {
+func TestValidateFieldsRequiresJSONNumbers(t *testing.T) {
 	var request map[string]any
 	if err := json.Unmarshal([]byte(`{"op":"velocity","initial":1,"acceleration":2,"seconds":3}`), &request); err != nil {
 		t.Fatal(err)
