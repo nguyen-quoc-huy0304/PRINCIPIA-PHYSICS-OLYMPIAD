@@ -154,7 +154,7 @@
   if(!bank.length){open('Thử thách mỗi ngày','<p>Chưa có câu hỏi hợp lệ để tạo thử thách. Hãy bổ sung câu hỏi vào Quiz hoặc bài học.</p>'+btn('Về trung tâm','principiaSuiteHome()'));return}
   if(!state.daily||state.daily.date!==today){const q=bank[Math.floor(Math.random()*bank.length)];state.daily={date:today,q:q.q,a:q.a,correct:q.correct,topic:q.topic,path:q.path,image:q.image||null,graph:q.graph||null,answered:false,choice:null};save()}
   const d=state.daily;
-  let html='<p>1 câu hỏi mới mỗi ngày · dữ liệu từ ngân hàng bài học/Quiz thật.</p>'+panel('Thử thách '+today,'<b>'+esc(d.topic)+'</b><p>'+esc(d.q)+'</p>'+questionMedia(d)+'<div style="display:grid;gap:8px">'+d.a.map((a,i)=>'<button '+(d.answered?'disabled':'')+' onclick="principiaSuiteDailyAnswer('+i+')" style="text-align:left;padding:12px;border:1px solid var(--line,#555);border-radius:12px;background:var(--card,#171a2a);color:inherit">'+String.fromCharCode(65+i)+'. '+esc(a)+'</button>').join('')+'</div>'+ (d.answered?'<p><b>'+(d.choice===d.correct?'✅ Chính xác!':'❌ Chưa đúng')+'</b><br>Đáp án: '+esc(d.a[d.correct])+'</p>':'') )+btn('Về trung tâm','principiaSuiteHome()');
+  let html='<p>1 câu hỏi mới mỗi ngày · dữ liệu từ ngân hàng bài học/Quiz thật.</p>'+panel('Thử thách '+today,'<b>'+esc(d.topic)+'</b><p>'+esc(d.q)+'</p>'+questionMedia(d)+'<div style="display:grid;gap:8px">'+d.a.map((a,i)=>'<button '+(d.answered||d.grading?'disabled':'')+' onclick="principiaSuiteDailyAnswer('+i+')" style="text-align:left;padding:12px;border:1px solid var(--line,#555);border-radius:12px;background:var(--card,#171a2a);color:inherit">'+String.fromCharCode(65+i)+'. '+esc(a)+'</button>').join('')+'</div>'+ (d.answered?'<p><b>'+(d.choice===d.correct?'✅ Chính xác!':'❌ Chưa đúng')+'</b><br>Đáp án: '+esc(d.a[d.correct])+'</p>':'') )+btn('Về trung tâm','principiaSuiteHome()');
   open('Thử thách mỗi ngày',html)
  }
  let dailyHistoryQuery='',dailyHistoryFilter='all';
@@ -167,10 +167,35 @@
  function setDailyHistoryQuery(v){dailyHistoryQuery=String(v||'').slice(0,100);renderDailyHistory()}
  function setDailyHistoryFilter(v){dailyHistoryFilter=['all','correct','wrong'].includes(v)?v:'all';renderDailyHistory()}
  function exportDailyHistory(){const q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';const rows=(state.dailyHistory||[]).map(x=>[x.date,x.topic,x.correct?'Đúng':'Sai']);downloadText('\uFEFF'+[['Ngày','Chủ đề','Kết quả'],...rows].map(r=>r.map(q).join(',')).join('\r\n'),'principia-daily-challenge-history.csv','text/csv;charset=utf-8')}
- function dailyAnswer(i){
-  const d=state.daily;if(!d||d.answered||!Number.isInteger(i))return;
-  d.choice=i;d.answered=true;markStudyDay();state.dailyHistory=Array.isArray(state.dailyHistory)?state.dailyHistory:[];state.dailyHistory.unshift({date:localDateKey(),topic:d.topic,correct:i===d.correct});state.dailyHistory=state.dailyHistory.slice(0,30);if(i===d.correct){state.xp=(state.xp||0)+10;try{if(typeof xp!=='undefined'){xp+=10;if(typeof saveAll==='function')saveAll()}}catch(_){}}
-  else state.errors.unshift({title:d.q,body:'Bạn chọn: '+d.a[i]+'\\nĐáp án đúng: '+d.a[d.correct]+'\\nChủ đề: '+d.topic,date:new Date().toISOString()});
+ async function dailyAnswer(i){
+  const d=state.daily;
+  if(!d||d.answered||d.grading||!Number.isInteger(i)||i<0||i>=d.a.length)return;
+  d.grading=true;
+  let correct=false,gradeBackend='Rust/WASM';
+  try{
+   const grade=await window.PrincipiaWasmPhysics.gradeQuiz({
+    id:'principia-daily-'+d.date,title:String(d.topic||'Thử thách mỗi ngày').slice(0,240),passPercent:100,
+    questions:[{prompt:String(d.q||''),options:d.a.map(String),correctIndex:d.correct,points:1}],
+    answers:[{questionIndex:0,selectedOption:i}]
+   });
+   if(!grade||!Array.isArray(grade.details)||grade.details.length!==1||
+      typeof grade.details[0].isCorrect!=='boolean')throw new Error('Rust returned an invalid daily grade');
+   correct=grade.details[0].isCorrect;
+  }catch(error){
+   gradeBackend='JavaScript fallback';
+   correct=i===d.correct;
+  }
+  if(state.daily!==d||d.answered)return;
+  d.grading=false;d.choice=i;d.answered=true;d.backend=gradeBackend;markStudyDay();
+  state.dailyHistory=Array.isArray(state.dailyHistory)?state.dailyHistory:[];
+  state.dailyHistory.unshift({date:localDateKey(),topic:d.topic,correct,backend:gradeBackend});
+  state.dailyHistory=state.dailyHistory.slice(0,30);
+  if(correct){
+   state.xp=(state.xp||0)+10;
+   try{if(typeof xp!=='undefined'){xp+=10;if(typeof saveAll==='function')saveAll()}}catch(_){}
+  }else{
+   state.errors.unshift({title:d.q,body:'Bạn chọn: '+d.a[i]+'\\nĐáp án đúng: '+d.a[d.correct]+'\\nChủ đề: '+d.topic,date:new Date().toISOString()});
+  }
   save();dailyChallenge();
  }
  function spacedReview(){
