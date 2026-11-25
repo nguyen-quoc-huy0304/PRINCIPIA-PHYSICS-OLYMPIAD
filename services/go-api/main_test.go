@@ -73,6 +73,17 @@ func TestComputeValidatesRegressionPointShapeAndBounds(t *testing.T) {
 	}
 }
 
+func TestValidateFieldsAcceptsForceBalanceAndRejectsExtraFields(t *testing.T) {
+	valid := map[string]any{"op": "forceBalance", "x": json.Number("3"), "y": json.Number("-4"), "targetX": json.Number("3"), "targetY": json.Number("-4")}
+	if err := validateFields(valid, operationFields["forceBalance"]); err != nil {
+		t.Fatalf("valid force-balance request rejected: %v", err)
+	}
+	invalid := map[string]any{"op": "forceBalance", "x": json.Number("3"), "y": json.Number("-4"), "targetX": json.Number("3"), "targetY": json.Number("-4"), "admin": true}
+	if err := validateFields(invalid, operationFields["forceBalance"]); err == nil {
+		t.Fatal("expected unknown field to be rejected")
+	}
+}
+
 func TestValidateFieldsRequiresJSONNumbers(t *testing.T) {
 	var request map[string]any
 	if err := json.Unmarshal([]byte(`{"op":"velocity","initial":1,"acceleration":2,"seconds":3}`), &request); err != nil {
