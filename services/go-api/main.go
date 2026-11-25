@@ -20,6 +20,7 @@ const maxBodyBytes = 64 << 10
 type api struct {
 	corePath     string
 	allowedOrigin string
+	coreSlots    chan struct{}
 }
 
 type coreResponse struct {
@@ -120,6 +121,15 @@ func (a api) compute(w http.ResponseWriter, r *http.Request) {
 	}
 	ctx, cancel := context.WithTimeout(r.Context(), 8*time.Second)
 	defer cancel()
+	if a.coreSlots != nil {
+		select {
+		case a.coreSlots <- struct{}{}:
+			defer func() { <-a.coreSlots }()
+		case <-ctx.Done():
+			writeError(w, http.StatusGatewayTimeout, "native core queue timed out")
+			return
+		}
+	}
 	cmd := exec.CommandContext(ctx, a.corePath)
 	cmd.Stdin = bytes.NewReader(append(payload, '\n'))
 	output, err := cmd.Output()
@@ -252,7 +262,7 @@ func main() {
 	}
 	server := &http.Server{
 		Addr: addr,
-		Handler: (api{corePath: corePath, allowedOrigin: strings.TrimSpace(os.Getenv("ALLOWED_ORIGIN"))}).routes(),
+		Handler: (api{corePath: corePath, allowedOrigin: strings.TrimSpace(os.Getenv("ALLOWED_ORIGIN")), coreSlots: make(chan struct{}, 4)}).routes(),
 		ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout: 10 * time.Second,
 		WriteTimeout: 12 * time.Second,
