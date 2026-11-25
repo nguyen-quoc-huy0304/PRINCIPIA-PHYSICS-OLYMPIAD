@@ -128,7 +128,7 @@ mod tests {
     }
     #[test]
     fn rejects_non_finite_force_balance_input() {
-        let response = dispatch(&json!({"op":"forceBalance","x":1e999,"y":0.0,"targetX":0.0,"targetY":0.0}));
+        let response = dispatch(&json!({"op":"forceBalance","x":f64::INFINITY,"y":0.0,"targetX":0.0,"targetY":0.0}));
         assert_eq!(response["ok"], false);
     }
     #[test]
