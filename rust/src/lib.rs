@@ -13,6 +13,7 @@ pub mod rigid_body;
 pub mod robotics;
 pub mod data_analysis;
 pub mod game;
+pub mod game_challenge;
 pub mod science_mystery;
 pub mod daily_challenge;
 #[cfg(target_arch = "wasm32")]
