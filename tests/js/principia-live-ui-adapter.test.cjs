@@ -6,7 +6,7 @@ const read = path => fs.readFileSync(path, 'utf8');
 
 test('live UI adapter is loaded after the existing PRINCIPIA UI systems', () => {
   const html = read('index.html');
-  assert.match(html, /principia-live-ui-adapter\.css/);
+  assert.match(html, /principia-visual-system\.css/);
   assert.match(html, /principia-live-ui-adapter\.js/);
   assert.ok(html.indexOf('principia-live-ui-adapter.css') > html.indexOf('principia-visual-rebuild-v2.css'));
   assert.ok(html.indexOf('principia-live-ui-adapter.js') > html.indexOf('principia-motion-library.js'));

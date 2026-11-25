@@ -23,7 +23,7 @@ test('momentum mode is opt-in, private by default, and integrated with adaptive 
   assert.match(source, /data-daily-progress/);
   assert.match(source, /event.key === 'Escape'/);
   assert.match(css, /prefers-reduced-motion/);
-  assert.match(html, /principia-momentum-mode\.js\?v=20261124-momentum1/);
+  assert.match(html, /principia-momentum-mode\.js\?v=20261124-learning-science2/);
   assert.match(html, /principia-momentum-mode\.css\?v=20261124-momentum1/);
 });
 

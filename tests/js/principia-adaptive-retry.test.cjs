@@ -13,7 +13,8 @@ test('Gemini retry assessment is explicit, bounded and does not transmit identit
   assert.match(assessor, /MAX_ANSWER = 2200/);
   assert.match(assessor, /window\.principiaAI\?\.ask/);
   assert.match(adaptive, /Đánh giá lời giải bằng Gemini/);
-  assert.match(adaptive, /Chỉ đề bài, đáp án tham chiếu và lời giải bạn viết/);
+  assert.match(assessor, /question,\s*referenceAnswer:\s*expected,\s*learnerAttempt:\s*attempt/);
+  assert.doesNotMatch(assessor, /\b(?:userId|uid|email|displayName)\s*:/i);
   assert.doesNotMatch(adaptive, /ppaVerified/);
 });
 

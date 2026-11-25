@@ -268,7 +268,7 @@ pub fn progression_summary_json(input_json: &str) -> Result<String, JsValue> {
     let input = AchievementInput {
         sessions: metric("sessions"),
         questions: metric("questions"),
-        best_percent: metric("bestPercent").unwrap_or(0).min(100) as u8,
+        best_percent: metric("bestPercent").min(100) as u8,
         lessons: metric("lessons"),
         streak: metric("streak").min(u32::MAX as u64) as u32,
         experiments: metric("experiments"),

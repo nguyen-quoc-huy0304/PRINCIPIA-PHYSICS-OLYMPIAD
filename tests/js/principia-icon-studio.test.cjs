@@ -41,5 +41,7 @@ test('reference animation engines and styles are connected to the live app', () 
   assert.match(index, /principia-kinetic-ui\.js/);
   assert.match(index, /principia-delight-motion\.js/);
   assert.match(index, /principia-delight-motion\.css/);
-  assert.match(index, /principia-reference-ui\.css/);
+  assert.match(index, /principia-visual-system\.css/);
+  assert.match(index, /principia-delight-motion\.css/);
+  assert.match(index, /principia-kinetic-ui\.css/);
 });
