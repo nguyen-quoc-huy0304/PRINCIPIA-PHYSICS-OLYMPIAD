@@ -105,6 +105,7 @@ function rememberPage(){pageHistory.push({page,stack:[...stack],activeLesson,act
 function goBack(){if(page==='play'&&activeQuiz&&(answers||[]).length>0){if(!confirm('Bài làm chưa hoàn thành. Bạn vẫn muốn quay lại?'))return;}const prev=pageHistory.pop();if(!prev){if(page!=='home'){page='home';stack=[];activeLesson=null;activeQuiz=null;render();}return;}page=prev.page;stack=prev.stack;activeLesson=prev.activeLesson;activeQuiz=prev.activeQuiz;answers=prev.answers;render();}
 window.getPrincipiaPage=()=>page;window.setPrincipiaPage=p=>{page=p;};
 let activeQuiz=null,answers=[],answerResults=[],quizAnswerPending=false,dragId=null;
+const pendingLessonCompletions=new Set();
 
 function load(k,def){
  try{
@@ -896,10 +897,17 @@ async function answerQuestion(){
  }
  quizAnswerPending=false;
 }
-function completeLesson(id){
- if(!completed.includes(id)){completed.push(id);xp+=10;dailyReward();saveAll();notify('+10 XP · Bài học hoàn thành')}
- else notify('Bài học đã hoàn thành rồi');
- render();
+async function completeLesson(id){
+ if(completed.includes(id)){notify('Bài học đã hoàn thành rồi');render();return}
+ if(pendingLessonCompletions.has(id))return;
+ pendingLessonCompletions.add(id);
+ try{
+  try{await awardProgress('lesson',10);}
+  catch(_){xp+=10;dailyReward();}
+  completed.push(id);saveAll();notify('+10 XP · Bài học hoàn thành');
+ }finally{
+  pendingLessonCompletions.delete(id);render();
+ }
 }
 function dailyReward(){
  let today=new Date().toLocaleDateString('en-CA');
@@ -908,6 +916,20 @@ function dailyReward(){
   streak=lastDay===yesterday?streak+1:1;lastDay=today;localStorage.setItem('halo_lastday',today);localStorage.setItem('halo_streak',streak);
  }
  saveAll();
+}
+async function awardProgress(activity,reward){
+ const progress={
+  experience:Math.max(0,Math.floor(Number(xp)||0)),
+  completedLessons:Math.max(0,completed.length),
+  studyStreakDays:Math.max(0,Math.floor(Number(streak)||0)),
+  lastActivityDay:lastDay||null
+ };
+ const adapter=window.PrincipiaProgressAdapter;
+ if(!adapter||typeof adapter.record!=='function')throw new Error('Rust progress adapter unavailable');
+ const result=await adapter.record(progress,activity,new Date().toLocaleDateString('en-CA'),reward);
+ xp=result.experience;streak=result.studyStreakDays;lastDay=result.lastActivityDay;
+ try{localStorage.setItem('halo_lastday',lastDay);localStorage.setItem('halo_streak',String(streak));}catch(_){}
+ return result;
 }
 function profileEditor(){
  if(!requirePermission('content'))return;
@@ -1462,7 +1484,8 @@ async function pickInlineLessonQuizAns(qIdx, optIdx){
   inlineLessonQuizState.results[qIdx]=result.correct;
   window.PRINCIPIA_LAST_ASSESSMENT_BACKEND=result.backend;
   if(result.correct){
-    xp+=15;dailyReward();saveAll();
+    try{await awardProgress('quiz',15);}catch(_){xp+=15;dailyReward();}
+    saveAll();
     showXpToast('+15 XP · Trả lời đúng Quiz lý thuyết');
   }else{
     showXpToast('Chưa đúng rồi, xem lại ý lý thuyết nhé!');
