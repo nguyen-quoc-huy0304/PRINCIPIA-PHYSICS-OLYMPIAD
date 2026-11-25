@@ -145,92 +145,67 @@ func (a api) compute(w http.ResponseWriter, r *http.Request) {
 }
 
 func validateFields(request map[string]any, fields []string) error {
-	allowed := map[string]bool{"op": true, "id": true}
 	op, _ := request["op"].(string)
-	required := map[string]bool{}
+	allowed := map[string]bool{"op": true, "id": true}
+	for _, field := range fields { allowed[field] = true }
+	for _, field := range optionalStringFields[op] { allowed[field] = true }
+	for _, field := range optionalNumericFields[op] { allowed[field] = true }
+
 	for _, field := range fields {
-		allowed[field] = true
-		required[field] = true
-	}
-	for _, field := range optionalStringFields[op] {
-		allowed[field] = true
-	}
-	for _, field := range optionalNumericFields[op] {
-		allowed[field] = true
-	}
-	for field := range required {
 		value, exists := request[field]
-		if !exists {
-			return errors.New("missing required field: " + field)
-		}
-		if err := validateNumericField(field, value); err != nil {
-			return err
-		}
+		if !exists { return errors.New("missing required field: " + field) }
+		if err := validateNumericField(field, value); err != nil { return err }
 	}
 	for _, field := range optionalNumericFields[op] {
-		if value, exists := request[field]; exists && value != nil {
-			if err := validateNumericField(field, value); err != nil {
-				return err
-			}
+		value, exists := request[field]
+		if exists && value != nil {
+			if err := validateNumericField(field, value); err != nil { return err }
 		}
 	}
 	for _, field := range optionalStringFields[op] {
-		if value, exists := request[field]; exists && value != nil {
-			str, ok := value.(string)
-			if !ok || len(str) > 120 {
-				return errors.New(field + " must be a string of at most 120 bytes")
-			}
-			if choices, hasChoices := stringValues[op][field]; hasChoices && !choices[str] && str != "" {
-				return errors.New("unsupported " + field + " value")
-			}
+		value, exists := request[field]
+		if !exists || value == nil { continue }
+		str, ok := value.(string)
+		if !ok || len(str) > 120 { return errors.New(field + " must be a string of at most 120 bytes") }
+		if choices, hasChoices := stringValues[op][field]; hasChoices && str != "" && !choices[str] {
+			return errors.New("unsupported " + field + " value")
 		}
 	}
-	if op == "studyPlan" {
-		if energy, ok := request["energy"].(json.Number); ok {
-			n, err := energy.Int64()
-			if err != nil || n < 1 || n > 3 { return errors.New("energy must be an integer from 1 to 3") }
+	switch op {
+	case "studyPlan":
+		if err := validateIntegerRange(request["energy"], "energy", 1, 3); err != nil { return err }
+		if err := validateIntegerRange(request["confidence"], "confidence", 1, 5); err != nil { return err }
+		if err := validateIntegerRange(request["errorCount"], "errorCount", 0, math.MaxUint32); err != nil { return err }
+		if value, exists := request["percent"]; exists && value != nil {
+			n := value.(json.Number); v, err := n.Float64()
+			if err != nil || math.IsNaN(v) || math.IsInf(v, 0) || v < 0 || v > 100 { return errors.New("percent must be between 0 and 100") }
 		}
-		if confidence, ok := request["confidence"].(json.Number); ok {
-			n, err := confidence.Int64()
-			if err != nil || n < 1 || n > 5 { return errors.New("confidence must be an integer from 1 to 5") }
-		}
-		if errors, ok := request["errorCount"].(json.Number); ok {
-			n, err := errors.Int64()
-			if err != nil || n < 0 || n > math.MaxUint32 { return errors.New("errorCount must be a non-negative 32-bit integer") }
-		}
-		if percent, exists := request["percent"]; exists && percent != nil {
-			n, ok := percent.(json.Number
-			); if !ok { return errors.New("percent must be numeric or null") }
-			v, err := n.Float64(); if err != nil || math.IsNaN(v) || math.IsInf(v, 0) || v < 0 || v > 100 { return errors.New("percent must be between 0 and 100") }
-		}
-	}
-	if op == "scheduleReview" {
-		q, ok := request["quality"].(json.Number
-		); if !ok { return errors.New("quality must be an integer from 0 to 5") }
-		v, err := q.Int64(); if err != nil || v < 0 || v > 5 { return errors.New("quality must be an integer from 0 to 5") }
-		interval, ok := request["previousIntervalDays"].(json.Number
-		); if !ok { return errors.New("previousIntervalDays must be an integer") }
-		v, err = interval.Int64(); if err != nil || v < 0 || v > 36500 { return errors.New("previousIntervalDays must be between 0 and 36500") }
-		ease, ok := request["easeFactor"].(json.Number
-		); if !ok { return errors.New("easeFactor must be numeric") }
-		vf, err := ease.Float64(); if err != nil || math.IsNaN(vf) || math.IsInf(vf, 0) || vf < 1.3 || vf > 3.0 { return errors.New("easeFactor must be between 1.3 and 3.0") }
+	case "scheduleReview":
+		if err := validateIntegerRange(request["quality"], "quality", 0, 5); err != nil { return err }
+		if err := validateIntegerRange(request["previousIntervalDays"], "previousIntervalDays", 0, 36500); err != nil { return err }
+		n := request["easeFactor"].(json.Number); v, err := n.Float64()
+		if err != nil || math.IsNaN(v) || math.IsInf(v, 0) || v < 1.3 || v > 3.0 { return errors.New("easeFactor must be between 1.3 and 3.0") }
 	}
 	for key := range request {
-		if !allowed[key] {
-			return errors.New("unexpected field: " + key)
-		}
+		if !allowed[key] { return errors.New("unexpected field: " + key) }
 	}
+	return nil
+}
+
+func validateIntegerRange(value any, field string, min, max int64) error {
+	number, ok := value.(json.Number)
+	if !ok { return errors.New(field + " must be an integer") }
+	parsed, err := number.Int64()
+	if err != nil || parsed < min || parsed > max { return errors.New(field + " is out of range") }
 	return nil
 }
 
 func validateNumericField(field string, value any) error {
 	if field == "points" {
 		points, ok := value.([]any)
-		if !ok || len(points) < 2 || len(points) > 10000 {
-			return errors.New("points must contain between 2 and 10000 pairs")
-		}
-		for _, rawPoint := range points {
-			pair, ok := rawPoint.([]any)
+		if !ok || len(points) < 2 || len(points) > 10000 { return errors.New("points must contain between 2 and 10000 pairs") }
+		for _, raw := range points {
+			pair, ok := raw.([]any)
 			if !ok || len(pair) != 2 { return errors.New("each point must contain exactly two numbers") }
 			for _, rawCoordinate := range pair {
 				number, ok := rawCoordinate.(json.Number)
@@ -238,7 +213,6 @@ func validateNumericField(field string, value any) error {
 				parsed, err := number.Float64()
 				if err != nil || math.IsNaN(parsed) || math.IsInf(parsed, 0) { return errors.New("point coordinates must be finite") }
 			}
-			continue
 		}
 		return nil
 	}
