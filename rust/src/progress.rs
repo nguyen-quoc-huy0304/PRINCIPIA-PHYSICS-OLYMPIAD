@@ -32,6 +32,16 @@ impl Progress {
     pub fn experience_into_level(&self) -> u64 { self.experience % 100 }
 }
 fn day_number(day: &str) -> Option<i64> {
+    let bytes = day.as_bytes();
+    if bytes.len() != 10
+        || bytes[4] != b'-'
+        || bytes[7] != b'-'
+        || !bytes.iter().enumerate().all(|(index, byte)| {
+            matches!(index, 4 | 7) || byte.is_ascii_digit()
+        })
+    {
+        return None;
+    }
     let parts: Vec<i64> = day.split('-').map(str::parse).collect::<Result<_,_>>().ok()?;
     if parts.len()!=3 { return None; }
     let (mut y,m,d)=(parts[0],parts[1],parts[2]);
@@ -50,6 +60,15 @@ fn day_number(day: &str) -> Option<i64> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn rejects_non_canonical_or_impossible_dates() {
+        for invalid in ["2026-1-01", "2026-01-1", "26-01-01", "2026/01/01", "2026-02-29", "2026-13-01", "2026-00-10", "2026-04-31"] {
+            assert!(day_number(invalid).is_none(), "accepted invalid date: {invalid}");
+        }
+        assert!(day_number("2024-02-29").is_some());
+        assert!(day_number("2026-11-25").is_some());
+    }
+
     #[test] fn awards_experience_and_counts_lesson() {
         let mut p=Progress::default();
         p.record(Activity::LessonCompleted,"2026-11-22").unwrap();
