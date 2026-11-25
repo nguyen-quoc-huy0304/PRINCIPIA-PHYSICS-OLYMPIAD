@@ -11,6 +11,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: principia-rust-wasm-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   build-game-wasm:
     runs-on: ubuntu-latest
