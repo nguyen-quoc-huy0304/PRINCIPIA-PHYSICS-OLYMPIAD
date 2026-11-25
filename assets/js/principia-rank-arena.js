@@ -77,7 +77,7 @@
 
   function currentTier(rp) {
     if (rankArenaCore && typeof rankArenaCore.rank_arena_tier_json === 'function') {
-      try { return JSON.parse(rankArenaCore.rank_arena_tier_json(Math.max(0, Math.floor(Number(rp) || 0)))); }
+      try { return JSON.parse(rankArenaCore.rank_arena_tier_json(BigInt(Math.max(0, Math.floor(Number(rp) || 0))))); }
       catch (_) {}
     }
     let index = 0;
