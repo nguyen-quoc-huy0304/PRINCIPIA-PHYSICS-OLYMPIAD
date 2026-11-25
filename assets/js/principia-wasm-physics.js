@@ -31,7 +31,9 @@ async function compute(operation,params){
     case 'learningRecommend': return JSON.parse(wasm.learning_recommend_json(JSON.stringify(p)));
     case 'reviewSchedule': return JSON.parse(wasm.learning_review_schedule_json(p.quality,p.previousIntervalDays,p.easeFactor));
     case 'progressionSummary': return JSON.parse(wasm.progression_summary_json(JSON.stringify(p)));
-    case 'gameChallenge': return JSON.parse(wasm.generate_game_challenge_json(p.seed));\n    case 'gameTrajectory': return JSON.parse(wasm.game_trajectory_json(p.speed,p.angleDeg,p.gravity,p.samples||49));\n    case 'gameClampTarget': return wasm.clamp_game_target(p.target,p.speed,p.gravity);
+    case 'gameChallenge': return JSON.parse(wasm.generate_game_challenge_json(p.seed));
+    case 'gameTrajectory': return JSON.parse(wasm.game_trajectory_json(p.speed,p.angleDeg,p.gravity,p.samples||49));
+    case 'gameClampTarget': return wasm.clamp_game_target(p.target,p.speed,p.gravity);
     default: throw new TypeError('Unsupported Rust/WASM physics operation: '+operation);
   }
 }
