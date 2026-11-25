@@ -6,7 +6,46 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"strings"
 )
+
+
+func TestValidateStudyPlanAllowsOptionalContextAndRejectsInvalidValues(t *testing.T) {
+	valid := map[string]any{
+		"op": "studyPlan", "errorCount": json.Number("2"),
+		"energy": json.Number("2"), "confidence": json.Number("4"),
+		"goal": "olympiad", "topic": "Mechanics", "phase": "practice",
+		"percent": json.Number("86.5"),
+	}
+	if err := validateFields(valid, operationFields["studyPlan"]); err != nil {
+		t.Fatalf("valid study plan rejected: %v", err)
+	}
+	invalid := []map[string]any{
+		{"op":"studyPlan","errorCount":json.Number("0"),"energy":json.Number("4"),"confidence":json.Number("3")},
+		{"op":"studyPlan","errorCount":json.Number("0"),"energy":json.Number("2"),"confidence":json.Number("3"),"goal":"hack"},
+		{"op":"studyPlan","errorCount":json.Number("0"),"energy":json.Number("2"),"confidence":json.Number("3"),"percent":json.Number("101")},
+		{"op":"studyPlan","errorCount":json.Number("0"),"energy":json.Number("2"),"confidence":json.Number("3"),"topic":strings.Repeat("x",121)},
+	}
+	for _, input := range invalid {
+		if err := validateFields(input, operationFields["studyPlan"]); err == nil {
+			t.Errorf("expected invalid study plan rejected: %#v", input)
+		}
+	}
+}
+
+func TestValidateScheduleReviewBoundaries(t *testing.T) {
+	valid := map[string]any{
+		"op":"scheduleReview","quality":json.Number("5"),
+		"previousIntervalDays":json.Number("36500"),"easeFactor":json.Number("3.0"),
+	}
+	if err := validateFields(valid, operationFields["scheduleReview"]); err != nil {
+		t.Fatalf("boundary values should pass: %v", err)
+	}
+	valid["quality"] = json.Number("6")
+	if err := validateFields(valid, operationFields["scheduleReview"]); err == nil {
+		t.Fatal("quality above 5 should fail")
+	}
+}
 
 func TestHealthEndpoint(t *testing.T) {
 	server := httptest.NewServer((api{}).routes())
