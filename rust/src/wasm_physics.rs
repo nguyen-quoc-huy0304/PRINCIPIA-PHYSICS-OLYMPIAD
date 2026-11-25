@@ -198,6 +198,18 @@ pub fn gameverse_apply_json(state_json: &str, action_json: &str) -> Result<Strin
         .map_err(|error| input_error(error))
 }
 
+#[wasm_bindgen]
+pub fn rank_arena_finish_match_json(state_json: &str, match_json: &str) -> Result<String, JsValue> {
+    crate::rank_arena::finish_match(state_json, match_json)
+        .map_err(|error| input_error(error))
+}
+
+#[wasm_bindgen]
+pub fn rank_arena_tier_json(rp: u64) -> Result<String, JsValue> {
+    serde_json::to_string(&crate::rank_arena::tier(rp))
+        .map_err(|error| input_error(&error.to_string()))
+}
+
 fn input_error(message: &str) -> JsValue { JsValue::from_str(message) }
 
 #[wasm_bindgen]
