@@ -4,10 +4,20 @@
 (function(){
 'use strict';
 const KEY='principia_pendulum_lab_v1';
+let pendulumCore=null;
+if(window.PrincipiaWasmPhysics&&typeof window.PrincipiaWasmPhysics.load==='function'){
+ window.PrincipiaWasmPhysics.load().then(module=>{pendulumCore=module;}).catch(()=>{});
+}
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 function pendulumAt(lengthM,gravity,amplitudeDeg){
  const L=Number(lengthM),g=Number(gravity),deg=Number(amplitudeDeg);
  if(!Number.isFinite(L)||!Number.isFinite(g)||!Number.isFinite(deg)||L<=0||g<=0||Math.abs(deg)>=90) throw new RangeError('Invalid pendulum parameters');
+ if(pendulumCore){
+  try{
+   const result=JSON.parse(pendulumCore.physics_pendulum_json(L,g,deg));
+   if(result&&['angularFrequency','periodSeconds','frequencyHz','maxSpeedMps','maxAccelerationMps2'].every(key=>Number.isFinite(result[key])))return result;
+  }catch(_){}
+ }
  const omega=Math.sqrt(g/L),period=2*Math.PI/omega,theta=deg*Math.PI/180;
  return {angularFrequency:omega,periodSeconds:period,frequencyHz:1/period,maxSpeedMps:Math.sqrt(2*g*L*(1-Math.cos(theta))),maxAccelerationMps2:g*Math.sin(theta),approximation:'small-angle'};
 }
