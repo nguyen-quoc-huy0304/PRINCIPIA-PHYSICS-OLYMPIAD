@@ -44,7 +44,7 @@ This runs the local Node.js test suite in `tests/js/`. The same suite is also ru
 
 ## Native Go + Rust + C++ compute service
 
-The browser uses the same-origin `POST /api/compute` Cloudflare Pages Function. Set the Pages environment variable `PRINCIPIA_GO_API_URL` to the HTTPS base URL of the Go service. The proxy validates the request shape and forwards supported operations to the Go API; the Go API invokes the Rust JSON-line core, which uses the C++ numerical kernel for supported physics operations. If the service is not configured or unavailable, the browser continues with its Rust/WASM core.
+The browser uses the same-origin `POST /api/compute` and `POST /api/game/trajectory` Cloudflare Pages Functions. Set the Pages environment variable `PRINCIPIA_GO_API_URL` to the HTTPS base URL of the Go service. The proxy validates the request shape and forwards supported operations to the Go API; the Go API invokes the Rust JSON-line core, which uses the C++ numerical kernel for supported physics operations. If the service is not configured or unavailable, the browser continues with its Rust/WASM core.
 
 Build the service image from the repository root:
 
