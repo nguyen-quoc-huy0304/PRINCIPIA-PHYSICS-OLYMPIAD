@@ -1,17 +1,61 @@
 /* tslint:disable */
 /* eslint-disable */
 
+export function assessment_grade_json(input_json: string): string;
+
+export function clamp_game_target(target_m: number, speed_mps: number, gravity_mps2: number): number;
+
+export function game_trajectory_json(speed_mps: number, angle_degrees: number, gravity_mps2: number, samples: number): string;
+
+export function generate_game_challenge_json(seed: bigint): string;
+
+export function learning_recommend_json(context_json: string): string;
+
+export function learning_review_schedule_json(quality: number, previous_interval_days: number, ease_factor: number): string;
+
+export function physics_displacement(initial_mps: number, acceleration_mps2: number, seconds: number): number;
+
+export function physics_kinetic_energy(mass_kg: number, speed_mps: number): number;
+
+export function physics_linear_regression_json(points_json: string): string;
+
+export function physics_projectile_json(speed_mps: number, angle_degrees: number, gravity_mps2: number): string;
+
+export function physics_robot_arm_json(l1_m: number, l2_m: number, target_x_m: number, target_y_m: number, elbow_branch: number): string;
+
+export function physics_velocity(initial_mps: number, acceleration_mps2: number, seconds: number): number;
+
+export function progress_record_json(progress_json: string, activity: string, day: string): string;
+
+export function progression_summary_json(input_json: string): string;
+
 export function score_projectile_json(speed: number, angle_degrees: number, target_m: number, gravity: number): string;
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 
 export interface InitOutput {
     readonly memory: WebAssembly.Memory;
+    readonly assessment_grade_json: (a: number, b: number, c: number) => void;
+    readonly clamp_game_target: (a: number, b: number, c: number, d: number) => void;
+    readonly game_trajectory_json: (a: number, b: number, c: number, d: number, e: number) => void;
+    readonly generate_game_challenge_json: (a: number, b: bigint) => void;
+    readonly learning_recommend_json: (a: number, b: number, c: number) => void;
+    readonly learning_review_schedule_json: (a: number, b: number, c: number, d: number) => void;
+    readonly physics_displacement: (a: number, b: number, c: number, d: number) => void;
+    readonly physics_kinetic_energy: (a: number, b: number, c: number) => void;
+    readonly physics_linear_regression_json: (a: number, b: number, c: number) => void;
+    readonly physics_projectile_json: (a: number, b: number, c: number, d: number) => void;
+    readonly physics_robot_arm_json: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
+    readonly physics_velocity: (a: number, b: number, c: number, d: number) => void;
+    readonly progress_record_json: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
+    readonly progression_summary_json: (a: number, b: number, c: number) => void;
     readonly score_projectile_json: (a: number, b: number, c: number, d: number, e: number) => void;
     readonly __wbindgen_externrefs: WebAssembly.Table;
     readonly __wbindgen_add_to_stack_pointer: (a: number) => number;
-    readonly __wbindgen_export: (a: number) => void;
-    readonly __wbindgen_export2: (a: number, b: number, c: number) => void;
+    readonly __wbindgen_export: (a: number, b: number) => number;
+    readonly __wbindgen_export2: (a: number, b: number, c: number, d: number) => number;
+    readonly __wbindgen_export3: (a: number, b: number, c: number) => void;
+    readonly __wbindgen_export4: (a: number) => void;
     readonly __wbindgen_start: () => void;
 }
 
