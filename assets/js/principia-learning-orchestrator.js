@@ -138,10 +138,10 @@
     ].filter(Boolean).join('\n\n');
   }
 
-  function recordQuiz(event) {
+  async function recordQuiz(event) {
     const detail = event?.detail || {};
     const percent = Number(detail.percent);
-    if (!Number.isFinite(percent)) return;
+    if (!Number.isFinite(percent) || percent < 0 || percent > 100) return;
     const topic = clean(detail.source || detail.topic || 'Vật lý', 120);
     const mistakes = Array.isArray(detail.mistakes) ? detail.mistakes : [];
     state.profile = {
@@ -149,7 +149,7 @@
       errorCount: Math.min(100, mistakes.length),
       updatedAt: Date.now(), mode: clean(detail.mode || 'quiz', 40)
     };
-    const plan = choose({ topic, percent, errorCount: mistakes.length });
+    const plan = await getNextWithRust({ topic, percent, errorCount: mistakes.length });
     if (plan.methodId != null) {
       state.recent = state.recent.filter(item => item.id !== plan.methodId);
       state.recent.push({ id: plan.methodId, at: Date.now() });
@@ -157,7 +157,7 @@
     }
     save();
     window.dispatchEvent(new CustomEvent('principia:next-step-updated', {
-      detail: { title: plan.title, description: plan.description, topic: plan.topic, goal: plan.goal }
+      detail: { title: plan.title, description: plan.description, topic: plan.topic, goal: plan.goal, engine: plan.engine }
     }));
   }
 
@@ -197,8 +197,8 @@
     }
   }
 
-  function begin(context = {}) {
-    const plan = getNext(context);
+  async function begin(context = {}) {
+    const plan = await getNextWithRust(context);
     state.sessions += 1;
     if (plan.methodId != null) {
       state.recent = state.recent.filter(item => item.id !== plan.methodId);
