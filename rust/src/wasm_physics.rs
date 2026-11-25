@@ -132,6 +132,20 @@ pub fn physics_momentum_energy_2d_json(bodies_json: &str) -> Result<String, JsVa
     })).map_err(|error| JsValue::from_str(&error.to_string()))
 }
 
+#[wasm_bindgen]
+pub fn physics_pendulum_json(length_m: f64, gravity_mps2: f64, amplitude_degrees: f64) -> Result<String, JsValue> {
+    let result = crate::pendulum::analyze(length_m, gravity_mps2, amplitude_degrees)
+        .map_err(|error| JsValue::from_str(error))?;
+    serde_json::to_string(&serde_json::json!({
+        "angularFrequency": result.angular_frequency_rad_s,
+        "periodSeconds": result.period_seconds,
+        "frequencyHz": result.frequency_hz,
+        "maxSpeedMps": result.max_speed_mps,
+        "maxAccelerationMps2": result.max_acceleration_mps2,
+        "approximation": "small-angle"
+    })).map_err(|error| JsValue::from_str(&error.to_string()))
+}
+
 fn input_error(message: &str) -> JsValue { JsValue::from_str(message) }
 
 #[wasm_bindgen]
