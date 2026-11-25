@@ -1,35 +1,30 @@
-name: Build PRINCIPIA Physics Core
+name: Verify PRINCIPIA Rust Physics Core
+
 on:
   workflow_dispatch:
   push:
     paths:
-      - "src/physics/**"
-      - "tsconfig.physics.json"
+      - "rust/**"
+      - "assets/js/principia-wasm-physics.js"
+      - "assets/js/physics-engine.js"
       - ".github/workflows/build-physics.yml"
+
 permissions:
   contents: read
+
 jobs:
-  build:
+  rust-physics:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
         with:
-          node-version: 22
-      - name: Compile TypeScript
-        run: npx --yes --package typescript tsc -p tsconfig.physics.json
-      - name: Compile C++ to WebAssembly
-        uses: mymindstorm/setup-emsdk@v14
-      - name: Build WASM module
-        run: |
-          mkdir -p build/wasm
-          em++ src/physics/engine.cpp -O3 -std=c++17 -s STANDALONE_WASM=1 -s EXPORTED_FUNCTIONS='["_principia_velocity","_principia_displacement","_principia_kinetic_energy","_principia_projectile_range","_principia_projectile_max_height"]' -Wl,--no-entry -o build/wasm/physics-engine.wasm
-      - name: Upload physics build
-        uses: actions/upload-artifact@v4
-        with:
-          name: principia-physics-core
-          path: |
-            assets/js/physics-engine.js
-            build/wasm/physics-engine.wasm
-          if-no-files-found: error
-          retention-days: 14
+          targets: wasm32-unknown-unknown
+      - name: Test native Rust physics and domain core
+        run: cargo test --manifest-path rust/Cargo.toml --all-targets
+      - name: Compile browser WebAssembly target
+        run: cargo check --manifest-path rust/Cargo.toml --target wasm32-unknown-unknown --lib
+      - name: Check browser adapter syntax
+        run: node --check assets/js/principia-wasm-physics.js
+      - name: Check browser physics bridge syntax
+        run: node --check assets/js/physics-engine.js
