@@ -32,11 +32,14 @@ export function progression_summary_json(input_json: string): string;
 export function score_projectile_json(speed: number, angle_degrees: number, target_m: number, gravity: number): string;
 
 /**
+ * Render the validated Rust UI shell to HTML for WASM/browser/native adapters.
+ */
+export function ui_render_html(route: string, width: number, search_query: string, dialog: string): string;
+
+/**
  * Builds a validated responsive UI state snapshot for browser/native renderers.
  */
 export function ui_snapshot_json(route: string, width: number, search_query: string, dialog: string): string;
-
-export function ui_render_html(route: string, width: number, search_query: string, dialog: string): string;
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 
@@ -57,6 +60,7 @@ export interface InitOutput {
     readonly progress_record_json: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
     readonly progression_summary_json: (a: number, b: number, c: number) => void;
     readonly score_projectile_json: (a: number, b: number, c: number, d: number, e: number) => void;
+    readonly ui_render_html: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => void;
     readonly ui_snapshot_json: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => void;
     readonly __wbindgen_externrefs: WebAssembly.Table;
     readonly __wbindgen_add_to_stack_pointer: (a: number) => number;
