@@ -513,8 +513,8 @@ pub fn progression_summary_json(input_json: &str) -> Result<String, JsValue> {
 
 /// Calculate course completion metrics with Rust-owned rounding and bounds.
 #[wasm_bindgen]
-pub fn course_completion_json(completed: u64, total: u64) -> Result<String, JsValue> {
-    let result = crate::progression::course_completion(completed, total)
+pub fn course_completion_json(completed: u32, total: u32) -> Result<String, JsValue> {
+    let result = crate::progression::course_completion(u64::from(completed), u64::from(total))
         .map_err(input_error)?;
     serde_json::to_string(&serde_json::json!({
         "completed": result.completed,
