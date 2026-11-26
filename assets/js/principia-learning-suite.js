@@ -89,14 +89,15 @@
    return Number.isFinite(timestamp)&&timestamp>=since&&timestamp<=now;
   }).map(item=>({total:Math.floor(Number(item.total)||0),score:Math.floor(Number(item.score)||0)}))
     .filter(item=>item.total>0&&item.score>=0&&item.score<=item.total);
-  const sessions=focusSessions().filter(item=>{
+  const focusRecords=typeof focusSessions==='function'?focusSessions():[];
+  const sessions=(Array.isArray(focusRecords)?focusRecords:[]).filter(item=>{
    const timestamp=Date.parse(item.timestamp);
    return Number.isFinite(timestamp)&&timestamp>=since&&timestamp<=now&&Number.isFinite(Number(item.seconds))&&Number(item.seconds)>0;
   }).map(item=>({seconds:Math.floor(Number(item.seconds)),date:/^\\d{4}-\\d{2}-\\d{2}$/.test(String(item.date||''))?item.date:localDateKey(new Date(item.timestamp))}))
     .filter(item=>item.seconds>0&&item.seconds<=86400);
   const errors=(Array.isArray(state.errors)?state.errors:[]).filter(item=>{
    const timestamp=Date.parse(item.date);
-   return !Number.isFinite(timestamp)||(timestamp>=since&&timestamp<=now);
+   return Number.isFinite(timestamp)&&timestamp>=since&&timestamp<=now;
   }).map(item=>({path:String(item.path||''),body:String(item.body||'').slice(0,4096)}));
   const tasks=(Array.isArray(state.studyPlan)?state.studyPlan:[]).slice(0,10000)
    .map(item=>({done:!!item.done,due:String(item.due||'').slice(0,10)}));
@@ -105,7 +106,11 @@
    summary=await engine.learningAnalytics({today:localDateKey(),attempts,focusSessions:sessions,errors,tasks});
    if(!summary||!Number.isInteger(summary.accuracy)||summary.accuracy<0||summary.accuracy>100
     ||!Array.isArray(summary.weakTopics)||!Array.isArray(summary.recommendations)
-    ||!Number.isInteger(summary.focusSeconds)||!Number.isInteger(summary.openTasks)||!Number.isInteger(summary.overdue))
+    ||!Number.isInteger(summary.attempts)||!Number.isInteger(summary.questions)||!Number.isInteger(summary.correct)||summary.correct>summary.questions
+    ||!Number.isInteger(summary.focusSeconds)||!Number.isInteger(summary.focusSessions)||!Number.isInteger(summary.focusDays)
+    ||!Number.isInteger(summary.openTasks)||!Number.isInteger(summary.overdue)
+    ||summary.weakTopics.some(item=>typeof item.topic!=='string'||!Number.isInteger(item.count)||item.count<1)
+    ||summary.recommendations.some(item=>typeof item!=='string'))
     throw new TypeError('Rust returned invalid weekly learning analytics');
   }catch(error){
    console.error('[PRINCIPIA] Rust weekly analytics failed:',error);
