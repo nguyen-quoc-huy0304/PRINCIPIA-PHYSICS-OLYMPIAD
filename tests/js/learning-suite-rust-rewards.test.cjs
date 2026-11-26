@@ -7,11 +7,11 @@ const rewards = fs.readFileSync('rust/src/experience_rewards.rs', 'utf8');
 const bridge = fs.readFileSync('assets/js/principia-wasm-physics.js', 'utf8');
 
 test('learning suite obtains milestone XP amounts from Rust', () => {
-  assert.match(suite, /async function awardLearningExperience\(activity\)/);
+  assert.match(suite, /async function getLearningExperienceReward\(activity\)/);
   assert.match(suite, /engine\.experienceReward\(activity\)/);
-  assert.match(suite, /awardLearningExperience\('daily-challenge-correct'\)/);
-  assert.match(suite, /awardLearningExperience\('learning-journey-completed'\)/);
-  assert.match(suite, /awardLearningExperience\('learning-quest-completed'\)/);
+  assert.match(suite, /getLearningExperienceReward\('daily-challenge-correct'\)/);
+  assert.match(suite, /getLearningExperienceReward\('learning-journey-completed'\)/);
+  assert.match(suite, /getLearningExperienceReward\('learning-quest-completed'\)/);
   assert.match(rewards, /"learning-journey-completed".*Ok\(10\)/);
   assert.match(rewards, /"learning-quest-completed".*Ok\(15\)/);
   assert.match(bridge, /experienceReward:activity=>compute\('experienceReward'/);
