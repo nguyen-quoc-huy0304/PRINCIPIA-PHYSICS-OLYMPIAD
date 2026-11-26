@@ -1,0 +1,26 @@
+/* PRINCIPIA responsive hardening — additive fixes, intentionally no component redesign. */
+:where(#app,.cl-shell,#codelearnWorkspace){min-width:0;max-width:100%}
+:where(.main,.principia-mobile-main,.cl-body,.cl-left-pane,.cl-right-pane){min-width:0}
+:where(img,video,canvas,svg,iframe){max-width:100%}
+:where(input,textarea,select){min-width:0;max-width:100%}
+:where(button,.oli-btn,.iconbtn){touch-action:manipulation}
+:where(button,.oli-btn,.iconbtn){min-height:40px}
+:where(.panel,.card,.tile,.stat){overflow-wrap:anywhere}
+@media(max-width:900px){
+  html,body{overflow-x:clip}
+  #app{width:100%;max-width:100%;overflow-x:clip}
+  .principia-mobile-main,.principia-mobile-topbar,.principia-mobile-nav{min-width:0;max-width:100vw}
+  .principia-mobile-main>#body{width:100%;max-width:100%;overflow-x:clip}
+  .principia-mobile-nav .nav{min-height:48px}
+  :where(button,.oli-btn,.iconbtn){min-height:44px}
+  input,textarea,select{font-size:16px}
+  .cl-split{min-width:0;max-width:100%;overflow-x:clip}
+  .cl-left-pane,.cl-right-pane{min-width:0;max-width:100%}
+}
+@media(max-width:480px){
+  .principia-mobile-main>#body{padding-inline:10px}
+  :where(.panel,.card,.tile,.stat){border-radius:var(--pr-radius-md,12px)}
+}
+@media(prefers-reduced-motion:reduce){
+  html:focus-within{scroll-behavior:auto}
+}
