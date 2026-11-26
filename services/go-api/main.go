@@ -53,7 +53,7 @@ var optionalNumericFields = map[string][]string{
 	"studyPlan": {"percent"},
 }
 
-var stringValues = map[string]map[string]bool{
+var stringValues = map[string]map[string]map[string]bool{
 	"studyPlan": {
 		"goal": {"understand": true, "remember": true, "solve": true, "olympiad": true, "teach": true, "recover": true},
 	},
