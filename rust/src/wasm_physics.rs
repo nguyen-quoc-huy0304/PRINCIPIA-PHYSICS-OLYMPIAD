@@ -557,7 +557,7 @@ pub fn activity_calendar_json(input_json: &str) -> Result<String, JsValue> {
         .collect::<Result<Vec<_>, _>>()?;
     let result = crate::activity_calendar::activity_summary(&parsed, today, record_today)
         .map_err(|error| input_error(&format!("Activity calendar rejected: {error:?}")))?;
-    serde_json::to_string(&serde_json::json!({"email": result.email, "role": result.role, "remove": result.remove}))
+    serde_json::to_string(&result)
         .map_err(|error| input_error(&error.to_string()))
 }
 
@@ -954,5 +954,6 @@ pub fn authorization_grant_json(input_json: &str) -> Result<String, JsValue> {
     let owner = input.get("ownerEmail").and_then(serde_json::Value::as_str).ok_or_else(|| input_error("Missing owner email"))?;
     let result = crate::authorization::validate_grant(email, role, owner)
         .map_err(|error| input_error(&format!("Authorization grant rejected: {error:?}")))?;
-    serde_json::to_string(&result).map_err(|error| input_error(&error.to_string()))
+    serde_json::to_string(&serde_json::json!({"email": result.email, "role": result.role, "remove": result.remove}))
+        .map_err(|error| input_error(&error.to_string()))
 }
