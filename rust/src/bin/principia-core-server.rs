@@ -316,7 +316,37 @@ mod tests {
         let response = dispatch(&json!({"id":8,"op":"deleteEverything"}));
         assert_eq!(response["ok"], false);
         assert!(response["error"].as_str().unwrap().contains("Unsupported operation"));
+  
+    #[test]
+    fn dispatches_weighted_quiz_grading() {
+        let response = dispatch(&json!({
+            "id": 31, "op": "gradeQuiz", "passPercent": 75.0,
+            "questions": [
+                {"id":"q1","selectedIndex":1,"correctIndex":1,"points":2.0},
+                {"id":"q2","selectedIndex":0,"correctIndex":2,"points":1.0},
+                {"id":"q3","selectedIndex":3,"correctIndex":3,"points":1.0}
+            ]
+        }));
+        assert_eq!(response["ok"], true);
+        assert_eq!(response["value"]["score"], 3.0);
+        assert_eq!(response["value"]["maxScore"], 4.0);
+        assert_eq!(response["value"]["passed"], true);
+        assert_eq!(response["value"]["correctCount"], 2);
     }
+
+    #[test]
+    fn rejects_quiz_with_duplicate_question_ids() {
+        let response = dispatch(&json!({
+            "op": "gradeQuiz", "passPercent": 60.0,
+            "questions": [
+                {"id":"q1","selectedIndex":0,"correctIndex":0,"points":1.0},
+                {"id":"q1","selectedIndex":1,"correctIndex":1,"points":1.0}
+            ]
+        }));
+        assert_eq!(response["ok"], false);
+    }
+
+  }
     #[test]
     fn rejects_invalid_physics_domain() {
         let response = dispatch(&json!({"id":9,"op":"kineticEnergy","massKg":-1.0,"speedMps":3.0}));
