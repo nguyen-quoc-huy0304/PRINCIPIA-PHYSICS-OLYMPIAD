@@ -5,6 +5,8 @@ export function assessment_grade_json(input_json: string): string;
 
 export function clamp_game_target(target_m: number, speed_mps: number, gravity_mps2: number): number;
 
+export function force_balance_score_json(candidate_x: number, candidate_y: number, target_x: number, target_y: number): string;
+
 export function game_trajectory_json(speed_mps: number, angle_degrees: number, gravity_mps2: number, samples: number): string;
 
 export function generate_game_challenge_json(seed: bigint): string;
@@ -55,6 +57,7 @@ export interface InitOutput {
     readonly memory: WebAssembly.Memory;
     readonly assessment_grade_json: (a: number, b: number, c: number) => void;
     readonly clamp_game_target: (a: number, b: number, c: number, d: number) => void;
+    readonly force_balance_score_json: (a: number, b: number, c: number, d: number, e: number) => void;
     readonly game_trajectory_json: (a: number, b: number, c: number, d: number, e: number) => void;
     readonly generate_game_challenge_json: (a: number, b: bigint) => void;
     readonly learning_recommend_json: (a: number, b: number, c: number) => void;

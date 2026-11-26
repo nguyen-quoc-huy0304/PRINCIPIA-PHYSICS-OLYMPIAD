@@ -3,6 +3,7 @@
 export const memory: WebAssembly.Memory;
 export const assessment_grade_json: (a: number, b: number, c: number) => void;
 export const clamp_game_target: (a: number, b: number, c: number, d: number) => void;
+export const force_balance_score_json: (a: number, b: number, c: number, d: number, e: number) => void;
 export const game_trajectory_json: (a: number, b: number, c: number, d: number, e: number) => void;
 export const generate_game_challenge_json: (a: number, b: bigint) => void;
 export const learning_recommend_json: (a: number, b: number, c: number) => void;
