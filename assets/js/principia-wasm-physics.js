@@ -36,6 +36,7 @@ async function compute(operation,params){
     case 'forceBalanceScore': return JSON.parse(wasm.force_balance_score_json(p.x,p.y,p.targetX,p.targetY));
     case 'gradeQuiz': return JSON.parse(wasm.assessment_grade_json(JSON.stringify(p)));
     case 'recordProgress': return JSON.parse(wasm.progress_record_json(JSON.stringify(p.progress||{}),p.activity,p.day));
+    case 'learningScienceSelect': return JSON.parse(wasm.learning_science_select_json(JSON.stringify(p)));
     case 'learningRecommend': return JSON.parse(wasm.learning_recommend_json(JSON.stringify(p)));
     case 'learningOrchestrate': {
       if (typeof wasm.learning_orchestrate_json === 'function') {
@@ -52,5 +53,5 @@ async function compute(operation,params){
     default: throw new TypeError('Unsupported Rust/WASM physics operation: '+operation);
   }
 }
-root.PrincipiaWasmPhysics=Object.freeze({compute,load:loadWasm,collide1D:(massA,velocityA,massB,velocityB,restitution)=>compute('collision1D',{massA,velocityA,massB,velocityB,restitution}),resolveDiskCollision:(bodyA,bodyB,restitution)=>compute('collision2D',{bodyA,bodyB,restitution}),gradeQuiz:(payload)=>compute('gradeQuiz',payload),recordProgress:(progress,activity,day)=>compute('recordProgress',{progress,activity,day}),recommend:(context)=>compute('learningRecommend',context),orchestrateLearning:(payload)=>compute('learningOrchestrate',payload),scheduleReview:(quality,previousIntervalDays,easeFactor)=>compute('reviewSchedule',{quality,previousIntervalDays,easeFactor}),progression:(metrics)=>compute('progressionSummary',metrics),createGameChallenge:(seed)=>compute('gameChallenge',{seed}),gameTrajectory:(speed,angleDeg,gravity,samples)=>compute('gameTrajectory',{speed,angleDeg,gravity,samples}),clampGameTarget:(target,speed,gravity)=>compute('gameClampTarget',{target,speed,gravity})});
+root.PrincipiaWasmPhysics=Object.freeze({compute,load:loadWasm,collide1D:(massA,velocityA,massB,velocityB,restitution)=>compute('collision1D',{massA,velocityA,massB,velocityB,restitution}),resolveDiskCollision:(bodyA,bodyB,restitution)=>compute('collision2D',{bodyA,bodyB,restitution}),gradeQuiz:(payload)=>compute('gradeQuiz',payload),recordProgress:(progress,activity,day)=>compute('recordProgress',{progress,activity,day}),recommend:(context)=>compute('learningRecommend',context),selectLearningScience:(payload)=>compute('learningScienceSelect',payload),orchestrateLearning:(payload)=>compute('learningOrchestrate',payload),scheduleReview:(quality,previousIntervalDays,easeFactor)=>compute('reviewSchedule',{quality,previousIntervalDays,easeFactor}),progression:(metrics)=>compute('progressionSummary',metrics),createGameChallenge:(seed)=>compute('gameChallenge',{seed}),gameTrajectory:(speed,angleDeg,gravity,samples)=>compute('gameTrajectory',{speed,angleDeg,gravity,samples}),clampGameTarget:(target,speed,gravity)=>compute('gameClampTarget',{target,speed,gravity})});
 })(window);
