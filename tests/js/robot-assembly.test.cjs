@@ -42,3 +42,27 @@ test('elbow position follows the first link angle', () => {
   assert.ok(Math.abs(p.x) < 1e-10);
   assert.ok(Math.abs(p.y - 100) < 1e-10);
 });
+
+
+test('native forward kinematics delegates endpoint calculation to Rust WASM', async () => {
+  const calls = [];
+  context.PrincipiaWasmPhysics = {
+    async compute(operation, params) {
+      calls.push({ operation, params });
+      return { x: 100, y: 50 };
+    }
+  };
+  const endpoint = await math.forwardKinematicsNative(100, 50, 0, 0);
+  assert.deepEqual(JSON.parse(JSON.stringify(endpoint)), { x: 100, y: 50 });
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].operation, 'robotForwardKinematics');
+  assert.equal(calls[0].params.l1, 100);
+  assert.equal(calls[0].params.shoulderRad, 0);
+});
+
+test('native forward kinematics falls back to the analytical solution if WASM is unavailable', async () => {
+  context.PrincipiaWasmPhysics = { async compute() { throw new Error('WASM unavailable'); } };
+  const endpoint = await math.forwardKinematicsNative(100, 100, 0, 90);
+  assert.ok(Math.abs(endpoint.x - 100) < 1e-10);
+  assert.ok(Math.abs(endpoint.y - 100) < 1e-10);
+});
