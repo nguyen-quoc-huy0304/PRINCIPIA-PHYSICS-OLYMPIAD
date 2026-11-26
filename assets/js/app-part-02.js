@@ -209,7 +209,7 @@ function toggleStudyClock(){
  principiaClock.interval=setInterval(()=>{
   if(principiaClock.mode==='countdown'){principiaClock.left=Math.max(0,principiaClock.left-1)}else principiaClock.seconds++;
   const d=document.getElementById('studyClockDisplay');if(d)d.textContent=fmtClock(principiaClock.mode==='countdown'?principiaClock.left:principiaClock.seconds);updatePrincipiaClockBar();
-  if(principiaClock.mode==='countdown'&&principiaClock.left===0){clearInterval(principiaClock.interval);principiaClock.running=false;xp+=10;dailyReward();saveAll();showXpToast('+10 XP · Hoàn thành phiên tập trung');const h=document.getElementById('studyClockHint');if(h)h.textContent='🎉 Hoàn thành phiên học! Bạn nhận được 10 XP.';const b=document.getElementById('studyClockStart');if(b)b.textContent='▶ Bắt đầu phiên mới';updatePrincipiaClockBar();}
+  if(principiaClock.mode==='countdown'&&principiaClock.left===0){clearInterval(principiaClock.interval);principiaClock.running=false;void awardExperienceFromRust('focus-session').then(amount=>{if(amount===null)return;showXpToast('+'+amount+' XP · Hoàn thành phiên tập trung');const h=document.getElementById('studyClockHint');if(h)h.textContent='🎉 Hoàn thành phiên học! Bạn nhận được '+amount+' XP.';}).catch(error=>{console.error('[PRINCIPIA] Rust focus reward failed:',error);notify('Không thể xác minh XP phiên tập trung bằng Rust/WASM.');});const b=document.getElementById('studyClockStart');if(b)b.textContent='▶ Bắt đầu phiên mới';updatePrincipiaClockBar();}
  },1000);
 }
 function resetStudyClock(){if(principiaClock.interval)clearInterval(principiaClock.interval);principiaClock.running=false;principiaClock.left=principiaClock.mode==='countdown'?principiaClock.seconds:0;const d=document.getElementById('studyClockDisplay');if(d)d.textContent=fmtClock(principiaClock.mode==='countdown'?principiaClock.left:0);const b=document.getElementById('studyClockStart');if(b)b.textContent='▶ Bắt đầu';const h=document.getElementById('studyClockHint');if(h)h.textContent=principiaClock.mode==='countdown'?'Sẵn sàng tập trung':'Bấm giờ học tập'}
@@ -1015,12 +1015,35 @@ async function answerQuestion(){
 }
 function resetActiveQuiz(){answers=[];activeQuizGrade=null;quizGrading=false;render();}
 
-function completeLesson(id){
- if(!completed.includes(id)){completed.push(id);xp+=10;dailyReward();saveAll();notify('+10 XP · Bài học hoàn thành')}
- else notify('Bài học đã hoàn thành rồi');
+const principiaPendingExperienceAwards=new Set();
+
+async function awardExperienceFromRust(activity,operationKey=''){
+ if(operationKey&&principiaPendingExperienceAwards.has(operationKey))return null;
+ if(operationKey)principiaPendingExperienceAwards.add(operationKey);
+ try{
+  const engine=window.PrincipiaWasmPhysics;
+  if(!engine||typeof engine.experienceReward!=='function')throw new Error('Rust XP reward engine is unavailable');
+  const amount=await engine.experienceReward(activity);
+  if(!Number.isInteger(amount)||amount<1||amount>100)throw new TypeError('Rust returned an invalid XP reward');
+  const current=Number.isSafeInteger(Number(xp))?Math.max(0,Number(xp)):0;
+  xp=Math.min(Number.MAX_SAFE_INTEGER,current+amount);
+  await dailyReward();
+  saveAll();
+  return amount;
+ }finally{
+  if(operationKey)principiaPendingExperienceAwards.delete(operationKey);
+ }
+}
+
+async function completeLesson(id){
+ if(completed.includes(id)){notify('Bài học đã hoàn thành rồi');return;}
+ try{
+  const amount=await awardExperienceFromRust('lesson-completed','lesson:'+String(id));
+  if(amount===null)return;
+  completed.push(id);saveAll();notify('+'+amount+' XP · Bài học hoàn thành');
+ }catch(error){console.error('[PRINCIPIA] Rust lesson reward failed:',error);notify('Không thể xác minh XP bằng lõi Rust/WASM.');}
  render();
 }
-let dailyRewardPromise=null;
 async function dailyReward(){
  const today=new Date().toLocaleDateString('en-CA');
  if(lastDay===today){saveAll();return streak;}
@@ -1298,15 +1321,14 @@ function stopLiveVideoCaption(){ytLiveRunning=false;clearTimeout(ytLiveRestartTi
 function copyLiveCaptionToTranscript(){const live=document.getElementById('ytLiveOriginal')?.value||'';const translated=document.getElementById('ytLiveTranslated')?.value||'';const orig=document.getElementById('ytTranscript'),trans=document.getElementById('ytTranslatedTranscript');if(!live){notify('Chưa có lời thoại được nhận diện');return;}if(orig){orig.value+=(orig.value?'\\n':'')+live;saveTranscript();}if(trans){trans.value+=(trans.value?'\\n':'')+translated;saveVideoTranslation();}notify('Đã chép lời gốc và bản dịch vào bài học');}
 function summarizeTranscript(){
  if(!requirePermission('media'))return;const text=(document.getElementById('ytTranscript')?.value||'').trim();if(!text){notify('Hãy dán transcript trước');return;}const chunks=text.split(/(?<=[.!?])\s+/).filter(Boolean);const summary=chunks.length<=5?chunks.join('\n'):chunks.slice(0,2).concat(chunks.slice(Math.max(2,Math.floor(chunks.length*.6)),Math.max(3,Math.floor(chunks.length*.6))+2)).join('\n');const out=document.getElementById('ytSummaryOutput');if(out)out.textContent='TÓM TẮT (bản trích ý tự động — chưa kết nối AI thật):\n'+summary+'\n\nÝ chính: '+chunks.slice(0,Math.min(3,chunks.length)).join(' ');if(curLessonId){const l=find(curLessonId,data);if(l){l.summary=out?.textContent||summary;saveAll();}}notify('Đã tạo tóm tắt sơ bộ');}
-function runAiCheploi(){
+async function runAiCheploi(){
   const inp = document.getElementById('aiCheploiPrompt');
   const topic = inp.value.trim() || document.getElementById('clLessonHeading').textContent || 'Bài học';
   const reply = `[AI Chép lời] Dàn ý & ghi chép cho "${topic}":\n1. Tóm tắt giả thiết, biến số & điều kiện.\n2. Công thức / định luật cốt lõi áp dụng.\n3. Các bước biến đổi & kiểm tra đơn vị kết quả.`;
   lastAiCheploiText = reply;
   document.getElementById('aiCheploiOutput').innerText = reply;
   inp.value = '';
-  xp += 10;dailyReward(); saveAll();
-  showXpToast('+10 XP · AI Chép lời');
+  try{const amount=await awardExperienceFromRust('ai-transcript');showXpToast('+'+amount+' XP · AI Chép lời');}catch(error){console.error('[PRINCIPIA] Rust transcript reward failed:',error);notify('Nội dung đã tạo nhưng XP chưa được xác minh bằng Rust/WASM.');}
 }
 
 function copyAiCheploiIntoNote(){
@@ -1349,20 +1371,16 @@ function saveClNote(){
   }
 }
 
-function markLessonDone(){
-  if(!curLessonId) return;
-  if(!completed.includes(curLessonId)){
-    completed.push(curLessonId);
-    xp += 50;
-    dailyReward();
-    saveAll();
-    showXpToast('+50 XP · Bài học hoàn thành');
-  } else {
-    xp += 15;dailyReward();
-    saveAll();
-    showXpToast('+15 XP · Ôn luyện thêm');
-  }
-  openInnerLessonWorkspace(curLessonId);
+async function markLessonDone(){
+  if(!curLessonId)return;
+  const id=curLessonId,firstCompletion=!completed.includes(id);
+  try{
+    const amount=await awardExperienceFromRust(firstCompletion?'lesson-mastered':'lesson-review','lesson:'+String(id));
+    if(amount===null)return;
+    if(firstCompletion)completed.push(id);
+    saveAll();showXpToast('+'+amount+' XP · '+(firstCompletion?'Bài học hoàn thành':'Ôn luyện thêm'));
+  }catch(error){console.error('[PRINCIPIA] Rust lesson workspace reward failed:',error);notify('Không thể xác minh XP bằng lõi Rust/WASM.');}
+  openInnerLessonWorkspace(id);
 }
 
 function addLessonInTab(){
@@ -1467,13 +1485,12 @@ function previewGradeFiles(files){
   if(!list.length){box.innerHTML='Chưa đính kèm file.';return;}
   box.innerHTML=list.map(f=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--line)"><span>📎</span><span>${esc(f.name)} <span class="muted">(${Math.round(f.size/1024)} KB)</span></span></div>`).join('');
 }
-function runAiGrade(){
+async function runAiGrade(){
   const ai = document.getElementById('gradeAiChoice').value;
   const text = document.getElementById('gradeTextInput').value.trim();
   const files = Array.from(document.getElementById('gradeFiles')?.files||[]);
   if(!text&&!files.length){notify('Hãy nhập bài làm hoặc đính kèm ảnh / file trước nhé');return;}
-  xp += 30;dailyReward(); saveAll();
-  showXpToast('+30 EXP · Gửi bài');
+  try{const amount=await awardExperienceFromRust('assignment-submitted');showXpToast('+'+amount+' EXP · Gửi bài');}catch(error){console.error('[PRINCIPIA] Rust assignment reward failed:',error);notify('Đã nhận bài nhưng chưa thể xác minh XP bằng Rust/WASM.');return;}
   companionReact('happy','Đã gửi bài làm để chấm điểm! Cố lên nhé ✨');
   document.getElementById('gradeOutputBox').innerHTML = `<div class="panel"><strong>${esc(ai)}:</strong> Đã nhận bài làm${files.length?` và ${files.length} file đính kèm`:''}. <span class="muted">Bản HTML hiện tại chỉ mô phỏng phản hồi chấm, chưa kết nối AI thực để đọc ảnh/file.</span></div>`;
 }
@@ -1558,7 +1575,7 @@ function buildQuizFromTheoryText(theoryText, lessonTitle){
   return generated;
 }
 
-function generateQuizFromLessonTheory(){
+async function generateQuizFromLessonTheory(){
   saveClNote();
   const title = document.getElementById('clLessonHeading')?.textContent?.trim() || 'Bài học';
   const theory = extractCurrentLessonTheoryText();
@@ -1573,20 +1590,16 @@ function generateQuizFromLessonTheory(){
     }
   }
 
-  xp += 20;dailyReward();
-  saveAll();
-  showXpToast('+20 XP · AI đã đọc lý thuyết & tạo Quiz');
+  try{const amount=await awardExperienceFromRust('ai-quiz-generated');showXpToast('+'+amount+' XP · AI đã đọc lý thuyết & tạo Quiz');}catch(error){console.error('[PRINCIPIA] Rust quiz generation reward failed:',error);notify('Quiz đã tạo nhưng XP chưa được xác minh bằng Rust/WASM.');}
   renderInlineLessonAiQuiz();
 }
 
-function pickInlineLessonQuizAns(qIdx, optIdx){
+async function pickInlineLessonQuizAns(qIdx, optIdx){
   if(inlineLessonQuizState.picked[qIdx] !== undefined) return;
   inlineLessonQuizState.picked[qIdx] = optIdx;
   const item = inlineLessonQuizState.items[qIdx];
   if(item && optIdx === item.correct){
-    xp += 15;dailyReward();
-    saveAll();
-    showXpToast('+15 XP · Trả lời đúng Quiz lý thuyết');
+    try{const amount=await awardExperienceFromRust('inline-quiz-correct');showXpToast('+'+amount+' XP · Trả lời đúng Quiz lý thuyết');}catch(error){console.error('[PRINCIPIA] Rust inline quiz reward failed:',error);notify('Đáp án đã ghi nhận nhưng XP chưa được xác minh bằng Rust/WASM.');}
   } else {
     showXpToast('Chưa đúng rồi, xem lại ý lý thuyết nhé!');
   }
