@@ -13,12 +13,15 @@ export const force_balance_target_json: (a: number, b: number, c: number, d: num
 export const game_league_json: (a: number, b: number, c: number) => void;
 export const game_trajectory_json: (a: number, b: number, c: number, d: number, e: number) => void;
 export const gameverse_buy_skill_json: (a: number, b: number, c: number) => void;
+export const gameverse_card_pack_json: (a: number, b: number, c: number) => void;
 export const gameverse_claim_pass_json: (a: number, b: number, c: number) => void;
 export const gameverse_craft_json: (a: number, b: number, c: number) => void;
 export const gameverse_daily_quest_json: (a: number, b: number, c: number) => void;
 export const gameverse_pet_progress_json: (a: number, b: number, c: number) => void;
 export const gameverse_quiz_reward_json: (a: number, b: number, c: number) => void;
+export const gameverse_quiz_select_json: (a: number, b: number, c: number) => void;
 export const gameverse_random_event_json: (a: number, b: number, c: number) => void;
+export const gameverse_season_progress_json: (a: number, b: number) => void;
 export const gameverse_treasure_answer_json: (a: number, b: number, c: number) => void;
 export const gameverse_treasure_question_json: (a: number, b: number) => void;
 export const gameverse_unlock_zone_json: (a: number, b: number, c: number) => void;

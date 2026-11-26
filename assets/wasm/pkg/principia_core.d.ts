@@ -44,6 +44,11 @@ export function game_trajectory_json(speed_mps: number, angle_degrees: number, g
 export function gameverse_buy_skill_json(input_json: string): string;
 
 /**
+ * Validate a Gameverse card pack purchase and select an unowned card in Rust.
+ */
+export function gameverse_card_pack_json(input_json: string): string;
+
+/**
  * Validate and apply Gameverse season pass claims in Rust.
  */
 export function gameverse_claim_pass_json(input_json: string): string;
@@ -69,9 +74,19 @@ export function gameverse_pet_progress_json(pet_xp: number, pet_level: number): 
 export function gameverse_quiz_reward_json(input_json: string): string;
 
 /**
+ * Validate and randomly select Gameverse quiz questions in Rust.
+ */
+export function gameverse_quiz_select_json(input_json: string): string;
+
+/**
  * Select a daily Gameverse event and its reward in Rust.
  */
 export function gameverse_random_event_json(roll: number, already_triggered: boolean): string;
+
+/**
+ * Calculate Gameverse season pass level and progress in Rust.
+ */
+export function gameverse_season_progress_json(season_xp: number): string;
 
 /**
  * Validate a Gameverse treasure answer and return its Rust-owned reward.
@@ -187,12 +202,15 @@ export interface InitOutput {
     readonly game_league_json: (a: number, b: number, c: number) => void;
     readonly game_trajectory_json: (a: number, b: number, c: number, d: number, e: number) => void;
     readonly gameverse_buy_skill_json: (a: number, b: number, c: number) => void;
+    readonly gameverse_card_pack_json: (a: number, b: number, c: number) => void;
     readonly gameverse_claim_pass_json: (a: number, b: number, c: number) => void;
     readonly gameverse_craft_json: (a: number, b: number, c: number) => void;
     readonly gameverse_daily_quest_json: (a: number, b: number, c: number) => void;
     readonly gameverse_pet_progress_json: (a: number, b: number, c: number) => void;
     readonly gameverse_quiz_reward_json: (a: number, b: number, c: number) => void;
+    readonly gameverse_quiz_select_json: (a: number, b: number, c: number) => void;
     readonly gameverse_random_event_json: (a: number, b: number, c: number) => void;
+    readonly gameverse_season_progress_json: (a: number, b: number) => void;
     readonly gameverse_treasure_answer_json: (a: number, b: number, c: number) => void;
     readonly gameverse_treasure_question_json: (a: number, b: number) => void;
     readonly gameverse_unlock_zone_json: (a: number, b: number, c: number) => void;
