@@ -111,10 +111,9 @@ mod tests {
         assert_eq!(grade_attempt(&[("q".into(), 0, 0, 4, f64::NAN)], 50.0), Err(QuizError::InvalidQuestion));
         assert_eq!(grade_attempt(&[("q".into(), 0, 0, 4, 0.0)], 50.0), Err(QuizError::InvalidQuestion));
     }
-}
-
     #[test]
     fn rejects_answer_indices_outside_option_range() {
         let attempt = vec![("q1".into(), 4, 1, 4, 1.0)];
         assert_eq!(grade_attempt(&attempt, 50.0), Err(QuizError::InvalidQuestion));
     }
+}
