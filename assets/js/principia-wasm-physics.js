@@ -37,7 +37,13 @@ async function compute(operation,params){
     case 'gradeQuiz': return JSON.parse(wasm.assessment_grade_json(JSON.stringify(p)));
     case 'recordProgress': return JSON.parse(wasm.progress_record_json(JSON.stringify(p.progress||{}),p.activity,p.day));
     case 'learningRecommend': return JSON.parse(wasm.learning_recommend_json(JSON.stringify(p)));
-    case 'learningOrchestrate': return JSON.parse(wasm.learning_orchestrate_json(JSON.stringify(p)));
+    case 'learningOrchestrate': {
+      if (typeof wasm.learning_orchestrate_json === 'function') {
+        return JSON.parse(wasm.learning_orchestrate_json(JSON.stringify(p)));
+      }
+      const legacyPlan = JSON.parse(wasm.learning_recommend_json(JSON.stringify(p.context || {})));
+      return { ...legacyPlan, methodId: null, engine: 'rust-wasm-legacy' };
+    }
     case 'reviewSchedule': return JSON.parse(wasm.learning_review_schedule_json(p.quality,p.previousIntervalDays,p.easeFactor));
     case 'progressionSummary': return JSON.parse(wasm.progression_summary_json(JSON.stringify(p)));
     case 'gameChallenge': return JSON.parse(wasm.generate_game_challenge_json(p.seed));
