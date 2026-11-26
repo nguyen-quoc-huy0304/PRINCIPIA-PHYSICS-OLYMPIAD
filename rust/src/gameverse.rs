@@ -3,7 +3,7 @@ use serde_json::{json, Value};
 use std::collections::BTreeMap;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum GameverseError { InvalidScore, InvalidMode, InvalidRating, UnknownRecipe, AlreadyCrafted, InsufficientMaterials, InvalidInventory, InvalidPetProgress, UnknownZone, AlreadyUnlocked, InsufficientCoins, UnknownSkill, AlreadyOwned, InsufficientSeasonXp, AlreadyClaimed, UnknownDailyQuest, InvalidRandomInput }
+pub enum GameverseError { InvalidScore, InvalidMode, InvalidRating, UnknownRecipe, AlreadyCrafted, InsufficientMaterials, InvalidInventory, InvalidPetProgress, UnknownZone, AlreadyUnlocked, InsufficientCoins, UnknownSkill, AlreadyOwned, InsufficientSeasonXp, AlreadyClaimed, UnknownDailyQuest, InvalidRandomInput, InvalidQuestionCatalog }
 
 pub fn quiz_reward(correct: u32, total: u32, mode: &str, rating: u64) -> Result<Value, GameverseError> {
     if total == 0 || total > 200 || correct > total { return Err(GameverseError::InvalidScore); }
@@ -34,6 +34,35 @@ pub fn quiz_reward(correct: u32, total: u32, mode: &str, rating: u64) -> Result<
     }))
 }
 
+
+pub fn select_quiz_questions(questions: &[Value], mode: &str, seed: u64) -> Result<Value, GameverseError> {
+    if !matches!(mode, "quick" | "rank") { return Err(GameverseError::InvalidMode); }
+    let count = if mode == "rank" { 5 } else { 3 };
+    if questions.len() < count || questions.len() > 200 { return Err(GameverseError::InvalidQuestionCatalog); }
+    for question in questions {
+        let prompt = question.get("q").and_then(Value::as_str).filter(|text| !text.trim().is_empty() && text.len() <= 2048);
+        let answers = question.get("a").and_then(Value::as_array);
+        let correct = question.get("c").and_then(Value::as_u64);
+        let Some(options) = answers else { return Err(GameverseError::InvalidQuestionCatalog); };
+        if prompt.is_none() || !(2..=8).contains(&options.len()) || correct.map_or(true, |index| index as usize >= options.len())
+            || options.iter().any(|option| option.as_str().map_or(true, |text| text.len() > 1024))
+        {
+            return Err(GameverseError::InvalidQuestionCatalog);
+        }
+    }
+    let mut indices: Vec<usize> = (0..questions.len()).collect();
+    let mut state = if seed == 0 { 0x9E37_79B9_7F4A_7C15 } else { seed };
+    for index in (1..indices.len()).rev() {
+        state ^= state >> 12;
+        state ^= state << 25;
+        state ^= state >> 27;
+        let random = state.wrapping_mul(0x2545_F491_4F6C_DD1D);
+        let target = (random % (index as u64 + 1)) as usize;
+        indices.swap(index, target);
+    }
+    let selected: Vec<Value> = indices.into_iter().take(count).map(|index| questions[index].clone()).collect();
+    Ok(json!({"mode":mode,"questions":selected}))
+}
 
 pub fn treasure_question(roll: f64) -> Result<Value, GameverseError> {
     if !roll.is_finite() || !(0.0..1.0).contains(&roll) { return Err(GameverseError::InvalidRandomInput); }
@@ -185,6 +214,20 @@ pub fn craft(recipe_id: &str, materials: &BTreeMap<String, u32>, crafted: &[Stri
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn quiz_question_selection_is_seeded_and_schema_validated() {
+        let questions: Vec<Value> = (0..8).map(|index| json!({
+            "q":format!("Question {index}"),"a":["A","B","C"],"c":index % 3
+        })).collect();
+        let first = select_quiz_questions(&questions, "rank", 42).unwrap();
+        let second = select_quiz_questions(&questions, "rank", 42).unwrap();
+        assert_eq!(first, second);
+        assert_eq!(first["questions"].as_array().unwrap().len(), 5);
+        assert_eq!(select_quiz_questions(&questions, "quick", 42).unwrap()["questions"].as_array().unwrap().len(), 3);
+        assert!(select_quiz_questions(&questions[..2], "quick", 42).is_err());
+        assert!(select_quiz_questions(&questions, "unknown", 42).is_err());
+    }
 
     #[test]
     fn treasure_answers_and_random_events_are_rust_validated() {
