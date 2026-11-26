@@ -19,9 +19,10 @@ jobs:
   build-game-wasm:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
-          fetch-depth: 0
+          ref: main
+          fetch-depth: 1
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32-unknown-unknown
@@ -39,6 +40,3 @@ jobs:
           file_pattern: assets/wasm/pkg/*
           add_options: "-f"
           disable_globbing: true
-          before_push_hook: |
-            git fetch origin main
-            git rebase origin/main
