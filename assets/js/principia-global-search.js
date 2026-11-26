@@ -2,32 +2,23 @@
 (()=> {
  'use strict';
  const escHTML=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
- const safeText=value=>value==null?'':(typeof value==='string'||typeof value==='number'||typeof value==='boolean'?String(value):'');
- const normalizeQuestions=questions=>Array.isArray(questions)?questions.filter(q=>typeof q==='string'||(q&&typeof q==='object'&&!Array.isArray(q))).map(q=>{
-  const source=typeof q==='string'?{q}:q;
-  const answers=Array.isArray(source.a)?source.a.filter(a=>a!=null&&(typeof a==='string'||typeof a==='number'||typeof a==='boolean')).map(String):[];
-  return {q:safeText(source.q),a:answers,explanation:safeText(source.explanation)};
- }):[];
- const flatten=(nodes,out=[],kind='lesson',trail=[])=>{
-  if(!Array.isArray(nodes))return out;
-  for(const n of nodes){
-   if(!n||typeof n!=='object')continue;
-   const path=[...trail,n.name||''].filter(Boolean);
-   const nodeKind=n.type==='quiz'?'quiz':n.type==='fun'?'fun':n.type==='lesson'?'lesson':kind;
-   const questions=normalizeQuestions(n.questions);
-   if(n.name||n.content||questions.length)out.push({id:n.id,name:n.name||'Không tên',content:n.content||'',path:path.join(' › '),kind:nodeKind,questions});
-   if(Array.isArray(n.children))flatten(n.children,out,nodeKind,path);
-  }
-  return out;
- };
- function collect(){
-  const all=[];
-  try{if(typeof data!=='undefined')flatten(data,all,'lesson')}catch(_){}
-  try{if(typeof quizData!=='undefined')flatten(quizData,all,'quiz')}catch(_){}
-  try{if(typeof funData!=='undefined')flatten(funData,all,'fun')}catch(_){}
-  const seen=new Set();return all.filter(x=>x.id&&!seen.has(x.kind+':'+x.id)&&seen.add(x.kind+':'+x.id));
+ async function collect(query){
+  if(!window.PrincipiaWasmPhysics?.globalSearchIndex)throw new Error('Rust global search is unavailable');
+  const catalogs=[];
+  try{catalogs.push([typeof data!=='undefined'&&Array.isArray(data)?data:[],'lesson'])}catch(_){catalogs.push([[],'lesson'])}
+  try{catalogs.push([typeof quizData!=='undefined'&&Array.isArray(quizData)?quizData:[],'quiz'])}catch(_){catalogs.push([[],'quiz'])}
+  try{catalogs.push([typeof funData!=='undefined'&&Array.isArray(funData)?funData:[],'fun'])}catch(_){catalogs.push([[],'fun'])}
+  const indexed=await Promise.all(catalogs.map(async([catalog,kind])=>{
+   if(!catalog.length)return[];
+   const result=await window.PrincipiaWasmPhysics.globalSearchIndex(catalog,query,kind);
+   if(!result||!Array.isArray(result.items))throw new TypeError('Rust global search returned an invalid index');
+   return result.items.map(item=>({...item,kind:item.kind||kind,questions:Array.isArray(item.questions)?item.questions:[]}));
+  }));
+  const seen=new Set();
+  return indexed.flat().filter(item=>item.id&&!seen.has(item.kind+':'+item.id)&&seen.add(item.kind+':'+item.id));
  }
- window.PrincipiaGlobalSearchCore=Object.freeze({escapeHTML:escHTML,flatten,normalizeQuestions});
+ window.PrincipiaGlobalSearchCore=Object.freeze({escapeHTML:escHTML});
+ let searchRequest=0,searchError='';
  let overlay=null,items=[],active=0,selectedKind='all',lastQuery='';
  const readRecent=()=>{try{const v=JSON.parse(localStorage.getItem('principia_global_search_recent_v1')||'[]');return Array.isArray(v)?v.filter(x=>typeof x==='string').slice(0,6):[]}catch(_){return[]}};
  const saveRecent=q=>{const v=String(q||'').trim();if(v.length<2)return;try{localStorage.setItem('principia_global_search_recent_v1',JSON.stringify([v,...readRecent().filter(x=>x.toLocaleLowerCase('vi')!==v.toLocaleLowerCase('vi'))].slice(0,6)))}catch(_){}};
@@ -51,16 +42,26 @@
  function close(){if(overlay)overlay.style.display='none'}
  function paintFilters(){overlay?.querySelectorAll('#principiaGlobalSearchFilters button').forEach(b=>{const on=b.dataset.kind===selectedKind;b.style.background=on?'var(--card2,#29263d)':'transparent';b.style.borderColor=on?'var(--accent,#9b87ff)':'var(--line,#555)'})}
  function open(initialQuery=''){const el=ensure();el.style.display='flex';selectedKind='all';const input=el.querySelector('input');input.value=String(initialQuery||'');renderResults(input.value);paintFilters();setTimeout(()=>input.focus(),20)}
- function renderResults(q){
-  const term=String(q||'').trim().toLocaleLowerCase('vi');
-  const source=collect();
-  lastQuery=String(q||'').trim();
-  const matches=term?source.filter(x=>(selectedKind==='all'||x.kind===selectedKind)&&(x.name+' '+x.path+' '+x.content+' '+x.questions.map(z=>[z.q,...(z.a||[]),z.explanation||''].join(' ')).join(' ')).toLocaleLowerCase('vi').includes(term)):source.filter(x=>selectedKind==='all'||x.kind===selectedKind);
-  items=matches.slice(0,40);
-  active=0;paint();paintFilters();
+ async function renderResults(q){
+  const request=++searchRequest;
+  const term=String(q||'').trim();
+  lastQuery=term;
+  searchError='';
+  try{
+   const source=await collect(term);
+   if(request!==searchRequest)return;
+   items=source.filter(item=>selectedKind==='all'||item.kind===selectedKind).slice(0,40);
+   active=0;
+  }catch(error){
+   if(request!==searchRequest)return;
+   items=[];active=0;searchError='Không thể tìm kiếm vì lõi Rust/WASM chưa sẵn sàng.';
+   console.error('[PRINCIPIA] Rust global search failed',error);
+  }
+  paint();paintFilters();
  }
  function paint(){
   const root=overlay?.querySelector('#principiaGlobalSearchResults');if(!root)return;
+  if(searchError){root.innerHTML='<div role="alert" style="padding:22px 12px;text-align:center;opacity:.8">'+escHTML(searchError)+'</div>';return;}
   if(!items.length){const recent=readRecent();root.innerHTML='<div style="padding:22px 12px;text-align:center;opacity:.7">Không tìm thấy nội dung phù hợp.</div>'+(recent.length?'<div style="padding:4px 8px"><small style="opacity:.65">TÌM GẦN ĐÂY</small><div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:8px">'+recent.map(x=>'<button type="button" data-recent="'+escHTML(x)+'" style="border:1px solid var(--line,#555);border-radius:18px;padding:7px 10px;background:transparent;color:inherit">'+escHTML(x)+'</button>').join('')+'</div></div>':'');root.querySelectorAll('[data-recent]').forEach(b=>b.addEventListener('click',()=>{const input=overlay.querySelector('input');input.value=b.dataset.recent;renderResults(input.value)}));return}
   root.innerHTML=items.map((x,i)=>'<button type="button" data-index="'+i+'" style="display:flex;width:100%;text-align:left;gap:12px;align-items:flex-start;padding:12px;border:0;border-radius:12px;background:'+(i===active?'var(--card2, #29263d)':'transparent')+';color:inherit;cursor:pointer"><span style="font-size:19px">'+(x.kind==='quiz'?'🎯':x.kind==='fun'?'🧩':'📘')+'</span><span style="min-width:0"><b style="display:block">'+escHTML(x.name)+'</b><small style="display:block;opacity:.65;margin-top:3px">'+escHTML(x.path)+'</small><small style="display:block;opacity:.72;margin-top:5px">'+escHTML((x.content||x.questions?.[0]?.q||'').slice(0,150))+'</small></span></button>').join('');
   root.querySelectorAll('button[data-index]').forEach(b=>{b.addEventListener('mouseenter',()=>{active=Number(b.dataset.index);paint()});b.addEventListener('click',()=>{active=Number(b.dataset.index);openSelected()})});
