@@ -230,7 +230,7 @@ fn parse_move(raw: &str) -> Result<(String, String), TreeError> {
     Ok((id, target.to_owned()))
 }
 
-fn locate_mut(nodes: &mut Vec<Value>, target: &str) -> Option<&mut Vec<Value>> {
+fn locate_mut<'a>(nodes: &'a mut Vec<Value>, target: &str) -> Option<&'a mut Vec<Value>> {
     if nodes.iter().any(|node| node.get("id").and_then(Value::as_str) == Some(target)) {
         return Some(nodes);
     }
@@ -242,7 +242,7 @@ fn locate_mut(nodes: &mut Vec<Value>, target: &str) -> Option<&mut Vec<Value>> {
     None
 }
 
-fn find_mut(nodes: &mut [Value], target: &str) -> Option<&mut Value> {
+fn find_mut<'a>(nodes: &'a mut [Value], target: &str) -> Option<&'a mut Value> {
     for node in nodes {
         if node.get("id").and_then(Value::as_str) == Some(target) { return Some(node); }
         if let Some(children) = node.get_mut("children").and_then(Value::as_array_mut) {
