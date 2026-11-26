@@ -560,6 +560,24 @@ pub fn activity_calendar_json(input_json: &str) -> Result<String, JsValue> {
     serde_json::to_string(&result).map_err(|error| input_error(&error.to_string()))
 }
 
+/// Validate and randomly select Gameverse quiz questions in Rust.
+#[wasm_bindgen]
+pub fn gameverse_quiz_select_json(input_json: &str) -> Result<String, JsValue> {
+    if input_json.len() > 256 * 1024 { return Err(input_error("Gameverse quiz catalog exceeds 256 KiB")); }
+    let input: serde_json::Value = serde_json::from_str(input_json)
+        .map_err(|_| input_error("Gameverse quiz payload must be valid JSON"))?;
+    let mode = input.get("mode").and_then(serde_json::Value::as_str)
+        .ok_or_else(|| input_error("Missing Gameverse quiz mode"))?;
+    let seed = input.get("seed").and_then(serde_json::Value::as_str)
+        .ok_or_else(|| input_error("Missing Gameverse quiz seed"))?
+        .parse::<u64>().map_err(|_| input_error("Invalid Gameverse quiz seed"))?;
+    let questions = input.get("questions").and_then(serde_json::Value::as_array)
+        .ok_or_else(|| input_error("Gameverse quiz questions must be an array"))?;
+    let result = crate::gameverse::select_quiz_questions(questions, mode, seed)
+        .map_err(|error| input_error(&format!("Gameverse quiz selection rejected: {error:?}")))?;
+    serde_json::to_string(&result).map_err(|error| input_error(&error.to_string()))
+}
+
 /// Select a Gameverse treasure riddle using a validated random sample.
 #[wasm_bindgen]
 pub fn gameverse_treasure_question_json(roll: f64) -> Result<String, JsValue> {
