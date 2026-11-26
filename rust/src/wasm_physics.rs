@@ -541,6 +541,25 @@ pub fn activity_calendar_json(input_json: &str) -> Result<String, JsValue> {
     serde_json::to_string(&result).map_err(|error| input_error(&error.to_string()))
 }
 
+/// Resolve Gameverse quiz rewards and ranked rating changes in Rust.
+#[wasm_bindgen]
+pub fn gameverse_quiz_reward_json(input_json: &str) -> Result<String, JsValue> {
+    if input_json.len() > 4096 { return Err(input_error("Gameverse reward payload exceeds 4 KiB")); }
+    let input: serde_json::Value = serde_json::from_str(input_json)
+        .map_err(|_| input_error("Gameverse reward payload must be valid JSON"))?;
+    let number = |key: &str| input.get(key).and_then(serde_json::Value::as_u64)
+        .ok_or_else(|| input_error(&format!("Missing or invalid {key}")));
+    let correct = u32::try_from(number("correct")?)
+        .map_err(|_| input_error("Correct answer count is out of range"))?;
+    let total = u32::try_from(number("total")?)
+        .map_err(|_| input_error("Question count is out of range"))?;
+    let mode = input.get("mode").and_then(serde_json::Value::as_str)
+        .ok_or_else(|| input_error("Missing Gameverse mode"))?;
+    let result = crate::gameverse::quiz_reward(correct, total, mode, number("rating")?)
+        .map_err(|error| input_error(&format!("Gameverse reward rejected: {error:?}")))?;
+    serde_json::to_string(&result).map_err(|error| input_error(&error.to_string()))
+}
+
 /// Return the canonical ranked arena tier for a rating-point total.
 #[wasm_bindgen]
 pub fn rank_arena_tier_json(rp: u64) -> Result<String, JsValue> {
