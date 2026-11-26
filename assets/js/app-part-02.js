@@ -357,8 +357,33 @@ function lessonPlayPage(){
 
 function entertainmentWeekKey(d=new Date()){const x=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));const day=x.getUTCDay()||7;x.setUTCDate(x.getUTCDate()+4-day);const year=x.getUTCFullYear();const first=new Date(Date.UTC(year,0,1));return year+'-W'+String(Math.ceil((((x-first)/86400000)+1)/7)).padStart(2,'0')}
 function entertainmentState(){const wk=entertainmentWeekKey();let st;try{st=JSON.parse(localStorage.getItem('principia_fun_league')||'null')}catch(e){}if(!st||st.week!==wk){st={week:wk,points:0,matches:0,wins:0};localStorage.setItem('principia_fun_league',JSON.stringify(st));}return st}
-function leagueBots(){const names=['NewtonBot','Einstein AI','Gauss.exe','CurieBot','Feynman AI','TeslaMind','NoetherBot'];const st=entertainmentState();let seed=0;for(const c of st.week)seed=(seed*31+c.charCodeAt(0))>>>0;return names.map((name,i)=>{seed=(seed*1664525+1013904223)>>>0;return {name,points:150+seed%650,avatar:['🤖','🧠','🦾','👾','⚙️','🛰️','🔬'][i]}}).sort((a,b)=>b.points-a.points)}
-function leagueRank(points){return points>=900?{name:'Đại kiện tướng',icon:'👑'}:points>=600?{name:'Cao thủ',icon:'💎'}:points>=350?{name:'Chiến binh',icon:'🥇'}:points>=150?{name:'Kỳ thủ',icon:'🥈'}:{name:'Tân binh',icon:'🌱'}}
+let principiaLeagueBotsCache=null;
+let principiaLeagueBotsRequest=null;
+
+async function loadPrincipiaLeagueBots(week){
+ if(principiaLeagueBotsCache?.week===week)return principiaLeagueBotsCache.bots;
+ if(principiaLeagueBotsRequest?.week===week)return principiaLeagueBotsRequest.promise;
+ const engine=window.PrincipiaWasmPhysics;
+ if(!engine||typeof engine.gameLeague!=='function')throw new Error('Rust AI league engine is unavailable');
+ const promise=engine.gameLeague({operation:'bots',week}).then(result=>{
+  if(!Array.isArray(result)||result.length!==7||result.some(bot=>typeof bot.name!=='string'||!Number.isInteger(bot.points)||bot.points<150||bot.points>799||typeof bot.avatar!=='string'))throw new TypeError('Rust returned invalid AI league opponents');
+  principiaLeagueBotsCache={week,bots:result};
+  if(page==='lab'||page==='entertainment')render();
+  return result;
+ }).finally(()=>{if(principiaLeagueBotsRequest?.week===week)principiaLeagueBotsRequest=null;});
+ principiaLeagueBotsRequest={week,promise};
+ return promise;
+}
+
+function leagueBots(){
+ const week=entertainmentState().week;
+ if(principiaLeagueBotsCache?.week===week)return principiaLeagueBotsCache.bots;
+ void loadPrincipiaLeagueBots(week).catch(error=>{
+  console.error('[PRINCIPIA] Rust AI league opponents failed:',error);
+  notify('Không thể tải đối thủ AI từ lõi Rust/WASM.');
+ });
+ return [];
+}
 const PRINCIPIA_DEFAULT_NAV=[['home','sparkle','Trang chủ'],['library','books','Học tập'],['quiz','calculator','Quiz'],['fun','puzzle','Đố vui'],['lab','flask','Phòng thí nghiệm'],['progress','trophy','Tiến độ']];
 /* PRINCIPIA: icon emoji hiện đại, vẫn ưu tiên ảnh do người dùng tải lên. */
 const PRINCIPIA_NAV_IMAGE_STYLE='<style>.nav-image-empty{display:inline-flex;align-items:center;justify-content:center;width:64px;height:64px;border:1px dashed var(--line);border-radius:14px;color:var(--muted);font-size:11px;text-align:center}.nav-custom-icon{width:28px;height:28px;object-fit:cover;border-radius:9px;flex:none}.nav-default-icon{font-size:23px;line-height:1;display:inline-grid;place-items:center;width:28px;height:28px;flex:none}.node-emoji-icon{font-size:42px;line-height:1.2;display:inline-flex;align-items:center;justify-content:center;min-width:1.25em;min-height:1.25em}.icon-choice-grid{grid-template-columns:repeat(6,minmax(0,1fr))}.icon-choice{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:7px 3px}.icon-choice-name{font-size:10px;line-height:1.2}.nav .ni{display:none!important}</style>';
@@ -568,10 +593,36 @@ function entertainmentPage(){
  const gamePanel=selected&&selected.type==='game'?`<div class="panel"><div class="sectionhead"><div><div class="eyebrow">${esc(selected.name)}</div><h2>${esc(selected.name)}</h2></div><div class="toolbar"><button class="secondary" onclick="activeEntertainmentGameId=null;render()">← Đóng</button><a class="primary" href="${esc(selected.url)}" target="_blank" rel="noopener noreferrer">Mở website ↗</a></div></div><div style="border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fff"><iframe title="${esc(selected.name)}" src="${esc(selected.url)}" style="display:block;width:100%;height:min(68vh,680px);border:0;background:#fff" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="fullscreen; autoplay"></iframe></div><p class="small muted">Nếu website chặn nhúng, hãy dùng nút Mở website.</p></div>`:'';
  return `<div class="eyebrow">PLAY · THINK · COMPETE</div><h1>Giải trí & tư duy</h1><p class="muted">Tổ chức trò chơi theo tab lớn, tab con và nền tảng bên trong.</p>${trail}<div class="toolbar" style="margin:12px 0"><button class="primary" onclick="addNode('tab')">＋ Tạo tab</button><button class="secondary" onclick="addEntertainmentGame()">＋ Thêm trò chơi / nền tảng</button></div><div class="grid">${items.length?items.map(card).join(''):'<div class="empty">Tab này chưa có nội dung. Hãy tạo tab con hoặc thêm trò chơi.</div>'}</div>${gamePanel}<div class="panel"><div class="sectionhead"><h2>AI phân tích cờ vua</h2><span class="pill">Engine phân tích</span></div><p class="muted small">Dán PGN hoặc FEN để mở bàn phân tích Lichess với engine cờ vua.</p><textarea id="chessPosition" rows="3" placeholder="Dán PGN hoặc FEN của ván cờ vào đây..."></textarea><button class="primary" onclick="analyzeChessPosition()">Phân tích nước đi</button></div>`;
 }
-function simulateAiMatch(){let st=entertainmentState();const bots=leagueBots();const opponent=bots[Math.floor(Math.random()*bots.length)];const win=Math.random()<.62;const gain=win?30:12;st.points+=gain;st.matches++;if(win)st.wins++;localStorage.setItem('principia_fun_league',JSON.stringify(st));const before=leagueRank(st.points-gain),after=leagueRank(st.points);render();notify((win?'🏆 Bạn thắng '+opponent.name:'🤝 Trận đấu với '+opponent.name+' kết thúc')+' · +'+gain+' điểm'+(before.name!==after.name?' · Thăng hạng '+after.name+'!':''));if(before.name!==after.name)setTimeout(()=>notify('🎉 Tuyệt vời! Bạn đã lên '+after.name+' '+after.icon+'!'),500)}
-let principiaCourseProgressCache=null;
-let principiaCourseProgressRequest=null;
-
+async function simulateAiMatch(){
+ const state=entertainmentState();
+ try{
+  const engine=window.PrincipiaWasmPhysics;
+  if(!engine||typeof engine.gameLeague!=='function')throw new Error('Rust AI league engine is unavailable');
+  if(!window.crypto||typeof window.crypto.getRandomValues!=='function')throw new Error('Secure random source is unavailable');
+  const random=new Uint32Array(2);
+  window.crypto.getRandomValues(random);
+  const result=await engine.gameLeague({
+   operation:'match',week:state.week,points:state.points,matches:state.matches,wins:state.wins,
+   opponentRoll:random[0]/4294967296,resultRoll:random[1]/4294967296
+  });
+  if(typeof result?.won!=='boolean'||!Number.isInteger(result.gain)||![12,30].includes(result.gain)
+   ||!Number.isInteger(result.points)||result.points<state.points||result.points>1000000
+   ||result.matches!==state.matches+1||result.wins!==state.wins+(result.won?1:0)
+   ||typeof result.opponent?.name!=='string'||typeof result.before?.name!=='string'||typeof result.after?.name!=='string')
+   throw new TypeError('Rust returned an invalid AI league match result');
+  state.points=result.points;
+  state.matches=result.matches;
+  state.wins=result.wins;
+  localStorage.setItem('principia_fun_league',JSON.stringify(state));
+  render();
+  notify((result.won?'🏆 Bạn thắng '+result.opponent.name:'🤝 Trận đấu với '+result.opponent.name+' kết thúc')
+   +' · +'+result.gain+' điểm'+(result.before.name!==result.after.name?' · Thăng hạng '+result.after.name+'!':''));
+  if(result.before.name!==result.after.name)setTimeout(()=>notify('🎉 Tuyệt vời! Bạn đã lên '+result.after.name+' '+result.after.icon+'!'),500);
+ }catch(error){
+  console.error('[PRINCIPIA] Rust AI league match failed:',error);
+  notify('Không thể xác minh trận đấu bằng lõi Rust/WASM. Điểm chưa được thay đổi.');
+ }
+}
 function requestPrincipiaCourseProgress(done,total){
  const key=done+':'+total;
  if(principiaCourseProgressCache?.key===key)return Promise.resolve(principiaCourseProgressCache.value);
