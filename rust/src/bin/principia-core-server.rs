@@ -261,6 +261,21 @@ mod tests {
     }
 
     #[test]
+    fn dispatches_rust_ui_snapshot_for_mobile() {
+        let response = dispatch(&json!({"id":21,"op":"uiSnapshot","route":"learn","width":390,"searchOpen":true,"searchQuery":"momentum"}));
+        assert_eq!(response["ok"], true);
+        let snapshot: Value = serde_json::from_str(response["value"].as_str().unwrap()).unwrap();
+        assert_eq!(snapshot["route"], "learn");
+        assert_eq!(snapshot["layout"], "compact");
+        assert_eq!(snapshot["sidebarOpen"], false);
+        assert_eq!(snapshot["searchQuery"], "momentum");
+    }
+    #[test]
+    fn ui_snapshot_rejects_invalid_route() {
+        let response = dispatch(&json!({"id":22,"op":"uiSnapshot","route":"not-a-route","width":900}));
+        assert_eq!(response["ok"], false);
+    }
+    #[test]
     fn rejects_unsupported_operations() {
         let response = dispatch(&json!({"id":8,"op":"deleteEverything"}));
         assert_eq!(response["ok"], false);
