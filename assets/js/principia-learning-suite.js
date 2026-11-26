@@ -77,27 +77,46 @@
   render();
  }
 
- function weeklyLearningReport(){
-  const now=Date.now(),since=now-7*86400000,attempts=(Array.isArray(state.attempts)?state.attempts:[]).filter(x=>{const t=Date.parse(x.date);return Number.isFinite(t)&&t>=since&&t<=now});
-  const total=attempts.reduce((n,x)=>n+Math.max(0,Number(x.total)||0),0),right=attempts.reduce((n,x)=>n+Math.max(0,Number(x.score)||0),0),accuracy=total?Math.round(right/total*100):0;
-  const sessions=focusSessions().filter(x=>{const t=Date.parse(x.timestamp);return Number.isFinite(t)&&t>=since&&t<=now&&Number.isFinite(Number(x.seconds))&&x.seconds>0});
-  const focusSeconds=sessions.reduce((n,x)=>n+Math.floor(Number(x.seconds)),0),activeDays=new Set(sessions.map(x=>x.date)).size;
-  const errors=(Array.isArray(state.errors)?state.errors:[]),topics={};
-  errors.forEach(e=>{const t=Date.parse(e.date);if(!Number.isFinite(t)||t<since||t>now)return;let source=String(e.path||'');if(!source){const m=String(e.body||'').match(/Nguồn:\s*([^\n]+)/i);if(m)source=m[1].trim()}const key=(source||'Chưa phân loại').split(/ › | \/ | > /)[0].trim();topics[key]=(topics[key]||0)+1});
-  const weak=Object.entries(topics).sort((a,b)=>b[1]-a[1]).slice(0,5),plans=Array.isArray(state.studyPlan)?state.studyPlan:[],today=localDateKey(),openTasks=plans.filter(x=>!x.done).length,overdue=plans.filter(x=>!x.done&&x.due&&x.due<today).length;
-  const advice=[];
-  if(!attempts.length)advice.push('Làm một bài luyện ngắn để PRINCIPIA có dữ liệu đánh giá tiến bộ.');
-  else if(accuracy<60)advice.push('Ôn lại kiến thức nền và giải chậm từng bước trước khi tăng độ khó.');
-  else if(accuracy<85)advice.push('Tập trung sửa lỗi sai, sau đó làm lại câu tương tự để củng cố.');
-  else advice.push('Độ chính xác đang tốt; thử một bộ câu hỏi khó hơn để kiểm tra chiều sâu hiểu bài.');
-  if(weak.length)advice.push('Ưu tiên ôn '+weak[0][0]+' vì đây là chủ đề xuất hiện nhiều nhất trong lỗi sai tuần này.');
-  if(focusSeconds<60*60)advice.push('Thử chia việc học thành các phiên tập trung 15–25 phút.');
-  if(overdue)advice.push('Xử lý hoặc dời '+overdue+' nhiệm vụ học tập đã quá hạn.');
-  const weakHtml=weak.length?weak.map(([name,count])=>'<div style="display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--line,#444)"><span>'+esc(name)+'</span><b>'+count+' lỗi</b></div>').join(''):'<p class="muted">Chưa có lỗi sai được ghi nhận trong 7 ngày.</p>';
-  const adviceHtml=advice.map(x=>'<li style="margin:8px 0">'+esc(x)+'</li>').join('');
-  const report={generatedAt:new Date().toISOString(),periodDays:7,attempts:attempts.length,questions:total,correct:right,accuracy,focusMinutes:Math.floor(focusSeconds/60),focusSessions:sessions.length,focusDays:activeDays,openTasks,overdue,weakTopics:weak.map(([topic,count])=>({topic,count})),recommendations:advice};
-  open('Báo cáo học tập 7 ngày','<p class="small muted">Báo cáo chỉ sử dụng lịch sử luyện tập, phiên tập trung và kế hoạch đang lưu trên thiết bị này. Không gửi dữ liệu lên máy chủ.</p><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:9px">'+panel('Độ chính xác','<h2>'+accuracy+'%</h2><p class="small muted">'+right+'/'+total+' câu đúng</p>')+panel('Lượt luyện','<h2>'+attempts.length+'</h2><p class="small muted">Trong 7 ngày</p>')+panel('Tập trung','<h2>'+Math.floor(focusSeconds/60)+' phút</h2><p class="small muted">'+sessions.length+' phiên · '+activeDays+' ngày</p>')+panel('Nhiệm vụ còn mở','<h2>'+openTasks+'</h2><p class="small muted">'+overdue+' nhiệm vụ quá hạn</p>')+'</div>'+panel('Chủ đề cần củng cố',weakHtml)+panel('Đề xuất tuần tới','<ol>'+adviceHtml+'</ol>')+'<div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" onclick="principiaSuiteWeeklyReportExport()">↓ Xuất báo cáo JSON</button><button type="button" onclick="principiaSuiteWeeklyReportCSV()">↓ Xuất CSV</button><button type="button" onclick="principiaSuiteWeeklyTasks()">＋ Tạo nhiệm vụ ôn tập</button><button type="button" onclick="principiaSuiteAnalytics()">Mở phân tích chi tiết</button><button type="button" onclick="principiaSuiteHome()">Về trung tâm</button></div>');
+ async function weeklyLearningReport(){
+  const engine=window.PrincipiaWasmPhysics;
+  if(!engine||typeof engine.learningAnalytics!=='function'){
+   open('Báo cáo học tập 7 ngày','<p>Lõi Rust/WASM phân tích học tập chưa sẵn sàng. Không tạo báo cáo bằng phép tính dự phòng.</p>'+btn('Thử lại','principiaSuiteWeeklyReport()','primary')+btn('Về trung tâm','principiaSuiteHome()'));
+   return;
+  }
+  const now=Date.now(),since=now-7*86400000;
+  const attempts=(Array.isArray(state.attempts)?state.attempts:[]).filter(item=>{
+   const timestamp=Date.parse(item.date);
+   return Number.isFinite(timestamp)&&timestamp>=since&&timestamp<=now;
+  }).map(item=>({total:Math.floor(Number(item.total)||0),score:Math.floor(Number(item.score)||0)}))
+    .filter(item=>item.total>0&&item.score>=0&&item.score<=item.total);
+  const sessions=focusSessions().filter(item=>{
+   const timestamp=Date.parse(item.timestamp);
+   return Number.isFinite(timestamp)&&timestamp>=since&&timestamp<=now&&Number.isFinite(Number(item.seconds))&&Number(item.seconds)>0;
+  }).map(item=>({seconds:Math.floor(Number(item.seconds)),date:/^\\d{4}-\\d{2}-\\d{2}$/.test(String(item.date||''))?item.date:localDateKey(new Date(item.timestamp))}))
+    .filter(item=>item.seconds>0&&item.seconds<=86400);
+  const errors=(Array.isArray(state.errors)?state.errors:[]).filter(item=>{
+   const timestamp=Date.parse(item.date);
+   return !Number.isFinite(timestamp)||(timestamp>=since&&timestamp<=now);
+  }).map(item=>({path:String(item.path||''),body:String(item.body||'').slice(0,4096)}));
+  const tasks=(Array.isArray(state.studyPlan)?state.studyPlan:[]).slice(0,10000)
+   .map(item=>({done:!!item.done,due:String(item.due||'').slice(0,10)}));
+  let summary;
+  try{
+   summary=await engine.learningAnalytics({today:localDateKey(),attempts,focusSessions:sessions,errors,tasks});
+   if(!summary||!Number.isInteger(summary.accuracy)||summary.accuracy<0||summary.accuracy>100
+    ||!Array.isArray(summary.weakTopics)||!Array.isArray(summary.recommendations)
+    ||!Number.isInteger(summary.focusSeconds)||!Number.isInteger(summary.openTasks)||!Number.isInteger(summary.overdue))
+    throw new TypeError('Rust returned invalid weekly learning analytics');
+  }catch(error){
+   console.error('[PRINCIPIA] Rust weekly analytics failed:',error);
+   open('Báo cáo học tập 7 ngày','<p>Không thể xác minh báo cáo bằng lõi Rust/WASM. Dữ liệu gốc vẫn được giữ nguyên.</p>'+btn('Thử lại','principiaSuiteWeeklyReport()','primary')+btn('Về trung tâm','principiaSuiteHome()'));
+   return;
+  }
+  const weakHtml=summary.weakTopics.length?summary.weakTopics.map(item=>'<div style="display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--line,#444)"><span>'+esc(item.topic)+'</span><b>'+item.count+' lỗi</b></div>').join(''):'<p class="muted">Chưa có lỗi sai được ghi nhận trong 7 ngày.</p>';
+  const adviceHtml=summary.recommendations.map(item=>'<li style="margin:8px 0">'+esc(item)+'</li>').join('');
+  const report={generatedAt:new Date().toISOString(),periodDays:7,...summary};
   window.__principiaWeeklyReport=report;
+  open('Báo cáo học tập 7 ngày','<p class="small muted">Báo cáo được tổng hợp bằng Rust/WASM từ lịch sử học tập đang lưu trên thiết bị này. Không gửi dữ liệu lên máy chủ.</p><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:9px">'+panel('Độ chính xác','<h2>'+summary.accuracy+'%</h2><p class="small muted">'+summary.correct+'/'+summary.questions+' câu đúng</p>')+panel('Lượt luyện','<h2>'+summary.attempts+'</h2><p class="small muted">Trong 7 ngày</p>')+panel('Tập trung','<h2>'+Math.floor(summary.focusSeconds/60)+' phút</h2><p class="small muted">'+summary.focusSessions+' phiên · '+summary.focusDays+' ngày</p>')+panel('Nhiệm vụ còn mở','<h2>'+summary.openTasks+'</h2><p class="small muted">'+summary.overdue+' nhiệm vụ quá hạn</p>')+'</div>'+panel('Chủ đề cần củng cố',weakHtml)+panel('Đề xuất tuần tới','<ol>'+adviceHtml+'</ol>')+'<div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" onclick="principiaSuiteWeeklyReportExport()">↓ Xuất báo cáo JSON</button><button type="button" onclick="principiaSuiteWeeklyReportCSV()">↓ Xuất CSV</button><button type="button" onclick="principiaSuiteWeeklyTasks()">＋ Tạo nhiệm vụ ôn tập</button><button type="button" onclick="principiaSuiteAnalytics()">Mở phân tích chi tiết</button><button type="button" onclick="principiaSuiteHome()">Về trung tâm</button></div>');
  }
  function exportWeeklyLearningReport(){
   const report=window.__principiaWeeklyReport;if(!report){weeklyLearningReport();return}
