@@ -4,8 +4,8 @@ pub enum RewardError { UnknownActivity }
 
 pub fn experience_reward(activity: &str) -> Result<u32, RewardError> {
     match activity {
-        "focus-session" | "lesson-completed" | "ai-transcript" => Ok(10),
-        "lesson-review" | "inline-quiz-correct" => Ok(15),
+        "focus-session" | "lesson-completed" | "ai-transcript" | "daily-challenge-correct" | "learning-journey-completed" => Ok(10),
+        "lesson-review" | "inline-quiz-correct" | "learning-quest-completed" => Ok(15),
         "ai-quiz-generated" => Ok(20),
         "assignment-submitted" => Ok(30),
         "lesson-mastered" => Ok(50),
@@ -20,6 +20,9 @@ mod tests {
     #[test]
     fn reward_catalog_has_explicit_values() {
         assert_eq!(experience_reward("focus-session"), Ok(10));
+        assert_eq!(experience_reward("daily-challenge-correct"), Ok(10));
+        assert_eq!(experience_reward("learning-journey-completed"), Ok(10));
+        assert_eq!(experience_reward("learning-quest-completed"), Ok(15));
         assert_eq!(experience_reward("lesson-review"), Ok(15));
         assert_eq!(experience_reward("ai-quiz-generated"), Ok(20));
         assert_eq!(experience_reward("assignment-submitted"), Ok(30));
