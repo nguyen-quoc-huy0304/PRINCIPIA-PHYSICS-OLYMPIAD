@@ -11,11 +11,6 @@
     teach: ['giảng', 'dạy', 'giải thích', 'phản biện', 'teach', 'peer instruction'],
     recover: ['lỗi', 'sửa lỗi', 'thành thạo', 'tự kiểm tra', 'error', 'deliberate practice']
   };
-  const DEFAULT_STEPS = [
-    'Tự nêu điều đã biết và điều cần tìm trước khi xem gợi ý.',
-    'Chọn nguyên lý phù hợp, giải thích vì sao nguyên lý đó áp dụng được.',
-    'Thử một câu tương tự mà không xem lời giải, sau đó tự kiểm tra.'
-  ];
   let state = load();
 
   function load() {
@@ -46,79 +41,11 @@
       : [];
   }
 
-  function inferGoal(context) {
-    if (context.goal && GOALS[context.goal]) return context.goal;
-    const percent = Number(context.percent);
-    const errors = Number(context.errorCount) || 0;
-    if (errors >= 3 || (Number.isFinite(percent) && percent < 50)) return 'recover';
-    if (Number.isFinite(percent) && percent >= 80) return 'solve';
-    if (/giảng|dạy|teach|classroom/i.test(context.phase || '')) return 'teach';
-    if (/ôn|nhớ|flashcard|review/i.test(context.phase || '')) return 'remember';
-    return 'understand';
-  }
-
   function topicFrom(context) {
     const explicit = clean(context.topic, 120);
     if (explicit) return explicit;
     const heading = document.querySelector('#app h1,#app h2,.page-title,h1')?.textContent;
     return clean(heading || 'Vật lý', 120);
-  }
-
-  function choose(context = {}) {
-    const items = catalog();
-    const topic = topicFrom(context);
-    const goal = inferGoal(context);
-    const terms = GOALS[goal];
-    const energy = [1, 2, 3].includes(Number(context.energy)) ? Number(context.energy) : 2;
-    const confidence = Number.isFinite(Number(context.confidence)) ? Math.max(1, Math.min(5, Number(context.confidence))) : 3;
-    const topicWords = topic.toLocaleLowerCase('vi').split(/[^\p{L}\p{N}]+/u).filter(word => word.length > 2);
-    const recent = new Set(state.recent.map(item => item.id));
-    const scored = items.map(item => {
-      const title = clean(item.title, 180);
-      const desc = clean(item.desc, 500);
-      const category = clean(item.category, 100);
-      const haystack = (title + ' ' + desc + ' ' + category).toLocaleLowerCase('vi');
-      const topicHits = topicWords.filter(word => haystack.includes(word)).length;
-      const goalHits = terms.filter(term => haystack.includes(term)).length;
-      const isCore = Number(item.id) > 0 && Number(item.id) <= 231;
-      const steps = Array.isArray(item.steps) ? item.steps.map(step => clean(step, 500)).filter(Boolean).slice(0, 5) : [];
-      const score = topicHits * 5 + goalHits * 3 + (steps.length ? 2 : 0) + (isCore ? 1 : 0) - (recent.has(item.id) ? 10 : 0);
-      return { item, score, steps };
-    }).filter(entry => entry.item && entry.item.title).sort((a, b) => b.score - a.score);
-    const fresh = scored.filter(entry => !recent.has(entry.item.id));
-    const pool = (fresh.length ? fresh : scored).slice(0, Math.min(8, fresh.length || scored.length));
-    const candidate = pool.length ? pool[state.sessions % pool.length] : null;
-    if (!candidate) {
-      return { topic, goal, energy, confidence, estimatedMinutes: energy === 1 ? 10 : goal === 'remember' ? 15 : energy === 3 ? 35 : 25, title: 'Bước học tiếp theo', description: 'Bắt đầu bằng một câu hỏi ngắn để xác định phần bạn đã hiểu.', steps: DEFAULT_STEPS, methodId: null };
-    }
-    return {
-      topic, goal, energy, confidence,
-      title: displayTitle(goal, context),
-      description: displayDescription(goal, context),
-      steps: candidate.steps.length ? candidate.steps : DEFAULT_STEPS,
-      methodId: candidate.item.id,
-      estimatedMinutes: energy === 1 ? 10 : goal === 'remember' ? 15 : energy === 3 ? 35 : 25
-    };
-  }
-
-  function displayTitle(goal, context) {
-    if (goal === 'recover') return 'Gỡ đúng chỗ đang vướng';
-    if (goal === 'remember') return 'Kiểm tra trí nhớ trước khi xem lại';
-    if (goal === 'solve') return 'Thử thách vận dụng tiếp theo';
-    if (goal === 'olympiad') return 'Thử thách tư duy Olympic';
-    if (goal === 'teach') return 'Giải thích lại để kiểm tra hiểu sâu';
-    if (Number(context.percent) >= 80) return 'Mở rộng sang tình huống mới';
-    return 'Xây nền tảng rồi tự thử';
-  }
-
-  function displayDescription(goal, context) {
-    if (goal === 'recover') return 'PRINCIPIA ưu tiên tìm lỗ hổng kiến thức và đưa bạn quay lại đúng bước cần sửa.';
-    if (goal === 'remember') return 'Hãy thử nhớ lại từ đầu. Chỉ mở tài liệu sau khi đã tự trả lời.';
-    if (goal === 'solve') return 'Bạn đã có nền tảng. Tiếp theo là bài có cách biểu diễn hoặc dữ kiện khác.';
-    if (goal === 'olympiad') return 'Ưu tiên nhận diện cấu trúc, tìm bất biến, kiểm tra trường hợp biên và chứng minh từng bước.';
-    if (goal === 'teach') return 'Hãy giảng bằng lời của mình. Học sinh AI sẽ hỏi tiếp ở chỗ còn thiếu căn cứ.';
-    if (Number(context.percent) >= 80) return 'Kết quả gần đây cho thấy bạn có thể thử bài chuyển giao khó hơn.';
-    return 'Bắt đầu bằng hình dung hiện tượng, xác định giả thiết rồi mới đi vào công thức.';
   }
 
   function promptFor(plan, extra = '', context = {}) {
@@ -149,7 +76,8 @@
       errorCount: Math.min(100, mistakes.length),
       updatedAt: Date.now(), mode: clean(detail.mode || 'quiz', 40)
     };
-    const plan = choose({ topic, percent, errorCount: mistakes.length });
+    const planPromise = getNextWithRust({ topic, percent, errorCount: mistakes.length });
+    planPromise.then(plan => {
     if (plan.methodId != null) {
       state.recent = state.recent.filter(item => item.id !== plan.methodId);
       state.recent.push({ id: plan.methodId, at: Date.now() });
@@ -159,6 +87,7 @@
     window.dispatchEvent(new CustomEvent('principia:next-step-updated', {
       detail: { title: plan.title, description: plan.description, topic: plan.topic, goal: plan.goal }
     }));
+    }).catch(error => console.error('[PRINCIPIA] Rust learning recommendation failed:', error));
   }
 
   function recordRetryAssessment(event) {
@@ -173,10 +102,6 @@
       errorCount: detail.passed === true ? Math.max(0, (Number(state.profile.errorCount) || 0) - 1) : Math.min(100, (Number(state.profile.errorCount) || 0) + 1)
     });
     save();
-  }
-
-  function getNext(context = {}) {
-    return choose(Object.assign({}, state.profile, context));
   }
 
   async function getNextWithRust(context = {}) {
@@ -216,10 +141,6 @@
         state.recent = state.recent.slice(-MAX_RECENT);
       }
       save();
-      if (plan.error) {
-        if (window.notify) window.notify('Lõi học tập Rust/WASM chưa sẵn sàng. Không thể tạo lộ trình lúc này.');
-        return null;
-      }
       const prompt = promptFor(plan, context.extra || '', context);
       if (window.principiaLocalAI?.open) window.principiaLocalAI.open(prompt);
       else if (window.principiaSuiteAI) window.principiaSuiteAI();
@@ -231,8 +152,8 @@
     }
   }
 
-  function directive(context = {}) {
-    const plan = getNext(context);
+  async function directive(context = {}) {
+    const plan = await getNextWithRust(context);
     return promptFor(plan, 'Tích hợp cách dẫn dắt này vào vai trò hiện tại mà không nhắc tên kỹ thuật học tập.', context);
   }
 
@@ -287,7 +208,7 @@
   }
 
   window.PrincipiaLearningOrchestrator = Object.freeze({
-    recommend: getNext, recommendWithRust: getNextWithRust, begin, directive, startFocus,
+    recommend: getNextWithRust, recommendWithRust: getNextWithRust, begin, directive, startFocus,
     getProfile: () => JSON.parse(JSON.stringify(state.profile)),
     stats: () => ({ sessions: state.sessions, recentChoices: state.recent.length })
   });
