@@ -495,6 +495,19 @@ pub fn learning_science_select_json(input_json: &str) -> Result<String, JsValue>
     serde_json::to_string(&selected).map_err(|error| input_error(&error.to_string()))
 }
 
+/// Search lesson, quiz and discovery catalogs using the Rust content index.
+#[wasm_bindgen]
+pub fn global_search_index_json(
+    input_json: &str,
+    query: &str,
+    default_kind: &str,
+) -> Result<String, JsValue> {
+    if query.len() > 512 { return Err(input_error("Global search query exceeds 512 bytes")); }
+    let result = crate::content::global_search_index_json(input_json, query, default_kind)
+        .map_err(|error| input_error(&format!("Global search indexing failed: {error:?}")))?;
+    serde_json::to_string(&result).map_err(|error| input_error(&error.to_string()))
+}
+
 #[wasm_bindgen]
 pub fn content_catalog_index_json(input_json: &str, query: &str) -> Result<String, JsValue> {
     if query.len() > 512 { return Err(input_error("Catalog query exceeds 512 bytes")); }
