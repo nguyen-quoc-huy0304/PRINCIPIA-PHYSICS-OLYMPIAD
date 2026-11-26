@@ -7,7 +7,7 @@ pub fn schedule(c:&CardSchedule,grade:u8,now:i64)->Result<CardSchedule,ScheduleE
  if grade>5{return Err(ScheduleError::InvalidGrade)} if now<0{return Err(ScheduleError::InvalidTimestamp)}
  let ease=if c.ease.is_finite(){c.ease.clamp(1.3,3.0)}else{2.5};let d=5_i32-grade as i32;
  let next=(ease+0.1-d as f64*(0.08+d.max(0) as f64*0.02)).clamp(1.3,3.0);
- let (reps,days)=if grade<3{(0,1)}else if c.repetitions==0{(1,1)}else if c.repetitions==1{(2,6)}else{(c.repetitions.saturating_add(1),((c.interval_days as f64*next).round() as u32).max(1)};
+ let (reps,days)=if grade<3{(0,1)}else if c.repetitions==0{(1,1)}else if c.repetitions==1{(2,6)}else{let interval=((c.interval_days as f64*next).round() as u32).max(1);(c.repetitions.saturating_add(1),interval)};
  let due=now.checked_add((days as i64).checked_mul(86_400_000).ok_or(ScheduleError::InvalidTimestamp)?).ok_or(ScheduleError::InvalidTimestamp)?;
  Ok(CardSchedule{repetitions:reps,ease:next,interval_days:days,due_at_ms:due})
 }
