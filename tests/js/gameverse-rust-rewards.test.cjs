@@ -66,3 +66,12 @@ test('Gameverse transactions reject duplicate concurrent actions',()=>{
  assert.match(game,/gameversePendingActions\.has\(lock\)/);
  assert.match(game,/finally\{gameversePendingActions\.delete\(lock\);\}/);
 });
+
+test('Gameverse daily quest completion and material selection are Rust-owned',()=>{
+ assert.match(game,/engine\.gameverseDailyQuest\(id,state\.daily\.done,random\[0\]\/4294967296\)/);
+ assert.match(game,/async function completeDaily\(id\)/);
+ assert.doesNotMatch(game,/Math\.floor\(Math\.random\(\)\*MATERIALS\.length\)/);
+ assert.match(rust,/pub fn complete_daily_quest\(/);
+ assert.match(wasm,/gameverse_daily_quest_json/);
+ assert.match(bridge,/gameverseDailyQuest:\(id,done,materialRoll\)=>compute\('gameverseDailyQuest'/);
+});
