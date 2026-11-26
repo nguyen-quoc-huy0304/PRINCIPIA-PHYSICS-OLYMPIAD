@@ -1,0 +1,19 @@
+/* PRINCIPIA design tokens: centralized visual primitives. Keep component layout in component stylesheets. */
+:root{
+  color-scheme:dark;
+  --pr-bg:#0c0d16;--pr-side:#111321;--pr-card:#171a2a;--pr-card-raised:#20233a;
+  --pr-line:#292c43;--pr-text:#f4f2ff;--pr-muted:#9295ad;
+  --pr-accent:#a18aff;--pr-accent-strong:#765be7;--pr-success:#65d6a5;
+  --pr-warning:#ffd36d;--pr-danger:#ff7187;--pr-radius-sm:8px;--pr-radius-md:12px;
+  --pr-radius-lg:18px;--pr-motion-fast:120ms;--pr-motion-normal:220ms;--pr-motion-slow:360ms;
+  --pr-ease:cubic-bezier(.2,.7,.2,1);
+  --bg:var(--pr-bg);--side:var(--pr-side);--card:var(--pr-card);--card2:var(--pr-card-raised);
+  --line:var(--pr-line);--txt:var(--pr-text);--muted:var(--pr-muted);
+  --purple:var(--pr-accent);--purple2:var(--pr-accent-strong);--green:var(--pr-success);
+  --yellow:var(--pr-warning);--red:var(--pr-danger);--chip:var(--card2);--accent:var(--purple);
+  --text:var(--txt);--surface:var(--card);
+}
+:where(button,a,input,textarea,select,[tabindex]):focus-visible{outline:2px solid var(--pr-accent);outline-offset:2px}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
