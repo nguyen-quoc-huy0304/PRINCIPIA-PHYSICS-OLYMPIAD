@@ -302,7 +302,6 @@ pub fn assessment_grade_json(input_json: &str) -> Result<String, JsValue> {
     })).map_err(|error| input_error(&error.to_string()))
 }
 
-#[wasm_bindgen]
 /// Record a study day without awarding XP or incrementing lesson counters.
 #[wasm_bindgen]
 pub fn progress_day_json(progress_json: &str, day: &str) -> Result<String, JsValue> {
@@ -329,6 +328,7 @@ pub fn progress_day_json(progress_json: &str, day: &str) -> Result<String, JsVal
     })).map_err(|error| input_error(&error.to_string()))
 }
 
+#[wasm_bindgen]
 pub fn progress_record_json(progress_json: &str, activity: &str, day: &str) -> Result<String, JsValue> {
     if progress_json.len() > 16 * 1024 { return Err(input_error("Progress payload exceeds 16 KiB")); }
     use crate::progress::{Activity, Progress};
