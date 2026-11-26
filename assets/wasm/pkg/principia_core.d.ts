@@ -36,6 +36,8 @@ export function score_projectile_json(speed: number, angle_degrees: number, targ
  */
 export function ui_snapshot_json(route: string, width: number, search_query: string, dialog: string): string;
 
+export function ui_render_html(route: string, width: number, search_query: string, dialog: string): string;
+
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 
 export interface InitOutput {
