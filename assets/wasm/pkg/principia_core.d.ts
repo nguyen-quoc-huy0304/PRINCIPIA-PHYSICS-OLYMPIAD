@@ -5,6 +5,13 @@ export function assessment_grade_json(input_json: string): string;
 
 export function clamp_game_target(target_m: number, speed_mps: number, gravity_mps2: number): number;
 
+export function content_catalog_index_json(input_json: string, query: string): string;
+
+/**
+ * Execute hierarchical catalog operations in Rust for the browser presentation adapter.
+ */
+export function content_tree_query_json(catalog_json: string, operation: string, target_id: string): string;
+
 export function force_balance_score_json(candidate_x: number, candidate_y: number, target_x: number, target_y: number): string;
 
 export function force_balance_target_json(force_a_x: number, force_a_y: number, force_b_x: number, force_b_y: number): string;
@@ -13,9 +20,18 @@ export function game_trajectory_json(speed_mps: number, angle_degrees: number, g
 
 export function generate_game_challenge_json(seed: bigint): string;
 
+export function learning_orchestrate_json(input_json: string): string;
+
+/**
+ * Produces an adaptive learning plan in Rust; browser code only presents the result.
+ */
+export function learning_plan_json(topic: string, phase: string, percent: number, has_percent: boolean, error_count: number, energy: number, confidence: number, goal: string): string;
+
 export function learning_recommend_json(context_json: string): string;
 
 export function learning_review_schedule_json(quality: number, previous_interval_days: number, ease_factor: number): string;
+
+export function learning_science_select_json(input_json: string): string;
 
 export function physics_collision_1d_json(mass_a: number, velocity_a: number, mass_b: number, velocity_b: number, restitution: number): string;
 
@@ -46,6 +62,11 @@ export function robot_assembly_evaluate_json(base: string, joint: string, link1:
 export function score_projectile_json(speed: number, angle_degrees: number, target_m: number, gravity: number): string;
 
 /**
+ * Applies one UI event in the Rust state machine and returns the canonical state snapshot.
+ */
+export function ui_reduce_json(route: string, width: number, query: string, dialog: string, event: string, value: string): string;
+
+/**
  * Render the validated Rust UI shell to HTML for WASM/browser/native adapters.
  */
 export function ui_render_html(route: string, width: number, search_query: string, dialog: string): string;
@@ -61,12 +82,17 @@ export interface InitOutput {
     readonly memory: WebAssembly.Memory;
     readonly assessment_grade_json: (a: number, b: number, c: number) => void;
     readonly clamp_game_target: (a: number, b: number, c: number, d: number) => void;
+    readonly content_catalog_index_json: (a: number, b: number, c: number, d: number, e: number) => void;
+    readonly content_tree_query_json: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
     readonly force_balance_score_json: (a: number, b: number, c: number, d: number, e: number) => void;
     readonly force_balance_target_json: (a: number, b: number, c: number, d: number, e: number) => void;
     readonly game_trajectory_json: (a: number, b: number, c: number, d: number, e: number) => void;
     readonly generate_game_challenge_json: (a: number, b: bigint) => void;
+    readonly learning_orchestrate_json: (a: number, b: number, c: number) => void;
+    readonly learning_plan_json: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number, k: number, l: number) => void;
     readonly learning_recommend_json: (a: number, b: number, c: number) => void;
     readonly learning_review_schedule_json: (a: number, b: number, c: number, d: number) => void;
+    readonly learning_science_select_json: (a: number, b: number, c: number) => void;
     readonly physics_collision_1d_json: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
     readonly physics_disk_collision_json: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
     readonly physics_displacement: (a: number, b: number, c: number, d: number) => void;
@@ -81,6 +107,7 @@ export interface InitOutput {
     readonly progression_summary_json: (a: number, b: number, c: number) => void;
     readonly robot_assembly_evaluate_json: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number, k: number, l: number, m: number, n: number, o: number, p: number, q: number) => void;
     readonly score_projectile_json: (a: number, b: number, c: number, d: number, e: number) => void;
+    readonly ui_reduce_json: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number, k: number, l: number) => void;
     readonly ui_render_html: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => void;
     readonly ui_snapshot_json: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => void;
     readonly __wbindgen_externrefs: WebAssembly.Table;
