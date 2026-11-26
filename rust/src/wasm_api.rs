@@ -51,8 +51,10 @@ pub fn ui_snapshot_json(route: &str, width: u32, search_query: &str, dialog: &st
     if !search_query.is_empty() {
         state.open_search();
         state.set_search(search_query);
+    } else if dialog == "search" {
+        state.open_search();
     }
-    if !dialog.is_empty() {
+    if !dialog.is_empty() && dialog != "search" {
         state.open_dialog(dialog).map_err(|_| JsValue::from_str("Invalid dialog"))?;
     }
     Ok(state.snapshot_json())
