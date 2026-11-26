@@ -541,6 +541,34 @@ pub fn activity_calendar_json(input_json: &str) -> Result<String, JsValue> {
     serde_json::to_string(&result).map_err(|error| input_error(&error.to_string()))
 }
 
+/// Apply a Gameverse recipe and validate its inventory transaction in Rust.
+#[wasm_bindgen]
+pub fn gameverse_craft_json(input_json: &str) -> Result<String, JsValue> {
+    if input_json.len() > 16 * 1024 { return Err(input_error("Gameverse craft payload exceeds 16 KiB")); }
+    let input: serde_json::Value = serde_json::from_str(input_json)
+        .map_err(|_| input_error("Gameverse craft payload must be valid JSON"))?;
+    let recipe_id = input.get("recipeId").and_then(serde_json::Value::as_str)
+        .filter(|id| id.len() <= 64).ok_or_else(|| input_error("Invalid recipe identifier"))?;
+    let materials_value = input.get("materials").and_then(serde_json::Value::as_object)
+        .ok_or_else(|| input_error("Craft materials must be an object"))?;
+    let mut materials = std::collections::BTreeMap::new();
+    for (key, value) in materials_value {
+        let amount = u32::try_from(value.as_u64().ok_or_else(|| input_error("Invalid material amount"))?)
+            .map_err(|_| input_error("Material amount is out of range"))?;
+        materials.insert(key.clone(), amount);
+    }
+    let crafted_value = input.get("crafted").and_then(serde_json::Value::as_array)
+        .ok_or_else(|| input_error("Crafted item list is required"))?;
+    if crafted_value.len() > 100 { return Err(input_error("Crafted item list is too large")); }
+    let crafted = crafted_value.iter().map(|item| item.as_str()
+        .filter(|id| id.len() <= 64)
+        .map(str::to_owned).ok_or_else(|| input_error("Invalid crafted item identifier")))
+        .collect::<Result<Vec<_>, _>>()?;
+    let result = crate::gameverse::craft(recipe_id, &materials, &crafted)
+        .map_err(|error| input_error(&format!("Gameverse craft rejected: {error:?}")))?;
+    serde_json::to_string(&result).map_err(|error| input_error(&error.to_string()))
+}
+
 /// Resolve Gameverse quiz rewards and ranked rating changes in Rust.
 #[wasm_bindgen]
 pub fn gameverse_quiz_reward_json(input_json: &str) -> Result<String, JsValue> {
