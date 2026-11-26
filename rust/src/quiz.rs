@@ -28,6 +28,60 @@ pub struct QuizResult {
     pub results: Vec<QuestionResult>,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SelectionError { EmptyCatalog, TooManyQuestions, InvalidCount, InvalidQuestion }
+
+fn next_random(state: &mut u64, upper: usize) -> usize {
+    *state = state.wrapping_mul(6_364_136_223_846_793_005).wrapping_add(1);
+    ((*state as u128 * upper as u128) >> 64) as usize
+}
+
+fn shuffle<T>(items: &mut [T], state: &mut u64) {
+    for index in (1..items.len()).rev() {
+        let target = next_random(state, index + 1);
+        items.swap(index, target);
+    }
+}
+
+/// Select exam questions and shuffle answer choices using a reproducible secure seed.
+pub fn select_exam_questions(
+    questions: &[serde_json::Value],
+    count: usize,
+    seed: u64,
+) -> Result<Vec<serde_json::Value>, SelectionError> {
+    if questions.is_empty() { return Err(SelectionError::EmptyCatalog); }
+    if questions.len() > 500 { return Err(SelectionError::TooManyQuestions); }
+    if count == 0 || count > questions.len() { return Err(SelectionError::InvalidCount); }
+
+    let mut order: Vec<usize> = (0..questions.len()).collect();
+    let mut random_state = seed;
+    shuffle(&mut order, &mut random_state);
+    let mut selected = Vec::with_capacity(count);
+    for index in order.into_iter().take(count) {
+        let original = &questions[index];
+        let question = original.get("q").and_then(serde_json::Value::as_str)
+            .filter(|value| !value.trim().is_empty() && value.len() <= 8192)
+            .ok_or(SelectionError::InvalidQuestion)?;
+        let _ = question;
+        let answers = original.get("a").and_then(serde_json::Value::as_array)
+            .filter(|values| (2..=16).contains(&values.len()))
+            .ok_or(SelectionError::InvalidQuestion)?;
+        let correct = original.get("correct").and_then(serde_json::Value::as_u64)
+            .and_then(|value| usize::try_from(value).ok())
+            .filter(|value| *value < answers.len())
+            .ok_or(SelectionError::InvalidQuestion)?;
+        let mut choices: Vec<(usize, serde_json::Value)> = answers.iter().cloned().enumerate().collect();
+        shuffle(&mut choices, &mut random_state);
+        let next_correct = choices.iter().position(|(original_index, _)| *original_index == correct)
+            .ok_or(SelectionError::InvalidQuestion)?;
+        let mut output = original.clone();
+        output["a"] = serde_json::Value::Array(choices.into_iter().map(|(_, value)| value).collect());
+        output["correct"] = serde_json::json!(next_correct);
+        selected.push(output);
+    }
+    Ok(selected)
+}
+
 /// Grades an attempt. Correct answers must come from trusted server-side content,
 /// never from values submitted by an untrusted browser client.
 pub fn grade_attempt(
@@ -78,6 +132,31 @@ pub fn grade_attempt(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn exam_selection_is_seeded_and_remaps_shuffled_correct_answers() {
+        let questions: Vec<serde_json::Value> = (0..12).map(|index| serde_json::json!({
+            "q":format!("Question {index}"),"a":["A","B","C","D"],"correct":index % 4,"topic":"Physics"
+        })).collect();
+        let first = select_exam_questions(&questions, 8, 42).unwrap();
+        let second = select_exam_questions(&questions, 8, 42).unwrap();
+        assert_eq!(first, second);
+        assert_eq!(first.len(), 8);
+        for question in first {
+            let answers = question["a"].as_array().unwrap();
+            let correct = question["correct"].as_u64().unwrap() as usize;
+            assert!((2..=16).contains(&answers.len()));
+            assert!(correct < answers.len());
+        }
+    }
+
+    #[test]
+    fn exam_selection_rejects_invalid_catalog_and_count() {
+        assert_eq!(select_exam_questions(&[], 1, 1), Err(SelectionError::EmptyCatalog));
+        let question = serde_json::json!({"q":"Q","a":["A","B"],"correct":2});
+        assert_eq!(select_exam_questions(&[question.clone()], 1, 1), Err(SelectionError::InvalidQuestion));
+        assert_eq!(select_exam_questions(&[question], 0, 1), Err(SelectionError::InvalidCount));
+    }
 
     #[test]
     fn grades_weighted_questions_and_passes_threshold() {
