@@ -26,6 +26,11 @@ export function force_balance_score_json(candidate_x: number, candidate_y: numbe
 
 export function force_balance_target_json(force_a_x: number, force_a_y: number, force_b_x: number, force_b_y: number): string;
 
+/**
+ * Resolve deterministic AI league operations in the Rust core.
+ */
+export function game_league_json(input_json: string): string;
+
 export function game_trajectory_json(speed_mps: number, angle_degrees: number, gravity_mps2: number, samples: number): string;
 
 /**
@@ -133,6 +138,7 @@ export interface InitOutput {
     readonly course_completion_json: (a: number, b: number, c: number) => void;
     readonly force_balance_score_json: (a: number, b: number, c: number, d: number, e: number) => void;
     readonly force_balance_target_json: (a: number, b: number, c: number, d: number, e: number) => void;
+    readonly game_league_json: (a: number, b: number, c: number) => void;
     readonly game_trajectory_json: (a: number, b: number, c: number, d: number, e: number) => void;
     readonly gameverse_craft_json: (a: number, b: number, c: number) => void;
     readonly gameverse_quiz_reward_json: (a: number, b: number, c: number) => void;

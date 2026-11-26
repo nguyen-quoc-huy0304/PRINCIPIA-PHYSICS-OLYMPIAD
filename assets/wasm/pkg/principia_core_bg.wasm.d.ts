@@ -9,6 +9,7 @@ export const content_tree_query_json: (a: number, b: number, c: number, d: numbe
 export const course_completion_json: (a: number, b: number, c: number) => void;
 export const force_balance_score_json: (a: number, b: number, c: number, d: number, e: number) => void;
 export const force_balance_target_json: (a: number, b: number, c: number, d: number, e: number) => void;
+export const game_league_json: (a: number, b: number, c: number) => void;
 export const game_trajectory_json: (a: number, b: number, c: number, d: number, e: number) => void;
 export const gameverse_craft_json: (a: number, b: number, c: number) => void;
 export const gameverse_quiz_reward_json: (a: number, b: number, c: number) => void;
