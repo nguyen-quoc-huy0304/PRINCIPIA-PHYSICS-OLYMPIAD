@@ -2,6 +2,8 @@ fn main() {
     println!("cargo:rerun-if-changed=../src/physics/engine.cpp");
     println!("cargo:rerun-if-changed=../src/physics/engine.h");
     println!("cargo:rerun-if-changed=../src/physics/engine_test.cpp");
+    println!("cargo:rerun-if-changed=../src/physics/trajectory_c.c");
+    println!("cargo:rerun-if-changed=../src/physics/trajectory_c.h");
 
     // The web build uses the pure-Rust physics/game modules; do not invoke
     // the native C++ compiler for wasm32-unknown-unknown.
@@ -9,6 +11,12 @@ fn main() {
     if target.starts_with("wasm32-") {
         return;
     }
+
+    cc::Build::new()
+        .file("../src/physics/trajectory_c.c")
+        .include("../src/physics")
+        .opt_level(3)
+        .compile("principia_trajectory_c");
 
     cc::Build::new()
         .cpp(true)
