@@ -51,9 +51,6 @@ pub fn grade_attempt(
             !points.is_finite() || *points <= 0.0 || *points > 1_000_000.0 {
             return Err(QuizError::InvalidQuestion);
         }
-        if selected > &usize::MAX || correct > &usize::MAX {
-            return Err(QuizError::InvalidAnswer);
-        }
         let is_correct = selected == correct;
         let earned = if is_correct { *points } else { 0.0 };
         if is_correct { correct_count += 1; }
