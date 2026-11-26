@@ -9,10 +9,10 @@ const rust = fs.readFileSync('rust/src/progress.rs', 'utf8');
 
 test('main app delegates daily streak date arithmetic to Rust progress recording', () => {
   assert.match(app, /async function dailyReward\(\)/);
-  assert.match(app, /engine\.recordProgress\(current,'quiz',today\)/);
+  assert.match(app, /engine\.recordStudyDay\(current,today\)/);
   assert.match(app, /studyStreakDays/);
   assert.doesNotMatch(app, /let yesterday=new Date\(Date\.now\(\)-86400000\)/);
-  assert.match(bridge, /recordProgress:\(progress,activity,day\)=>compute\('recordProgress'/);
+  assert.match(bridge, /recordStudyDay:\(progress,day\)=>compute\('recordStudyDay'/);
   assert.match(rust, /Some\(previous\) if current==previous\+1/);
 });
 
