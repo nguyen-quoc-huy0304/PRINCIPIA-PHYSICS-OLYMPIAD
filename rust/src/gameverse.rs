@@ -35,6 +35,11 @@ pub fn quiz_reward(correct: u32, total: u32, mode: &str, rating: u64) -> Result<
 }
 
 
+pub fn season_progress(season_xp: u64) -> Value {
+    let level = (season_xp / 100).min(100) as u32;
+    json!({"level":level,"cap":100,"progress":level as f64})
+}
+
 pub fn open_card_pack(coins: u64, collection: &[String], roll: f64) -> Result<Value, GameverseError> {
     const CARDS: [&str; 6] = ["newton", "faraday", "curie", "einstein", "galileo", "tesla"];
     if coins < 100 { return Err(GameverseError::InsufficientCoins); }
@@ -232,6 +237,14 @@ pub fn craft(recipe_id: &str, materials: &BTreeMap<String, u32>, crafted: &[Stri
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn season_progress_is_capped_and_monotonic() {
+        assert_eq!(season_progress(0)["level"], 0);
+        assert_eq!(season_progress(999)["level"], 9);
+        assert_eq!(season_progress(10_000)["level"], 100);
+        assert_eq!(season_progress(50_000)["progress"], 100.0);
+    }
 
     #[test]
     fn card_pack_purchase_is_validated_and_never_duplicates_cards() {
