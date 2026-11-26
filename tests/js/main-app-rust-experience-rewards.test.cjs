@@ -23,6 +23,6 @@ test('main app delegates all learning XP reward amounts to Rust', () => {
 test('learning XP updates are validated and deduplicated for lesson completion', () => {
   assert.match(app, /principiaPendingExperienceAwards\.has\(operationKey\)/);
   assert.match(app, /Number\.isInteger\(amount\)/);
-  assert.match(app, /lesson-mastered','lesson:'/);
+  assert.match(app, /firstCompletion\?'lesson-mastered':'lesson-review','lesson:'/);
   assert.match(app, /Rust lesson reward failed/);
 });
