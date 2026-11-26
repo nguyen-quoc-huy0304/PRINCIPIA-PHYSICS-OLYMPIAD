@@ -27,3 +27,28 @@ test('malformed storage and storage quota errors are handled', () => {
  const store=createStore(broken); assert.equal(store.all().length,0);
  assert.equal(store.add({...card()}),false);
 });
+
+test('native scheduler delegates review calculation to Rust WASM', async () => {
+ const previousWindow=global.window; let args;
+ global.window={PrincipiaWasmPhysics:{async scheduleReview(...values){args=values;return {intervalDays:6,dueAfterDays:6,easeFactor:2.6,mastered:true};}}};
+ try {
+  const result=await require('../../assets/js/principia-spaced-repetition.js').scheduleNative({...card(),repetitions:1,intervalDays:1},5,1000);
+  assert.deepEqual(args,[5,1,2.5]); assert.equal(result.intervalDays,6);
+  assert.equal(result.dueAt,1000+6*DAY); assert.equal(result.mastered,true);
+ } finally { if(previousWindow===undefined) delete global.window; else global.window=previousWindow; }
+});
+test('native scheduler rejects when Rust WASM is unavailable', async () => {
+ const previousWindow=global.window; global.window={};
+ try { await assert.rejects(require('../../assets/js/principia-spaced-repetition.js').scheduleNative(card(),4),/Rust\/WASM learning engine is not loaded/); }
+ finally { if(previousWindow===undefined) delete global.window; else global.window=previousWindow; }
+});
+test('store reviewNative persists the Rust-generated schedule', async () => {
+ const values=new Map(), storage={getItem:key=>values.get(key)||null,setItem:(key,value)=>values.set(key,value)};
+ const previousWindow=global.window;
+ global.window={PrincipiaWasmPhysics:{async scheduleReview(){return {intervalDays:6,dueAfterDays:6,easeFactor:2.6,mastered:true};}}};
+ try {
+  const store=createStore(storage); assert.equal(store.add(card()),true);
+  const reviewed=await store.reviewNative('c1',5,10000);
+  assert.equal(reviewed.dueAt,10000+6*DAY); assert.equal(store.all()[0].mastered,true);
+ } finally { if(previousWindow===undefined) delete global.window; else global.window=previousWindow; }
+});
