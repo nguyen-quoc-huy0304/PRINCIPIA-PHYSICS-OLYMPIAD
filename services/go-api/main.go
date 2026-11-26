@@ -267,6 +267,7 @@ func validateIntegerRange(value any, field string, min, max int64) error {
 }
 
 func validateNumericField(field string, value any) error {
+	if field == "questions" { return nil }
 	if field == "points" {
 		points, ok := value.([]any)
 		if !ok || len(points) < 2 || len(points) > 10000 { return errors.New("points must contain between 2 and 10000 pairs") }
