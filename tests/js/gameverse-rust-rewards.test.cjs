@@ -100,3 +100,13 @@ test('Gameverse card pack purchase and random card selection are Rust-owned',()=
  assert.match(wasm,/gameverse_card_pack_json/);
  assert.match(bridge,/gameverseOpenCardPack:\(coins,collection,roll\)=>compute\('gameverseCardPack'/);
 });
+
+test('Gameverse season pass level and progress are calculated by Rust',()=>{
+ assert.match(game,/engine\.gameverseSeasonProgress\(state\.season\.xp\+xpReward\)/);
+ assert.match(game,/state\.season\.level=season\.level/);
+ assert.match(game,/ready=state\.season\.level>=tier/);
+ assert.doesNotMatch(game,/Math\.floor\(state\.season\.xp\/100\)/);
+ assert.match(rust,/pub fn season_progress\(season_xp: u64\)/);
+ assert.match(wasm,/gameverse_season_progress_json/);
+ assert.match(bridge,/gameverseSeasonProgress:seasonXp=>compute\('gameverseSeasonProgress'/);
+});
