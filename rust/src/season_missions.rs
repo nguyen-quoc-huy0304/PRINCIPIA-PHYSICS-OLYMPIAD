@@ -47,6 +47,43 @@ pub fn missions(week: &str, sessions: u64, questions: u64, notes: u64) -> Result
     Ok(Value::Array(rows))
 }
 
+fn date_prefix(value: &Value) -> Option<&str> {
+    let date = value.get("date").and_then(Value::as_str)?;
+    let bytes = date.as_bytes();
+    if bytes.len() < 10 || !bytes[..10].iter().all(|byte| byte.is_ascii_digit() || *byte == b'-') {
+        return None;
+    }
+    std::str::from_utf8(&bytes[..10]).ok()
+}
+
+/// Derive weekly metrics from raw locally stored records without browser-side aggregation.
+pub fn missions_from_records(
+    week: &str,
+    week_end: &str,
+    attempts: &[Value],
+    notes: &[Value],
+) -> Result<Value, SeasonError> {
+    validate_week(week)?;
+    validate_week(week_end)?;
+    if week_end <= week || attempts.len() > 10_000 || notes.len() > 10_000 {
+        return Err(SeasonError::InvalidMetric);
+    }
+    let mut sessions = 0u64;
+    let mut questions = 0u64;
+    for attempt in attempts {
+        let Some(date) = date_prefix(attempt) else { continue };
+        if date < week || date >= week_end { continue; }
+        let total = attempt.get("total").and_then(Value::as_u64).ok_or(SeasonError::InvalidMetric)?;
+        if total > 1_000_000 { return Err(SeasonError::InvalidMetric); }
+        sessions = sessions.checked_add(1).ok_or(SeasonError::InvalidMetric)?;
+        questions = questions.checked_add(total).ok_or(SeasonError::InvalidMetric)?;
+    }
+    let notes_count = notes.iter().filter(|note| {
+        date_prefix(note).is_some_and(|date| date >= week && date < week_end)
+    }).count() as u64;
+    missions(week, sessions, questions, notes_count)
+}
+
 pub fn claim(id: &str, value: u64, already_claimed: bool) -> Result<Value, SeasonError> {
     if value > 1_000_000 { return Err(SeasonError::InvalidMetric); }
     let mission = MISSIONS.iter().find(|mission| mission.id == id).ok_or(SeasonError::UnknownMission)?;
@@ -65,6 +102,23 @@ mod tests {
         assert_eq!(result[0]["complete"], false);
         assert_eq!(result[2]["complete"], true);
         assert_eq!(result[2]["xp"], 40);
+    }
+
+    #[test]
+    fn raw_records_are_filtered_and_aggregated_by_week_in_rust() {
+        let attempts = vec![
+            json!({"date":"2026-11-23T10:00:00Z","total":10}),
+            json!({"date":"2026-11-29T10:00:00Z","total":20}),
+            json!({"date":"2026-11-30T00:00:00Z","total":100}),
+        ];
+        let notes = vec![
+            json!({"date":"2026-11-23T12:00:00Z"}),
+            json!({"date":"2026-11-30T00:00:00Z"}),
+        ];
+        let result = missions_from_records("2026-11-23", "2026-11-30", &attempts, &notes).unwrap();
+        assert_eq!(result[0]["value"], 2);
+        assert_eq!(result[1]["value"], 30);
+        assert_eq!(result[2]["value"], 1);
     }
 
     #[test]
