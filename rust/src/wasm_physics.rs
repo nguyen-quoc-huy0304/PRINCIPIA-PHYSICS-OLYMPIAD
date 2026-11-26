@@ -513,9 +513,16 @@ pub fn rank_arena_resolve_json(input_json: &str) -> Result<String, JsValue> {
         .ok_or_else(|| input_error(&format!("Missing or invalid {key}")));
     let mode = input.get("mode").and_then(serde_json::Value::as_str)
         .ok_or_else(|| input_error("Missing or invalid mode"))?;
+    let mmr = u32::try_from(number("mmr")?)
+        .map_err(|_| input_error("MMR is outside the supported range"))?;
+    let correct = u8::try_from(number("correct")?)
+        .map_err(|_| input_error("Correct answer count is invalid"))?;
+    let rival_correct = u8::try_from(number("rivalCorrect")?)
+        .map_err(|_| input_error("Rival answer count is invalid"))?;
+    let best_combo = u8::try_from(number("bestCombo")?)
+        .map_err(|_| input_error("Best combo count is invalid"))?;
     let result = crate::rank_arena::resolve_match(
-        number("rp")?, number("mmr")? as u32, number("correct")? as u8,
-        number("rivalCorrect")? as u8, number("bestCombo")? as u8, mode,
+        number("rp")?, mmr, correct, rival_correct, best_combo, mode,
     ).map_err(|error| input_error(&format!("Ranked match rejected: {error:?}")))?;
     serde_json::to_string(&result).map_err(|error| input_error(&error.to_string()))
 }
