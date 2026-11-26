@@ -34,11 +34,13 @@ test('content tree adapter delegates every operation to Rust/WASM', async () => 
   await api.remove(catalog, 'physics');
   await api.reorder(catalog, 'physics', -1);
   await api.move(catalog, 'physics', 'root');
+  await api.drop(catalog, 'physics', 'target');
   assert.deepEqual(calls.map(call => call.operation),
-    ['find', 'parent', 'siblings', 'chain', 'lessons', 'count', 'remove', 'reorder', 'move']);
+    ['find', 'parent', 'siblings', 'chain', 'lessons', 'count', 'remove', 'reorder', 'move', 'drop']);
   assert.equal(calls[0].catalog, catalog);
   assert.deepEqual(JSON.parse(calls[7].targetId), { id: 'physics', delta: -1 });
   assert.deepEqual(JSON.parse(calls[8].targetId), { id: 'physics', targetId: 'root' });
+  assert.deepEqual(JSON.parse(calls[9].targetId), { id: 'physics', targetId: 'target' });
 });
 
 test('content tree adapter rejects invalid input before crossing WASM boundary', async () => {
@@ -59,5 +61,6 @@ test('legacy content editor delegates delete, reorder and move mutations to Rust
   assert.match(appSource, /async function deleteNode[\\s\\S]*PrincipiaContentTree\\.remove/);
   assert.match(appSource, /async function shiftNode[\\s\\S]*PrincipiaContentTree\\.reorder/);
   assert.match(appSource, /async function moveNodeTo[\\s\\S]*PrincipiaContentTree\\.move/);
+  assert.match(appSource, /async function dropItem[\\s\\S]*PrincipiaContentTree\\.drop/);
   assert.match(appSource, /function replaceTreeCatalog/);
 });
