@@ -492,50 +492,31 @@
  function setJourneyGoal(value){const n=Number(value);if(![5,10,15].includes(n))return;dailyLearningJourney();state.learningJourney.goal=n;save();dailyLearningJourney()}
  function journeyDone(id){const valid=['recall','review','reflect'];dailyLearningJourney();const j=state.learningJourney;if(!valid.includes(id)||j.done.includes(id))return;j.done.push(id);save();dailyLearningJourney()}
  function journeyClaim(){dailyLearningJourney();const j=state.learningJourney;if(j.done.length!==3||j.claimed)return;j.claimed=true;markStudyDay();try{if(typeof xp!=='undefined'&&typeof saveAll==='function'){xp+=10;saveAll()}else state.xp=(Number(state.xp)||0)+10}catch(_){state.xp=(Number(state.xp)||0)+10}save();dailyLearningJourney()}
- function thinkingProfile(){
-  const attempts=(state.attempts||[]).filter(x=>Number.isFinite(Number(x.total))&&Number(x.total)>0&&Number.isFinite(Number(x.score)));
-  const total=attempts.reduce((n,x)=>n+Number(x.total),0),correct=attempts.reduce((n,x)=>n+Number(x.score),0);
-  const accuracy=total?Math.round(correct/total*100):0;
-  const modes={};attempts.forEach(x=>{const k=String(x.mode||'Luyện tập');modes[k]=(modes[k]||0)+1});
-  const modeRows=Object.entries(modes).sort((a,b)=>b[1]-a[1]).map(([k,v])=>'<div style="display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--line,#444)"><span>'+esc(k)+'</span><b>'+v+' lượt</b></div>').join('')||'<p class="muted">Chưa có dữ liệu theo chế độ.</p>';
-  const errors=Array.isArray(state.errors)?state.errors:[];
-  const topics={};errors.forEach(e=>{let source=String(e.path||'');if(!source){const m=String(e.body||'').match(/Nguồn:\s*([^\n]+)/i);if(m)source=m[1].trim()}const key=(source||'Chưa phân loại').split(/ › | \/ | > /)[0].trim();topics[key]=(topics[key]||0)+1});
-  const weak=Object.entries(topics).sort((a,b)=>b[1]-a[1]).slice(0,5);
-  const advice=attempts.length<3?'Hãy hoàn thành thêm vài lượt luyện để hồ sơ học tập có dữ liệu đáng tin cậy.':accuracy>=85?'Bạn đang duy trì độ chính xác tốt. Hãy thử câu hỏi khó hơn và tiếp tục ghi lại lỗi sai.':accuracy>=60?'Bạn đã có nền tảng. Ưu tiên ôn lại các chủ đề xuất hiện nhiều trong sổ lỗi sai.':'Hãy giảm tốc độ, đọc kỹ giả thiết và giải từng bước trước khi chọn đáp án.';
-  open('Hồ sơ tư duy & học tập','<p class="small muted">Bản mô tả dựa trên lịch sử luyện tập PRINCIPIA lưu trên thiết bị; đây không phải bài kiểm tra IQ hay đánh giá tâm lý.</p><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:9px">'+panel('Độ chính xác','<h2>'+accuracy+'%</h2>')+panel('Lượt đã ghi','<h2>'+attempts.length+'</h2>')+panel('Câu đã trả lời','<h2>'+total+'</h2>')+panel('Lỗi đã lưu','<h2>'+errors.length+'</h2>')+'</div>'+panel('Gợi ý học tập','<p>'+advice+'</p>')+panel('Hoạt động thường dùng',modeRows)+panel('Chủ đề nên xem lại',weak.length?weak.map(([k,v])=>'<div style="display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--line,#444)"><span>'+esc(k)+'</span><b>'+v+' lỗi</b></div>').join(''):'<p class="muted">Chưa có lỗi được phân loại.</p>')+btn('Mở phân tích chi tiết','principiaSuiteAnalytics()')+btn('Về trung tâm','principiaSuiteHome()'));
- }
- async function analytics(){
+ async function thinkingProfile(){
   const engine=window.PrincipiaWasmPhysics;
   if(!engine||typeof engine.learningAnalytics!=='function'){
-   open('Phân tích học tập','<p>Lõi Rust/WASM phân tích chưa sẵn sàng. Không sử dụng phép tính dự phòng.</p>'+btn('Thử lại','principiaSuiteAnalytics()','primary')+btn('Về trung tâm','principiaSuiteHome()'));
+   open('Hồ sơ tư duy & học tập','<p>Lõi Rust/WASM phân tích chưa sẵn sàng.</p>'+btn('Thử lại','principiaSuiteThinkingProfile()','primary')+btn('Về trung tâm','principiaSuiteHome()'));
    return;
   }
-  const all=Array.isArray(state.attempts)?state.attempts:[],cutoff=analyticsRange==='7'?Date.now()-7*86400000:analyticsRange==='30'?Date.now()-30*86400000:0;
-  const selected=all.filter(item=>{const time=Date.parse(item.date);return Number.isFinite(time)&&time>=cutoff;});
-  const attempts=selected.map(item=>({total:Math.floor(Number(item.total)||0),score:Math.floor(Number(item.score)||0)}))
+  const attempts=(Array.isArray(state.attempts)?state.attempts:[]).filter(item=>Number.isFinite(Number(item.total))&&Number(item.total)>0&&Number.isFinite(Number(item.score)))
+   .map(item=>({total:Math.floor(Number(item.total)),score:Math.floor(Number(item.score))}))
    .filter(item=>item.total>0&&item.score>=0&&item.score<=item.total);
   const errors=(Array.isArray(state.errors)?state.errors:[]).map(item=>({path:String(item.path||''),body:String(item.body||'').slice(0,4096)}));
   let summary;
   try{
    summary=await engine.learningAnalytics({today:localDateKey(),attempts,focusSessions:[],errors,tasks:[]});
-   if(!summary||!Number.isInteger(summary.accuracy)||summary.accuracy<0||summary.accuracy>100
-    ||!Number.isInteger(summary.questions)||!Number.isInteger(summary.correct)||summary.correct>summary.questions
-    ||!Array.isArray(summary.weakTopics))throw new TypeError('Rust returned invalid learning analytics');
+   if(!summary||!Number.isInteger(summary.accuracy)||summary.accuracy<0||summary.accuracy>100||!Array.isArray(summary.weakTopics)||!Array.isArray(summary.recommendations))
+    throw new TypeError('Rust returned invalid learner profile metrics');
   }catch(error){
-   console.error('[PRINCIPIA] Rust analytics failed:',error);
-   open('Phân tích học tập','<p>Không thể xác minh phân tích bằng lõi Rust/WASM. Dữ liệu gốc vẫn được giữ nguyên.</p>'+btn('Thử lại','principiaSuiteAnalytics()','primary')+btn('Về trung tâm','principiaSuiteHome()'));
+   console.error('[PRINCIPIA] Rust learner profile failed:',error);
+   open('Hồ sơ tư duy & học tập','<p>Không thể xác minh hồ sơ bằng Rust/WASM. Dữ liệu gốc vẫn được giữ nguyên.</p>'+btn('Thử lại','principiaSuiteThinkingProfile()','primary')+btn('Về trung tâm','principiaSuiteHome()'));
    return;
   }
-  const recent=selected.slice(-10).reverse(),weakRows=summary.weakTopics;
-  const weakHtml=weakRows.length?weakRows.map(item=>'<div style="display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line,#444)"><span>'+esc(item.topic)+'</span><b>'+item.count+' lỗi</b></div>').join('')+'<p class="small muted">Thống kê chủ đề được tổng hợp bằng Rust từ sổ lỗi sai đã lưu.</p>'+btn('Ôn các câu sai','principiaSuiteReviewErrors()'):'<p class="muted">Chưa có lỗi sai được lưu để phân tích chủ đề. Hãy làm bài luyện tập để bắt đầu theo dõi.</p>';
-  const bars=recent.map(item=>{
-   const total=Math.max(0,Number(item.total)||0),score=Math.max(0,Number(item.score)||0),percent=Number.isFinite(Number(item.percent))?Math.max(0,Math.min(100,Number(item.percent))):(total?Math.round(score/total*100):0);
-   return '<div style="display:flex;gap:10px;align-items:center;margin:8px 0"><span style="width:90px;font-size:12px">'+new Date(item.date).toLocaleDateString('vi-VN')+'</span><div style="flex:1;height:10px;background:var(--line,#444);border-radius:20px"><div style="height:100%;width:'+percent+'%;background:var(--purple,#9b87ff);border-radius:20px"></div></div><b>'+percent+'%</b></div>';
-  }).join('')||'<p class="muted">Chưa có lượt thi nào được ghi nhận.</p>';
-  let done=0;try{done=typeof completed!=='undefined'?completed.length:0}catch(_){}
-  let earned=0;try{earned=typeof xp!=='undefined'?xp:0}catch(_){}
-  open('Phân tích học tập','<label>Khoảng thời gian <select onchange="principiaSuiteAnalyticsRange(this.value)" style="padding:9px;margin:6px"><option value="all" '+(analyticsRange==='all'?'selected':'')+'>Toàn bộ</option><option value="30" '+(analyticsRange==='30'?'selected':'')+'>30 ngày</option><option value="7" '+(analyticsRange==='7'?'selected':'')+'>7 ngày</option></select></label>'+btn('Xuất CSV thống kê','principiaSuiteExportAnalytics()')+'<p class="small muted">Đang xem '+summary.attempts+'/'+all.length+' lượt luyện.</p><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:9px">'+
-   panel('Độ chính xác','<h2>'+summary.accuracy+'%</h2>')+panel('Lượt luyện','<h2>'+summary.attempts+'</h2>')+panel('Câu đã làm','<h2>'+summary.questions+'</h2>')+panel('Bài học hoàn thành','<h2>'+done+'</h2>')+panel('XP hiện có','<h2>'+earned+'</h2>')+'</div>'+panel('10 lượt gần nhất',bars)+panel('Chủ đề cần củng cố',weakHtml)+panel('Lịch sử',selected.slice(-20).reverse().map(item=>'<div style="padding:8px 0;border-bottom:1px solid var(--line,#444)">'+new Date(item.date).toLocaleString('vi-VN')+' · <b>'+item.score+'/'+item.total+'</b> ('+(Number(item.percent)||0)+'%)</div>').join('')||'<p>Chưa có dữ liệu.</p>')+btn('Quay lại','principiaSuiteHome()'));
+  const modes={};(Array.isArray(state.attempts)?state.attempts:[]).forEach(item=>{const mode=String(item.mode||'Luyện tập');modes[mode]=(modes[mode]||0)+1});
+  const modeRows=Object.entries(modes).sort((left,right)=>right[1]-left[1]).map(([name,count])=>'<div style="display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--line,#444)"><span>'+esc(name)+'</span><b>'+count+' lượt</b></div>').join('')||'<p class="muted">Chưa có dữ liệu theo chế độ.</p>';
+  const weak=summary.weakTopics;
+  const advice=summary.attempts<3?'Hãy hoàn thành thêm vài lượt luyện để hồ sơ học tập có dữ liệu đáng tin cậy.':summary.recommendations[0]||'Tiếp tục ghi lại kết quả học tập để theo dõi tiến bộ.';
+  open('Hồ sơ tư duy & học tập','<p class="small muted">Bản mô tả dựa trên lịch sử luyện tập PRINCIPIA lưu trên thiết bị; đây không phải bài kiểm tra IQ hay đánh giá tâm lý.</p><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:9px">'+panel('Độ chính xác','<h2>'+summary.accuracy+'%</h2>')+panel('Lượt đã ghi','<h2>'+summary.attempts+'</h2>')+panel('Câu đã trả lời','<h2>'+summary.questions+'</h2>')+panel('Lỗi đã lưu','<h2>'+errors.length+'</h2>')+'</div>'+panel('Gợi ý học tập','<p>'+esc(advice)+'</p>')+panel('Hoạt động thường dùng',modeRows)+panel('Chủ đề nên xem lại',weak.length?weak.map(item=>'<div style="display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--line,#444)"><span>'+esc(item.topic)+'</span><b>'+item.count+' lỗi</b></div>').join(''):'<p class="muted">Chưa có lỗi được phân loại.</p>')+btn('Mở phân tích chi tiết','principiaSuiteAnalytics()')+btn('Về trung tâm','principiaSuiteHome()'));
  }
  function setAnalyticsRange(value){analyticsRange=['7','30','all'].includes(String(value))?String(value):'all';analytics()}
  function exportAnalytics(){const quote=v=>'\"'+String(v==null?'':v).replace(/\"/g,'\"\"')+'\"';const rows=(state.attempts||[]).map(x=>[x.date,x.mode||'',x.score,x.total,x.percent]);downloadText('\uFEFF'+[['Thời điểm','Chế độ','Số câu đúng','Tổng câu','Chính xác (%)'],...rows].map(r=>r.map(quote).join(',')).join('\r\n'),'principia-learning-analytics.csv','text/csv;charset=utf-8')}
