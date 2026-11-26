@@ -64,13 +64,14 @@ pub fn global_search_index_json(
     let mut flat = Vec::new();
     let mut path = Vec::new();
     for node in nodes {
-        visit_node(node, 0, default_kind, &needle, &mut path, &mut ids, &mut flat)?;
+        visit_node(node, None, 0, default_kind, &needle, &mut path, &mut ids, &mut flat)?;
     }
     Ok(json!({ "count": flat.len(), "items": flat }))
 }
 
 fn visit_node(
     node: &Value,
+    parent_id: Option<&str>,
     depth: usize,
     inherited_kind: &str,
     query: &str,
@@ -109,7 +110,7 @@ fn visit_node(
     if query.is_empty() || searchable.contains(query) {
         output.push(json!({
             "id": id, "name": name, "type": kind, "kind": kind,
-            "path": path_text, "depth": depth, "content": content,
+            "parentId": parent_id, "path": path_text, "depth": depth, "content": content,
             "icon": object.get("icon").and_then(Value::as_str).unwrap_or(""),
             "questions": questions
         }));
@@ -117,7 +118,7 @@ fn visit_node(
     if let Some(children) = object.get("children") {
         let children = children.as_array().ok_or(CatalogError::InvalidNode)?;
         for child in children {
-            visit_node(child, depth + 1, kind, query, path, ids, output)?;
+            visit_node(child, Some(id), depth + 1, kind, query, path, ids, output)?;
         }
     }
     path.pop();
@@ -172,6 +173,25 @@ mod catalog_tests {
         for _ in 0..34 { nested = format!(r#"{{"id":"n{}","name":"N","type":"tab","children":[{}]}}"#, nested.len(), nested); }
         assert_eq!(index_catalog_json(&format!("[{}]", nested), ""), Err(CatalogError::TooDeep));
     }
+    #[test]
+    fn global_search_matches_question_answers_and_inherited_kinds() {
+        let input = r#"[{"id":"root","name":"Cơ học","type":"tab","children":[{"id":"quiz-1","name":"Ôn tập","type":"quiz","questions":[{"q":"Động lượng là gì?","a":["kg m/s"],"explanation":"Bảo toàn động lượng"}]},{"id":"lesson-1","name":"Bài Newton","type":"lesson","content":"F = ma"}]}]"#;
+        let result = global_search_index_json(input, "bảo toàn", "lesson").unwrap();
+        assert_eq!(result["count"], 1);
+        assert_eq!(result["items"][0]["kind"], "quiz");
+        assert_eq!(result["items"][0]["parentId"], "root");
+        assert_eq!(result["items"][0]["path"], "Cơ học › Ôn tập");
+        let all = global_search_index_json(input, "", "lesson").unwrap();
+        assert_eq!(all["items"][1]["kind"], "lesson");
+    }
+
+    #[test]
+    fn global_search_validates_query_and_default_kind() {
+        let input = r#"[{"id":"a","name":"A","type":"lesson"}]"#;
+        assert_eq!(global_search_index_json(input, "x".repeat(513).as_str(), "lesson"), Err(CatalogError::InvalidNode));
+        assert_eq!(global_search_index_json(input, "", "unknown"), Err(CatalogError::InvalidNode));
+    }
+
     #[test]
     fn rejects_oversized_payload() {
         let input = format!("[{{\"id\":\"x\",\"name\":\"{}\",\"type\":\"tab\"}}]", "x".repeat(MAX_CATALOG_BYTES));
