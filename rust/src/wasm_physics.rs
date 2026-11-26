@@ -382,7 +382,9 @@ pub fn learning_recommend_json(context_json: &str) -> Result<String, JsValue> {
         "focusMinutes": plan.focus_minutes,
         "topic": plan.topic,
         "steps": plan.steps,
-        "nextAction": plan.next_action
+        "nextAction": plan.next_action,
+        "title": plan.title,
+        "description": plan.description
     })).map_err(|error| input_error(&error.to_string()))
 }
 
