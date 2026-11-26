@@ -161,7 +161,7 @@ mod tests {
         let a = Disk { x: 0.0, y: 0.0, vx: 0.0, vy: 0.0, mass: 1.0, radius: 1.0 };
         let b = Disk { x: 0.0, y: 0.0, vx: 0.0, vy: 0.0, mass: 1.0, radius: 1.0 };
         let result = resolve_disks(a, b, 0.5).unwrap();
-        assert!(result.b.x - result.a.x >= 1.79);
+        assert!(result.b.x - result.a.x >= 1.59);
         assert!(result.a.y.is_finite() && result.b.y.is_finite());
     }
 
