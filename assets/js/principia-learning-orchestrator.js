@@ -148,6 +148,10 @@
       else if (window.notify) window.notify('Trợ lý học tập đang khởi động. Hãy thử lại sau.');
       else alert('Trợ lý học tập chưa sẵn sàng. Hãy thử lại sau.');
       return { title: plan.title, topic: plan.topic, engine: plan.engine };
+    } catch (error) {
+      console.error('[PRINCIPIA] Could not start Rust learning session:', error);
+      if (window.notify) window.notify('Lõi học tập Rust/WASM chưa sẵn sàng. Vui lòng tải lại ứng dụng và thử lại.');
+      return null;
     } finally {
       beginInProgress = false;
     }
