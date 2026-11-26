@@ -92,24 +92,24 @@ pub fn summarize(input: &Value) -> Result<Value, AnalyticsError> {
         }
     }
 
-    let mut recommendations = Vec::new();
+    let mut recommendations: Vec<String> = Vec::new();
     if attempts.is_empty() {
-        recommendations.push("Làm một bài luyện ngắn để PRINCIPIA có dữ liệu đánh giá tiến bộ.");
+        recommendations.push("Làm một bài luyện ngắn để PRINCIPIA có dữ liệu đánh giá tiến bộ.".to_owned());
     } else if accuracy < 60 {
-        recommendations.push("Ôn lại kiến thức nền và giải chậm từng bước trước khi tăng độ khó.");
+        recommendations.push("Ôn lại kiến thức nền và giải chậm từng bước trước khi tăng độ khó.".to_owned());
     } else if accuracy < 85 {
-        recommendations.push("Tập trung sửa lỗi sai, sau đó làm lại câu tương tự để củng cố.");
+        recommendations.push("Tập trung sửa lỗi sai, sau đó làm lại câu tương tự để củng cố.".to_owned());
     } else {
-        recommendations.push("Độ chính xác đang tốt; thử một bộ câu hỏi khó hơn để kiểm tra chiều sâu hiểu bài.");
+        recommendations.push("Độ chính xác đang tốt; thử một bộ câu hỏi khó hơn để kiểm tra chiều sâu hiểu bài.".to_owned());
     }
     if let Some((name, _)) = weak.first() {
-        recommendations.push(Box::leak(format!("Ưu tiên ôn {name} vì đây là chủ đề xuất hiện nhiều nhất trong lỗi sai tuần này.").into_boxed_str()));
+        recommendations.push(format!("Ưu tiên ôn {name} vì đây là chủ đề xuất hiện nhiều nhất trong lỗi sai tuần này."));
     }
     if focus_seconds < 3_600 {
-        recommendations.push("Thử chia việc học thành các phiên tập trung 15–25 phút.");
+        recommendations.push("Thử chia việc học thành các phiên tập trung 15–25 phút.".to_owned());
     }
     if overdue > 0 {
-        recommendations.push(Box::leak(format!("Xử lý hoặc dời {overdue} nhiệm vụ học tập đã quá hạn.").into_boxed_str()));
+        recommendations.push(format!("Xử lý hoặc dời {overdue} nhiệm vụ học tập đã quá hạn."));
     }
 
     Ok(json!({
