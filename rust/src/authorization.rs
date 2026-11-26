@@ -47,7 +47,7 @@ mod tests {
         assert_eq!(validate_grant("user@example.com", "admin", "owner@example.com"), Err(GrantError::InvalidRole));
     }
     #[test] fn rejects_malformed_addresses() {
-        for email in ["", "x", "x@", "@example.com", "x..y@example.com", "x@example", "x@-bad.com"] {
+        for email in ["", "x", "x@", "@example.com", "x..y@example.com", "x@example", "x@-bad.com", "bad local@example.com", "bad\\\\local@example.com"] {
             assert_eq!(validate_grant(email, "editor", "owner@example.com"), Err(GrantError::InvalidEmail));
         }
     }
