@@ -27,12 +27,12 @@
   function mount(root, options = {}) {
     if (!root || typeof root.replaceChildren !== 'function') throw new TypeError('A DOM root element is required');
     let route = options.route || 'home';
-    let query = '';
+    let query = '';\n    let dialog = options.dialog || '';
     let destroyed = false;
     let renderSeq = 0;
     async function refresh() {
       const seq = ++renderSeq;
-      const markup = await render(route, root.ownerDocument?.defaultView?.innerWidth || globalThis.innerWidth || 1280, query);
+      const markup = await render(route, root.ownerDocument?.defaultView?.innerWidth || globalThis.innerWidth || 1280, query, dialog);
       if (destroyed || seq !== renderSeq) return;
       root.innerHTML = markup;
     }
@@ -45,7 +45,7 @@
       }
       const searchButton = event.target?.closest?.('[data-pr-search]');
       if (searchButton && root.contains(searchButton)) {
-        refresh().then(() => root.querySelector('[data-pr-search-form] input')?.focus()).catch(options.onError || (() => {}));
+        dialog = dialog === 'search' ? '' : 'search';\n        refresh().then(() => root.querySelector('[data-pr-search-form] input')?.focus()).catch(options.onError || (() => {}));
       }
     }
     function onSubmit(event) {
