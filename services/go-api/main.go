@@ -66,6 +66,7 @@ func (a api) routes() http.Handler {
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) {
 		writeJSON(w, http.StatusOK, map[string]string{"status": "ok", "service": "principia-go-api"})
 	})
+	mux.HandleFunc("GET /v1/capabilities", a.capabilities)
 	mux.HandleFunc("POST /v1/compute", a.compute)
 	mux.HandleFunc("POST /v1/ai/generate", a.generateAI)
 	return a.cors(mux)
