@@ -59,3 +59,26 @@ test('stored history text is escaped before it is inserted into HTML', () => {
   assert.equal(math.escapeHTML('<img src=x onerror=alert(1)>'), '&lt;img src=x onerror=alert(1)&gt;');
   assert.equal(math.escapeHTML('"quoted" & <tag>'), '&quot;quoted&quot; &amp; &lt;tag&gt;');
 });
+
+
+test('force puzzle delegates score calculation to Rust WASM', async () => {
+  const calls = [];
+  context.PrincipiaWasmPhysics = {
+    async compute(operation, params) {
+      calls.push({ operation, params });
+      return { error: 5, points: 60 };
+    }
+  };
+  const result = await math.scoreForNative(3, 4, { x: 0, y: 0 });
+  assert.deepEqual(JSON.parse(JSON.stringify(result)), { error: 5, points: 60 });
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].operation, 'forceBalanceScore');
+  assert.equal(calls[0].params.targetX, 0);
+});
+
+test('force puzzle scoring falls back safely when Rust WASM fails', async () => {
+  context.PrincipiaWasmPhysics = { async compute() { throw new Error('WASM unavailable'); } };
+  const result = await math.scoreForNative(3, 4, { x: 0, y: 0 });
+  assert.equal(result.error, 5);
+  assert.equal(result.points, 60);
+});
