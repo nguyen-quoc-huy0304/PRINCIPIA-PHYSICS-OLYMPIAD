@@ -103,3 +103,33 @@ test('2D perfectly inelastic collision conserves momentum while reducing kinetic
   assert.ok(Math.abs(a.vx - 0.5) < 1e-12);
   assert.ok(Math.abs(b.vx - 0.5) < 1e-12);
 });
+
+test('2D collision delegates to the loaded Rust WASM module', async () => {
+  const calls = [];
+  const rustModule = {
+    physics_disk_collision_json(bodyA, bodyB, restitution) {
+      calls.push({ bodyA: JSON.parse(bodyA), bodyB: JSON.parse(bodyB), restitution });
+      return JSON.stringify({
+        collided: true, impulse: 2,
+        a: { x: -0.4, y: 0, vx: -1, vy: 0 },
+        b: { x: 1.9, y: 0, vx: 1, vy: 0 }
+      });
+    }
+  };
+  const nativeContext = {
+    window: null, Number, Math, TypeError, RangeError,
+    PrincipiaWasmPhysics: { load: async () => rustModule }
+  };
+  nativeContext.window = nativeContext;
+  vm.runInNewContext(source, nativeContext, { filename: 'principia-collision-lab-native.js' });
+  await Promise.resolve();
+  const a = { x: 0, y: 0, vx: 1, vy: 0, mass: 1, radius: 1 };
+  const b = { x: 1.5, y: 0, vx: -1, vy: 0, mass: 1, radius: 1 };
+  const result = nativeContext.PrincipiaCollisionMath.resolveDiskCollision(a, b, 1);
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].bodyA.mass, 1);
+  assert.equal(calls[0].restitution, 1);
+  assert.equal(result.impulse, 2);
+  assert.equal(a.vx, -1);
+  assert.equal(b.vx, 1);
+});
