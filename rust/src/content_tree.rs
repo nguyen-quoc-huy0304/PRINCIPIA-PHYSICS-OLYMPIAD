@@ -21,7 +21,7 @@ pub fn execute(input: &str, operation: &str, target: &str) -> Result<Value, Tree
     match operation {
         "find" => Ok(find(nodes, target).cloned().unwrap_or(Value::Null)),
         "parent" => Ok(parent(nodes, target).cloned().unwrap_or(Value::Null)),
-        "siblings" => Ok(siblings(nodes, target).cloned().unwrap_or_else(|| json!([]))),
+        "siblings" => Ok(json!(siblings(nodes, target).unwrap_or_default())),
         "chain" => {
             let mut path = Vec::new();
             if !build_chain(nodes, target, &mut path) { return Err(TreeError::MissingTarget); }
@@ -88,18 +88,19 @@ fn find<'a>(nodes: &'a [Value], target: &str) -> Option<&'a Value> {
 
 fn parent<'a>(nodes: &'a [Value], target: &str) -> Option<&'a Value> {
     for node in nodes {
-        let children = node.get("children").and_then(Value::as_array)?;
-        if children.iter().any(|child| child.get("id").and_then(Value::as_str) == Some(target)) {
-            return Some(node);
+        if let Some(children) = node.get("children").and_then(Value::as_array) {
+            if children.iter().any(|child| child.get("id").and_then(Value::as_str) == Some(target)) {
+                return Some(node);
+            }
+            if let Some(found) = parent(children, target) { return Some(found); }
         }
-        if let Some(found) = parent(children, target) { return Some(found); }
     }
     None
 }
 
-fn siblings<'a>(nodes: &'a [Value], target: &str) -> Option<&'a Vec<Value>> {
+fn siblings(nodes: &[Value], target: &str) -> Option<Vec<Value>> {
     if nodes.iter().any(|node| node.get("id").and_then(Value::as_str) == Some(target)) {
-        return Some(unsafe { &*(nodes as *const [Value] as *const Vec<Value>) });
+        return Some(nodes.to_vec());
     }
     for node in nodes {
         if let Some(children) = node.get("children").and_then(Value::as_array) {
