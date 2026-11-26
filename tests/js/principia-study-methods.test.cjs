@@ -119,8 +119,9 @@ test('invisible learning orchestrator adapts to learner results without exposing
   assert.match(source, /principia:quiz-completed/);
   assert.match(source, /principia:next-step-updated/);
   assert.match(source, /window\.PRINCIPIA_STUDY_METHOD_CATALOG/);
-  assert.match(source, /function inferGoal/);
-  assert.match(source, /function choose/);
+  assert.match(source, /async function getNextWithRust/);
+  assert.match(source, /PrincipiaWasmPhysics\.orchestrateLearning/);
+  assert.doesNotMatch(source, /function inferGoal|function choose/);
   assert.match(source, /function promptFor/);
   assert.match(source, /tuyệt đối không nêu tên phương pháp/);
   assert.match(source, /function showNextStep/);
