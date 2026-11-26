@@ -511,6 +511,13 @@ pub fn progression_summary_json(input_json: &str) -> Result<String, JsValue> {
 }
 
 
+/// Return the canonical XP reward for a validated learning activity.
+#[wasm_bindgen]
+pub fn experience_reward(activity: &str) -> Result<u32, JsValue> {
+    crate::experience_rewards::experience_reward(activity)
+        .map_err(|error| input_error(&format!("Experience reward rejected: {error:?}")))
+}
+
 /// Calculate course completion metrics with Rust-owned rounding and bounds.
 #[wasm_bindgen]
 pub fn course_completion_json(completed: u32, total: u32) -> Result<String, JsValue> {
