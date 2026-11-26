@@ -75,3 +75,20 @@ test('Gameverse daily quest completion and material selection are Rust-owned',()
  assert.match(wasm,/gameverse_daily_quest_json/);
  assert.match(bridge,/gameverseDailyQuest:\(id,done,materialRoll\)=>compute\('gameverseDailyQuest'/);
 });
+
+test('Gameverse treasure and random events are selected and validated by Rust',()=>{
+ assert.match(game,/engine\.gameverseTreasureQuestion\(random\[0\]\/4294967296\)/);
+ assert.match(game,/engine\.gameverseTreasureAnswer\(question\.id,answer,state\.events\.treasure===today\)/);
+ assert.match(game,/engine\.gameverseRandomEvent\(random\[0\]\/4294967296,false\)/);
+ assert.doesNotMatch(game,/const riddles=\[/);
+ assert.doesNotMatch(game,/const events=\[\['Mưa sao băng'/);
+ assert.match(rust,/pub fn treasure_question\(/);
+ assert.match(rust,/pub fn resolve_treasure\(/);
+ assert.match(rust,/pub fn random_event\(/);
+ assert.match(wasm,/gameverse_treasure_question_json/);
+ assert.match(wasm,/gameverse_treasure_answer_json/);
+ assert.match(wasm,/gameverse_random_event_json/);
+ assert.match(bridge,/gameverseTreasureQuestion:/);
+ assert.match(bridge,/gameverseTreasureAnswer:/);
+ assert.match(bridge,/gameverseRandomEvent:/);
+});
