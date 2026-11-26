@@ -66,3 +66,30 @@ test('native forward kinematics falls back to the analytical solution if WASM is
   assert.ok(Math.abs(endpoint.x - 100) < 1e-10);
   assert.ok(Math.abs(endpoint.y - 100) < 1e-10);
 });
+
+
+test('delegates full assembly evaluation to Rust WASM', async () => {
+  const calls = [];
+  context.PrincipiaWasmPhysics = { async compute(operation, params) {
+    calls.push({ operation, params });
+    return { correct: 5, total: 5, ready: true, x: 250, y: 80, error: 0, earned: 100 };
+  }};
+  const result = await math.evaluateAssemblyNative(
+    { base: 'fixed', joint: 'revolute', link1: '160', link2: '120', tool: 'parallel' },
+    35, -55, math.TARGET
+  );
+  assert.equal(result.earned, 100);
+  assert.equal(calls[0].operation, 'robotAssemblyCheck');
+  assert.equal(calls[0].params.link1Mm, 160);
+});
+
+test('assembly evaluation falls back to deterministic local rules without WASM', async () => {
+  context.PrincipiaWasmPhysics = { async compute() { throw new Error('WASM unavailable'); } };
+  const result = await math.evaluateAssemblyNative(
+    { base: 'fixed', joint: 'revolute', link1: '160', link2: '120', tool: 'parallel' },
+    35, -55, math.TARGET
+  );
+  assert.equal(result.ready, true);
+  assert.equal(result.earned, 100);
+  assert.ok(result.error < 1e-9);
+});
