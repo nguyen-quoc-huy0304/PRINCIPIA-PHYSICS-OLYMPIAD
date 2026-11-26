@@ -26,14 +26,19 @@
    throw new Error('Rust weekly season engine is unavailable');
   return root.PrincipiaWasmPhysics;
  }
- async function missions(metrics={},now=new Date()){
-  const input={week:weekKey(now),sessions:countMetric(metrics.sessions),questions:countMetric(metrics.questions),notes:countMetric(metrics.notes)};
-  const result=await engine().seasonMissions(input);
+ async function missions(records={},now=new Date()){
+  const week=weekKey(now),start=new Date(week+'T00:00:00');
+  start.setDate(start.getDate()+7);
+  const attempts=(Array.isArray(records.attempts)?records.attempts:[]).slice(0,10000)
+   .map(item=>({date:String(item?.date||''),total:countMetric(item?.total)}));
+  const notes=(Array.isArray(records.notes)?records.notes:[]).slice(0,10000)
+   .map(item=>({date:String(item?.date||'')}));
+  const result=await engine().seasonMissions({week,weekEnd:dateKey(start),attempts,notes});
   if(!Array.isArray(result)||result.length!==3||result.some(item=>
    typeof item.id!=='string'||typeof item.name!=='string'||typeof item.description!=='string'
    ||!Number.isInteger(item.value)||!Number.isInteger(item.target)||!Number.isInteger(item.xp)
    ||typeof item.complete!=='boolean'||!Number.isInteger(item.progress)||item.progress<0||item.progress>100
-   ||item.week!==input.week))throw new TypeError('Rust returned invalid weekly season missions');
+   ||item.week!==week))throw new TypeError('Rust returned invalid weekly season missions');
   return result;
  }
  async function claim(id,value,alreadyClaimed){
