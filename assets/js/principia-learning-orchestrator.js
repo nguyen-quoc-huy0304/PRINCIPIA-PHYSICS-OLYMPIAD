@@ -76,6 +76,7 @@
       errorCount: Math.min(100, mistakes.length),
       updatedAt: Date.now(), mode: clean(detail.mode || 'quiz', 40)
     };
+    save();
     const planPromise = getNextWithRust({ topic, percent, errorCount: mistakes.length });
     planPromise.then(plan => {
     if (plan.methodId != null) {
