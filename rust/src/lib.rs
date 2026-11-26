@@ -32,6 +32,7 @@ pub mod learning;
 pub mod learning_science;
 pub mod study_engine;
 pub mod progression;
+pub mod rank_arena;
 pub mod store;
 pub mod ui_state;
 pub mod ui_renderer;
