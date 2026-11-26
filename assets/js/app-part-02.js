@@ -702,8 +702,8 @@ function requireAdmin(){if(!isPrincipiaOwner()){notify('Chỉ tài khoản admin
 function canManageContent(){return isPrincipiaOwner();}
 function canManageMedia(){return isPrincipiaOwner();}
 function requirePermission(kind='content'){return requireAdmin();}
-function setGrantedRole(email,role){if(!isPrincipiaOwner()){notify('Chỉ tài khoản chủ sở hữu mới được cấp quyền.');return;}email=(email||'').trim().toLowerCase();if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)||email===PRINCIPIA_OWNER_EMAIL){notify('Email không hợp lệ hoặc là email chủ sở hữu.');return;}const map=getRoleMap();if(role==='viewer')delete map[email];else map[email]=role;localStorage.setItem('principia_role_map',JSON.stringify(map));render();notify('Đã cập nhật quyền cho '+email);}
-function revokeGrantedRole(email){if(!isPrincipiaOwner())return;const map=getRoleMap();delete map[email.toLowerCase()];localStorage.setItem('principia_role_map',JSON.stringify(map));render();notify('Đã thu hồi quyền.');}
+async function setGrantedRole(email,role){if(!isPrincipiaOwner()){notify('Chỉ tài khoản chủ sở hữu mới được cấp quyền.');return;}try{const grant=await PrincipiaWasmPhysics.authorizeGrant(email,role,PRINCIPIA_OWNER_EMAIL);const map=getRoleMap();if(grant.remove)delete map[grant.email];else map[grant.email]=grant.role;localStorage.setItem('principia_role_map',JSON.stringify(map));render();notify('Đã cập nhật quyền cho '+grant.email);}catch(error){notify(error.message||'Không thể cập nhật quyền.');}}
+async function revokeGrantedRole(email){if(!isPrincipiaOwner())return;try{const grant=await PrincipiaWasmPhysics.authorizeGrant(email,'viewer',PRINCIPIA_OWNER_EMAIL);const map=getRoleMap();delete map[grant.email];localStorage.setItem('principia_role_map',JSON.stringify(map));render();notify('Đã thu hồi quyền.');}catch(error){notify(error.message||'Không thể thu hồi quyền.');}}
 let accountMode='login';
 function accountPage(){
  const acc=getPrincipiaAccount();
