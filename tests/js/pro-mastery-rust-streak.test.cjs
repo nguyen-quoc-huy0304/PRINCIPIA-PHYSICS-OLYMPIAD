@@ -16,7 +16,7 @@ test('Pro Mastery delegates study streak calculation to Rust activity calendar',
 });
 
 test('Pro Mastery validates Rust streak results and deduplicates concurrent requests', () => {
-  assert.match(source, /if\(streakRequest\?\.key === key\) return streakRequest\.promise/);
+  assert.match(source, /if \(streakRequest\?\.key === key\) return streakRequest\.promise/);
   assert.match(source, /result\.longest < result\.current/);
   assert.match(source, /Rust Pro Mastery streak calculation failed/);
   assert.match(source, /streakRequest = \{ key, promise \}/);
