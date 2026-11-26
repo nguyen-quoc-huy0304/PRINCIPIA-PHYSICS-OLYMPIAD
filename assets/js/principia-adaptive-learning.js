@@ -95,7 +95,7 @@
     const current = due[0];
     const list = due.slice(0, 5).map(x => '<li><b>' + escapeHtml(x.source) + '</b> · ' + escapeHtml(x.question.slice(0, 180)) + ' <span>· ' + x.misses + ' lần sai</span></li>').join('');
     const active = current ? '<div class="ppa-task"><b>Câu cần tự giải lại</b><p>' + escapeHtml(current.question) + '</p><label>Viết lại cách giải độc lập<textarea id="ppaRetry" maxlength="3000" placeholder="Ghi dữ kiện, nguyên lý, từng bước và kết quả kiểm tra..."></textarea></label>' + (current.lastAssessmentFeedback ? '<p class="ppa-feedback"><b>Phản hồi lần trước (' + Number(current.lastAssessmentScore || 0) + '/100):</b> ' + escapeHtml(current.lastAssessmentFeedback) + '</p>' : '') + '<p class="ppa-muted">Khi bấm đánh giá, chỉ đề bài, đáp án tham chiếu và lời giải bạn viết được gửi tới Gemini. Free Tier có thể dùng nội dung này để cải thiện sản phẩm; không nhập thông tin cá nhân.</p><div class="ppa-actions"><button type="button" data-ppa-submit>Đánh giá lời giải bằng Gemini</button><button type="button" data-ppa-hint>Nhận gợi ý từng bước</button></div></div>' : '<p class="ppa-muted">Không có lỗi đến hạn. Tiếp tục làm bài mới để hệ thống cập nhật lộ trình.</p>';
-    return '<section id="principiaAdaptiveCard" class="ppm-card ppa-card"><h3>PRINCIPIA đang điều chỉnh cách học</h3><p class="ppa-muted"><b>' + escapeHtml(next.title) + '</b><br>' + escapeHtml(next.reason) + '</p><div class="ppa-actions"><button type="button" data-ppa-guided>Hướng dẫn tôi bước tiếp theo</button></div><div class="ppa-metrics"><span><b>' + due.length + '</b> lỗi đến hạn</span><span><b>' + state.errors.filter(x => x.status !== 'mastered').length + '</b> lỗi cần ôn</span><span><b>' + state.completed.length + '</b> lần tự giải đã ghi</span></div>' + active + (list ? '<details><summary>Các lỗi đang đến hạn</summary><ol>' + list + '</ol></details>' : '') + '<p class="ppa-muted">Lịch gợi ý tăng dần 1 → 3 → 7 → 14 → 30 ngày khi tự giải thành công. Gemini đưa ra phản hồi học thuật tham khảo; người học vẫn cần đối chiếu với định luật, đơn vị và lời giải chuẩn.</p></section>';
+    return '<section id="principiaAdaptiveCard" class="ppm-card ppa-card"><h3>PRINCIPIA đang điều chỉnh cách học</h3><p class="ppa-muted"><b>' + escapeHtml(next.title) + '</b><br>' + escapeHtml(next.reason) + '</p><div class="ppa-actions"><button type="button" data-ppa-guided>Hướng dẫn tôi bước tiếp theo</button></div><div class="ppa-metrics"><span><b>' + due.length + '</b> lỗi đến hạn</span><span><b>' + state.errors.filter(x => x.status !== 'mastered').length + '</b> lỗi cần ôn</span><span><b>' + state.completed.length + '</b> lần tự giải đã ghi</span></div>' + active + (list ? '<details><summary>Các lỗi đang đến hạn</summary><ol>' + list + '</ol></details>' : '') + '<p class="ppa-muted">Lịch ôn được tính bởi bộ lập lịch ghi nhớ Rust/WASM dựa trên kết quả tự giải. Gemini đưa ra phản hồi học thuật tham khảo; người học vẫn cần đối chiếu với định luật, đơn vị và lời giải chuẩn.</p></section>';
   }
   function style() {
     if (document.getElementById('principiaAdaptiveStyles')) return;
@@ -155,11 +155,23 @@
         }));
         return;
       }
-      const days = [1, 3, 7, 14, 30];
-      const index = Math.min(days.length - 1, Math.max(0, Number(item.intervalIndex) || 0));
-      const next = days[index];
-      item.intervalIndex = Math.min(days.length - 1, index + 1);
-      item.intervalDays = next;
+      const learningCore = window.PrincipiaWasmPhysics;
+      if (!learningCore || typeof learningCore.scheduleReview !== 'function') {
+        throw new Error('Rust/WASM spaced-repetition engine is unavailable.');
+      }
+      const schedule = await learningCore.scheduleReview(
+        5,
+        Math.max(0, Math.floor(Number(item.intervalDays) || 0)),
+        2.5
+      );
+      if (!schedule || !Number.isInteger(schedule.dueAfterDays) ||
+          schedule.dueAfterDays < 1 || schedule.dueAfterDays > 36500 ||
+          !Number.isFinite(schedule.easeFactor)) {
+        throw new Error('Rust/WASM returned an invalid adaptive review schedule.');
+      }
+      const next = schedule.dueAfterDays;
+      item.intervalDays = schedule.intervalDays;
+      item.easeFactor = schedule.easeFactor;
       item.dueAt = Date.now() + next * DAY;
       item.status = 'review';
       item.lastIndependentRetry = Date.now();
