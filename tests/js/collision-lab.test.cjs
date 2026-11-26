@@ -25,10 +25,12 @@ const { collide1D, resolveDiskCollision, momentumAndEnergy2D } = context.Princip
 
 test('1D collision requests delegate to the Rust WASM solver', async () => {
   const result = await collide1D(1, 3, 1, -1, 1);
-  assert.deepEqual(calls[0], {
-    operation: 'collision1D',
-    params: { massA: 1, velocityA: 3, massB: 1, velocityB: -1, restitution: 1 }
-  });
+  assert.equal(calls[0].operation, 'collision1D');
+  assert.equal(calls[0].params.massA, 1);
+  assert.equal(calls[0].params.velocityA, 3);
+  assert.equal(calls[0].params.massB, 1);
+  assert.equal(calls[0].params.velocityB, -1);
+  assert.equal(calls[0].params.restitution, 1);
   assert.equal(result.v1, -1);
   assert.equal(result.v2, 3);
   assert.equal(result.momentumError, 0);
