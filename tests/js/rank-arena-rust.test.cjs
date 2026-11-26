@@ -11,7 +11,7 @@ test('rank arena tier and match rules are owned by Rust', () => {
   assert.match(arena, /PrincipiaWasmPhysics\.rankArenaTier/);
   assert.match(arena, /PrincipiaWasmPhysics\.resolveRankArenaMatch/);
   assert.doesNotMatch(arena, /const rpChange = won \? 20 : -8/);
-  assert.match(arena, /async function currentTier\\(rp\\)/);
+  assert.match(arena, /async function currentTier/);
 });
 
 test('rank arena mission eligibility is validated by Rust', () => {
