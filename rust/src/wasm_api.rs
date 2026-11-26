@@ -41,3 +41,19 @@ pub fn game_trajectory_json(speed_mps: f64, angle_degrees: f64, gravity_mps2: f6
         .map_err(|_| JsValue::from_str("Thông số quỹ đạo không hợp lệ"))?;
     serde_json::to_string(&points).map_err(|error| JsValue::from_str(&error.to_string()))
 }
+
+/// Builds a validated responsive UI state snapshot for browser/native renderers.
+#[wasm_bindgen]
+pub fn ui_snapshot_json(route: &str, width: u32, search_query: &str, dialog: &str) -> Result<String, JsValue> {
+    let mut state = crate::ui_state::UiState::default();
+    state.navigate(route).map_err(|_| JsValue::from_str("Invalid UI route"))?;
+    state.set_width(width).map_err(|_| JsValue::from_str("Invalid viewport width"))?;
+    if !search_query.is_empty() {
+        state.open_search();
+        state.set_search(search_query);
+    }
+    if !dialog.is_empty() {
+        state.open_dialog(dialog).map_err(|_| JsValue::from_str("Invalid dialog"))?;
+    }
+    Ok(state.snapshot_json())
+}
