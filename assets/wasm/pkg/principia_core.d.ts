@@ -15,6 +15,8 @@ export function learning_review_schedule_json(quality: number, previous_interval
 
 export function physics_collision_1d_json(mass_a: number, velocity_a: number, mass_b: number, velocity_b: number, restitution: number): string;
 
+export function physics_disk_collision_json(body_a_json: string, body_b_json: string, restitution: number): string;
+
 export function physics_displacement(initial_mps: number, acceleration_mps2: number, seconds: number): number;
 
 export function physics_kinetic_energy(mass_kg: number, speed_mps: number): number;
@@ -56,6 +58,7 @@ export interface InitOutput {
     readonly learning_recommend_json: (a: number, b: number, c: number) => void;
     readonly learning_review_schedule_json: (a: number, b: number, c: number, d: number) => void;
     readonly physics_collision_1d_json: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
+    readonly physics_disk_collision_json: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
     readonly physics_displacement: (a: number, b: number, c: number, d: number) => void;
     readonly physics_kinetic_energy: (a: number, b: number, c: number) => void;
     readonly physics_linear_regression_json: (a: number, b: number, c: number) => void;
