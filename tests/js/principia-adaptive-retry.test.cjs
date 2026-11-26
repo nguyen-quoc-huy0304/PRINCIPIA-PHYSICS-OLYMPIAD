@@ -29,8 +29,8 @@ test('spaced-repetition interval advances only after a passing assessment', () =
 
 test('learning orchestrator adapts method selection to energy, confidence and retry outcomes', () => {
   const orchestrator = read('assets/js/principia-learning-orchestrator.js');
-  assert.match(orchestrator, /energy: \\[1, 2, 3\\]/);
-  assert.match(orchestrator, /confidence: Number\\.isFinite/);
+  assert.ok(orchestrator.includes('energy: [1, 2, 3]'));
+  assert.ok(orchestrator.includes('confidence: Number.isFinite'));
   assert.match(orchestrator, /function recordRetryAssessment/);
   assert.match(orchestrator, /principia:adaptive-retry-assessed/);
 });
