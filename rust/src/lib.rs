@@ -31,6 +31,7 @@ mod wasm_api;
 mod wasm_physics;
 pub mod virtual_lab;
 pub mod progress;
+pub mod season_missions;
 pub mod experience_rewards;
 pub mod learning;
 pub mod learning_analytics;
