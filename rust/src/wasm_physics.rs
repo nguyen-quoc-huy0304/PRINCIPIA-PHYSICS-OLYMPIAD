@@ -53,6 +53,21 @@ pub fn physics_linear_regression_json(points_json: &str) -> Result<String, JsVal
 }
 
 #[wasm_bindgen]
+pub fn physics_robot_forward_json(
+    l1: f64,
+    l2: f64,
+    shoulder_rad: f64,
+    elbow_rad: f64,
+) -> Result<String, JsValue> {
+    let endpoint = crate::robotics::forward_kinematics(l1, l2, shoulder_rad, elbow_rad)
+        .map_err(|error| JsValue::from_str(&format!("Robot forward kinematics failed: {error:?}")))?;
+    serde_json::to_string(&serde_json::json!({
+        "x": endpoint[0],
+        "y": endpoint[1]
+    })).map_err(|error| JsValue::from_str(&error.to_string()))
+}
+
+#[wasm_bindgen]
 pub fn physics_robot_arm_json(
     l1_m: f64,
     l2_m: f64,
