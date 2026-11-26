@@ -245,7 +245,8 @@ pub fn learning_recommend_json(context_json: &str) -> Result<String, JsValue> {
 }
 
 #[wasm_bindgen]
-pub fn learning_review_schedule_json(quality: u8, previous_interval_days: u32, ease_factor: f64) -> Result<String, JsValue> {
+pub fn learning_review_schedule_json(quality: u32, previous_interval_days: u32, ease_factor: f64) -> Result<String, JsValue> {
+    let quality = u8::try_from(quality).map_err(|_| input_error("Review quality must be an integer from 0 to 5"))?;
     let schedule = crate::learning::schedule_review(quality, previous_interval_days, ease_factor)
         .map_err(|error| input_error(&format!("Review schedule failed: {error:?}")))?;
     serde_json::to_string(&serde_json::json!({
