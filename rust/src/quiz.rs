@@ -31,7 +31,7 @@ pub struct QuizResult {
 /// Grades an attempt. Correct answers must come from trusted server-side content,
 /// never from values submitted by an untrusted browser client.
 pub fn grade_attempt(
-    questions: &[(String, usize, usize, f64)],
+    questions: &[(String, usize, usize, usize, f64)],
     pass_percent: f64,
 ) -> Result<QuizResult, QuizError> {
     if questions.is_empty() { return Err(QuizError::EmptyAttempt); }
@@ -46,8 +46,9 @@ pub fn grade_attempt(
     let mut max_score = 0.0;
     let mut correct_count = 0;
 
-    for (id, selected, correct, points) in questions {
+    for (id, selected, correct, option_count, points) in questions {
         if id.is_empty() || id.len() > 128 || !seen.insert(id) ||
+            !(2..=16).contains(option_count) || selected >= option_count || correct >= option_count ||
             !points.is_finite() || *points <= 0.0 || *points > 1_000_000.0 {
             return Err(QuizError::InvalidQuestion);
         }
@@ -81,9 +82,9 @@ mod tests {
     #[test]
     fn grades_weighted_questions_and_passes_threshold() {
         let attempt = vec![
-            ("q1".into(), 1, 1, 2.0),
-            ("q2".into(), 0, 2, 1.0),
-            ("q3".into(), 3, 3, 3.0),
+            ("q1".into(), 1, 1, 4, 2.0),
+            ("q2".into(), 0, 2, 4, 1.0),
+            ("q3".into(), 3, 3, 4, 3.0),
         ];
         let result = grade_attempt(&attempt, 80.0).unwrap();
         assert_eq!(result.score, 5.0);
@@ -95,19 +96,25 @@ mod tests {
 
     #[test]
     fn rejects_duplicate_question_ids() {
-        let attempt = vec![("q1".into(), 0, 0, 1.0), ("q1".into(), 1, 1, 1.0)];
+        let attempt = vec![("q1".into(), 0, 0, 4, 1.0), ("q1".into(), 1, 1, 4, 1.0)];
         assert_eq!(grade_attempt(&attempt, 50.0), Err(QuizError::InvalidQuestion));
     }
 
     #[test]
     fn rejects_empty_attempt_and_bad_threshold() {
         assert_eq!(grade_attempt(&[], 50.0), Err(QuizError::EmptyAttempt));
-        assert_eq!(grade_attempt(&[("q".into(), 0, 0, 1.0)], 101.0), Err(QuizError::InvalidPassThreshold));
+        assert_eq!(grade_attempt(&[("q".into(), 0, 0, 4, 1.0)], 101.0), Err(QuizError::InvalidPassThreshold));
     }
 
     #[test]
     fn rejects_non_finite_and_non_positive_points() {
-        assert_eq!(grade_attempt(&[("q".into(), 0, 0, f64::NAN)], 50.0), Err(QuizError::InvalidQuestion));
-        assert_eq!(grade_attempt(&[("q".into(), 0, 0, 0.0)], 50.0), Err(QuizError::InvalidQuestion));
+        assert_eq!(grade_attempt(&[("q".into(), 0, 0, 4, f64::NAN)], 50.0), Err(QuizError::InvalidQuestion));
+        assert_eq!(grade_attempt(&[("q".into(), 0, 0, 4, 0.0)], 50.0), Err(QuizError::InvalidQuestion));
     }
 }
+
+    #[test]
+    fn rejects_answer_indices_outside_option_range() {
+        let attempt = vec![("q1".into(), 4, 1, 4, 1.0)];
+        assert_eq!(grade_attempt(&attempt, 50.0), Err(QuizError::InvalidQuestion));
+    }
