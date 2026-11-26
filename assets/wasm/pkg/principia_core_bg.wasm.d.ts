@@ -9,6 +9,7 @@ export const content_tree_query_json: (a: number, b: number, c: number, d: numbe
 export const force_balance_score_json: (a: number, b: number, c: number, d: number, e: number) => void;
 export const force_balance_target_json: (a: number, b: number, c: number, d: number, e: number) => void;
 export const game_trajectory_json: (a: number, b: number, c: number, d: number, e: number) => void;
+export const gameverse_craft_json: (a: number, b: number, c: number) => void;
 export const gameverse_quiz_reward_json: (a: number, b: number, c: number) => void;
 export const generate_game_challenge_json: (a: number, b: bigint) => void;
 export const global_search_index_json: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
