@@ -57,3 +57,16 @@ test('Rust UI bridge is loaded without replacing the legacy app root', () => {
   assert.doesNotMatch(js, /document\.getElementById\(['"]app['"]\)/);
   assert.match(css, /@media\(max-width:700px\)/);
 });
+
+
+test('Rust UI bridge rejects malformed parameters before loading WASM', async () => {
+  const vm = require('node:vm');
+  const source = read('assets/js/principia-rust-ui.js');
+  const context = { window: {}, TypeError, RangeError, Object, String, Number, innerWidth: 390 };
+  vm.runInNewContext(source, context);
+  const bridge = context.window.PrincipiaRustUI;
+  await assert.rejects(bridge.render('x'.repeat(33)), TypeError);
+  await assert.rejects(bridge.render('home', 0), RangeError);
+  await assert.rejects(bridge.render('home', 390, 'x'.repeat(4097)), TypeError);
+  assert.throws(() => bridge.mount(null), TypeError);
+});
