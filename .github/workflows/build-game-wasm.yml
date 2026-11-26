@@ -40,3 +40,5 @@ jobs:
           file_pattern: assets/wasm/pkg/*
           add_options: "-f"
           disable_globbing: true
+          before_push_hook: |
+            git pull --rebase origin main
