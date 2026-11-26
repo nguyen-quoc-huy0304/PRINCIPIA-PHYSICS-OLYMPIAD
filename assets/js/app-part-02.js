@@ -947,9 +947,9 @@ async function dailyReward(){
  if(dailyRewardPromise)return dailyRewardPromise;
  dailyRewardPromise=(async()=>{
   const engine=window.PrincipiaWasmPhysics;
-  if(!engine||typeof engine.recordProgress!=='function')throw new Error('Rust progress engine is unavailable');
+  if(!engine||typeof engine.recordStudyDay!=='function')throw new Error('Rust progress engine is unavailable');
   const current={experience:Math.max(0,Math.floor(Number(xp)||0)),completedLessons:completed.length,studyStreakDays:Math.max(0,Math.floor(Number(streak)||0)),lastActivityDay:lastDay||null};
-  const result=await engine.recordProgress(current,'quiz',today);
+  const result=await engine.recordStudyDay(current,today);
   if(!Number.isInteger(result?.studyStreakDays)||result.studyStreakDays<1||result.studyStreakDays>1000000||result.lastActivityDay!==today)throw new TypeError('Rust returned an invalid daily streak record');
   streak=result.studyStreakDays;
   lastDay=result.lastActivityDay;
