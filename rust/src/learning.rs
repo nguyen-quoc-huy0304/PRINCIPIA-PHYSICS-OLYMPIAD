@@ -27,6 +27,53 @@ pub struct LearningPlan {
     pub description: &'static str,
 }
 
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct MethodSelection {
+    pub method_id: String,
+    pub steps: Vec<String>,
+}
+
+pub fn select_method(topic: &str, goal: LearningGoal, catalog: &[serde_json::Value], recent_ids: &[String], sessions: u64) -> Option<MethodSelection> {
+    let terms: &[&str] = match goal {
+        LearningGoal::Understand => &["hiểu khái niệm", "giải thích bằng hình", "mô hình hóa", "ví dụ cụ thể", "hiểu sâu", "feynman", "concept"],
+        LearningGoal::Remember => &["ghi nhớ", "truy xuất", "ôn tập", "flashcard", "nhắc lại", "spaced", "retrieval"],
+        LearningGoal::Solve => &["giải bài", "phân tích", "chiến lược", "luyện tập", "problem solving"],
+        LearningGoal::Olympiad => &["olympiad", "bài tổng hợp", "bảo toàn", "đối xứng", "bất biến", "chứng minh", "trường hợp biên", "ước lượng"],
+        LearningGoal::Teach => &["giảng", "dạy", "giải thích", "phản biện", "teach", "peer instruction"],
+        LearningGoal::Recover => &["lỗi", "sửa lỗi", "thành thạo", "tự kiểm tra", "error", "deliberate practice"],
+    };
+    let topic_words: Vec<String> = topic.to_lowercase().split(|ch: char| !ch.is_alphanumeric())
+        .filter(|word| word.chars().count() > 2).map(str::to_owned).collect();
+    let recent: std::collections::HashSet<&str> = recent_ids.iter().map(String::as_str).collect();
+    let mut scored: Vec<(i32, String, Vec<String>)> = catalog.iter().filter_map(|item| {
+        let title = item.get("title")?.as_str()?.chars().take(180).collect::<String>();
+        let desc = item.get("desc").and_then(serde_json::Value::as_str).unwrap_or("");
+        let category = item.get("category").and_then(serde_json::Value::as_str).unwrap_or("");
+        let haystack = format!("{title} {desc} {category}").to_lowercase();
+        let topic_hits = topic_words.iter().filter(|word| haystack.contains(word.as_str())).count() as i32;
+        let goal_hits = terms.iter().filter(|term| haystack.contains(**term)).count() as i32;
+        let id = item.get("id").map(|value| match value {
+            serde_json::Value::String(text) => text.clone(),
+            other => other.to_string(),
+        })?;
+        let steps = item.get("steps").and_then(serde_json::Value::as_array)
+            .map(|values| values.iter().filter_map(serde_json::Value::as_str)
+                .map(|step| step.chars().take(500).collect()).take(5).collect())
+            .unwrap_or_default();
+        let is_core = item.get("id").and_then(serde_json::Value::as_u64).is_some_and(|id| (1..=231).contains(&id));
+        let score = topic_hits * 5 + goal_hits * 3 + if steps.is_empty() { 0 } else { 2 }
+            + if is_core { 1 } else { 0 } - if recent.contains(id.as_str()) { 10 } else { 0 };
+        Some((score, id, steps))
+    }).collect();
+    if scored.is_empty() { return None; }
+    scored.sort_by(|a, b| b.0.cmp(&a.0).then_with(|| a.1.cmp(&b.1)));
+    let fresh: Vec<_> = scored.iter().filter(|entry| !recent.contains(entry.1.as_str())).cloned().collect();
+    let pool = if fresh.is_empty() { &scored } else { &fresh };
+    let chosen = &pool[(sessions as usize) % pool.len().min(8)];
+    Some(MethodSelection { method_id: chosen.1.clone(), steps: chosen.2.clone() })
+}
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct ReviewSchedule {
     pub interval_days: u32,
