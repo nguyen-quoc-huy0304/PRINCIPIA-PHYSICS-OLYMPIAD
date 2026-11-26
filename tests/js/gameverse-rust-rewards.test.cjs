@@ -92,3 +92,11 @@ test('Gameverse treasure and random events are selected and validated by Rust',(
  assert.match(bridge,/gameverseTreasureAnswer:/);
  assert.match(bridge,/gameverseRandomEvent:/);
 });
+
+test('Gameverse card pack purchase and random card selection are Rust-owned',()=>{
+ assert.match(game,/engine\.gameverseOpenCardPack\(state\.coins,state\.collection,random\[0\]\/4294967296\)/);
+ assert.doesNotMatch(game,/Math\.floor\(Math\.random\(\)\*pool\.length\)/);
+ assert.match(rust,/pub fn open_card_pack\(/);
+ assert.match(wasm,/gameverse_card_pack_json/);
+ assert.match(bridge,/gameverseOpenCardPack:\(coins,collection,roll\)=>compute\('gameverseCardPack'/);
+});
