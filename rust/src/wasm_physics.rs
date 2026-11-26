@@ -560,6 +560,66 @@ pub fn activity_calendar_json(input_json: &str) -> Result<String, JsValue> {
     serde_json::to_string(&result).map_err(|error| input_error(&error.to_string()))
 }
 
+/// Validate and apply Gameverse zone unlock transactions in Rust.
+#[wasm_bindgen]
+pub fn gameverse_unlock_zone_json(input_json: &str) -> Result<String, JsValue> {
+    if input_json.len() > 4096 { return Err(input_error("Gameverse unlock payload exceeds 4 KiB")); }
+    let input: serde_json::Value = serde_json::from_str(input_json)
+        .map_err(|_| input_error("Gameverse unlock payload must be valid JSON"))?;
+    let id = input.get("id").and_then(serde_json::Value::as_str)
+        .ok_or_else(|| input_error("Missing zone identifier"))?;
+    let coins = input.get("coins").and_then(serde_json::Value::as_u64)
+        .ok_or_else(|| input_error("Invalid coin balance"))?;
+    let unlocked = input.get("unlocked").and_then(serde_json::Value::as_array)
+        .ok_or_else(|| input_error("Unlocked zones must be an array"))?
+        .iter().map(|value| value.as_str().map(str::to_owned)
+            .ok_or_else(|| input_error("Invalid unlocked zone identifier")))
+        .collect::<Result<Vec<_>, _>>()?;
+    let result = crate::gameverse::unlock_zone(id, coins, &unlocked)
+        .map_err(|error| input_error(&format!("Gameverse zone unlock rejected: {error:?}")))?;
+    serde_json::to_string(&result).map_err(|error| input_error(&error.to_string()))
+}
+
+/// Validate and apply Gameverse season pass claims in Rust.
+#[wasm_bindgen]
+pub fn gameverse_claim_pass_json(input_json: &str) -> Result<String, JsValue> {
+    if input_json.len() > 4096 { return Err(input_error("Gameverse pass payload exceeds 4 KiB")); }
+    let input: serde_json::Value = serde_json::from_str(input_json)
+        .map_err(|_| input_error("Gameverse pass payload must be valid JSON"))?;
+    let tier = input.get("tier").and_then(serde_json::Value::as_u64)
+        .and_then(|value| u32::try_from(value).ok()).ok_or_else(|| input_error("Invalid pass tier"))?;
+    let season_xp = input.get("seasonXp").and_then(serde_json::Value::as_u64)
+        .ok_or_else(|| input_error("Invalid season XP"))?;
+    let claimed = input.get("claimed").and_then(serde_json::Value::as_array)
+        .ok_or_else(|| input_error("Claimed pass tiers must be an array"))?
+        .iter().map(|value| value.as_str().map(str::to_owned)
+            .ok_or_else(|| input_error("Invalid claimed tier identifier")))
+        .collect::<Result<Vec<_>, _>>()?;
+    let result = crate::gameverse::claim_pass(tier, season_xp, &claimed)
+        .map_err(|error| input_error(&format!("Gameverse pass claim rejected: {error:?}")))?;
+    serde_json::to_string(&result).map_err(|error| input_error(&error.to_string()))
+}
+
+/// Validate and apply Gameverse skill purchases in Rust.
+#[wasm_bindgen]
+pub fn gameverse_buy_skill_json(input_json: &str) -> Result<String, JsValue> {
+    if input_json.len() > 4096 { return Err(input_error("Gameverse skill payload exceeds 4 KiB")); }
+    let input: serde_json::Value = serde_json::from_str(input_json)
+        .map_err(|_| input_error("Gameverse skill payload must be valid JSON"))?;
+    let id = input.get("id").and_then(serde_json::Value::as_str)
+        .ok_or_else(|| input_error("Missing skill identifier"))?;
+    let coins = input.get("coins").and_then(serde_json::Value::as_u64)
+        .ok_or_else(|| input_error("Invalid coin balance"))?;
+    let skills = input.get("skills").and_then(serde_json::Value::as_array)
+        .ok_or_else(|| input_error("Owned skills must be an array"))?
+        .iter().map(|value| value.as_str().map(str::to_owned)
+            .ok_or_else(|| input_error("Invalid owned skill identifier")))
+        .collect::<Result<Vec<_>, _>>()?;
+    let result = crate::gameverse::buy_skill(id, coins, &skills)
+        .map_err(|error| input_error(&format!("Gameverse skill purchase rejected: {error:?}")))?;
+    serde_json::to_string(&result).map_err(|error| input_error(&error.to_string()))
+}
+
 /// Calculate Gameverse pet XP remainder, level, and form in Rust.
 #[wasm_bindgen]
 pub fn gameverse_pet_progress_json(pet_xp: u32, pet_level: u32) -> Result<String, JsValue> {
