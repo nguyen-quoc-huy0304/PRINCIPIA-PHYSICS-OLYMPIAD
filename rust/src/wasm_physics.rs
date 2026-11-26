@@ -494,3 +494,11 @@ pub fn learning_science_select_json(input_json: &str) -> Result<String, JsValue>
         .map_err(|error| input_error(&format!("Learning science selection failed: {error}")))?;
     serde_json::to_string(&selected).map_err(|error| input_error(&error.to_string()))
 }
+
+#[wasm_bindgen]
+pub fn content_catalog_index_json(input_json: &str, query: &str) -> Result<String, JsValue> {
+    if query.len() > 512 { return Err(input_error("Catalog query exceeds 512 bytes")); }
+    let result = crate::content::index_catalog_json(input_json, query)
+        .map_err(|error| input_error(&format!("Catalog validation failed: {error:?}")))?;
+    serde_json::to_string(&result).map_err(|error| input_error(&error.to_string()))
+}
