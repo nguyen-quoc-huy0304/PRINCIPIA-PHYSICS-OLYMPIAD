@@ -1,0 +1,48 @@
+name: PRINCIPIA Native Polyglot Modules
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "native/cpp/**"
+      - "native/go/**"
+      - "native/rust/**"
+      - "tests/native/**"
+      - ".github/workflows/native-polyglot.yml"
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  cpp:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Compile C++ physics kernel with strict warnings
+        run: g++ -std=c++20 -O2 -Wall -Wextra -Werror native/cpp/physics_kernel.cpp tests/native/cpp/physics_kernel_test.cpp -o /tmp/principia-cpp-tests
+      - name: Run C++ tests
+        run: /tmp/principia-cpp-tests
+
+  go:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.25.x'
+          cache: false
+      - name: Test Go physics module
+        run: cd native/go/physics && go test -race -count=1 -v ./...
+
+  rust:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Test standalone Rust spaced-repetition core
+        run: rustc --edition=2021 --test native/rust/spaced_repetition.rs -o /tmp/principia-rust-tests
+      - name: Run Rust tests
+        run: /tmp/principia-rust-tests
