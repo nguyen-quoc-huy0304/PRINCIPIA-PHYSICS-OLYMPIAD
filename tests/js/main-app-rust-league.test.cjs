@@ -18,10 +18,14 @@ test('weekly AI league opponent generation is Rust-owned and cached', () => {
 });
 
 test('AI league match handler awaits validated Rust result before persistence', () => {
-  assert.match(app, /async function simulateAiMatch\(\)/);
-  assert.match(app, /await engine\.gameLeague\(/);
-  assert.match(app, /window\.crypto\.getRandomValues\(random\)/);
-  assert.match(app, /state\.points=result\.points/);
-  assert.match(app, /Rust AI league match failed/);
-  assert.doesNotMatch(app, /Math\.random\(\)/);
+  const start = app.indexOf('async function simulateAiMatch()');
+  const end = app.indexOf('\nfunction progressPage()', start);
+  assert.notEqual(start, -1);
+  assert.notEqual(end, -1);
+  const handler = app.slice(start, end);
+  assert.match(handler, /await engine\.gameLeague\(/);
+  assert.match(handler, /window\.crypto\.getRandomValues\(random\)/);
+  assert.match(handler, /state\.points=result\.points/);
+  assert.match(handler, /Rust AI league match failed/);
+  assert.doesNotMatch(handler, /Math\.random\(\)/);
 });
