@@ -39,7 +39,7 @@
     function add(card) {
       if (!validCard(card)) throw new TypeError('Card requires string id, front, and back');
       const cards = read(); if (cards.some(item => item.id === card.id)) return false;
-      cards.unshift({ id: card.id, front: card.front.slice(0,4000), back: card.back.slice(0,4000), topic: String(card.topic || '').slice(0,200), repetitions: 0, ease: 2.5, intervalDays: 0, dueAt: Number(card.dueAt) || Date.now(), createdAt: Date.now() });
+      cards.unshift({ id: card.id, front: card.front.slice(0,4000), back: card.back.slice(0,4000), topic: String(card.topic || '').slice(0,200), repetitions: 0, ease: 2.5, intervalDays: 0, dueAt: Number.isFinite(Number(card.dueAt)) ? Number(card.dueAt) : Date.now(), createdAt: Date.now() });
       return write(cards);
     }
     function review(id, grade, now = Date.now()) {
