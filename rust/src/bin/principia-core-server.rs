@@ -316,7 +316,8 @@ mod tests {
         let response = dispatch(&json!({"id":8,"op":"deleteEverything"}));
         assert_eq!(response["ok"], false);
         assert!(response["error"].as_str().unwrap().contains("Unsupported operation"));
-  
+    }
+
     #[test]
     fn dispatches_weighted_quiz_grading() {
         let response = dispatch(&json!({
@@ -346,7 +347,6 @@ mod tests {
         assert_eq!(response["ok"], false);
     }
 
-  }
     #[test]
     fn rejects_invalid_physics_domain() {
         let response = dispatch(&json!({"id":9,"op":"kineticEnergy","massKg":-1.0,"speedMps":3.0}));
