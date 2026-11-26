@@ -1,14 +1,46 @@
-/* PRINCIPIA weekly season missions — local, deterministic and testable. */
-(function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.PrincipiaSeasonCore=api;})(typeof window!=='undefined'?window:globalThis,function(){
+/* PRINCIPIA weekly season adapter: calendar boundaries in JS, mission rules in Rust. */
+(function(root,factory){
+ const api=factory(root);
+ if(typeof module==='object'&&module.exports)module.exports=api;
+ if(root)root.PrincipiaSeasonCore=api;
+})(typeof window!=='undefined'?window:globalThis,function(root){
  'use strict';
- function dateKey(value){const d=value instanceof Date?value:new Date(value);if(!Number.isFinite(d.getTime()))throw new Error('Invalid date');return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
- function weekKey(value){const d=value instanceof Date?new Date(value):new Date(value);if(!Number.isFinite(d.getTime()))throw new Error('Invalid date');d.setHours(0,0,0,0);const day=(d.getDay()+6)%7;d.setDate(d.getDate()-day);return dateKey(d)}
- function countMetric(value){const n=Number(value);return Number.isFinite(n)&&n>0?Math.min(Number.MAX_SAFE_INTEGER,Math.floor(n)):0}
- function missions(metrics={},now=new Date()){
-  const key=weekKey(now),m=metrics||{};
-  const defs=[['practice','Chiến binh luyện tập','Hoàn thành 3 lượt luyện',countMetric(m.sessions),3,60],['questions','Bậc thầy câu hỏi','Trả lời 30 câu hỏi',countMetric(m.questions),30,80],['notes','Nhà ghi chép','Lưu 2 ghi chú học tập',countMetric(m.notes),2,40]];
-  return defs.map(([id,name,description,value,target,xp])=>({id,name,description,value:Math.max(0,value),target,xp,complete:value>=target,progress:Math.min(100,Math.round(Math.max(0,value)/target*100)),week:key}));
+ function dateKey(value){
+  const date=value instanceof Date?value:new Date(value);
+  if(!Number.isFinite(date.getTime()))throw new Error('Invalid date');
+  return date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0');
  }
- function canClaim(list,id,claimed){const item=(Array.isArray(list)?list:[]).find(x=>x.id===id);return !!item&&item.complete&&!(Array.isArray(claimed)?claimed:[]).includes(item.week+':'+id)}
- return {dateKey,weekKey,missions,canClaim,countMetric};
+ function weekKey(value){
+  const date=value instanceof Date?new Date(value):new Date(value);
+  if(!Number.isFinite(date.getTime()))throw new Error('Invalid date');
+  date.setHours(0,0,0,0);
+  date.setDate(date.getDate()-((date.getDay()+6)%7));
+  return dateKey(date);
+ }
+ function countMetric(value){
+  const number=Number(value);
+  return Number.isFinite(number)&&number>0?Math.min(1_000_000,Math.floor(number)):0;
+ }
+ function engine(){
+  if(!root.PrincipiaWasmPhysics?.seasonMissions||!root.PrincipiaWasmPhysics?.claimSeasonMission)
+   throw new Error('Rust weekly season engine is unavailable');
+  return root.PrincipiaWasmPhysics;
+ }
+ async function missions(metrics={},now=new Date()){
+  const input={week:weekKey(now),sessions:countMetric(metrics.sessions),questions:countMetric(metrics.questions),notes:countMetric(metrics.notes)};
+  const result=await engine().seasonMissions(input);
+  if(!Array.isArray(result)||result.length!==3||result.some(item=>
+   typeof item.id!=='string'||typeof item.name!=='string'||typeof item.description!=='string'
+   ||!Number.isInteger(item.value)||!Number.isInteger(item.target)||!Number.isInteger(item.xp)
+   ||typeof item.complete!=='boolean'||!Number.isInteger(item.progress)||item.progress<0||item.progress>100
+   ||item.week!==input.week))throw new TypeError('Rust returned invalid weekly season missions');
+  return result;
+ }
+ async function claim(id,value,alreadyClaimed){
+  const result=await engine().claimSeasonMission({id:String(id),value:countMetric(value),alreadyClaimed:!!alreadyClaimed});
+  if(!result||typeof result.allowed!=='boolean'||!Number.isInteger(result.reward)||result.reward<0||result.reward>1000)
+   throw new TypeError('Rust returned an invalid season mission claim');
+  return result;
+ }
+ return Object.freeze({dateKey,weekKey,missions,claim,countMetric});
 });
