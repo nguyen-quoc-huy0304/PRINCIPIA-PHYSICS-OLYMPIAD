@@ -684,21 +684,39 @@
     (message?'<p role="status" style="padding:9px;border-radius:9px;background:var(--bg)">'+esc(message)+'</p>':'')+
     '<p class="small muted">Mỗi manh mối là một câu hỏi lấy từ ngân hàng bài học/Quiz thật.</p><b>'+esc(q.topic)+'</b><p style="font-size:18px">'+esc(q.q)+'</p>'+
     questionMedia(q)+'<div style="display:grid;gap:8px">'+q.a.map((a,i)=>'<button type="button" onclick="principiaSuiteMysteryAnswer('+i+')" style="text-align:left;padding:12px;border:1px solid var(--line,#555);border-radius:12px;background:var(--card,#171a2a);color:inherit">'+String.fromCharCode(65+i)+'. '+esc(a)+'</button>').join('')+'</div>'
-   )+'<p class="small muted">Đã giải mã '+mysteryCase.score+' manh mối chính xác.</p>'+btn('Bỏ vụ án','principiaSuiteHome()'));
+   )+'<p class="small muted">Đã trả lời '+mysteryCase.index+'/'+mysteryCase.questions.length+' manh mối.</p>'+btn('Bỏ vụ án','principiaSuiteHome()'));
  }
  function startMystery(){
   const api=window.PrincipiaMysteryCore;
   if(!api){open('Giải mã bí ẩn','<p>Chế độ điều tra chưa tải được. Hãy tải lại trang.</p>'+btn('Về trung tâm','principiaSuiteHome()'));return}
   try{mysteryCase=api.createCase(pool());renderMystery()}catch(error){open('Chưa thể mở vụ án','<p>'+esc(error.message)+'</p>'+btn('Về trung tâm','principiaSuiteHome()'))}
  }
- function answerMystery(choice){
-  if(!mysteryCase)return;
+ async function answerMystery(choice){
+  const attempt=mysteryCase;
+  if(!attempt||attempt.submitting)return;
+  const question=attempt.questions[attempt.index];
+  if(!question||!Number.isInteger(choice)||choice<0||choice>=question.a.length)return;
+  attempt.submitting=true;
   try{
-   const result=window.PrincipiaMysteryCore.answer(mysteryCase,choice);
+   const grader=window.PrincipiaRustQuiz;
+   if(!grader||typeof grader.gradeExam!=='function')throw new Error('Rust/WASM quiz grader is unavailable');
+   const nextAnswers=attempt.answers.map((answer,index)=>[index,answer.choice]);
+   nextAnswers.push([attempt.index,choice]);
+   const grade=await grader.gradeExam(attempt.questions,Object.fromEntries(nextAnswers),{id:'mystery-'+localDateKey(),title:'PRINCIPIA Science Mystery'});
+   if(mysteryCase!==attempt)return;
+   if(!grade||!Number.isInteger(grade.correctCount)||grade.correctCount<0||grade.correctCount>attempt.questions.length)throw new TypeError('Rust returned an invalid mystery grade');
+   const previousScore=attempt.score||0;
+   const currentCorrect=grade.correctCount>previousScore;
+   const result=window.PrincipiaMysteryCore.answer(attempt,choice);
+   attempt.score=grade.correctCount;
+   attempt.submitting=false;
    if(result.complete){renderMystery();return}
-   const q=mysteryCase.questions[result.index-1];
-   renderMystery((result.correct?'Đúng!':'Chưa chính xác.')+' Đáp án: '+q.a[q.correct]);
-  }catch(error){alert(error.message)}
+   renderMystery((currentCorrect?'Đúng!':'Chưa chính xác.')+' Đáp án: '+question.a[question.correct]);
+  }catch(error){
+   attempt.submitting=false;
+   console.error('[PRINCIPIA] Rust Science Mystery grading failed:',error);
+   alert('Không thể chấm manh mối bằng Rust/WASM. Câu trả lời chưa được ghi nhận; hãy thử lại.');
+  }
  }
  function backupTool(){
   const api=window.PrincipiaProgressBackup;
