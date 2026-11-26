@@ -72,9 +72,11 @@ fn dispatch(request: &Value) -> Value {
                     .and_then(|v| usize::try_from(v).ok()).ok_or("selectedIndex must be a non-negative integer")?;
                 let correct = value.get("correctIndex").and_then(Value::as_u64)
                     .and_then(|v| usize::try_from(v).ok()).ok_or("correctIndex must be a non-negative integer")?;
+                let option_count = value.get("optionCount").and_then(Value::as_u64)
+                    .and_then(|v| usize::try_from(v).ok()).ok_or("optionCount must be an integer from 2 to 16")?;
                 let points = value.get("points").and_then(Value::as_f64)
                     .filter(|v| v.is_finite()).ok_or("points must be finite")?;
-                questions.push((id, selected, correct, points));
+                questions.push((id, selected, correct, option_count, points));
             }
             let pass_percent = request.get("passPercent").and_then(Value::as_f64)
                 .filter(|v| v.is_finite()).ok_or("passPercent must be a finite number")?;
@@ -323,9 +325,9 @@ mod tests {
         let response = dispatch(&json!({
             "id": 31, "op": "gradeQuiz", "passPercent": 75.0,
             "questions": [
-                {"id":"q1","selectedIndex":1,"correctIndex":1,"points":2.0},
-                {"id":"q2","selectedIndex":0,"correctIndex":2,"points":1.0},
-                {"id":"q3","selectedIndex":3,"correctIndex":3,"points":1.0}
+                {"id":"q1","selectedIndex":1,"correctIndex":1,"optionCount":4,"points":2.0},
+                {"id":"q2","selectedIndex":0,"correctIndex":2,"optionCount":4,"points":1.0},
+                {"id":"q3","selectedIndex":3,"correctIndex":3,"optionCount":4,"points":1.0}
             ]
         }));
         assert_eq!(response["ok"], true);
