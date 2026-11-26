@@ -31,12 +31,15 @@ pub fn rank(points: u64) -> Value {
 }
 
 pub fn bots(week: &str) -> Result<Value, LeagueError> {
-    if week.len() != 8 || !week.starts_with("20") || &week[4..6] != "-W"
-        || !week[6..].bytes().all(|byte| byte.is_ascii_digit())
+    let bytes = week.as_bytes();
+    if bytes.len() != 8 || &bytes[0..2] != b"20" || &bytes[4..6] != b"-W"
+        || !bytes[2..4].iter().all(u8::is_ascii_digit)
+        || !bytes[6..8].iter().all(u8::is_ascii_digit)
     {
         return Err(LeagueError::InvalidWeek);
     }
-    let week_number = week[6..8].parse::<u8>().map_err(|_| LeagueError::InvalidWeek)?;
+    let week_number = std::str::from_utf8(&bytes[6..8]).map_err(|_| LeagueError::InvalidWeek)?
+        .parse::<u8>().map_err(|_| LeagueError::InvalidWeek)?;
     if !(1..=53).contains(&week_number) { return Err(LeagueError::InvalidWeek); }
     let mut seed = week.bytes().fold(0u32, |value, byte| value.wrapping_mul(31).wrapping_add(u32::from(byte)));
     let rows: Vec<Value> = BOTS.iter().map(|(name, avatar)| {
@@ -72,7 +75,7 @@ pub fn resolve_match(
     let won = result_roll < 0.62;
     let gain = if won { 30u64 } else { 12u64 };
     let next_points = points.saturating_add(gain).min(1_000_000);
-    let next_wins = wins + u32::from(won);
+    let next_wins = wins + if won { 1 } else { 0 };
     Ok(json!({
         "won":won,"gain":gain,"points":next_points,
         "matches":matches+1,"wins":next_wins,
