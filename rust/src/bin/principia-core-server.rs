@@ -60,6 +60,42 @@ fn dispatch(request: &Value) -> Value {
                 "targetErrorM": solution.target_error_m, "singular": solution.singular
             }));
         }
+        if op == "gradeQuiz" {
+            let values = request.get("questions").and_then(Value::as_array)
+                .ok_or("questions must be an array")?;
+            if values.len() > 500 { return Err("at most 500 questions are supported".to_string()); }
+            let mut questions = Vec::with_capacity(values.len());
+            for value in values {
+                let id = value.get("id").and_then(Value::as_str)
+                    .ok_or("each question requires a string id")?.to_string();
+                let selected = value.get("selectedIndex").and_then(Value::as_u64)
+                    .and_then(|v| usize::try_from(v).ok()).ok_or("selectedIndex must be a non-negative integer")?;
+                let correct = value.get("correctIndex").and_then(Value::as_u64)
+                    .and_then(|v| usize::try_from(v).ok()).ok_or("correctIndex must be a non-negative integer")?;
+                let points = value.get("points").and_then(Value::as_f64)
+                    .filter(|v| v.is_finite()).ok_or("points must be finite")?;
+                questions.push((id, selected, correct, points));
+            }
+            let pass_percent = request.get("passPercent").and_then(Value::as_f64)
+                .filter(|v| v.is_finite()).ok_or("passPercent must be a finite number")?;
+            let result = principia_core::quiz::grade_attempt(&questions, pass_percent)
+                .map_err(|error| format!("Quiz attempt rejected: {error:?}"))?;
+            let details: Vec<Value> = result.results.iter().map(|item| json!({
+                "questionId": item.question_id,
+                "correct": item.correct,
+                "earnedPoints": item.earned_points,
+                "availablePoints": item.available_points
+            })).collect();
+            return Ok(json!({
+                "score": result.score,
+                "maxScore": result.max_score,
+                "percent": result.percent,
+                "passed": result.passed,
+                "correctCount": result.correct_count,
+                "questionCount": result.question_count,
+                "results": details
+            }));
+        }
         if op == "studyPlan" {
             use principia_core::learning::{LearnerContext, LearningGoal};
             let goal = match request.get("goal").and_then(Value::as_str) {
