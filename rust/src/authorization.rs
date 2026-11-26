@@ -14,13 +14,25 @@ pub fn validate_grant(email: &str, role: &str, owner_email: &str) -> Result<Gran
 
 fn valid_email(value: &str) -> bool {
     let mut parts = value.split('@');
-    let local = match parts.next() { Some(v) if !v.is_empty() && v.len() <= 64 => v, _ => return false };
-    let domain = match parts.next() { Some(v) if !v.is_empty() && !v.starts_with('.') && !v.ends_with('.') => v, _ => return false };
-    if parts.next().is_some() || local.starts_with('.') || local.ends_with('.') || local.contains("..") { return false; }
-    let mut labels = domain.split('.');
-    labels.clone().all(|label| !label.is_empty() && label.len() <= 63
-        && label.chars().all(|c| c.is_ascii_alphanumeric() || c == '-')
-        && !label.starts_with('-') && !label.ends_with('-')) && labels.count() >= 2
+    let local = match parts.next() {
+        Some(v) if !v.is_empty() && v.len() <= 64 => v,
+        _ => return false,
+    };
+    let domain = match parts.next() {
+        Some(v) if !v.is_empty() && v.len() <= 253 && !v.starts_with('.') && !v.ends_with('.') => v,
+        _ => return false,
+    };
+    if parts.next().is_some() || local.starts_with('.') || local.ends_with('.') || local.contains("..") {
+        return false;
+    }
+    let allowed_local = |c: char| c.is_ascii_alphanumeric() || matches!(c, '.' | '!' | '#' | '$' | '%' | '&' | '\'' | '*' | '+' | '-' | '/' | '=' | '?' | '^' | '_' | '`' | '{' | '|' | '}' | '~');
+    if !local.chars().all(allowed_local) { return false; }
+    let labels: Vec<&str> = domain.split('.').collect();
+    labels.len() >= 2 && labels.iter().all(|label| {
+        !label.is_empty() && label.len() <= 63
+            && label.chars().all(|c| c.is_ascii_alphanumeric() || c == '-')
+            && !label.starts_with('-') && !label.ends_with('-')
+    })
 }
 
 #[cfg(test)]
