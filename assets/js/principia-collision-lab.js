@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  async function collide1D(m1, u1, m2, u2, restitution) {
+  function collide1D(m1, u1, m2, u2, restitution) {
     const values = [m1, u1, m2, u2, restitution];
     if (!values.every(Number.isFinite)) throw new TypeError('All inputs must be finite numbers.');
     if (m1 <= 0 || m2 <= 0) throw new RangeError('Masses must be greater than zero.');
@@ -59,10 +59,13 @@
     const el = (id) => root.querySelector('[data-collision="' + id + '"]');
     const fmt = (n) => Number(n).toLocaleString('vi-VN', { maximumFractionDigits: 4 });
     const read = () => ids.map((id) => Number(el(id).value));
-    function update() {
+    let updateSequence = 0;
+    async function update() {
+      const sequence = ++updateSequence;
       try {
         const [m1, u1, m2, u2, e] = read();
-        const r = collide1D(m1, u1, m2, u2, e);
+        const r = await collide1D(m1, u1, m2, u2, e);
+        if (sequence !== updateSequence) return;
         el('v1').textContent = fmt(r.v1) + ' m/s';
         el('v2').textContent = fmt(r.v2) + ' m/s';
         el('p-before').textContent = fmt(r.momentumBefore) + ' kg·m/s';
@@ -81,7 +84,7 @@
         el('after-b').style.left = (8 + 42 * (r.v2 / maxV + 1) / 2) + '%';
         el('error-note').textContent = Math.abs(r.momentumError) < 1e-10 ? 'Sai lệch số học gần 0 (sai số dấu phẩy động).' : 'Có sai lệch cần kiểm tra.';
       } catch (error) {
-        el('status').textContent = error.message;
+        if (sequence === updateSequence) el('status').textContent = error.message;
       }
     }
     ids.forEach((id) => el(id).addEventListener('input', update));
