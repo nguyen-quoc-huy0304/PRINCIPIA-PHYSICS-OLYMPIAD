@@ -23,6 +23,7 @@ async function compute(operation,params){
     case 'displacement': return wasm.physics_displacement(p.initial,p.acceleration,p.seconds);
     case 'kineticEnergy': return wasm.physics_kinetic_energy(p.massKg,p.speedMps);
     case 'pendulum': return JSON.parse(wasm.physics_pendulum_json(p.lengthM,p.gravityMps2,p.amplitudeDeg));
+    case 'collision1D': return JSON.parse(wasm.physics_collision_1d_json(p.massA,p.velocityA,p.massB,p.velocityB,p.restitution));
     case 'projectileRange': return JSON.parse(wasm.physics_projectile_json(p.speed,p.angleDeg,p.gravity)).range;
     case 'projectileMaxHeight': return JSON.parse(wasm.physics_projectile_json(p.speed,p.angleDeg,p.gravity)).maxHeight;
     case 'linearRegression': return JSON.parse(wasm.physics_linear_regression_json(JSON.stringify(p.points)));
@@ -38,5 +39,5 @@ async function compute(operation,params){
     default: throw new TypeError('Unsupported Rust/WASM physics operation: '+operation);
   }
 }
-root.PrincipiaWasmPhysics=Object.freeze({compute,load:loadWasm,gradeQuiz:(payload)=>compute('gradeQuiz',payload),recordProgress:(progress,activity,day)=>compute('recordProgress',{progress,activity,day}),recommend:(context)=>compute('learningRecommend',context),scheduleReview:(quality,previousIntervalDays,easeFactor)=>compute('reviewSchedule',{quality,previousIntervalDays,easeFactor}),progression:(metrics)=>compute('progressionSummary',metrics),createGameChallenge:(seed)=>compute('gameChallenge',{seed}),gameTrajectory:(speed,angleDeg,gravity,samples)=>compute('gameTrajectory',{speed,angleDeg,gravity,samples}),clampGameTarget:(target,speed,gravity)=>compute('gameClampTarget',{target,speed,gravity})});
+root.PrincipiaWasmPhysics=Object.freeze({compute,load:loadWasm,collide1D:(massA,velocityA,massB,velocityB,restitution)=>compute('collision1D',{massA,velocityA,massB,velocityB,restitution}),gradeQuiz:(payload)=>compute('gradeQuiz',payload),recordProgress:(progress,activity,day)=>compute('recordProgress',{progress,activity,day}),recommend:(context)=>compute('learningRecommend',context),scheduleReview:(quality,previousIntervalDays,easeFactor)=>compute('reviewSchedule',{quality,previousIntervalDays,easeFactor}),progression:(metrics)=>compute('progressionSummary',metrics),createGameChallenge:(seed)=>compute('gameChallenge',{seed}),gameTrajectory:(speed,angleDeg,gravity,samples)=>compute('gameTrajectory',{speed,angleDeg,gravity,samples}),clampGameTarget:(target,speed,gravity)=>compute('gameClampTarget',{target,speed,gravity})});
 })(window);
