@@ -19,7 +19,7 @@ fn dispatch(request: &Value) -> Value {
                 let width = u32::try_from(width).map_err(|_| "width is out of range")?;
                 state.set_width(width).map_err(|_| "invalid viewport width".to_string())?;
             }
-            if request.get("sidebarOpen").and_then(Value::as_bool).unwrap_or(true) { state.sidebar_open = true; }
+            if let Some(open) = request.get("sidebarOpen").and_then(Value::as_bool) { state.sidebar_open = open && state.layout() != principia_core::ui_state::LayoutMode::Compact; }
             if request.get("searchOpen").and_then(Value::as_bool).unwrap_or(false) { state.open_search(); }
             if let Some(query) = request.get("searchQuery").and_then(Value::as_str) { state.set_search(query); }
             if let Some(dialog) = request.get("dialog").and_then(Value::as_str) {
