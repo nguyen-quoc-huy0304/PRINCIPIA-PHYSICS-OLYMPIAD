@@ -35,6 +35,24 @@ pub fn quiz_reward(correct: u32, total: u32, mode: &str, rating: u64) -> Result<
 }
 
 
+pub fn open_card_pack(coins: u64, collection: &[String], roll: f64) -> Result<Value, GameverseError> {
+    const CARDS: [&str; 6] = ["newton", "faraday", "curie", "einstein", "galileo", "tesla"];
+    if coins < 100 { return Err(GameverseError::InsufficientCoins); }
+    if collection.len() > CARDS.len() || collection.iter().any(|id| !CARDS.contains(&id.as_str())) {
+        return Err(GameverseError::InvalidInventory);
+    }
+    if collection.iter().collect::<std::collections::HashSet<_>>().len() != collection.len() {
+        return Err(GameverseError::InvalidInventory);
+    }
+    if !roll.is_finite() || !(0.0..1.0).contains(&roll) { return Err(GameverseError::InvalidRandomInput); }
+    let remaining: Vec<&str> = CARDS.iter().copied().filter(|id| !collection.iter().any(|owned| owned == id)).collect();
+    if remaining.is_empty() { return Err(GameverseError::NoCardsLeft); }
+    let card_id = remaining[(roll * remaining.len() as f64).floor() as usize];
+    let mut next_collection = collection.to_vec();
+    next_collection.push(card_id.to_owned());
+    Ok(json!({"cardId":card_id,"collection":next_collection,"coins":coins-100,"xp":10}))
+}
+
 pub fn select_quiz_questions(questions: &[Value], mode: &str, seed: u64) -> Result<Value, GameverseError> {
     if !matches!(mode, "quick" | "rank") { return Err(GameverseError::InvalidMode); }
     let count = if mode == "rank" { 5 } else { 3 };
@@ -214,6 +232,18 @@ pub fn craft(recipe_id: &str, materials: &BTreeMap<String, u32>, crafted: &[Stri
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn card_pack_purchase_is_validated_and_never_duplicates_cards() {
+        let empty: Vec<String> = Vec::new();
+        let result = open_card_pack(150, &empty, 0.0).unwrap();
+        assert_eq!(result["cardId"], "newton");
+        assert_eq!(result["coins"], 50);
+        let all = vec!["newton".into(), "faraday".into(), "curie".into(), "einstein".into(), "galileo".into(), "tesla".into()];
+        assert!(open_card_pack(500, &all, 0.5).is_err());
+        assert!(open_card_pack(50, &empty, 0.5).is_err());
+        assert!(open_card_pack(500, &vec!["newton".into(), "newton".into()], 0.5).is_err());
+    }
 
     #[test]
     fn quiz_question_selection_is_seeded_and_schema_validated() {
