@@ -18,7 +18,8 @@ test('projectile match scoring is delegated to Rust/WASM without a JS fallback',
 test('new physics challenges require the Rust challenge generator', () => {
   assert.match(source, /generate_game_challenge_json/);
   assert.match(source, /Không thể tạo thử thách bằng Rust\/WASM/);
-  assert.doesNotMatch(source, /JavaScript challenge fallback/);
+  assert.doesNotMatch(source, /JavaScript challenge fallback|Math\\.random\\(\\)/);
+  assert.match(source, /if\\(!stateRestored\\)window\\.principiaNewGameChallenge\\(\\)/);
   assert.match(challenge, /pub fn generate_challenge/);
   assert.match(bridge, /gameChallenge/);
 });
