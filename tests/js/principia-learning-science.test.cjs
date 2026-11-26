@@ -84,3 +84,24 @@ test('social comparison is opt-in and remains focused on strategies, not public 
   assert.ok(engine.methods().some(item => item.id === 'social-comparison'));
   assert.ok(optIn.every(item => typeof item.guide === 'string'));
 });
+
+test('Rust-backed selection delegates scoring and persists only returned method ids', async () => {
+  const values = new Map();
+  const window = {
+    PrincipiaWasmPhysics: {
+      async selectLearningScience(payload) {
+        assert.equal(payload.context.goal, 'recover');
+        assert.ok(payload.methods.length >= 58);
+        return [{ id: 'error-analysis', group: 'practice', guide: 'Phân tích lỗi' }];
+      }
+    }
+  };
+  const localStorage = {
+    getItem(key) { return values.get(key) || null; },
+    setItem(key, value) { values.set(key, String(value)); }
+  };
+  vm.runInNewContext(source, { window, localStorage, Object, Math, Number, String, Set });
+  const selected = await window.PrincipiaLearningScience.selectWithRust({ goal: 'recover', errorCount: 4 });
+  assert.equal(selected[0].id, 'error-analysis');
+  assert.match(values.get('principia_learning_science_v1'), /error-analysis/);
+});
