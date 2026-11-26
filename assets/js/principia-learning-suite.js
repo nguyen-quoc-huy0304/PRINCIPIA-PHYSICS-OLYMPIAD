@@ -12,11 +12,6 @@
   do{globalThis.crypto.getRandomValues(buffer)}while(buffer[0]>=limit);
   return buffer[0]%length;
  }
- function secureShuffle(items){
-  const result=items.slice();
-  for(let i=result.length-1;i>0;i--){const j=secureRandomIndex(i+1);[result[i],result[j]]=[result[j],result[i]]}
-  return result;
- }
  function secureId(prefix){
   if(!globalThis.crypto?.getRandomValues)throw new Error('Secure random generator is unavailable');
   const bytes=new Uint8Array(16);globalThis.crypto.getRandomValues(bytes);
