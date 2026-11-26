@@ -57,3 +57,14 @@ pub fn ui_snapshot_json(route: &str, width: u32, search_query: &str, dialog: &st
     }
     Ok(state.snapshot_json())
 }
+
+/// Render the validated Rust UI shell to HTML for WASM/browser/native adapters.
+#[wasm_bindgen]
+pub fn ui_render_html(route: &str, width: u32, search_query: &str, dialog: &str) -> Result<String, JsValue> {
+    let mut state = crate::ui_state::UiState::default();
+    state.navigate(route).map_err(|_| JsValue::from_str("Invalid UI route"))?;
+    state.set_width(width).map_err(|_| JsValue::from_str("Invalid viewport width"))?;
+    if !search_query.is_empty() { state.open_search(); state.set_search(search_query); }
+    if !dialog.is_empty() { state.open_dialog(dialog).map_err(|_| JsValue::from_str("Invalid dialog"))?; }
+    Ok(crate::ui_renderer::render_shell(&state))
+}
