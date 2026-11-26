@@ -42,6 +42,7 @@ var operationFields = map[string][]string{
 	"robotArmIK": {"l1M", "l2M", "targetXM", "targetYM", "elbowBranch"},
 	"studyPlan": {"errorCount", "energy", "confidence"},
 	"scheduleReview": {"quality", "previousIntervalDays", "easeFactor"},
+	"gradeQuiz": {"questions", "passPercent"},
 }
 
 
@@ -190,6 +191,9 @@ func validateFields(request map[string]any, fields []string) error {
 			n := value.(json.Number); v, err := n.Float64()
 			if err != nil || math.IsNaN(v) || math.IsInf(v, 0) || v < 0 || v > 100 { return errors.New("percent must be between 0 and 100") }
 		}
+	case "gradeQuiz":
+		if err := validateQuizQuestions(request["questions"]); err != nil { return err }
+		if err := validatePercent(request["passPercent"]); err != nil { return err }
 	case "scheduleReview":
 		if err := validateIntegerRange(request["quality"], "quality", 0, 5); err != nil { return err }
 		if err := validateIntegerRange(request["previousIntervalDays"], "previousIntervalDays", 0, 36500); err != nil { return err }
@@ -200,6 +204,59 @@ func validateFields(request map[string]any, fields []string) error {
 		if !allowed[key] { return errors.New("unexpected field: " + key) }
 	}
 	return nil
+}
+
+
+func validatePercent(value any) error {
+	number, ok := value.(json.Number)
+	if !ok { return errors.New("passPercent must be numeric") }
+	parsed, err := number.Float64()
+	if err != nil || math.IsNaN(parsed) || math.IsInf(parsed, 0) || parsed < 0 || parsed > 100 {
+		return errors.New("passPercent must be between 0 and 100")
+	}
+	return nil
+}
+
+func validateQuizQuestions(value any) error {
+	questions, ok := value.([]any)
+	if !ok || len(questions) == 0 || len(questions) > 500 {
+		return errors.New("questions must contain between 1 and 500 entries")
+	}
+	seen := make(map[string]struct{}, len(questions))
+	for index, raw := range questions {
+		question, ok := raw.(map[string]any)
+		if !ok || len(question) != 5 {
+			return errors.New("each question must contain exactly id, selectedIndex, correctIndex, optionCount and points")
+		}
+		id, ok := question["id"].(string)
+		if !ok || strings.TrimSpace(id) == "" || len(id) > 128 {
+			return errors.New("question id must be a non-empty string of at most 128 bytes")
+		}
+		if _, exists := seen[id]; exists { return errors.New("duplicate question id") }
+		seen[id] = struct{}{}
+		optionCount, err := quizIndex(question["optionCount"], "optionCount")
+		if err != nil || optionCount < 2 || optionCount > 16 { return errors.New("optionCount must be between 2 and 16") }
+		selected, err := quizIndex(question["selectedIndex"], "selectedIndex")
+		if err != nil || selected >= optionCount { return errors.New("selectedIndex is outside the option range") }
+		correct, err := quizIndex(question["correctIndex"], "correctIndex")
+		if err != nil || correct >= optionCount { return errors.New("correctIndex is outside the option range") }
+		points, ok := question["points"].(json.Number)
+		if !ok { return errors.New("question points must be numeric") }
+		parsed, err := points.Float64()
+		if err != nil || math.IsNaN(parsed) || math.IsInf(parsed, 0) || parsed <= 0 || parsed > 1_000_000 {
+			return errors.New("question points must be finite and between 0 and 1000000")
+		}
+		_ = index
+	}
+	return nil
+}
+
+func quizIndex(value any, field string) (int64, error) {
+	number, ok := value.(json.Number)
+	if !ok { return 0, errors.New(field + " must be an integer") }
+	parsed, err := number.Int64()
+	if err != nil || parsed < 0 { return 0, errors.New(field + " must be a non-negative integer") }
+	return parsed, nil
 }
 
 func validateIntegerRange(value any, field string, min, max int64) error {
