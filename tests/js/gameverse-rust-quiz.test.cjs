@@ -22,3 +22,12 @@ test('Gameverse does not award results when Rust grading fails', () => {
   assert.match(source, /engine\.gameverseQuizReward\(score,n,mode,state\.rank\.rating\)/);
   assert.match(source, /reward\.passed/);
 });
+
+test('Gameverse question sampling and shuffle are delegated to Rust',()=>{
+  assert.match(source,/engine\.gameverseSelectQuiz\(QUESTIONS,mode,seed\)/);
+  assert.match(source,/gameverseQuizStartPending/);
+  assert.doesNotMatch(source,/\.sort\(\(\)=>Math\.random\(\)-\.5\)/);
+  assert.match(bridge,/gameverseSelectQuiz:\(questions,mode,seed\)=>compute\('gameverseQuizSelect'/);
+  assert.match(wasm,/gameverse_quiz_select_json/);
+  assert.match(rust,/pub fn select_quiz_questions\(/);
+});
