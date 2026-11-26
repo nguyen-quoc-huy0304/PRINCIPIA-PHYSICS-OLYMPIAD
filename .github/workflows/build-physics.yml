@@ -24,6 +24,17 @@ jobs:
         run: cargo test --manifest-path rust/Cargo.toml --all-targets
       - name: Compile browser WebAssembly target
         run: cargo check --manifest-path rust/Cargo.toml --target wasm32-unknown-unknown --lib
+      - name: Build browser WebAssembly package
+        run: |
+          cargo install wasm-pack --locked
+          wasm-pack build rust --target web --out-dir ../assets/wasm/pkg --release
+      - name: Upload generated WebAssembly package
+        uses: actions/upload-artifact@v4
+        with:
+          name: principia-wasm-package
+          path: assets/wasm/pkg/
+          if-no-files-found: error
+          retention-days: 14
       - name: Check browser adapter syntax
         run: node --check assets/js/principia-wasm-physics.js
       - name: Check browser physics bridge syntax
