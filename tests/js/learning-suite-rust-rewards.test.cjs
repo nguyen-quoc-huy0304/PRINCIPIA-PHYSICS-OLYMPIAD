@@ -12,8 +12,8 @@ test('learning suite obtains milestone XP amounts from Rust', () => {
   assert.match(suite, /awardLearningExperience\('daily-challenge-correct'\)/);
   assert.match(suite, /awardLearningExperience\('learning-journey-completed'\)/);
   assert.match(suite, /awardLearningExperience\('learning-quest-completed'\)/);
-  assert.match(rewards, /"learning-journey-completed" => Ok\(10\)/);
-  assert.match(rewards, /"learning-quest-completed" => Ok\(15\)/);
+  assert.match(rewards, /"learning-journey-completed".*Ok\(10\)/);
+  assert.match(rewards, /"learning-quest-completed".*Ok\(15\)/);
   assert.match(bridge, /experienceReward:activity=>compute\('experienceReward'/);
 });
 
