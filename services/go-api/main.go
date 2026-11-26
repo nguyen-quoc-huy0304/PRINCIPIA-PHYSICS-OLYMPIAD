@@ -223,7 +223,7 @@ func validateQuizQuestions(value any) error {
 		return errors.New("questions must contain between 1 and 500 entries")
 	}
 	seen := make(map[string]struct{}, len(questions))
-	for index, raw := range questions {
+	for _, raw := range questions {
 		question, ok := raw.(map[string]any)
 		if !ok || len(question) != 5 {
 			return errors.New("each question must contain exactly id, selectedIndex, correctIndex, optionCount and points")
@@ -246,7 +246,6 @@ func validateQuizQuestions(value any) error {
 		if err != nil || math.IsNaN(parsed) || math.IsInf(parsed, 0) || parsed <= 0 || parsed > 1_000_000 {
 			return errors.New("question points must be finite and between 0 and 1000000")
 		}
-		_ = index
 	}
 	return nil
 }
