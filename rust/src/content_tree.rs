@@ -106,8 +106,113 @@ pub fn execute(input: &str, operation: &str, target: &str) -> Result<Value, Tree
             }
             Ok(json!({ "catalog": catalog }))
         }
+        "create" => {
+            let payload: Value = serde_json::from_str(target).map_err(|_| TreeError::InvalidTarget)?;
+            let parent_id = payload.get("parentId").and_then(Value::as_str).unwrap_or("");
+            let node = payload.get("node").cloned().ok_or(TreeError::InvalidTarget)?;
+            validate_new_node(&node)?;
+            let id = node.get("id").and_then(Value::as_str).ok_or(TreeError::InvalidNode)?;
+            if find(nodes, id).is_some() { return Err(TreeError::DuplicateId); }
+            let root = catalog.as_array_mut().ok_or(TreeError::InvalidRoot)?;
+            if parent_id.is_empty() {
+                root.push(node);
+            } else {
+                let parent = find_mut(root, parent_id).ok_or(TreeError::InvalidTarget)?;
+                if parent.get("type").and_then(Value::as_str) != Some("tab") {
+                    return Err(TreeError::InvalidTarget);
+                }
+                let children = parent.as_object_mut().ok_or(TreeError::InvalidTarget)?
+                    .entry("children").or_insert_with(|| json!([]));
+                children.as_array_mut().ok_or(TreeError::InvalidTarget)?.push(node);
+            }
+            let root = catalog.as_array().ok_or(TreeError::InvalidRoot)?;
+            validate_nodes(root)?;
+            Ok(json!({ "catalog": catalog }))
+        }
+        "update" => {
+            let payload: Value = serde_json::from_str(target).map_err(|_| TreeError::InvalidTarget)?;
+            let id = payload.get("id").and_then(Value::as_str)
+                .filter(|id| !id.trim().is_empty() && id.len() <= 128)
+                .ok_or(TreeError::InvalidTarget)?;
+            let patch = payload.get("patch").and_then(Value::as_object).ok_or(TreeError::InvalidTarget)?;
+            let root = catalog.as_array_mut().ok_or(TreeError::InvalidRoot)?;
+            let node = find_mut(root, id).ok_or(TreeError::MissingTarget)?;
+            apply_node_patch(node, patch)?;
+            validate_nodes(catalog.as_array().ok_or(TreeError::InvalidRoot)?)?;
+            Ok(json!({ "catalog": catalog }))
+        }
         _ => Err(TreeError::UnsupportedOperation),
     }
+}
+
+
+fn validate_new_node(node: &Value) -> Result<(), TreeError> {
+    let object = node.as_object().ok_or(TreeError::InvalidNode)?;
+    let id = object.get("id").and_then(Value::as_str)
+        .filter(|value| !value.trim().is_empty() && value.len() <= 128).ok_or(TreeError::InvalidNode)?;
+    let name = object.get("name").and_then(Value::as_str)
+        .filter(|value| !value.trim().is_empty() && value.len() <= 512).ok_or(TreeError::InvalidNode)?;
+    let kind = object.get("type").and_then(Value::as_str)
+        .filter(|value| matches!(*value, "tab" | "lesson" | "quiz" | "fun"))
+        .ok_or(TreeError::InvalidNode)?;
+    let _ = (id, name, kind);
+    if object.get("icon").and_then(Value::as_str).is_some_and(|v| v.len() > 64) {
+        return Err(TreeError::InvalidNode);
+    }
+    if object.get("content").and_then(Value::as_str).is_some_and(|v| v.len() > 256 * 1024) {
+        return Err(TreeError::InvalidNode);
+    }
+    if kind == "tab" && object.get("children").is_some_and(|v| !v.is_array()) {
+        return Err(TreeError::InvalidNode);
+    }
+    Ok(())
+}
+
+fn apply_node_patch(node: &mut Value, patch: &serde_json::Map<String, Value>) -> Result<(), TreeError> {
+    let object = node.as_object_mut().ok_or(TreeError::InvalidNode)?;
+    for (key, value) in patch {
+        match key.as_str() {
+            "name" => {
+                let name = value.as_str().filter(|v| !v.trim().is_empty() && v.len() <= 512)
+                    .ok_or(TreeError::InvalidNode)?;
+                object.insert("name".into(), json!(name));
+            }
+            "icon" => {
+                let icon = value.as_str().filter(|v| v.len() <= 64).ok_or(TreeError::InvalidNode)?;
+                object.insert("icon".into(), json!(icon));
+            }
+            "content" | "description" | "transcript" | "summary" => {
+                let text = value.as_str().filter(|v| v.len() <= 256 * 1024)
+                    .ok_or(TreeError::InvalidNode)?;
+                object.insert(key.clone(), json!(text));
+            }
+            "questions" | "quiz" => {
+                validate_questions(value)?;
+                object.insert(key.clone(), value.clone());
+            }
+            _ => return Err(TreeError::InvalidTarget),
+        }
+    }
+    Ok(())
+}
+
+fn validate_questions(value: &Value) -> Result<(), TreeError> {
+    let questions = value.as_array().filter(|items| items.len() <= 500)
+        .ok_or(TreeError::InvalidNode)?;
+    for question in questions {
+        let object = question.as_object().ok_or(TreeError::InvalidNode)?;
+        let prompt = object.get("q").and_then(Value::as_str)
+            .filter(|v| !v.trim().is_empty() && v.len() <= 4096).ok_or(TreeError::InvalidNode)?;
+        let answers = object.get("a").and_then(Value::as_array)
+            .filter(|items| !items.is_empty() && items.len() <= 8).ok_or(TreeError::InvalidNode)?;
+        if answers.iter().any(|answer| answer.as_str().is_none_or(|v| v.len() > 2048)) {
+            return Err(TreeError::InvalidNode);
+        }
+        let correct = object.get("correct").and_then(Value::as_u64)
+            .filter(|index| (*index as usize) < answers.len()).ok_or(TreeError::InvalidNode)?;
+        let _ = (prompt, correct);
+    }
+    Ok(())
 }
 
 fn validate_nodes(nodes: &[Value]) -> Result<(), TreeError> {
@@ -333,6 +438,17 @@ mod tests {
         let moved = execute(SAMPLE, "drop", r#"{"id":"newton","targetId":"physics"}"#).unwrap();
         assert_eq!(moved["catalog"][0]["children"][2]["id"], "newton");
         assert_eq!(execute(SAMPLE, "drop", r#"{"id":"physics","targetId":"mechanics"}"#), Err(TreeError::Cycle));
+    }
+
+
+    #[test]
+    fn creates_and_updates_nodes_with_validation() {
+        let created = execute(SAMPLE, "create", r#"{"parentId":"physics","node":{"id":"new-lesson","name":"Bài mới","type":"lesson","content":"F=ma","quiz":[]}}"#).unwrap();
+        assert_eq!(created["catalog"][0]["children"][2]["id"], "new-lesson");
+        let updated = execute(SAMPLE, "update", r#"{"id":"newton","patch":{"name":"Newton II","content":"F=ma"}}"#).unwrap();
+        assert_eq!(updated["catalog"][0]["children"][0]["children"][0]["name"], "Newton II");
+        assert_eq!(execute(SAMPLE, "update", r#"{"id":"newton","patch":{"type":"tab"}}"#), Err(TreeError::InvalidTarget));
+        assert_eq!(execute(SAMPLE, "create", r#"{"node":{"id":"x","name":" ","type":"lesson"}}"#), Err(TreeError::InvalidNode));
     }
 
     #[test]
