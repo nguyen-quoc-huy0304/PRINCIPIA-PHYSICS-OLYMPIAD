@@ -923,3 +923,17 @@ pub fn season_mission_claim_json(input_json: &str) -> Result<String, JsValue> {
         .map_err(|error| input_error(&format!("Season mission claim rejected: {error:?}")))?;
     serde_json::to_string(&result).map_err(|error| input_error(&error.to_string()))
 }
+
+/// Validate and normalize a role grant using the Rust authorization policy.
+#[wasm_bindgen]
+pub fn authorization_grant_json(input_json: &str) -> Result<String, JsValue> {
+    if input_json.len() > 4096 { return Err(input_error("Authorization input exceeds 4 KiB")); }
+    let input: serde_json::Value = serde_json::from_str(input_json)
+        .map_err(|_| input_error("Authorization input must be valid JSON"))?;
+    let email = input.get("email").and_then(serde_json::Value::as_str).ok_or_else(|| input_error("Missing grant email"))?;
+    let role = input.get("role").and_then(serde_json::Value::as_str).ok_or_else(|| input_error("Missing grant role"))?;
+    let owner = input.get("ownerEmail").and_then(serde_json::Value::as_str).ok_or_else(|| input_error("Missing owner email"))?;
+    let result = crate::authorization::validate_grant(email, role, owner)
+        .map_err(|error| input_error(&format!("Authorization grant rejected: {error:?}")))?;
+    serde_json::to_string(&result).map_err(|error| input_error(&error.to_string()))
+}
