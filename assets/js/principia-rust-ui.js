@@ -27,7 +27,8 @@
   function mount(root, options = {}) {
     if (!root || typeof root.replaceChildren !== 'function') throw new TypeError('A DOM root element is required');
     let route = options.route || 'home';
-    let query = '';\n    let dialog = options.dialog || '';
+    let query = '';
+    let dialog = options.dialog || '';
     let destroyed = false;
     let renderSeq = 0;
     async function refresh() {
@@ -45,7 +46,8 @@
       }
       const searchButton = event.target?.closest?.('[data-pr-search]');
       if (searchButton && root.contains(searchButton)) {
-        dialog = dialog === 'search' ? '' : 'search';\n        refresh().then(() => root.querySelector('[data-pr-search-form] input')?.focus()).catch(options.onError || (() => {}));
+        dialog = dialog === 'search' ? '' : 'search';
+        refresh().then(() => root.querySelector('[data-pr-search-form] input')?.focus()).catch(options.onError || (() => {}));
       }
     }
     function onSubmit(event) {
