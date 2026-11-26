@@ -46,6 +46,16 @@ mod tests {
         assert_eq!(validate_grant("owner@example.com", "editor", "owner@example.com"), Err(GrantError::OwnerCannotBeGranted));
         assert_eq!(validate_grant("user@example.com", "admin", "owner@example.com"), Err(GrantError::InvalidRole));
     }
+    #[test] fn accepts_valid_ascii_local_and_domain_edges() {
+        for email in ["first.last+tag@example-domain.co", "user_123@sub.example.org", "a!b@example.com"] {
+            assert!(validate_grant(email, "editor", "owner@example.com").is_ok(), "{email}");
+        }
+    }
+    #[test] fn rejects_invalid_domain_labels_and_local_whitespace() {
+        for email in ["user@exa_mple.com", "user@bad-.com", "user@.bad.com", "user@example..com", "two@@example.com", "a b@example.com"] {
+            assert_eq!(validate_grant(email, "editor", "owner@example.com"), Err(GrantError::InvalidEmail), "{email}");
+        }
+    }
     #[test] fn rejects_malformed_addresses() {
         for email in ["", "x", "x@", "@example.com", "x..y@example.com", "x@example", "x@-bad.com", "bad local@example.com", "bad\\\\local@example.com"] {
             assert_eq!(validate_grant(email, "editor", "owner@example.com"), Err(GrantError::InvalidEmail));
