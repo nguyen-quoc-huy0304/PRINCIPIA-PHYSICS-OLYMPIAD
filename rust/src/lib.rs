@@ -5,6 +5,7 @@
 pub mod cpp_physics;
 pub mod access;
 pub mod content;
+pub mod content_tree;
 pub mod session;
 pub mod assessment;
 pub mod quiz;
