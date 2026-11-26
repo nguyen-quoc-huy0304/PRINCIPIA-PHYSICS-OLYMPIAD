@@ -560,6 +560,14 @@ pub fn activity_calendar_json(input_json: &str) -> Result<String, JsValue> {
     serde_json::to_string(&result).map_err(|error| input_error(&error.to_string()))
 }
 
+/// Calculate Gameverse pet XP remainder, level, and form in Rust.
+#[wasm_bindgen]
+pub fn gameverse_pet_progress_json(pet_xp: u32, pet_level: u32) -> Result<String, JsValue> {
+    let result = crate::gameverse::pet_progress(pet_xp, pet_level)
+        .map_err(|error| input_error(&format!("Gameverse pet progression rejected: {error:?}")))?;
+    serde_json::to_string(&result).map_err(|error| input_error(&error.to_string()))
+}
+
 /// Apply a Gameverse recipe and validate its inventory transaction in Rust.
 #[wasm_bindgen]
 pub fn gameverse_craft_json(input_json: &str) -> Result<String, JsValue> {
