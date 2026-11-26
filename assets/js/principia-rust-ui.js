@@ -7,7 +7,7 @@
     if (!wasmPromise) {
       wasmPromise = import(wasmUrl).then(async mod => {
         await mod.default();
-        if (typeof mod.ui_render_html !== 'function' || typeof mod.ui_reduce_json !== 'function') throw new Error('Rust UI WASM exports are missing');
+        if (typeof mod.ui_render_html !== 'function') throw new Error('Rust UI renderer export is missing');
         return mod;
       }).catch(error => {
         wasmPromise = null;
@@ -26,9 +26,13 @@
   }
   async function reduce(route, width, query, dialog, event, value) {
     const wasm = await load();
-    const result = JSON.parse(wasm.ui_reduce_json(route, width, query, dialog, event, value));
-    const state = JSON.parse(result.state);
-    return { html: result.html, state };
+    if (typeof wasm.ui_reduce_json === 'function') {
+      const result = JSON.parse(wasm.ui_reduce_json(route, width, query, dialog, event, value));
+      return { html: result.html, state: JSON.parse(result.state) };
+    }
+    const nextQuery = event === 'search' ? value : query;
+    const nextDialog = event === 'open_search' || event === 'search' ? 'search' : (event === 'close_search' ? '' : dialog);
+    return { html: wasm.ui_render_html(route, width, nextQuery, nextDialog), state: null };
   }
   function mount(root, options = {}) {
     if (!root || typeof root.replaceChildren !== 'function') throw new TypeError('A DOM root element is required');
