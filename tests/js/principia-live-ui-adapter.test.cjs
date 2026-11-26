@@ -44,3 +44,16 @@ test('press pattern only targets interactive primary controls and pointer tilt r
   assert.ok(js.includes("removeProperty('--pr-live-ry')"));
   assert.ok(js.includes('nextTarget instanceof Node'));
 });
+
+
+test('Rust UI bridge is loaded without replacing the legacy app root', () => {
+  const html = read('index.html');
+  const js = read('assets/js/principia-rust-ui.js');
+  const css = read('assets/css/principia-rust-ui-shell.css');
+  assert.match(html, /principia-rust-ui-shell\.css/);
+  assert.match(html, /principia-rust-ui\.js/);
+  assert.match(js, /ui_render_html/);
+  assert.match(js, /function mount\(root, options = \{\}\)/);
+  assert.doesNotMatch(js, /document\.getElementById\(['"]app['"]\)/);
+  assert.match(css, /@media\(max-width:700px\)/);
+});
