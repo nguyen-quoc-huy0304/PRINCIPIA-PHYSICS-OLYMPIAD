@@ -72,7 +72,7 @@
   function render() {
     if (!listNode) return;
     const query = String(searchNode?.value || '').trim().toLocaleLowerCase();
-    const filtered = entries.filter(entry => !query || (entry.message + ' ' + entry.source + ' ' + entry.filename).toLocaleLowerCase().includes(query);
+    const filtered = entries.filter(entry => !query || (entry.message + ' ' + entry.source + ' ' + entry.filename).toLocaleLowerCase().includes(query));
     listNode.replaceChildren();
     if (!filtered.length) { listNode.appendChild(element('p', 'pr-error-empty', entries.length ? 'Không có lỗi phù hợp.' : 'Chưa ghi nhận lỗi nào.')); return; }
     filtered.forEach(entry => {

@@ -74,6 +74,17 @@ test('error log persists entries and clear resets storage', () => {
   assert.equal(restored.values.get('principia_error_log_v1'), '[]');
 });
 
+test('error log is wired before the app and exposed from command center', () => {
+  const html = fs.readFileSync(path.resolve(__dirname, '../../index.html'), 'utf8');
+  const logger = html.indexOf('principia-error-log.js');
+  const app = html.indexOf('app-part-01.js');
+  const runtime = html.indexOf('core/runtime.js');
+  assert.ok(logger >= 0 && logger < app && app < runtime);
+  const command = fs.readFileSync(path.resolve(__dirname, '../../assets/js/principia-command-center.js'), 'utf8');
+  assert.match(command, /id:'error-log'/);
+  assert.match(command, /PrincipiaErrorLog\?\.open/);
+  assert.match(command, /errorLog\.addEventListener/);
+});
 test('stored error entries are sanitized before rendering or re-export', () => {
   const h = harness([{ message: 'leaked?password=hunter2', fingerprint: 'fingerprint', stack: 'Bearer token123', count: 0, time: 10 }]);
   const entry = h.api.list()[0];
