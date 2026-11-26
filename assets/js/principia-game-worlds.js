@@ -57,8 +57,50 @@ async function buySkill(id){
  }catch(error){console.error('[Gameverse] Rust skill purchase rejected:',error);toast('Không thể mở kỹ năng: '+String(error.message||error));return false;}
  finally{gameversePendingActions.delete(lock);}
 }
-function treasure(){const today=DAY();if(state.events.treasure===today){toast('Kho báu hôm nay đã tìm thấy.');return;}const riddles=[{q:'Hành tinh nào gần Mặt Trời nhất?',a:'Sao Thủy'},{q:'Đơn vị đo tần số?',a:'Hz'},{q:'Lực hút giữ ta trên Trái Đất?',a:'Trọng lực'}],r=riddles[Math.floor(Math.random()*riddles.length)],answer=prompt('🗺️ Gợi ý kho báu: '+r.q);if(answer?.trim().toLowerCase()===r.a.toLowerCase()){state.events.treasure=today;state.treasures++;state.materials.star++;award(60,90);toast('Tìm được kho báu! +60 XP');render();}else if(answer!==null)toast('Chưa đúng. Có thể thử lại sau khi ôn kiến thức.');}
-function randomEvent(){const today=DAY();if(state.events.random===today){toast('Sự kiện hôm nay đã kích hoạt.');return;}const events=[['Mưa sao băng','Thu thập sao +2',()=>state.materials.star+=2],['Hộp vật liệu','Nhận gỗ +3',()=>state.materials.wood+=3],['Năng lượng bí ẩn','Nhận energy +2',()=>state.materials.energy+=2]];const e=events[Math.floor(Math.random()*events.length)];state.events.random=today;e[2]();award(20,35);toast(e[0]+' · '+e[1]);render();}
+async function treasure(){
+ const today=DAY(),lock='treasure';
+ if(state.events.treasure===today){toast('Kho báu hôm nay đã tìm thấy.');return false;}
+ if(gameversePendingActions.has(lock))return false;
+ gameversePendingActions.add(lock);
+ try{
+  const engine=window.PrincipiaWasmPhysics;
+  if(!engine||typeof engine.gameverseTreasureQuestion!=='function'||typeof engine.gameverseTreasureAnswer!=='function')throw new Error('Rust treasure engine is unavailable');
+  if(!window.crypto||typeof window.crypto.getRandomValues!=='function')throw new Error('Secure random source is unavailable');
+  const random=new Uint32Array(1);window.crypto.getRandomValues(random);
+  const question=await engine.gameverseTreasureQuestion(random[0]/4294967296);
+  if(typeof question?.id!=='string'||typeof question.question!=='string')throw new TypeError('Rust returned an invalid treasure riddle');
+  const answer=prompt('🗺️ Gợi ý kho báu: '+question.question);
+  if(answer===null)return false;
+  if(answer.length>256)throw new TypeError('Treasure answer is too long');
+  const result=await engine.gameverseTreasureAnswer(question.id,answer,state.events.treasure===today);
+  if(typeof result?.found!=='boolean'||!Number.isInteger(result.xp)||!Number.isInteger(result.coins))throw new TypeError('Rust returned an invalid treasure result');
+  if(!result.found){toast('Chưa đúng. Có thể thử lại sau khi ôn kiến thức.');return false;}
+  if(result.xp!==60||result.coins!==90||result.material!=='star'||result.amount!==1)throw new TypeError('Rust returned an invalid treasure reward');
+  if(!await award(result.xp,result.coins))throw new Error('Rust reward transaction failed');
+  state.events.treasure=today;state.treasures++;state.materials.star+=result.amount;save();toast('Tìm được kho báu! +'+result.xp+' XP');render();return true;
+ }catch(error){console.error('[Gameverse] Rust treasure validation failed:',error);toast('Không thể xác minh kho báu: '+String(error.message||error));return false;}
+ finally{gameversePendingActions.delete(lock);}
+}
+async function randomEvent(){
+ const today=DAY(),lock='random-event';
+ if(state.events.random===today){toast('Sự kiện hôm nay đã kích hoạt.');return false;}
+ if(gameversePendingActions.has(lock))return false;
+ gameversePendingActions.add(lock);
+ try{
+  const engine=window.PrincipiaWasmPhysics;
+  if(!engine||typeof engine.gameverseRandomEvent!=='function')throw new Error('Rust random event engine is unavailable');
+  if(!window.crypto||typeof window.crypto.getRandomValues!=='function')throw new Error('Secure random source is unavailable');
+  const random=new Uint32Array(1);window.crypto.getRandomValues(random);
+  const result=await engine.gameverseRandomEvent(random[0]/4294967296,false);
+  if(typeof result?.id!=='string'||typeof result.title!=='string'||typeof result.description!=='string'
+   ||!MATERIALS.some(item=>item.id===result.material)||!Number.isInteger(result.amount)||result.amount<1||result.amount>3
+   ||result.xp!==20||result.coins!==35)throw new TypeError('Rust returned an invalid random event');
+  if(!await award(result.xp,result.coins))throw new Error('Rust reward transaction failed');
+  state.events.random=today;state.materials[result.material]=(state.materials[result.material]||0)+result.amount;
+  save();toast(result.title+' · '+result.description);render();return true;
+ }catch(error){console.error('[Gameverse] Rust random event failed:',error);toast('Không thể kích hoạt sự kiện: '+String(error.message||error));return false;}
+ finally{gameversePendingActions.delete(lock);}
+}
 function render(){if(!panel)return;const body=panel.querySelector('#pgwBody'),xpNext=state.level*state.level*120,progress=Math.max(0,Math.min(100,(state.xp-(state.level-1)**2*120)/(xpNext-(state.level-1)**2*120)*100));body.innerHTML='<section class="pgw-hero"><div><small>PRINCIPIA · GAMEVERSE</small><h1>Thế giới của bạn</h1><p>Level '+state.level+' · '+state.xp+' XP · '+state.coins+' coin</p><div class="pgw-bar"><i style="width:'+progress+'%"></i></div></div><div class="pgw-stats"><span>🏅 '+state.win+' điểm kiến thức</span><span>🎮 '+state.played+' trận</span><span>🏗️ '+state.crafted.length+' chế tạo</span></div></section><nav class="pgw-tabs">'+[['world','🗺️ Thế giới'],['missions','🎯 Quest'],['craft','⛏️ Craft'],['collection','🎒 Collection'],['skills','🌳 Skills'],['season','🎟️ Season'],['pet','🐾 Pet'],['guild','👥 Guild'],['events','🎲 Events']].map(([id,t])=>'<button data-tab="'+id+'">'+t+'</button>').join('')+'</nav><div id="pgwTab"></div>';body.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>tab(b.dataset.tab));tab(focusTab);}
 function tab(name){focusTab=name;const t=panel?.querySelector('#pgwTab');if(!t)return;
 if(name==='world'){t.innerHTML='<div class="pgw-worlds">'+ZONES.map(z=>'<article class="pgw-card pgw-zone"><div class="pgw-icon">'+z.icon+'</div><h2>'+z.name+'</h2><p>'+z.desc+'</p>'+(isUnlocked(z.id)?'<button data-enter="'+z.id+'">Vào khu vực →</button>':'<button data-unlock="'+z.id+'" '+ (state.coins<z.cost?'disabled':'')+'>Mở · '+z.cost+' coin</button>')+'</article>').join('')+'</div><div class="pgw-actions"><button data-treasure>🗺️ Tìm kho báu</button><button data-event>🎲 Sự kiện bất ngờ</button></div>';t.querySelectorAll('[data-unlock]').forEach(b=>b.onclick=()=>unlock(b.dataset.unlock));t.querySelectorAll('[data-enter]').forEach(b=>b.onclick=()=>enter(b.dataset.enter));t.querySelector('[data-treasure]').onclick=treasure;t.querySelector('[data-event]').onclick=randomEvent;}
