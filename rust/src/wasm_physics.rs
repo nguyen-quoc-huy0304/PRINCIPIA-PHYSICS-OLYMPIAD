@@ -502,3 +502,19 @@ pub fn content_catalog_index_json(input_json: &str, query: &str) -> Result<Strin
         .map_err(|error| input_error(&format!("Catalog validation failed: {error:?}")))?;
     serde_json::to_string(&result).map_err(|error| input_error(&error.to_string()))
 }
+
+
+/// Execute hierarchical catalog operations in Rust for the browser presentation adapter.
+#[wasm_bindgen]
+pub fn content_tree_query_json(
+    catalog_json: &str,
+    operation: &str,
+    target_id: &str,
+) -> Result<String, JsValue> {
+    if catalog_json.len() > 2 * 1024 * 1024 {
+        return Err(input_error("Catalog payload exceeds 2 MiB"));
+    }
+    let result = crate::content_tree::execute(catalog_json, operation, target_id)
+        .map_err(|error| input_error(&format!("Content tree operation failed: {error:?}")))?;
+    serde_json::to_string(&result).map_err(|error| input_error(&error.to_string()))
+}
