@@ -40,8 +40,8 @@ test('global search delegates all catalog traversal to Rust/WASM', async () => {
   const items = await api.search('newton');
   assert.deepEqual(calls.map(call => call.defaultKind), ['lesson', 'quiz', 'fun']);
   assert.ok(calls.every(call => call.query === 'newton'));
-  assert.deepEqual(items.map(item => item.kind), ['lesson', 'quiz', 'fun']);
-  assert.deepEqual(items.map(item => item.id), ['lesson-1', 'quiz-1', 'fun-1']);
+  assert.equal(items.map(item => item.kind).join(','), 'lesson,quiz,fun');
+  assert.equal(items.map(item => item.id).join(','), 'lesson-1,quiz-1,fun-1');
 });
 
 test('global search deduplicates repeated IDs within a content kind', async () => {
