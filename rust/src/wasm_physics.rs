@@ -95,6 +95,31 @@ pub fn physics_pendulum_json(
     })).map_err(|error| input_error(&error.to_string()))
 }
 
+
+#[wasm_bindgen]
+pub fn physics_collision_1d_json(
+    mass_a: f64,
+    velocity_a: f64,
+    mass_b: f64,
+    velocity_b: f64,
+    restitution: f64,
+) -> Result<String, JsValue> {
+    let result = crate::collision::collide_1d(mass_a, velocity_a, mass_b, velocity_b, restitution)
+        .map_err(|error| input_error(&format!("Collision calculation failed: {error:?}")))?;
+    serde_json::to_string(&serde_json::json!({
+        "v1": result.velocity_a,
+        "v2": result.velocity_b,
+        "momentumBefore": result.momentum_before,
+        "momentumAfter": result.momentum_after,
+        "momentumError": result.momentum_error,
+        "kineticBefore": result.kinetic_before,
+        "kineticAfter": result.kinetic_after,
+        "kineticChange": result.kinetic_change,
+        "energyLoss": result.energy_loss,
+        "totalMass": result.total_mass
+    })).map_err(|error| input_error(&error.to_string()))
+}
+
 fn input_error(message: &str) -> JsValue { JsValue::from_str(message) }
 
 #[wasm_bindgen]
