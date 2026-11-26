@@ -9,12 +9,12 @@ const MAX_DEPTH: usize = 32;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TreeError {
     InvalidJson, InvalidRoot, TooLarge, TooManyNodes, TooDeep,
-    InvalidNode, DuplicateId, MissingTarget, UnsupportedOperation,
+    InvalidNode, DuplicateId, MissingTarget, InvalidTarget, Cycle, UnsupportedOperation,
 }
 
 pub fn execute(input: &str, operation: &str, target: &str) -> Result<Value, TreeError> {
     if input.len() > MAX_BYTES { return Err(TreeError::TooLarge); }
-    if target.len() > 128 { return Err(TreeError::InvalidNode); }
+    if target.len() > 512 { return Err(TreeError::InvalidNode); }
     let mut catalog: Value = serde_json::from_str(input).map_err(|_| TreeError::InvalidJson)?;
     let nodes = catalog.as_array().ok_or(TreeError::InvalidRoot)?;
     validate_nodes(nodes)?;
@@ -38,6 +38,41 @@ pub fn execute(input: &str, operation: &str, target: &str) -> Result<Value, Tree
                 return Err(TreeError::MissingTarget);
             }
             Ok(json!({ "removed": true, "catalog": catalog }))
+        }
+        "reorder" => {
+            let (id, delta) = parse_reorder(target)?;
+            let nodes = catalog.as_array_mut().ok_or(TreeError::InvalidRoot)?;
+            let siblings = locate_mut(nodes, &id).ok_or(TreeError::MissingTarget)?;
+            let from = siblings.iter().position(|node| node.get("id").and_then(Value::as_str) == Some(&id))
+                .ok_or(TreeError::MissingTarget)?;
+            let to = from as isize + delta;
+            if to >= 0 && (to as usize) < siblings.len() { siblings.swap(from, to as usize); }
+            Ok(json!({ "catalog": catalog }))
+        }
+        "move" => {
+            let (id, target_id) = parse_move(target)?;
+            let nodes = catalog.as_array_mut().ok_or(TreeError::InvalidRoot)?;
+            let moving = find(nodes, &id).cloned().ok_or(TreeError::MissingTarget)?;
+            if !target_id.is_empty() {
+                let destination = find(nodes, &target_id).ok_or(TreeError::InvalidTarget)?;
+                if destination.get("type").and_then(Value::as_str) != Some("tab") {
+                    return Err(TreeError::InvalidTarget);
+                }
+                if contains_id(&moving, &target_id) { return Err(TreeError::Cycle); }
+            }
+            let source = locate_mut(nodes, &id).ok_or(TreeError::MissingTarget)?;
+            let index = source.iter().position(|node| node.get("id").and_then(Value::as_str) == Some(&id))
+                .ok_or(TreeError::MissingTarget)?;
+            let item = source.remove(index);
+            if target_id.is_empty() {
+                nodes.push(item);
+            } else {
+                let destination = find_mut(nodes, &target_id).ok_or(TreeError::InvalidTarget)?;
+                let children = destination.as_object_mut().ok_or(TreeError::InvalidTarget)?
+                    .entry("children").or_insert_with(|| json!([]));
+                children.as_array_mut().ok_or(TreeError::InvalidTarget)?.push(item);
+            }
+            Ok(json!({ "catalog": catalog }))
         }
         _ => Err(TreeError::UnsupportedOperation),
     }
@@ -141,6 +176,56 @@ fn count_nodes(nodes: &[Value]) -> usize {
     }).sum()
 }
 
+
+fn parse_reorder(raw: &str) -> Result<(String, isize), TreeError> {
+    let value: Value = serde_json::from_str(raw).map_err(|_| TreeError::InvalidTarget)?;
+    let id = value.get("id").and_then(Value::as_str)
+        .filter(|id| !id.trim().is_empty() && id.len() <= 128)
+        .ok_or(TreeError::InvalidTarget)?.to_owned();
+    let delta = value.get("delta").and_then(Value::as_i64)
+        .filter(|delta| (-1..=1).contains(delta) && *delta != 0)
+        .ok_or(TreeError::InvalidTarget)? as isize;
+    Ok((id, delta))
+}
+
+fn parse_move(raw: &str) -> Result<(String, String), TreeError> {
+    let value: Value = serde_json::from_str(raw).map_err(|_| TreeError::InvalidTarget)?;
+    let id = value.get("id").and_then(Value::as_str)
+        .filter(|id| !id.trim().is_empty() && id.len() <= 128)
+        .ok_or(TreeError::InvalidTarget)?.to_owned();
+    let target = value.get("targetId").and_then(Value::as_str).unwrap_or("");
+    if target.len() > 128 { return Err(TreeError::InvalidTarget); }
+    Ok((id, target.to_owned()))
+}
+
+fn locate_mut(nodes: &mut Vec<Value>, target: &str) -> Option<&mut Vec<Value>> {
+    if nodes.iter().any(|node| node.get("id").and_then(Value::as_str) == Some(target)) {
+        return Some(nodes);
+    }
+    for node in nodes {
+        if let Some(children) = node.get_mut("children").and_then(Value::as_array_mut) {
+            if let Some(found) = locate_mut(children, target) { return Some(found); }
+        }
+    }
+    None
+}
+
+fn find_mut(nodes: &mut [Value], target: &str) -> Option<&mut Value> {
+    for node in nodes {
+        if node.get("id").and_then(Value::as_str) == Some(target) { return Some(node); }
+        if let Some(children) = node.get_mut("children").and_then(Value::as_array_mut) {
+            if let Some(found) = find_mut(children, target) { return Some(found); }
+        }
+    }
+    None
+}
+
+fn contains_id(node: &Value, target: &str) -> bool {
+    if node.get("id").and_then(Value::as_str) == Some(target) { return true; }
+    node.get("children").and_then(Value::as_array)
+        .is_some_and(|children| children.iter().any(|child| contains_id(child, target)))
+}
+
 fn remove_node(nodes: &mut Vec<Value>, target: &str) -> bool {
     if let Some(index) = nodes.iter().position(|node| node.get("id").and_then(Value::as_str) == Some(target)) {
         nodes.remove(index);
@@ -183,6 +268,18 @@ mod tests {
         assert_eq!(execute(SAMPLE, "unknown", ""), Err(TreeError::UnsupportedOperation));
         let duplicate = r#"[{"id":"x","name":"A","type":"tab"},{"id":"x","name":"B","type":"tab"}]"#;
         assert_eq!(execute(duplicate, "count", ""), Err(TreeError::DuplicateId));
+    }
+
+    #[test]
+    fn reorders_and_moves_nodes_without_breaking_tree_invariants() {
+        let reordered = execute(SAMPLE, "reorder", r#"{"id":"quiz","delta":-1}"#).unwrap();
+        assert_eq!(reordered["catalog"][0]["children"][0]["id"], "quiz");
+        let moved = execute(SAMPLE, "move", r#"{"id":"newton","targetId":"physics"}"#).unwrap();
+        assert_eq!(moved["catalog"][0]["children"][2]["id"], "newton");
+        let cycle = execute(SAMPLE, "move", r#"{"id":"physics","targetId":"mechanics"}"#);
+        assert_eq!(cycle, Err(TreeError::Cycle));
+        let invalid = execute(SAMPLE, "move", r#"{"id":"newton","targetId":"quiz"}"#);
+        assert_eq!(invalid, Err(TreeError::InvalidTarget));
     }
 
     #[test]
