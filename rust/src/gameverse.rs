@@ -1,8 +1,9 @@
 //! Rust-owned reward and ranked-result rules for PRINCIPIA Gameverse.
 use serde_json::{json, Value};
+use std::collections::BTreeMap;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum GameverseError { InvalidScore, InvalidMode, InvalidRating }
+pub enum GameverseError { InvalidScore, InvalidMode, InvalidRating, UnknownRecipe, AlreadyCrafted, InsufficientMaterials, InvalidInventory }
 
 pub fn quiz_reward(correct: u32, total: u32, mode: &str, rating: u64) -> Result<Value, GameverseError> {
     if total == 0 || total > 200 || correct > total { return Err(GameverseError::InvalidScore); }
@@ -30,6 +31,42 @@ pub fn quiz_reward(correct: u32, total: u32, mode: &str, rating: u64) -> Result<
         "rankDelta": rank_delta,
         "rating": next_rating,
         "rankName": rank_name
+    }))
+}
+
+
+pub fn craft(recipe_id: &str, materials: &BTreeMap<String, u32>, crafted: &[String]) -> Result<Value, GameverseError> {
+    let recipe: &[(&str, u32)] = match recipe_id {
+        "desk" => &[("wood", 3)],
+        "lamp" => &[("crystal", 2), ("gear", 1)],
+        "portal" => &[("wood", 2), ("crystal", 3), ("gear", 2)],
+        "trophy" => &[("star", 3), ("gear", 1)],
+        "rocket" => &[("gear", 3), ("crystal", 5), ("energy", 2)],
+        _ => return Err(GameverseError::UnknownRecipe),
+    };
+    if crafted.len() > 100 || crafted.iter().any(|id| id.len() > 64) {
+        return Err(GameverseError::InvalidInventory);
+    }
+    if crafted.iter().any(|id| id == recipe_id) { return Err(GameverseError::AlreadyCrafted); }
+    if materials.keys().any(|key| !matches!(key.as_str(), "wood" | "crystal" | "gear" | "star" | "energy")) {
+        return Err(GameverseError::InvalidInventory);
+    }
+    if recipe.iter().any(|(key, amount)| materials.get(*key).copied().unwrap_or(0) < *amount) {
+        return Err(GameverseError::InsufficientMaterials);
+    }
+    let mut next_materials = materials.clone();
+    for (key, amount) in recipe {
+        let current = next_materials.get_mut(*key).ok_or(GameverseError::InsufficientMaterials)?;
+        *current -= *amount;
+    }
+    let mut next_crafted = crafted.to_vec();
+    next_crafted.push(recipe_id.to_owned());
+    Ok(json!({
+        "materials": next_materials,
+        "crafted": next_crafted,
+        "xp": 20,
+        "coins": 5,
+        "recipeId": recipe_id
     }))
 }
 
