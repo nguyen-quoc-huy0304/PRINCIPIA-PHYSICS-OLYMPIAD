@@ -23,14 +23,16 @@
   return prefix+'-'+Array.from(bytes,value=>value.toString(16).padStart(2,'0')).join('');
  }
  const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){console.warn('[PRINCIPIA] Learning Suite storage:',e)}};
- async function awardLearningExperience(activity){
-  const engine=window.PrincipiaWasmPhysics;
-  if(!engine||typeof engine.experienceReward!=='function')throw new Error('Rust experience reward engine is unavailable');
-  const reward=await engine.experienceReward(activity);
+ function applyLearningExperienceAmount(reward){
   if(!Number.isSafeInteger(reward)||reward<0||reward>1000)throw new TypeError('Rust returned an invalid experience reward');
   if(typeof xp!=='undefined'&&typeof saveAll==='function'){xp+=reward;saveAll();}
   else state.xp=(Number(state.xp)||0)+reward;
   save();return reward;
+ }
+ async function awardLearningExperience(activity){
+  const engine=window.PrincipiaWasmPhysics;
+  if(!engine||typeof engine.experienceReward!=='function')throw new Error('Rust experience reward engine is unavailable');
+  return applyLearningExperienceAmount(await engine.experienceReward(activity));
  }
  const localDateKey=(date=new Date())=>{const y=date.getFullYear(),m=String(date.getMonth()+1).padStart(2,'0'),d=String(date.getDate()).padStart(2,'0');return y+'-'+m+'-'+d};
  function markStudyDay(){const api=window.PrincipiaProgressionCore;if(!api||typeof api.recordActivity!=='function'){console.error('[PRINCIPIA] Rust activity calendar is unavailable');return Promise.resolve(null)}return api.recordActivity(state.studyDays||[],new Date()).then(days=>{if(!Array.isArray(days))throw new TypeError('Rust returned an invalid activity calendar');state.studyDays=days;save();return days}).catch(error=>{console.error('[PRINCIPIA] Rust activity calendar update failed:',error);return null})}
@@ -530,23 +532,37 @@
  function setAnalyticsRange(value){analyticsRange=['7','30','all'].includes(String(value))?String(value):'all';analytics()}
  function exportAnalytics(){const quote=v=>'\"'+String(v==null?'':v).replace(/\"/g,'\"\"')+'\"';const rows=(state.attempts||[]).map(x=>[x.date,x.mode||'',x.score,x.total,x.percent]);downloadText('\uFEFF'+[['Thời điểm','Chế độ','Số câu đúng','Tổng câu','Chính xác (%)'],...rows].map(r=>r.map(quote).join(',')).join('\r\n'),'principia-learning-analytics.csv','text/csv;charset=utf-8')}
  function downloadText(content,name,type){const blob=new Blob([content],{type:type||'text/plain;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
- function seasonMissions(){
-  const api=window.PrincipiaSeasonCore;if(!api){open('Mùa giải tuần','<p>Module mùa giải chưa tải được.</p>'+btn('Về trung tâm','principiaSuiteHome()'));return}
-  const now=new Date(),week=api.weekKey(now),attempts=(state.attempts||[]).filter(x=>{try{return api.weekKey(new Date(x.date))===week}catch(_){return false}});
-  const questions=attempts.reduce((n,x)=>n+(Number(x.total)||0),0),notes=(state.notes||[]).filter(x=>{try{return api.weekKey(new Date(x.date))===week}catch(_){return false}}).length;
-  const list=api.missions({sessions:attempts.length,questions,notes},now),claimed=Array.isArray(state.seasonClaims)?state.seasonClaims:[];
-  const body=list.map(m=>{const done=claimed.includes(m.week+':'+m.id);return panel((m.complete?'✓ ':'○ ')+esc(m.name),'<p>'+esc(m.description)+'</p><div style="height:8px;border-radius:10px;background:var(--line,#444);overflow:hidden"><div style="height:100%;width:'+m.progress+'%;background:var(--purple,#9b87ff)"></div></div><p class="small muted">'+Math.min(m.value,m.target)+'/'+m.target+' · '+m.progress+'% · thưởng '+m.xp+' XP</p>'+(done?'<b class="small" style="color:#55b98a">Đã nhận thưởng tuần này</b>':m.complete?btn('Nhận '+m.xp+' XP','principiaSuiteClaimSeason(\''+m.id+'\')','primary'):'<small class="muted">Tiếp tục hoạt động để hoàn thành</small>'))}).join('');
+ async function seasonMissions(){
+  const api=window.PrincipiaSeasonCore;
+  if(!api){open('Mùa giải tuần','<p>Module mùa giải chưa tải được.</p>'+btn('Về trung tâm','principiaSuiteHome()'));return}
+  const now=new Date(),week=api.weekKey(now);
+  const attempts=(state.attempts||[]).filter(item=>{try{return api.weekKey(new Date(item.date))===week}catch(_){return false}});
+  const questions=attempts.reduce((sum,item)=>sum+Math.max(0,Number(item.total)||0),0);
+  const notes=(state.notes||[]).filter(item=>{try{return api.weekKey(new Date(item.date))===week}catch(_){return false}}).length;
+  let list;
+  try{list=await api.missions({sessions:attempts.length,questions,notes},now);}
+  catch(error){console.error('[PRINCIPIA] Rust season missions failed:',error);open('Mùa giải tuần','<p>Không thể tải nhiệm vụ tuần từ lõi Rust/WASM.</p>'+btn('Thử lại','principiaSuiteSeasonMissions()','primary')+btn('Về trung tâm','principiaSuiteHome()'));return}
+  const claimed=Array.isArray(state.seasonClaims)?state.seasonClaims:[];
+  const body=list.map(item=>{const done=claimed.includes(item.week+':'+item.id);return panel((item.complete?'✓ ':'○ ')+esc(item.name),'<p>'+esc(item.description)+'</p><div style="height:8px;border-radius:10px;background:var(--line,#444);overflow:hidden"><div style="height:100%;width:'+item.progress+'%;background:var(--purple,#9b87ff)"></div></div><p class="small muted">'+Math.min(item.value,item.target)+'/'+item.target+' · '+item.progress+'% · thưởng '+item.xp+' XP</p>'+(done?'<b class="small" style="color:#55b98a">Đã nhận thưởng tuần này</b>':item.complete?btn('Nhận '+item.xp+' XP','principiaSuiteClaimSeason(\\''+item.id+'\\')','primary'):'<small class="muted">Tiếp tục hoạt động để hoàn thành</small>'))}).join('');
   open('Mùa giải tuần','<p>Tuần bắt đầu '+esc(week)+' · nhiệm vụ tính từ lượt luyện và ghi chú thực tế trên thiết bị này.</p>'+body+btn('Về trung tâm','principiaSuiteHome()'));
  }
- function claimSeason(id){
+ async function claimSeason(id){
   const api=window.PrincipiaSeasonCore;if(!api)return;
-  const now=new Date(),week=api.weekKey(now),attempts=(state.attempts||[]).filter(x=>{try{return api.weekKey(new Date(x.date))===week}catch(_){return false}});
-  const questions=attempts.reduce((n,x)=>n+(Number(x.total)||0),0),notes=(state.notes||[]).filter(x=>{try{return api.weekKey(new Date(x.date))===week}catch(_){return false}}).length;
-  const list=api.missions({sessions:attempts.length,questions,notes},now),claimed=Array.isArray(state.seasonClaims)?state.seasonClaims:[];
-  const item=list.find(x=>x.id===id);if(!item||!api.canClaim(list,id,claimed))return;
-  state.seasonClaims=claimed.concat(item.week+':'+id);save();
-  try{if(typeof xp!=='undefined'&&typeof saveAll==='function'){xp+=item.xp;saveAll()}else{state.xp=(Number(state.xp)||0)+item.xp;save()}}catch(_){}
-  seasonMissions();
+  const now=new Date(),week=api.weekKey(now);
+  const attempts=(state.attempts||[]).filter(item=>{try{return api.weekKey(new Date(item.date))===week}catch(_){return false}});
+  const questions=attempts.reduce((sum,item)=>sum+Math.max(0,Number(item.total)||0),0);
+  const notes=(state.notes||[]).filter(item=>{try{return api.weekKey(new Date(item.date))===week}catch(_){return false}}).length;
+  let list;
+  try{list=await api.missions({sessions:attempts.length,questions,notes},now);}
+  catch(error){console.error('[PRINCIPIA] Rust season mission refresh failed:',error);alert('Không thể xác minh nhiệm vụ tuần bằng Rust/WASM.');return}
+  const item=list.find(row=>row.id===id),claimed=Array.isArray(state.seasonClaims)?state.seasonClaims:[];
+  if(!item)return;
+  try{
+   const result=await api.claim(id,item.value,claimed.includes(item.week+':'+id));
+   if(!result.allowed)return;
+   applyLearningExperienceAmount(result.reward);
+   state.seasonClaims=claimed.concat(item.week+':'+id);save();seasonMissions();
+  }catch(error){console.error('[PRINCIPIA] Rust season mission claim failed:',error);alert('Không thể xác minh phần thưởng mùa giải. Nhiệm vụ chưa được nhận.');}
  }
  function quests(){
   let done=0,earned=0;try{done=completed.length;earned=xp}catch(_){}
