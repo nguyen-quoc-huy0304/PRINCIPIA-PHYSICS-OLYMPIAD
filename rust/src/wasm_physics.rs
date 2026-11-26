@@ -495,6 +495,26 @@ pub fn learning_science_select_json(input_json: &str) -> Result<String, JsValue>
     serde_json::to_string(&selected).map_err(|error| input_error(&error.to_string()))
 }
 
+/// Calculate study streaks and normalize activity dates in Rust.
+#[wasm_bindgen]
+pub fn activity_calendar_json(input_json: &str) -> Result<String, JsValue> {
+    if input_json.len() > 256 * 1024 { return Err(input_error("Activity calendar payload exceeds 256 KiB")); }
+    let input: serde_json::Value = serde_json::from_str(input_json)
+        .map_err(|_| input_error("Activity calendar payload must be valid JSON"))?;
+    let today = input.get("today").and_then(serde_json::Value::as_str)
+        .ok_or_else(|| input_error("Activity calendar requires today"))?;
+    let record_today = input.get("recordToday").and_then(serde_json::Value::as_bool).unwrap_or(false);
+    let days = input.get("days").and_then(serde_json::Value::as_array)
+        .ok_or_else(|| input_error("Activity calendar requires a days array"))?;
+    if days.len() > 10_000 { return Err(input_error("Activity calendar has too many dates")); }
+    let parsed = days.iter().map(|day| day.as_str()
+        .map(str::to_owned).ok_or_else(|| input_error("Activity dates must be strings")))
+        .collect::<Result<Vec<_>, _>>()?;
+    let result = crate::activity_calendar::activity_summary(&parsed, today, record_today)
+        .map_err(|error| input_error(&format!("Activity calendar rejected: {error:?}")))?;
+    serde_json::to_string(&result).map_err(|error| input_error(&error.to_string()))
+}
+
 /// Return the canonical ranked arena tier for a rating-point total.
 #[wasm_bindgen]
 pub fn rank_arena_tier_json(rp: u64) -> Result<String, JsValue> {
