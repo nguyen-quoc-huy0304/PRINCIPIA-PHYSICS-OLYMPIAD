@@ -44,6 +44,12 @@
         refresh().then(() => options.onRoute?.(route)).catch(options.onError || (() => {}));
         return;
       }
+      const sidebarButton = event.target?.closest?.('[data-pr-sidebar]');
+      if (sidebarButton && root.contains(sidebarButton)) {
+        const collapsed = root.classList.toggle('pr-sidebar-collapsed');
+        sidebarButton.setAttribute('aria-expanded', String(!collapsed));
+        return;
+      }
       const searchButton = event.target?.closest?.('[data-pr-search]');
       if (searchButton && root.contains(searchButton)) {
         dialog = dialog === 'search' ? '' : 'search';
