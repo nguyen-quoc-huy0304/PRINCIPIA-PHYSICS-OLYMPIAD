@@ -5,6 +5,23 @@
  const safe=(v)=>{try{return JSON.parse(localStorage.getItem(KEY)||'{}')}catch(_){return {}}};
  const state=Object.assign({attempts:[],notes:[],errors:[],notifications:false,claimedQuests:[]},safe());
  const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ function secureRandomIndex(length){
+  if(!Number.isSafeInteger(length)||length<1||length>0x100000000)throw new RangeError('Random selection length is invalid');
+  if(!globalThis.crypto?.getRandomValues)throw new Error('Secure random generator is unavailable');
+  const limit=Math.floor(0x100000000/length)*length,buffer=new Uint32Array(1);
+  do{globalThis.crypto.getRandomValues(buffer)}while(buffer[0]>=limit);
+  return buffer[0]%length;
+ }
+ function secureShuffle(items){
+  const result=items.slice();
+  for(let i=result.length-1;i>0;i--){const j=secureRandomIndex(i+1);[result[i],result[j]]=[result[j],result[i]]}
+  return result;
+ }
+ function secureId(prefix){
+  if(!globalThis.crypto?.getRandomValues)throw new Error('Secure random generator is unavailable');
+  const bytes=new Uint8Array(16);globalThis.crypto.getRandomValues(bytes);
+  return prefix+'-'+Array.from(bytes,value=>value.toString(16).padStart(2,'0')).join('');
+ }
  const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){console.warn('[PRINCIPIA] Learning Suite storage:',e)}};
  const localDateKey=(date=new Date())=>{const y=date.getFullYear(),m=String(date.getMonth()+1).padStart(2,'0'),d=String(date.getDate()).padStart(2,'0');return y+'-'+m+'-'+d};
  function markStudyDay(){const api=window.PrincipiaProgressionCore;if(!api||typeof api.recordActivity!=='function'){console.error('[PRINCIPIA] Rust activity calendar is unavailable');return Promise.resolve(null)}return api.recordActivity(state.studyDays||[],new Date()).then(days=>{if(!Array.isArray(days))throw new TypeError('Rust returned an invalid activity calendar');state.studyDays=days;save();return days}).catch(error=>{console.error('[PRINCIPIA] Rust activity calendar update failed:',error);return null})}
@@ -92,7 +109,7 @@
   const topics=report.weakTopics.slice(0,3),today=localDateKey(),due=localDateKey(new Date(Date.now()+86400000));
   if(!topics.length){alert('Chưa có chủ đề lỗi sai trong 7 ngày để tạo nhiệm vụ.');return}
   const existing=new Set(state.studyPlan.filter(x=>!x.done).map(x=>String(x.topic||'').toLocaleLowerCase('vi')));
-  const added=[];topics.forEach(x=>{const topic=String(x.topic||'').trim();if(!topic||existing.has(topic.toLocaleLowerCase('vi')))return;if(state.studyPlan.length>=200)return;state.studyPlan.push({id:'weekly-review-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6),title:'Ôn lại chủ đề '+topic,topic,due,minutes:25,note:'Tự động gợi ý từ báo cáo học tập 7 ngày ('+x.count+' lỗi ghi nhận).',done:false,created:new Date().toISOString()});existing.add(topic.toLocaleLowerCase('vi'));added.push(topic)});
+  const added=[];topics.forEach(x=>{const topic=String(x.topic||'').trim();if(!topic||existing.has(topic.toLocaleLowerCase('vi')))return;if(state.studyPlan.length>=200)return;state.studyPlan.push({id:secureId('weekly-review'),title:'Ôn lại chủ đề '+topic,topic,due,minutes:25,note:'Tự động gợi ý từ báo cáo học tập 7 ngày ('+x.count+' lỗi ghi nhận).',done:false,created:new Date().toISOString()});existing.add(topic.toLocaleLowerCase('vi'));added.push(topic)});
   if(!added.length){alert('Không có nhiệm vụ mới: các chủ đề gợi ý đã có trong kế hoạch hoặc kế hoạch đạt giới hạn.');return}
   save();alert('Đã thêm '+added.length+' nhiệm vụ ôn tập vào kế hoạch: '+added.join(', '));studyPlanner();
  }
@@ -152,7 +169,7 @@
   const today=localDateKey();
   const bank=pool();
   if(!bank.length){open('Thử thách mỗi ngày','<p>Chưa có câu hỏi hợp lệ để tạo thử thách. Hãy bổ sung câu hỏi vào Quiz hoặc bài học.</p>'+btn('Về trung tâm','principiaSuiteHome()'));return}
-  if(!state.daily||state.daily.date!==today){const q=bank[Math.floor(Math.random()*bank.length)];state.daily={date:today,q:q.q,a:q.a,correct:q.correct,topic:q.topic,path:q.path,image:q.image||null,graph:q.graph||null,answered:false,choice:null};save()}
+  if(!state.daily||state.daily.date!==today){const q=bank[secureRandomIndex(bank.length)];state.daily={date:today,q:q.q,a:q.a,correct:q.correct,topic:q.topic,path:q.path,image:q.image||null,graph:q.graph||null,answered:false,choice:null};save()}
   const d=state.daily;
   let html='<p>1 câu hỏi mới mỗi ngày · dữ liệu từ ngân hàng bài học/Quiz thật.</p>'+panel('Thử thách '+today,'<b>'+esc(d.topic)+'</b><p>'+esc(d.q)+'</p>'+questionMedia(d)+'<div style="display:grid;gap:8px">'+d.a.map((a,i)=>'<button '+(d.answered?'disabled':'')+' onclick="principiaSuiteDailyAnswer('+i+')" style="text-align:left;padding:12px;border:1px solid var(--line,#555);border-radius:12px;background:var(--card,#171a2a);color:inherit">'+String.fromCharCode(65+i)+'. '+esc(a)+'</button>').join('')+'</div>'+ (d.answered?'<p><b>'+(d.choice===d.correct?'✅ Chính xác!':'❌ Chưa đúng')+'</b><br>Đáp án: '+esc(d.a[d.correct])+'</p>':'') )+btn('Về trung tâm','principiaSuiteHome()');
   open('Thử thách mỗi ngày',html)
@@ -227,8 +244,7 @@
   open('Phòng luyện Olympic',resume+'<p>Đề lấy ngẫu nhiên từ ngân hàng Quiz và câu hỏi cuối bài học. Có thể chọn chủ đề trước khi thi.</p>'+panel('Thiết lập bài thi','<label>Chủ đề <select id="plsExamTopic" style="margin:8px;padding:8px;max-width:100%"><option value="all">Tất cả chủ đề ('+all.length+')</option>'+topics.map(t=>'<option value="'+esc(t)+'">'+esc(t)+' ('+all.filter(q=>q.topic===t).length+')</option>').join('')+'</select></label><br><label>Số câu <select id="plsExamCount" style="margin:8px;padding:8px"><option value="5">5 câu</option><option value="10" selected>10 câu</option><option value="20">20 câu</option><option value="all">Tất cả</option></select></label><label>Thời gian <select id="plsExamMinutes" style="margin:8px;padding:8px"><option value="10">10 phút</option><option value="20" selected>20 phút</option><option value="30">30 phút</option><option value="45">45 phút</option></select></label><p class="small muted">'+all.length+' câu hỏi · đáp án được đảo thứ tự ngẫu nhiên trong mỗi đề.</p>'+btn('Bắt đầu thi','principiaSuiteStartExam()','primary'))+btn('Quay lại','principiaSuiteHome()'));
  }
  function shuffledQuestion(q){
-  const choices=q.a.map((value,index)=>({value,index}));
-  for(let i=choices.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[choices[i],choices[j]]=[choices[j],choices[i]]}
+  const choices=secureShuffle(q.a.map((value,index)=>({value,index})));
   return Object.assign({},q,{a:choices.map(x=>x.value),correct:choices.findIndex(x=>x.index===q.correct)});
  }
  function startExam(){
@@ -236,7 +252,7 @@
   const topic=document.getElementById('plsExamTopic')?.value||'all',source=topic==='all'?all:all.filter(q=>q.topic===topic);
   if(!source.length){alert('Chủ đề này chưa có câu hỏi hợp lệ.');return}
   const countValue=document.getElementById('plsExamCount')?.value||'10',minutes=Math.max(1,Number(document.getElementById('plsExamMinutes')?.value)||20);
-  const shuffled=source.slice().sort(()=>Math.random()-.5),selected=countValue==='all'?shuffled:shuffled.slice(0,Math.min(Number(countValue)||10,shuffled.length));
+  const shuffled=secureShuffle(source),selected=countValue==='all'?shuffled:shuffled.slice(0,Math.min(Number(countValue)||10,shuffled.length));
   exam={questions:selected.map(shuffledQuestion),answers:{},marked:[],end:Date.now()+minutes*60000,startedAt:Date.now(),submitted:false,topic,warned5:false,warned1:false,currentIndex:0};
   examCurrentIndex=0;examView='all';saveExamDraft();renderExam();startTimer();
  }
@@ -419,7 +435,7 @@
   const title=document.getElementById('plsPlanTitle')?.value.trim();if(!title){alert('Hãy nhập tên nhiệm vụ.');return}
   if(!Array.isArray(state.studyPlan))state.studyPlan=[];if(state.studyPlan.length>=200){alert('Đã đạt giới hạn 200 nhiệm vụ. Hãy xóa các mục cũ đã hoàn thành.');return}
   const due=document.getElementById('plsPlanDue')?.value||'',minutes=Math.max(5,Math.min(300,Math.round(Number(document.getElementById('plsPlanMinutes')?.value)||25)));
-  state.studyPlan.push({id:'plan-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6),title,topic:document.getElementById('plsPlanTopic')?.value.trim()||'Chung',due,minutes,note:document.getElementById('plsPlanNote')?.value.trim()||'',done:false,created:new Date().toISOString()});save();studyPlanner();
+  state.studyPlan.push({id:secureId('plan'),title,topic:document.getElementById('plsPlanTopic')?.value.trim()||'Chung',due,minutes,note:document.getElementById('plsPlanNote')?.value.trim()||'',done:false,created:new Date().toISOString()});save();studyPlanner();
  }
  function togglePlanTask(index,checked){const t=state.studyPlan?.[index];if(!t)return;t.done=!!checked;t.completed=t.done?new Date().toISOString():null;save();studyPlanner()}
  function deletePlanTask(index){if(!state.studyPlan?.[index]||!confirm('Xóa nhiệm vụ này khỏi kế hoạch?'))return;state.studyPlan.splice(index,1);save();studyPlanner()}
@@ -583,8 +599,8 @@
  }
  function toggleMastered(){const qs=flashMode==='favorites'?pool().filter(q=>(state.favoriteQuestions||[]).includes(questionKey(q))):flashMode==='mastered'?pool().filter(q=>(state.masteredQuestions||[]).includes(questionKey(q))):pool();const q=qs[flashIndex%Math.max(1,qs.length)];if(!q)return;const list=Array.isArray(state.masteredQuestions)?state.masteredQuestions:[],key=questionKey(q),i=list.indexOf(key);if(i>=0)list.splice(i,1);else list.push(key);state.masteredQuestions=list;save();renderFlash()}
  function masteredFlashcards(){flashMode='mastered';flashIndex=0;flashSide=false;renderFlash()}
- function shuffleFlashcards(){let qs=pool();if(flashMode==='favorites')qs=qs.filter(q=>(state.favoriteQuestions||[]).includes(questionKey(q)));else if(flashMode==='mastered')qs=qs.filter(q=>(state.masteredQuestions||[]).includes(questionKey(q)));else if(flashMode==='errors')qs=state.errors||[];if(qs.length>1){const old=flashIndex;let next=old;while(next===old)next=Math.floor(Math.random()*qs.length);flashIndex=next}else flashIndex=0;flashSide=false;renderFlash()}
- function startFavoritePractice(){const qs=pool().filter(q=>(state.favoriteQuestions||[]).includes(questionKey(q)));if(!qs.length){open('Luyện câu yêu thích','<p>Bạn chưa lưu câu hỏi yêu thích nào.</p>'+btn('Mở ngân hàng câu hỏi','principiaSuiteQuestionBank()'));return}exam={questions:qs.slice().sort(()=>Math.random()-.5).slice(0,Math.min(10,qs.length)),answers:{},end:Date.now()+15*60000,submitted:false};renderExam();startTimer()}
+ function shuffleFlashcards(){let qs=pool();if(flashMode==='favorites')qs=qs.filter(q=>(state.favoriteQuestions||[]).includes(questionKey(q)));else if(flashMode==='mastered')qs=qs.filter(q=>(state.masteredQuestions||[]).includes(questionKey(q)));else if(flashMode==='errors')qs=state.errors||[];if(qs.length>1){const old=flashIndex,pick=secureRandomIndex(qs.length-1);flashIndex=pick>=old?pick+1:pick}else flashIndex=0;flashSide=false;renderFlash()}
+ function startFavoritePractice(){const qs=pool().filter(q=>(state.favoriteQuestions||[]).includes(questionKey(q)));if(!qs.length){open('Luyện câu yêu thích','<p>Bạn chưa lưu câu hỏi yêu thích nào.</p>'+btn('Mở ngân hàng câu hỏi','principiaSuiteQuestionBank()'));return}exam={questions:secureShuffle(qs).slice(0,Math.min(10,qs.length)),answers:{},end:Date.now()+15*60000,submitted:false};renderExam();startTimer()}
  function reviewErrors(){
   if(!(state.errors||[]).length){open('Ôn lại lỗi sai','<p>Chưa có lỗi sai nào được lưu. Làm bài luyện tập để hệ thống ghi nhận câu trả lời sai.</p>'+btn('Về trung tâm','principiaSuiteHome()'));return}
   flashMode='errors';flashIndex=0;flashSide=false;renderFlash();
