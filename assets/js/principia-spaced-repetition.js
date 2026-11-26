@@ -59,19 +59,14 @@
       cards.unshift({ id: card.id, front: card.front.slice(0,4000), back: card.back.slice(0,4000), topic: String(card.topic || '').slice(0,200), repetitions: 0, ease: 2.5, intervalDays: 0, dueAt: Number.isFinite(Number(card.dueAt)) ? Number(card.dueAt) : Date.now(), createdAt: Date.now() });
       return write(cards);
     }
-    function review(id, grade, now = Date.now()) {
-      const cards = read(), index = cards.findIndex(card => card.id === id);
-      if (index < 0) return null;
-      cards[index] = schedule(cards[index], grade, now);
-      return write(cards) ? cards[index] : null;
-    }
-    async function reviewNative(id, grade, now = Date.now()) {
+    async function review(id, grade, now = Date.now()) {
       const cards = read(), index = cards.findIndex(card => card.id === id);
       if (index < 0) return null;
       const updated = await scheduleNative(cards[index], grade, now);
       cards[index] = updated;
       return write(cards) ? updated : null;
     }
+    const reviewNative = review;
     function remove(id) { const cards=read(), filtered=cards.filter(card=>card.id!==id); return filtered.length!==cards.length && write(filtered); }
     return Object.freeze({ all, due, add, review, reviewNative, remove });
   }
