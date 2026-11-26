@@ -74,6 +74,38 @@ pub fn execute(input: &str, operation: &str, target: &str) -> Result<Value, Tree
             }
             Ok(json!({ "catalog": catalog }))
         }
+        "drop" => {
+            let (id, target_id) = parse_move(target)?;
+            if id == target_id { return Ok(json!({ "catalog": catalog })); }
+            let nodes = catalog.as_array_mut().ok_or(TreeError::InvalidRoot)?;
+            let moving = find(nodes, &id).cloned().ok_or(TreeError::MissingTarget)?;
+            let target = find(nodes, &target_id).ok_or(TreeError::InvalidTarget)?;
+            if target.get("type").and_then(Value::as_str) != Some("tab") {
+                return Err(TreeError::InvalidTarget);
+            }
+            if contains_id(&moving, &target_id) { return Err(TreeError::Cycle); }
+            let source_parent = parent_id(nodes, &id).ok_or(TreeError::MissingTarget)?;
+            let target_parent = parent_id(nodes, &target_id).ok_or(TreeError::InvalidTarget)?;
+            if source_parent == target_parent {
+                let siblings = locate_mut(nodes, &id).ok_or(TreeError::MissingTarget)?;
+                let from = siblings.iter().position(|node| node.get("id").and_then(Value::as_str) == Some(&id))
+                    .ok_or(TreeError::MissingTarget)?;
+                let item = siblings.remove(from);
+                let to = siblings.iter().position(|node| node.get("id").and_then(Value::as_str) == Some(&target_id))
+                    .ok_or(TreeError::InvalidTarget)?;
+                siblings.insert(to, item);
+            } else {
+                let source = locate_mut(nodes, &id).ok_or(TreeError::MissingTarget)?;
+                let from = source.iter().position(|node| node.get("id").and_then(Value::as_str) == Some(&id))
+                    .ok_or(TreeError::MissingTarget)?;
+                let item = source.remove(from);
+                let destination = find_mut(nodes, &target_id).ok_or(TreeError::InvalidTarget)?;
+                let children = destination.as_object_mut().ok_or(TreeError::InvalidTarget)?
+                    .entry("children").or_insert_with(|| json!([]));
+                children.as_array_mut().ok_or(TreeError::InvalidTarget)?.push(item);
+            }
+            Ok(json!({ "catalog": catalog }))
+        }
         _ => Err(TreeError::UnsupportedOperation),
     }
 }
@@ -220,6 +252,18 @@ fn find_mut(nodes: &mut [Value], target: &str) -> Option<&mut Value> {
     None
 }
 
+
+fn parent_id(nodes: &[Value], target: &str, parent: Option<&str>) -> Option<String> {
+    for node in nodes {
+        let id = node.get("id").and_then(Value::as_str)?;
+        if id == target { return Some(parent.unwrap_or("").to_owned()); }
+        if let Some(children) = node.get("children").and_then(Value::as_array) {
+            if let Some(found) = parent_id(children, target, Some(id)) { return Some(found); }
+        }
+    }
+    None
+}
+
 fn contains_id(node: &Value, target: &str) -> bool {
     if node.get("id").and_then(Value::as_str) == Some(target) { return true; }
     node.get("children").and_then(Value::as_array)
@@ -280,6 +324,15 @@ mod tests {
         assert_eq!(cycle, Err(TreeError::Cycle));
         let invalid = execute(SAMPLE, "move", r#"{"id":"newton","targetId":"quiz"}"#);
         assert_eq!(invalid, Err(TreeError::InvalidTarget));
+    }
+
+    #[test]
+    fn drag_drop_reorders_siblings_or_moves_into_tabs() {
+        let reordered = execute(SAMPLE, "drop", r#"{"id":"quiz","targetId":"mechanics"}"#).unwrap();
+        assert_eq!(reordered["catalog"][0]["children"][0]["id"], "quiz");
+        let moved = execute(SAMPLE, "drop", r#"{"id":"newton","targetId":"physics"}"#).unwrap();
+        assert_eq!(moved["catalog"][0]["children"][2]["id"], "newton");
+        assert_eq!(execute(SAMPLE, "drop", r#"{"id":"physics","targetId":"mechanics"}"#), Err(TreeError::Cycle));
     }
 
     #[test]
