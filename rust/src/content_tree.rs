@@ -84,8 +84,8 @@ pub fn execute(input: &str, operation: &str, target: &str) -> Result<Value, Tree
                 return Err(TreeError::InvalidTarget);
             }
             if contains_id(&moving, &target_id) { return Err(TreeError::Cycle); }
-            let source_parent = parent_id(nodes, &id).ok_or(TreeError::MissingTarget)?;
-            let target_parent = parent_id(nodes, &target_id).ok_or(TreeError::InvalidTarget)?;
+            let source_parent = parent_id(nodes, &id, None).ok_or(TreeError::MissingTarget)?;
+            let target_parent = parent_id(nodes, &target_id, None).ok_or(TreeError::InvalidTarget)?;
             if source_parent == target_parent {
                 let siblings = locate_mut(nodes, &id).ok_or(TreeError::MissingTarget)?;
                 let from = siblings.iter().position(|node| node.get("id").and_then(Value::as_str) == Some(&id))
