@@ -3,7 +3,7 @@ use serde_json::{json, Value};
 use std::collections::BTreeMap;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum GameverseError { InvalidScore, InvalidMode, InvalidRating, UnknownRecipe, AlreadyCrafted, InsufficientMaterials, InvalidInventory, InvalidPetProgress, UnknownZone, AlreadyUnlocked, InsufficientCoins, UnknownSkill, AlreadyOwned, InsufficientSeasonXp, AlreadyClaimed, UnknownDailyQuest, InvalidRandomInput, InvalidQuestionCatalog }
+pub enum GameverseError { InvalidScore, InvalidMode, InvalidRating, UnknownRecipe, AlreadyCrafted, InsufficientMaterials, InvalidInventory, InvalidPetProgress, UnknownZone, AlreadyUnlocked, InsufficientCoins, UnknownSkill, AlreadyOwned, InsufficientSeasonXp, AlreadyClaimed, UnknownDailyQuest, InvalidRandomInput, InvalidQuestionCatalog, NoCardsLeft }
 
 pub fn quiz_reward(correct: u32, total: u32, mode: &str, rating: u64) -> Result<Value, GameverseError> {
     if total == 0 || total > 200 || correct > total { return Err(GameverseError::InvalidScore); }
