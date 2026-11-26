@@ -110,6 +110,11 @@ export function generate_game_challenge_json(seed: bigint): string;
  */
 export function global_search_index_json(input_json: string, query: string, default_kind: string): string;
 
+/**
+ * Aggregate learning analytics in Rust; browser code supplies locally stored records.
+ */
+export function learning_analytics_summary_json(input_json: string): string;
+
 export function learning_orchestrate_json(input_json: string): string;
 
 /**
@@ -216,6 +221,7 @@ export interface InitOutput {
     readonly gameverse_unlock_zone_json: (a: number, b: number, c: number) => void;
     readonly generate_game_challenge_json: (a: number, b: bigint) => void;
     readonly global_search_index_json: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
+    readonly learning_analytics_summary_json: (a: number, b: number, c: number) => void;
     readonly learning_orchestrate_json: (a: number, b: number, c: number) => void;
     readonly learning_plan_json: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number, k: number, l: number) => void;
     readonly learning_recommend_json: (a: number, b: number, c: number) => void;

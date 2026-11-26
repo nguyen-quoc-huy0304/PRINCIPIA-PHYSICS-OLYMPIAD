@@ -27,6 +27,7 @@ export const gameverse_treasure_question_json: (a: number, b: number) => void;
 export const gameverse_unlock_zone_json: (a: number, b: number, c: number) => void;
 export const generate_game_challenge_json: (a: number, b: bigint) => void;
 export const global_search_index_json: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
+export const learning_analytics_summary_json: (a: number, b: number, c: number) => void;
 export const learning_orchestrate_json: (a: number, b: number, c: number) => void;
 export const learning_plan_json: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number, k: number, l: number) => void;
 export const learning_recommend_json: (a: number, b: number, c: number) => void;
