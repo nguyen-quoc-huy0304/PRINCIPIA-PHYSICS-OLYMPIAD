@@ -19,7 +19,7 @@
  }
  function localRecordDate(value){
   const raw=String(value||'');
-  if(/^\\d{4}-\\d{2}-\\d{2}$/.test(raw))return raw;
+  if(/^\d{4}-\d{2}-\d{2}$/.test(raw))return raw;
   const date=new Date(raw);
   return Number.isFinite(date.getTime())?dateKey(date):'';
  }
