@@ -17,7 +17,7 @@
   const seen=new Set();
   return indexed.flat().filter(item=>item.id&&!seen.has(item.kind+':'+item.id)&&seen.add(item.kind+':'+item.id));
  }
- window.PrincipiaGlobalSearchCore=Object.freeze({escapeHTML:escHTML});
+ window.PrincipiaGlobalSearchCore=Object.freeze({escapeHTML:escHTML,search:collect});
  let searchRequest=0,searchError='';
  let overlay=null,items=[],active=0,selectedKind='all',lastQuery='';
  const readRecent=()=>{try{const v=JSON.parse(localStorage.getItem('principia_global_search_recent_v1')||'[]');return Array.isArray(v)?v.filter(x=>typeof x==='string').slice(0,6):[]}catch(_){return[]}};
