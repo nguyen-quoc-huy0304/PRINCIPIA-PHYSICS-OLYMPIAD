@@ -319,7 +319,8 @@ function playPage(){
  let i=answers.length;
  if(i>=questions.length){
   if(quizGrading)return '<div class="panel" role="status" aria-live="polite"><h2>Đang chấm bài bằng Rust…</h2><p class="muted">Đang kiểm tra đáp án và tổng hợp kết quả.</p></div>';
-  let score=Number.isInteger(activeQuizGrade?.correctCount)?activeQuizGrade.correctCount:questions.reduce((s,x,j)=>s+(answers[j]===x.correct?1:0),0);
+  if(activeQuizGrade?.error)return '<div class="panel" role="alert"><h2>Không thể chấm bài</h2><p class="muted">Lõi Rust/WASM chưa sẵn sàng hoặc trả về lỗi. Không dùng JavaScript thay thế để tránh sai lệch kết quả.</p><button class="primary" onclick="resetActiveQuiz()">Làm lại sau khi tải lại</button></div>';
+  let score=Number.isInteger(activeQuizGrade?.correctCount)?activeQuizGrade.correctCount:0;
   const engineLabel=activeQuizGrade?.engine==='rust-wasm'?'Đã chấm bằng Rust/WASM':'Đã chấm bằng chế độ dự phòng';
   return `<div class="panel"><div class="eyebrow">COMPLETED</div><div class="tileicon">🏆</div><h1>${score}/${questions.length}</h1><h2>${score===questions.length?'Xuất sắc!':'Hoàn thành thử thách!'}</h2><p class="muted">Bạn trả lời đúng ${score} câu.</p><p class="small muted">${engineLabel}</p><button class="primary" onclick="resetActiveQuiz()">Làm lại</button> <button class="secondary" onclick="setPage('${activeQuiz.kind==='fun'?'fun':'quiz'}')">Quay lại</button></div>`;
  }
@@ -333,7 +334,8 @@ function lessonPlayPage(){
  if(!questions.length)return `<div class="panel"><h2>${esc(l.name)}</h2><p class="muted">Bài học chưa có câu hỏi.</p><button class="secondary" onclick="setPage('lesson')">Quay lại</button></div>`;
  if(i>=questions.length){
   if(quizGrading)return '<div class="panel" role="status" aria-live="polite"><h2>Đang chấm bài bằng Rust…</h2><p class="muted">Đang kiểm tra đáp án và tổng hợp kết quả.</p></div>';
-  let score=Number.isInteger(activeQuizGrade?.correctCount)?activeQuizGrade.correctCount:questions.reduce((sum,q,j)=>sum+(answers[j]===q.correct?1:0),0);
+  if(activeQuizGrade?.error)return '<div class="panel" role="alert"><h2>Không thể chấm bài</h2><p class="muted">Lõi Rust/WASM chưa sẵn sàng hoặc trả về lỗi. Không dùng JavaScript thay thế để tránh sai lệch kết quả.</p><button class="primary" onclick="resetActiveQuiz()">Làm lại sau khi tải lại</button></div>';
+  let score=Number.isInteger(activeQuizGrade?.correctCount)?activeQuizGrade.correctCount:0;
   const engineLabel=activeQuizGrade?.engine==='rust-wasm'?'Đã chấm bằng Rust/WASM':'Đã chấm bằng chế độ dự phòng';
   return `<div class="panel"><div class="eyebrow">LESSON QUIZ COMPLETED</div><div class="tileicon">🏆</div><h1>${score}/${questions.length}</h1><p class="muted">Bạn trả lời đúng ${score} câu.</p><p class="small muted">${engineLabel}</p><button class="primary" onclick="resetActiveQuiz()">Làm lại</button> <button class="secondary" onclick="setPage('lesson')">Quay lại bài học</button></div>`;
  }
@@ -885,8 +887,12 @@ async function answerQuestion(){
   score=grade.correctCount;engine=grade.engine;
  }catch(error){
   if(activeQuiz!==quizRef)return;
-  score=questions.reduce((sum,question,index)=>sum+(answers[index]===question.correct?1:0),0);
-  console.warn('[PRINCIPIA] Rust quiz grading unavailable; using local fallback:',error);
+  quizGrading=false;
+  activeQuizGrade={error:true,engine:'rust-wasm-unavailable'};
+  console.error('[PRINCIPIA] Rust quiz grading failed; refusing JavaScript fallback:',error);
+  notify('Không thể chấm bài bằng lõi Rust/WASM. Hãy tải lại lõi rồi thử lại.');
+  render();
+  return;
  }
  if(activeQuiz!==quizRef)return;
  activeQuizGrade={correctCount:score,engine};
