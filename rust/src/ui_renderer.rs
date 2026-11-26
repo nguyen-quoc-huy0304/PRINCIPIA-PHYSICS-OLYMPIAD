@@ -33,3 +33,12 @@ mod tests {
  #[test] fn search_input_escapes_user_markup() { let mut state=UiState::default(); state.open_search(); state.set_search("<script>alert('x')</script>"); let html=render_shell(&state); assert!(!html.contains("<script>alert")); assert!(html.contains("&lt;script&gt;")); }
  #[test] fn compact_view_is_marked_for_css_layout() { let mut state=UiState::default(); state.set_width(390).unwrap(); assert!(render_shell(&state).contains("data-pr-layout=\"compact\"")); }
 }
+
+#[test]
+fn empty_query_search_dialog_renders_search_form() {
+    let mut state = UiState::default();
+    state.open_search();
+    let html = render_shell(&state);
+    assert!(html.contains("data-pr-search-form"));
+    assert!(html.contains("type=\"search\""));
+}
