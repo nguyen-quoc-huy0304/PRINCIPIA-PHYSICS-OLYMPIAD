@@ -7,7 +7,7 @@
  const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){console.warn('[PRINCIPIA] Learning Suite storage:',e)}};
  const localDateKey=(date=new Date())=>{const y=date.getFullYear(),m=String(date.getMonth()+1).padStart(2,'0'),d=String(date.getDate()).padStart(2,'0');return y+'-'+m+'-'+d};
- function markStudyDay(){const api=window.PrincipiaProgressionCore;if(!api)return;state.studyDays=api.recordActivity(state.studyDays||[],new Date());save()}
+ function markStudyDay(){const api=window.PrincipiaProgressionCore;if(!api||typeof api.recordActivity!=='function'){console.error('[PRINCIPIA] Rust activity calendar is unavailable');return Promise.resolve(null)}return api.recordActivity(state.studyDays||[],new Date()).then(days=>{if(!Array.isArray(days))throw new TypeError('Rust returned an invalid activity calendar');state.studyDays=days;save();return days}).catch(error=>{console.error('[PRINCIPIA] Rust activity calendar update failed:',error);return null})}
  function currentXP(){try{return typeof xp!=='undefined'?Math.max(0,Number(xp)||0):Math.max(0,Number(state.xp)||0)}catch(_){return Math.max(0,Number(state.xp)||0)}}
  const allLessons=()=>{try{return typeof lessons==='function'?lessons():[]}catch(_){return []}};
  function pool(){
