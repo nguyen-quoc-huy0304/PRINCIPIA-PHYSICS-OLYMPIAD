@@ -560,6 +560,39 @@ pub fn activity_calendar_json(input_json: &str) -> Result<String, JsValue> {
     serde_json::to_string(&result).map_err(|error| input_error(&error.to_string()))
 }
 
+/// Select a Gameverse treasure riddle using a validated random sample.
+#[wasm_bindgen]
+pub fn gameverse_treasure_question_json(roll: f64) -> Result<String, JsValue> {
+    let result = crate::gameverse::treasure_question(roll)
+        .map_err(|error| input_error(&format!("Gameverse treasure question rejected: {error:?}")))?;
+    serde_json::to_string(&result).map_err(|error| input_error(&error.to_string()))
+}
+
+/// Validate a Gameverse treasure answer and return its Rust-owned reward.
+#[wasm_bindgen]
+pub fn gameverse_treasure_answer_json(input_json: &str) -> Result<String, JsValue> {
+    if input_json.len() > 4096 { return Err(input_error("Gameverse treasure payload exceeds 4 KiB")); }
+    let input: serde_json::Value = serde_json::from_str(input_json)
+        .map_err(|_| input_error("Gameverse treasure payload must be valid JSON"))?;
+    let id = input.get("id").and_then(serde_json::Value::as_str)
+        .ok_or_else(|| input_error("Missing treasure riddle identifier"))?;
+    let answer = input.get("answer").and_then(serde_json::Value::as_str)
+        .ok_or_else(|| input_error("Missing treasure answer"))?;
+    let already_found = input.get("alreadyFound").and_then(serde_json::Value::as_bool)
+        .ok_or_else(|| input_error("Missing treasure claim state"))?;
+    let result = crate::gameverse::resolve_treasure(id, answer, already_found)
+        .map_err(|error| input_error(&format!("Gameverse treasure answer rejected: {error:?}")))?;
+    serde_json::to_string(&result).map_err(|error| input_error(&error.to_string()))
+}
+
+/// Select a daily Gameverse event and its reward in Rust.
+#[wasm_bindgen]
+pub fn gameverse_random_event_json(roll: f64, already_triggered: bool) -> Result<String, JsValue> {
+    let result = crate::gameverse::random_event(roll, already_triggered)
+        .map_err(|error| input_error(&format!("Gameverse random event rejected: {error:?}")))?;
+    serde_json::to_string(&result).map_err(|error| input_error(&error.to_string()))
+}
+
 /// Complete a Gameverse daily quest and select its material reward in Rust.
 #[wasm_bindgen]
 pub fn gameverse_daily_quest_json(input_json: &str) -> Result<String, JsValue> {
