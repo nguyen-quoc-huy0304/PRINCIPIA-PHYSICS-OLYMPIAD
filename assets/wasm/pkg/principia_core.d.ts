@@ -8,6 +8,11 @@ export function activity_calendar_json(input_json: string): string;
 
 export function assessment_grade_json(input_json: string): string;
 
+/**
+ * Validate and normalize a role grant using the Rust authorization policy.
+ */
+export function authorization_grant_json(input_json: string): string;
+
 export function clamp_game_target(target_m: number, speed_mps: number, gravity_mps2: number): number;
 
 export function content_catalog_index_json(input_json: string, query: string): string;
@@ -158,6 +163,11 @@ export function progress_record_json(progress_json: string, activity: string, da
 export function progression_summary_json(input_json: string): string;
 
 /**
+ * Select and shuffle Olympic exam questions and answers with Rust-owned rules.
+ */
+export function quiz_select_exam_json(input_json: string): string;
+
+/**
  * Validate ranked arena mission claims and return the reward decided by Rust.
  */
 export function rank_arena_claim_json(id: string, progress: number, already_claimed: boolean): string;
@@ -207,6 +217,7 @@ export interface InitOutput {
     readonly memory: WebAssembly.Memory;
     readonly activity_calendar_json: (a: number, b: number, c: number) => void;
     readonly assessment_grade_json: (a: number, b: number, c: number) => void;
+    readonly authorization_grant_json: (a: number, b: number, c: number) => void;
     readonly clamp_game_target: (a: number, b: number, c: number, d: number) => void;
     readonly content_catalog_index_json: (a: number, b: number, c: number, d: number, e: number) => void;
     readonly content_tree_query_json: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
@@ -250,6 +261,7 @@ export interface InitOutput {
     readonly progress_day_json: (a: number, b: number, c: number, d: number, e: number) => void;
     readonly progress_record_json: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
     readonly progression_summary_json: (a: number, b: number, c: number) => void;
+    readonly quiz_select_exam_json: (a: number, b: number, c: number) => void;
     readonly rank_arena_claim_json: (a: number, b: number, c: number, d: number, e: number) => void;
     readonly rank_arena_resolve_json: (a: number, b: number, c: number) => void;
     readonly rank_arena_tier_json: (a: number, b: bigint) => void;

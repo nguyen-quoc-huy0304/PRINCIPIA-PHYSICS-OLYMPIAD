@@ -3,6 +3,7 @@
 export const memory: WebAssembly.Memory;
 export const activity_calendar_json: (a: number, b: number, c: number) => void;
 export const assessment_grade_json: (a: number, b: number, c: number) => void;
+export const authorization_grant_json: (a: number, b: number, c: number) => void;
 export const clamp_game_target: (a: number, b: number, c: number, d: number) => void;
 export const content_catalog_index_json: (a: number, b: number, c: number, d: number, e: number) => void;
 export const content_tree_query_json: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
@@ -46,6 +47,7 @@ export const physics_velocity: (a: number, b: number, c: number, d: number) => v
 export const progress_day_json: (a: number, b: number, c: number, d: number, e: number) => void;
 export const progress_record_json: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
 export const progression_summary_json: (a: number, b: number, c: number) => void;
+export const quiz_select_exam_json: (a: number, b: number, c: number) => void;
 export const rank_arena_claim_json: (a: number, b: number, c: number, d: number, e: number) => void;
 export const rank_arena_resolve_json: (a: number, b: number, c: number) => void;
 export const rank_arena_tier_json: (a: number, b: bigint) => void;
