@@ -929,13 +929,29 @@ function completeLesson(id){
  else notify('Bài học đã hoàn thành rồi');
  render();
 }
-function dailyReward(){
- let today=new Date().toLocaleDateString('en-CA');
- if(lastDay!==today){
-  let yesterday=new Date(Date.now()-86400000).toLocaleDateString('en-CA');
-  streak=lastDay===yesterday?streak+1:1;lastDay=today;localStorage.setItem('halo_lastday',today);localStorage.setItem('halo_streak',streak);
- }
- saveAll();
+let dailyRewardPromise=null;
+async function dailyReward(){
+ const today=new Date().toLocaleDateString('en-CA');
+ if(lastDay===today){saveAll();return streak;}
+ if(dailyRewardPromise)return dailyRewardPromise;
+ dailyRewardPromise=(async()=>{
+  const engine=window.PrincipiaWasmPhysics;
+  if(!engine||typeof engine.recordProgress!=='function')throw new Error('Rust progress engine is unavailable');
+  const current={experience:Math.max(0,Math.floor(Number(xp)||0)),completedLessons:completed.length,studyStreakDays:Math.max(0,Math.floor(Number(streak)||0)),lastActivityDay:lastDay||null};
+  const result=await engine.recordProgress(current,'quiz',today);
+  if(!Number.isInteger(result?.studyStreakDays)||result.studyStreakDays<1||result.studyStreakDays>1000000||result.lastActivityDay!==today)throw new TypeError('Rust returned an invalid daily streak record');
+  streak=result.studyStreakDays;
+  lastDay=result.lastActivityDay;
+  localStorage.setItem('halo_lastday',lastDay);
+  localStorage.setItem('halo_streak',String(streak));
+  saveAll();
+  return streak;
+ })().catch(error=>{
+  console.error('[PRINCIPIA] Rust daily streak update failed:',error);
+  notify('Không thể cập nhật chuỗi ngày học bằng Rust/WASM.');
+  throw error;
+ }).finally(()=>{dailyRewardPromise=null;});
+ return dailyRewardPromise;
 }
 function profileEditor(){
  if(!requirePermission('content'))return;
