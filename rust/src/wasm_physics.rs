@@ -483,3 +483,14 @@ pub fn progression_summary_json(input_json: &str) -> Result<String, JsValue> {
         })).collect::<Vec<_>>()
     })).map_err(|error| input_error(&error.to_string()))
 }
+
+
+#[wasm_bindgen]
+pub fn learning_science_select_json(input_json: &str) -> Result<String, JsValue> {
+    if input_json.len() > 65_536 { return Err(input_error("Learning science input exceeds 64 KiB")); }
+    let input: serde_json::Value = serde_json::from_str(input_json)
+        .map_err(|_| input_error("Learning science input must be valid JSON"))?;
+    let selected = crate::learning_science::select(&input)
+        .map_err(|error| input_error(&format!("Learning science selection failed: {error}")))?;
+    serde_json::to_string(&selected).map_err(|error| input_error(&error.to_string()))
+}
