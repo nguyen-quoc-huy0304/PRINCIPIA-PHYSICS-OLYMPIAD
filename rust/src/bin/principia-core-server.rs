@@ -11,6 +11,22 @@ fn dispatch(request: &Value) -> Value {
     let id = request.get("id").cloned().unwrap_or(Value::Null);
     let result: Result<Value, String> = (|| {
         let op = request.get("op").and_then(Value::as_str).ok_or("Missing operation")?;
+        if op == "uiSnapshot" {
+            let mut state = principia_core::ui_state::UiState::default();
+            let route = request.get("route").and_then(Value::as_str).unwrap_or("home");
+            state.navigate(route).map_err(|_| "invalid UI route".to_string())?;
+            if let Some(width) = request.get("width").and_then(Value::as_u64) {
+                let width = u32::try_from(width).map_err(|_| "width is out of range")?;
+                state.set_width(width).map_err(|_| "invalid viewport width".to_string())?;
+            }
+            if request.get("sidebarOpen").and_then(Value::as_bool).unwrap_or(true) { state.sidebar_open = true; }
+            if request.get("searchOpen").and_then(Value::as_bool).unwrap_or(false) { state.open_search(); }
+            if let Some(query) = request.get("searchQuery").and_then(Value::as_str) { state.set_search(query); }
+            if let Some(dialog) = request.get("dialog").and_then(Value::as_str) {
+                state.open_dialog(dialog).map_err(|_| "invalid dialog name".to_string())?;
+            }
+            return Ok(Value::String(state.snapshot_json()));
+        }
         if op == "linearRegression" {
             let values = request.get("points").and_then(Value::as_array)
                 .ok_or("points must be an array of [x, y] pairs")?;
