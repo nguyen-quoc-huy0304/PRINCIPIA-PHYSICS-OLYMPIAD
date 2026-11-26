@@ -22,11 +22,25 @@ impl UiState {
  pub fn open_search(&mut self){self.search_open=true;self.active_dialog=Some("search".into())}
  pub fn set_search(&mut self,q:&str){self.search_query=q.chars().take(256).collect()}
  pub fn close_search(&mut self){self.search_open=false;self.search_query.clear();if self.active_dialog.as_deref()==Some("search"){self.active_dialog=None}}
+
+ pub fn apply_event(&mut self,event:&str,value:&str,width:u32)->Result<(),UiError>{
+  self.set_width(width)?;
+  match event {
+   "navigate"=>self.navigate(value),
+   "toggle_sidebar"=>{self.toggle_sidebar();Ok(())},
+   "open_search"=>{self.open_search();Ok(())},
+   "close_search"=>{self.close_search();Ok(())},
+   "search"=>{self.open_search();self.set_search(value);Ok(())},
+   "open_dialog"=>self.open_dialog(value),
+   "close_dialog"=>{self.close_dialog();Ok(())},
+   _=>Err(UiError::InvalidDialog)
+  }
+ }
  pub fn snapshot_json(&self)->String{json!({"route":self.route,"layout":self.layout().as_str(),"width":self.width,"sidebarOpen":self.sidebar_open,"searchOpen":self.search_open,"searchQuery":self.search_query,"activeDialog":self.active_dialog}).to_string()}
 }
 #[cfg(test)]mod tests{use super::*;
 #[test]fn breakpoints(){assert_eq!(LayoutMode::from_width(599),LayoutMode::Compact);assert_eq!(LayoutMode::from_width(600),LayoutMode::Wide);assert_eq!(LayoutMode::from_width(1023),LayoutMode::Wide);assert_eq!(LayoutMode::from_width(1024),LayoutMode::Desktop);}
 #[test]fn route_validation_and_mobile_sidebar(){let mut s=UiState::default();assert!(s.navigate("learn").is_ok());assert!(s.navigate("bad").is_err());s.set_width(400).unwrap();assert!(!s.sidebar_open);}
 #[test]fn search_bounded_and_closes_cleanly(){let mut s=UiState::default();s.open_search();s.set_search(&"x".repeat(400));assert_eq!(s.search_query.len(),256);s.close_search();assert!(!s.search_open);assert!(s.active_dialog.is_none());}
-#[test]fn dialog_allowlist(){let mut s=UiState::default();assert!(s.open_dialog("profile").is_ok());assert!(s.open_dialog("bad").is_err());}
+#[test]fn reducer_validates_and_updates_state(){let mut s=UiState::default();assert!(s.apply_event("navigate","lab",390).is_ok());assert_eq!(s.route,"lab");assert!(!s.sidebar_open);assert!(s.apply_event("search","force",390).is_ok());assert_eq!(s.search_query,"force");assert!(s.apply_event("unknown","",390).is_err());}\n#[test]fn dialog_allowlist(){let mut s=UiState::default();assert!(s.open_dialog("profile").is_ok());assert!(s.open_dialog("bad").is_err());}
 }
