@@ -894,18 +894,19 @@ pub fn learning_analytics_summary_json(input_json: &str) -> Result<String, JsVal
 /// Generate weekly learning missions with Rust-owned targets and rewards.
 #[wasm_bindgen]
 pub fn season_missions_json(input_json: &str) -> Result<String, JsValue> {
-    if input_json.len() > 4096 { return Err(input_error("Season mission input exceeds 4 KiB")); }
+    if input_json.len() > 1024 * 1024 { return Err(input_error("Season mission input exceeds 1 MiB")); }
     let input: serde_json::Value = serde_json::from_str(input_json)
         .map_err(|_| input_error("Season mission input must be valid JSON"))?;
     let text = |key: &str| input.get(key).and_then(serde_json::Value::as_str)
         .ok_or_else(|| input_error(&format!("Missing or invalid {key}")));
-    let number = |key: &str| input.get(key).and_then(serde_json::Value::as_u64)
-        .ok_or_else(|| input_error(&format!("Missing or invalid {key}")));
-    let result = crate::season_missions::missions(text("week")?, number("sessions")?, number("questions")?, number("notes")?)
+    let attempts = input.get("attempts").and_then(serde_json::Value::as_array)
+        .ok_or_else(|| input_error("Missing or invalid attempts"))?;
+    let notes = input.get("notes").and_then(serde_json::Value::as_array)
+        .ok_or_else(|| input_error("Missing or invalid notes"))?;
+    let result = crate::season_missions::missions_from_records(text("week")?, text("weekEnd")?, attempts, notes)
         .map_err(|error| input_error(&format!("Season mission generation failed: {error:?}")))?;
     serde_json::to_string(&result).map_err(|error| input_error(&error.to_string()))
 }
-
 /// Validate a weekly learning mission claim and return its Rust-owned reward.
 #[wasm_bindgen]
 pub fn season_mission_claim_json(input_json: &str) -> Result<String, JsValue> {
