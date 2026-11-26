@@ -70,3 +70,13 @@ test('Rust UI bridge rejects malformed parameters before loading WASM', async ()
   await assert.rejects(bridge.render('home', 390, 'x'.repeat(4097)), TypeError);
   assert.throws(() => bridge.mount(null), TypeError);
 });
+
+test('Rust bridge protects mount lifecycle from stale renders and removes listeners on destroy', () => {
+  const js = read('assets/js/principia-rust-ui.js');
+  assert.match(js, /let renderSeq = 0/);
+  assert.match(js, /seq !== renderSeq/);
+  assert.match(js, /destroyed \|\| seq !== renderSeq/);
+  assert.match(js, /removeEventListener\('click', onClick\)/);
+  assert.match(js, /removeEventListener\('submit', onSubmit\)/);
+  assert.match(js, /destroyed = true/);
+});
