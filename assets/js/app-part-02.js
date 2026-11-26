@@ -124,6 +124,7 @@ function saveAll(){
 }
 function esc(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function tree(){return page==='quiz'?quizData:page==='fun'?funData:page==='entertainment'?entertainmentData:data}
+function replaceTreeCatalog(nodes){if(page==='quiz')quizData=nodes;else if(page==='fun')funData=nodes;else if(page==='entertainment')entertainmentData=nodes;else data=nodes;}
 function find(id,nodes){for(const n of nodes){if(n.id===id)return n;if(n.children){let x=find(id,n.children);if(x)return x}}return null}
 function parentOf(id,nodes,parent=null){for(const n of nodes){if(n.id===id)return parent;if(n.children){let x=parentOf(id,n.children,n);if(x)return x}}return null}
 function locate(id,nodes){for(const n of nodes){if(n.id===id)return nodes;if(n.children){let x=locate(id,n.children);if(x)return x}}return null}
@@ -812,16 +813,23 @@ function saveNode(id){
  if(n.type==='quiz'||n.type==='fun')n.questions=[...$('#questions').children].map(el=>({q:el.querySelector('.qq').value,a:[...el.querySelectorAll('.qa')].map(x=>x.value),correct:+el.querySelector('.qc').value})).filter(q=>q.q&&q.a.some(Boolean));
  saveAll();closeModal();render();notify('Đã lưu');
 }
-function deleteNode(id){
+async function deleteNode(id){
  if(!requirePermission('content'))return;
  if(!confirm('🗑️ Bạn chắc chắn muốn xóa nội dung này chứ? Hành động này có thể không khôi phục được.'))return;
- remove(id,tree());saveAll();closeModal();render();notify('Đã xóa');
+ try{
+  const result=await window.PrincipiaContentTree.remove(tree(),id);
+  if(result?.removed!==true||!Array.isArray(result.catalog))throw new Error('Rust trả về danh mục không hợp lệ');
+  replaceTreeCatalog(result.catalog);saveAll();closeModal();render();notify('Đã xóa');
+ }catch(error){console.error('[PRINCIPIA] Rust content deletion failed',error);notify('Không thể xóa nội dung bằng Rust Core');}
 }
-function shiftNode(id,delta){
+async function shiftNode(id,delta){
  if(!requirePermission('content'))return;
- const nodes=tree(),siblings=locate(id,nodes);if(!siblings)return;
- const from=siblings.findIndex(x=>x.id===id),to=from+delta;if(to<0||to>=siblings.length)return;
- const [item]=siblings.splice(from,1);siblings.splice(to,0,item);saveAll();render();notify('Đã đổi thứ tự');
+ if(![-1,1].includes(delta))return;
+ try{
+  const result=await window.PrincipiaContentTree.reorder(tree(),id,delta);
+  if(!Array.isArray(result?.catalog))throw new Error('Rust returned an invalid catalog');
+  replaceTreeCatalog(result.catalog);saveAll();render();notify('Đã đổi thứ tự');
+ }catch(error){console.error('[PRINCIPIA] Rust content reorder failed',error);notify('Không thể sắp xếp nội dung bằng Rust Core');}
 }
 function moveNodeDialog(id){
  if(!requirePermission('content'))return;
@@ -830,16 +838,13 @@ function moveNodeDialog(id){
  const tabs=[];const walk=list=>list.forEach(n=>{if(n.type==='tab'&&!descendants.has(n.id)&&n.id!==id)tabs.push(n);if(n.children)walk(n.children)});walk(nodes);
  modal('<h2>Di chuyển nội dung</h2><p class="small muted">Chọn tab đích hoặc đưa mục này về cấp ngoài cùng. Không thể chuyển một tab vào chính nó hoặc tab con của nó.</p><label for="principiaMoveTarget">Vị trí mới</label><select id="principiaMoveTarget" class="inp" style="width:100%"><option value="">📁 Cấp ngoài cùng</option>'+tabs.map(t=>'<option value="'+esc(t.id)+'">📂 '+esc(t.name)+'</option>').join('')+'</select><div class="modalactions"><button class="secondary" onclick="closeModal()">Hủy</button><button class="primary" onclick="moveNodeTo(\''+esc(id)+'\',document.getElementById(\'principiaMoveTarget\').value)">Di chuyển</button></div>');
 }
-function moveNodeTo(id,targetId){
+async function moveNodeTo(id,targetId){
  if(!requirePermission('content'))return;
- const nodes=tree(),item=find(id,nodes),source=locate(id,nodes);if(!item||!source)return;
- const target=targetId?find(targetId,nodes):null;
- if(targetId&&(!target||target.type!=='tab')){notify('Vị trí đích không hợp lệ');return}
- if(target&&chain(targetId,nodes).some(x=>x.id===id)){notify('Không thể chuyển vào chính mục hoặc mục con của nó');return}
- if(target&&targetId===id){notify('Không thể tự chứa chính mình');return}
- source.splice(source.findIndex(x=>x.id===id),1);
- if(target){target.children=Array.isArray(target.children)?target.children:[];target.children.push(item)}else nodes.push(item);
- saveAll();closeModal();render();notify('Đã di chuyển nội dung');
+ try{
+  const result=await window.PrincipiaContentTree.move(tree(),id,targetId||'');
+  if(!Array.isArray(result?.catalog))throw new Error('Rust returned an invalid catalog');
+  replaceTreeCatalog(result.catalog);saveAll();closeModal();render();notify('Đã di chuyển nội dung');
+ }catch(error){console.error('[PRINCIPIA] Rust content move failed',error);notify('Vị trí di chuyển không hợp lệ hoặc tạo vòng lặp');}
 }
 function dropItem(e,id){
  if(!requirePermission('content'))return;
