@@ -33,6 +33,7 @@ pub mod virtual_lab;
 pub mod progress;
 pub mod experience_rewards;
 pub mod learning;
+pub mod learning_analytics;
 pub mod learning_science;
 pub mod study_engine;
 pub mod progression;
