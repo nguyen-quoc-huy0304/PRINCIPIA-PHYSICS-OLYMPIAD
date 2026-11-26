@@ -21,6 +21,7 @@ export const physics_robot_forward_json: (a: number, b: number, c: number, d: nu
 export const physics_velocity: (a: number, b: number, c: number, d: number) => void;
 export const progress_record_json: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
 export const progression_summary_json: (a: number, b: number, c: number) => void;
+export const robot_assembly_evaluate_json: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number, k: number, l: number, m: number, n: number, o: number, p: number, q: number) => void;
 export const score_projectile_json: (a: number, b: number, c: number, d: number, e: number) => void;
 export const ui_render_html: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => void;
 export const ui_snapshot_json: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => void;

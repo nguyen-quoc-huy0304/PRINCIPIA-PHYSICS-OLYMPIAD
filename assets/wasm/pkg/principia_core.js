@@ -616,6 +616,71 @@ export function progression_summary_json(input_json) {
 }
 
 /**
+ * @param {string} base
+ * @param {string} joint
+ * @param {string} link1
+ * @param {string} link2
+ * @param {string} tool
+ * @param {number} link1_mm
+ * @param {number} link2_mm
+ * @param {number} shoulder_deg
+ * @param {number} elbow_deg
+ * @param {number} target_x_mm
+ * @param {number} target_y_mm
+ * @returns {string}
+ */
+export function robot_assembly_evaluate_json(base, joint, link1, link2, tool, link1_mm, link2_mm, shoulder_deg, elbow_deg, target_x_mm, target_y_mm) {
+    let deferred13_0;
+    let deferred13_1;
+    try {
+        const retptr = wasm.__wbindgen_add_to_stack_pointer(-16) >>> 0;
+        const val6 = +link1_mm;
+        const val7 = +link2_mm;
+        const val8 = +shoulder_deg;
+        const val9 = +elbow_deg;
+        const val10 = +target_x_mm;
+        const val11 = +target_y_mm;
+        let ptr0, len0, ptr1, len1, ptr2, len2, ptr3, len3, ptr4, len4;
+        try {
+            ptr0 = passStringToWasm0(base, wasm.__wbindgen_export, wasm.__wbindgen_export2);
+            len0 = WASM_VECTOR_LEN;
+            ptr1 = passStringToWasm0(joint, wasm.__wbindgen_export, wasm.__wbindgen_export2);
+            len1 = WASM_VECTOR_LEN;
+            ptr2 = passStringToWasm0(link1, wasm.__wbindgen_export, wasm.__wbindgen_export2);
+            len2 = WASM_VECTOR_LEN;
+            ptr3 = passStringToWasm0(link2, wasm.__wbindgen_export, wasm.__wbindgen_export2);
+            len3 = WASM_VECTOR_LEN;
+            ptr4 = passStringToWasm0(tool, wasm.__wbindgen_export, wasm.__wbindgen_export2);
+            len4 = WASM_VECTOR_LEN;
+        } catch (e) {
+            if (ptr4) { wasm.__wbindgen_export3(ptr4, len4 * 1, 1); }
+            if (ptr3) { wasm.__wbindgen_export3(ptr3, len3 * 1, 1); }
+            if (ptr2) { wasm.__wbindgen_export3(ptr2, len2 * 1, 1); }
+            if (ptr1) { wasm.__wbindgen_export3(ptr1, len1 * 1, 1); }
+            if (ptr0) { wasm.__wbindgen_export3(ptr0, len0 * 1, 1); }
+            throw e;
+        }
+        wasm.robot_assembly_evaluate_json(retptr, ptr0, len0, ptr1, len1, ptr2, len2, ptr3, len3, ptr4, len4, val6, val7, val8, val9, val10, val11);
+        var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+        var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+        var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+        var r3 = getDataViewMemory0().getInt32(retptr + 4 * 3, true);
+        var ptr12 = r0;
+        var len12 = r1;
+        if (r3) {
+            ptr12 = 0; len12 = 0;
+            throw takeFromExternrefTable0(r2);
+        }
+        deferred13_0 = ptr12;
+        deferred13_1 = len12;
+        return getStringFromWasm0(ptr12, len12);
+    } finally {
+        wasm.__wbindgen_add_to_stack_pointer(16);
+        wasm.__wbindgen_export3(deferred13_0, deferred13_1, 1);
+    }
+}
+
+/**
  * @param {number} speed
  * @param {number} angle_degrees
  * @param {number} target_m
