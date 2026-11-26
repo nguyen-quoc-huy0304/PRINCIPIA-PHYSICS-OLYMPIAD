@@ -12,18 +12,16 @@
   const shuffled=valid.slice();
   for(let i=shuffled.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]];}
   const questions=shuffled.slice(0,Math.min(3,shuffled.length)).map(q=>({q:q.q,a:q.a.slice(),correct:q.correct,topic:q.topic||'Khoa học',path:q.path||''}));
-  return {questions,index:0,score:0,answers:[],complete:false};
+  return {questions,index:0,answers:[],complete:false,submitting:false};
  }
  function answer(caseState,choice){
   if(!caseState||caseState.complete)throw new Error('Vụ án đã kết thúc.');
   const q=caseState.questions[caseState.index];
   if(!q||!Number.isInteger(choice)||choice<0||choice>=q.a.length)throw new Error('Lựa chọn không hợp lệ.');
-  const correct=choice===q.correct;
-  caseState.answers.push({choice,correct});
-  if(correct)caseState.score++;
+  caseState.answers.push({choice});
   caseState.index++;
   caseState.complete=caseState.index>=caseState.questions.length;
-  return {correct,expected:q.correct,complete:caseState.complete,index:caseState.index,score:caseState.score,total:caseState.questions.length};
+  return {complete:caseState.complete,index:caseState.index,total:caseState.questions.length};
  }
  return {createCase,answer};
 });
