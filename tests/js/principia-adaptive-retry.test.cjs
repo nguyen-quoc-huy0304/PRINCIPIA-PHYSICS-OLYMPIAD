@@ -21,15 +21,16 @@ test('Gemini retry assessment is explicit, bounded and does not transmit identit
 test('spaced-repetition interval advances only after a passing assessment', () => {
   const adaptive = read('assets/js/principia-adaptive-learning.js');
   assert.match(adaptive, /if \(!result\.passed\)/);
-  assert.match(adaptive, /const days = \[1, 3, 7, 14, 30\]/);
+  assert.match(adaptive, /learningCore\.scheduleReview/);
+  assert.match(adaptive, /item\.intervalDays = schedule\.intervalDays/);
   assert.match(adaptive, /state\.completed\.unshift/);
   assert.match(adaptive, /principia:adaptive-retry-assessed/);
 });
 
 test('learning orchestrator adapts method selection to energy, confidence and retry outcomes', () => {
   const orchestrator = read('assets/js/principia-learning-orchestrator.js');
-  assert.match(orchestrator, /const energy = \[1, 2, 3\]/);
-  assert.match(orchestrator, /const confidence = Number\.isFinite/);
+  assert.match(orchestrator, /energy: \\[1, 2, 3\\]/);
+  assert.match(orchestrator, /confidence: Number\\.isFinite/);
   assert.match(orchestrator, /function recordRetryAssessment/);
   assert.match(orchestrator, /principia:adaptive-retry-assessed/);
 });
@@ -47,5 +48,5 @@ test('browser loads the retry assessor after Gemini client and refreshes changed
   assert.ok(html.indexOf('principia-google-ai.js') < html.indexOf('principia-retry-assessor.js'));
   assert.ok(html.indexOf('principia-retry-assessor.js') < html.indexOf('principia-study-pathways.js'));
   assert.match(html, /principia-adaptive-learning\.js\?v=20261124-gemini-retry3/);
-  assert.match(html, /principia-learning-orchestrator\.js\?v=20261126-rust-coach1/);
+  assert.match(html, /principia-learning-orchestrator\.js\?v=20261126-rust-learning-orchestrator3/);
 });
