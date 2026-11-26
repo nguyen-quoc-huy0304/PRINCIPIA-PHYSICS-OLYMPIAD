@@ -98,8 +98,8 @@ mod tests {
             ]
         });
         let result = select(&input).unwrap();
-        assert_eq!(result[0]["id"], "error-analysis");
-        assert!(result.iter().any(|item| item["id"] == "sleep-recovery"));
+        assert_eq!(result.as_array().unwrap()[0]["id"], "sleep-recovery");
+        assert!(result.as_array().unwrap().iter().any(|item| item["id"] == "error-analysis"));
     }
 
     #[test]
@@ -108,7 +108,7 @@ mod tests {
             "context":{"goal":"teach","topic":"group"},
             "methods":[{"id":"social-comparison","group":"social","goals":["teach"],"weight":5,"guide":"Opt-in"}]
         });
-        assert!(select(&input).unwrap().is_empty());
+        assert!(select(&input).unwrap().as_array().unwrap().is_empty());
     }
 
     #[test]
