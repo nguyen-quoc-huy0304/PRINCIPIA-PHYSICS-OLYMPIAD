@@ -23,6 +23,15 @@
   return prefix+'-'+Array.from(bytes,value=>value.toString(16).padStart(2,'0')).join('');
  }
  const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){console.warn('[PRINCIPIA] Learning Suite storage:',e)}};
+ async function awardLearningExperience(activity){
+  const engine=window.PrincipiaWasmPhysics;
+  if(!engine||typeof engine.experienceReward!=='function')throw new Error('Rust experience reward engine is unavailable');
+  const reward=await engine.experienceReward(activity);
+  if(!Number.isSafeInteger(reward)||reward<0||reward>1000)throw new TypeError('Rust returned an invalid experience reward');
+  if(typeof xp!=='undefined'&&typeof saveAll==='function'){xp+=reward;saveAll();}
+  else state.xp=(Number(state.xp)||0)+reward;
+  save();return reward;
+ }
  const localDateKey=(date=new Date())=>{const y=date.getFullYear(),m=String(date.getMonth()+1).padStart(2,'0'),d=String(date.getDate()).padStart(2,'0');return y+'-'+m+'-'+d};
  function markStudyDay(){const api=window.PrincipiaProgressionCore;if(!api||typeof api.recordActivity!=='function'){console.error('[PRINCIPIA] Rust activity calendar is unavailable');return Promise.resolve(null)}return api.recordActivity(state.studyDays||[],new Date()).then(days=>{if(!Array.isArray(days))throw new TypeError('Rust returned an invalid activity calendar');state.studyDays=days;save();return days}).catch(error=>{console.error('[PRINCIPIA] Rust activity calendar update failed:',error);return null})}
  function currentXP(){try{return typeof xp!=='undefined'?Math.max(0,Number(xp)||0):Math.max(0,Number(state.xp)||0)}catch(_){return Math.max(0,Number(state.xp)||0)}}
@@ -221,7 +230,7 @@
    state.dailyHistory=Array.isArray(state.dailyHistory)?state.dailyHistory:[];
    state.dailyHistory.unshift({date:localDateKey(),topic:d.topic,correct});
    state.dailyHistory=state.dailyHistory.slice(0,30);
-   if(correct){state.xp=(state.xp||0)+10;try{if(typeof xp!=='undefined'){xp+=10;if(typeof saveAll==='function')saveAll()}}catch(_){}}
+   if(correct)await awardLearningExperience('daily-challenge-correct');
    else state.errors.unshift({title:d.q,body:'Bạn chọn: '+d.a[i]+'\\nĐáp án đúng: '+d.a[d.correct]+'\\nChủ đề: '+d.topic,date:new Date().toISOString()});
    save();dailyChallenge();
   }catch(error){d.submitting=false;console.error('[PRINCIPIA] Rust daily challenge grading failed:',error);alert('Không thể chấm thử thách bằng Rust/WASM. Câu trả lời chưa được ghi nhận; hãy thử lại.');}
@@ -491,7 +500,7 @@
  }
  function setJourneyGoal(value){const n=Number(value);if(![5,10,15].includes(n))return;dailyLearningJourney();state.learningJourney.goal=n;save();dailyLearningJourney()}
  function journeyDone(id){const valid=['recall','review','reflect'];dailyLearningJourney();const j=state.learningJourney;if(!valid.includes(id)||j.done.includes(id))return;j.done.push(id);save();dailyLearningJourney()}
- function journeyClaim(){dailyLearningJourney();const j=state.learningJourney;if(j.done.length!==3||j.claimed)return;j.claimed=true;markStudyDay();try{if(typeof xp!=='undefined'&&typeof saveAll==='function'){xp+=10;saveAll()}else state.xp=(Number(state.xp)||0)+10}catch(_){state.xp=(Number(state.xp)||0)+10}save();dailyLearningJourney()}
+ async function journeyClaim(){dailyLearningJourney();const j=state.learningJourney;if(j.done.length!==3||j.claimed)return;try{await awardLearningExperience('learning-journey-completed');j.claimed=true;markStudyDay();save();dailyLearningJourney()}catch(error){console.error('[PRINCIPIA] Rust journey reward failed:',error);alert('Không thể xác minh phần thưởng bằng Rust/WASM. Nhiệm vụ chưa được nhận.')}}
  async function thinkingProfile(){
   const engine=window.PrincipiaWasmPhysics;
   if(!engine||typeof engine.learningAnalytics!=='function'){
@@ -546,16 +555,15 @@
   const tasks=[['lesson','Hoàn thành 1 bài học',done>=1,done+'/1 bài','Mở bài học và nhấn Hoàn thành'],['practice','Luyện 5 câu hỏi',answered>=5,answered+'/5 câu','Vào phòng luyện hoặc Quiz'],['note','Ghi 1 ghi chú',notes.length>=1,notes.length+'/1 ghi chú','Lưu một ý quan trọng'],['error','Ghi lại 1 lỗi sai',errors.length>=1,errors.length+'/1 lỗi','Thêm lỗi vào sổ lỗi sai'],['game','Chơi game khoa học',Number(game.shots)>=1,(Number(game.shots)||0)+'/1 lượt','Mở Science Arcade và hoàn thành một lượt'],['precision','Đạt 80 điểm game',Number(game.best)>=80,(Number(game.best)||0)+'/80 điểm','Điều chỉnh góc phóng để tăng độ chính xác'],['xp','Đạt 100 XP',earned>=100,earned+'/100 XP','Học và luyện tập để nhận XP']];
   open('Nhiệm vụ học tập',tasks.map(t=>{const claimed=(state.claimedQuests||[]).includes(t[0]);const action=t[2]&&!claimed?' '+btn('Nhận +15 XP','principiaSuiteClaimQuest(\''+t[0]+'\')','primary'):(claimed?'<p class="small" style="color:#55b98a">Đã nhận thưởng</p>':'');return panel((t[2]?'✓ ':'○ ')+t[1],'<p>'+t[3]+'</p><small class="muted">'+t[4]+'</small>'+action)}).join('')+btn('Về trung tâm','principiaSuiteHome()'));
  }
- function claimQuest(id){
+ async function claimQuest(id){
   if((state.claimedQuests||[]).includes(id))return;
   let done=0,earned=0;try{done=completed.length;earned=xp}catch(_){}
   const a=state.attempts||[],notes=state.notes||[],errors=state.errors||[],answered=a.reduce((s,x)=>s+x.total,0);
   let game={shots:0,best:0};try{game=JSON.parse(localStorage.getItem('principia_game_physics_v1')||'{}')}catch(_){}
   const valid={lesson:done>=1,practice:answered>=5,note:notes.length>=1,error:errors.length>=1,game:Number(game.shots)>=1,precision:Number(game.best)>=80,xp:earned>=100};
   if(!valid[id])return;
-  state.claimedQuests.push(id);save();
-  try{if(typeof xp!=='undefined'&&typeof saveAll==='function'){xp+=15;saveAll()}}catch(_){}
-  quests();
+  try{await awardLearningExperience('learning-quest-completed');}catch(error){console.error('[PRINCIPIA] Rust quest reward failed:',error);alert('Không thể xác minh phần thưởng bằng Rust/WASM. Nhiệm vụ chưa được nhận.');return;}
+  state.claimedQuests.push(id);save();quests();
  }
  function notes(query){
   const term=String(query||'').trim().toLocaleLowerCase('vi'),all=state.notes||[];
