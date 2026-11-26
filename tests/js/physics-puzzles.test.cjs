@@ -34,6 +34,7 @@ test('vector error uses Euclidean magnitude', () => {
   const result = math.scoreFor(3, 4, { x: 0, y: 0 });
   assert.equal(result.error, 5);
   assert.equal(result.points, 60);
+  assert.deepEqual(JSON.parse(JSON.stringify(result.target)), { x: 0, y: 0 });
 });
 
 test('points never become negative for a large error', () => {
@@ -70,7 +71,7 @@ test('force puzzle delegates score calculation to Rust WASM', async () => {
     }
   };
   const result = await math.scoreForNative(3, 4, { x: 0, y: 0 });
-  assert.deepEqual(JSON.parse(JSON.stringify(result)), { error: 5, points: 60 });
+  assert.deepEqual(JSON.parse(JSON.stringify(result)), { error: 5, points: 60, target: { x: 0, y: 0 } });
   assert.equal(calls.length, 2);
   assert.equal(calls[0].operation, 'forceBalanceTarget');
   assert.equal(calls[0].params.forceAX, 0);
