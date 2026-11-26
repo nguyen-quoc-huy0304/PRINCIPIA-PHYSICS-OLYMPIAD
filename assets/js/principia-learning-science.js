@@ -148,6 +148,38 @@
     return chosen.map(({ id, group, guide }) => ({ id, group, guide }));
   }
 
+  async function selectWithRust(input = {}) {
+    if (!window.PrincipiaWasmPhysics?.selectLearningScience) {
+      throw new Error('Rust learning-science engine is unavailable');
+    }
+    const context = safeContext(input);
+    const recent = loadRecent();
+    const chosen = await window.PrincipiaWasmPhysics.selectLearningScience({
+      context,
+      methods: METHODS,
+      recentIds: recent
+    });
+    if (!Array.isArray(chosen) || chosen.length < 1 || chosen.length > 4) {
+      throw new Error('Rust learning-science engine returned an invalid selection');
+    }
+    const ids = chosen.map(item => item.id).filter(id => typeof id === 'string');
+    saveRecent(recent.filter(id => !ids.includes(id)).concat(ids));
+    return chosen;
+  }
+
+  async function directiveWithRust(input = {}) {
+    const context = safeContext(input);
+    const chosen = await selectWithRust(context);
+    const methods = chosen.map((item, index) => (index + 1) + '. ' + item.guide).join('\\n');
+    return [
+      'HƯỚNG DẪN HỌC CÁ NHÂN HÓA NỘI BỘ — không hiển thị tên kỹ thuật cho người học:',
+      'Mục tiêu=' + context.goal + '; chủ đề=' + context.topic + '; năng lượng=' + context.energy + '/3; độ tự tin=' + context.confidence + '/5; kết quả gần nhất=' + (context.percent === null ? 'chưa có' : context.percent + '%') + '; lỗi chưa xử lý=' + context.errorCount + '.',
+      'Chỉ phối hợp các cách sau khi chúng bổ trợ nhau; không nhồi tất cả vào một phiên:',
+      methods,
+      'Giữ tải nhận thức vừa sức. Mỗi lượt chỉ hỏi một câu; cho thời gian tự nghĩ; phản hồi cụ thể; buộc người học tự làm lại và thử chuyển giao trước khi kết luận đã thành thạo. Không cổ súy thức khuya, học đến kiệt sức, so sánh điểm số hay duy trì chuỗi ngày bằng áp lực.'
+    ].join('\\n\\n');
+  }
+
   function directive(input = {}) {
     const context = safeContext(input);
     const chosen = select(context);
@@ -180,7 +212,9 @@
 
   window.PrincipiaLearningScience = Object.freeze({
     select,
+    selectWithRust,
     directive,
+    directiveWithRust,
     focusPlan,
     methods: () => METHODS.map(({ id, group, weight }) => ({ id, group, weight })),
     stats: () => ({ strategyCount: METHODS.length, groups: [...new Set(METHODS.map(method => method.group))].length })
