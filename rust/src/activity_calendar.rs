@@ -89,8 +89,8 @@ mod tests {
     fn computes_current_and_longest_streak_without_mutating_input(){
         let days=vec!["2026-11-20".into(),"2026-11-21".into(),"2026-11-23".into(),"2026-11-24".into()];
         let result=activity_summary(&days,"2026-11-25",false).unwrap();
-        assert_eq!(result["current"],3);
-        assert_eq!(result["longest"],3);
+        assert_eq!(result["current"],2);
+        assert_eq!(result["longest"],2);
         assert_eq!(result["activeToday"],false);
         assert_eq!(days.len(),4);
     }
