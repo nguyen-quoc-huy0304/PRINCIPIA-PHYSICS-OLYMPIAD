@@ -54,6 +54,11 @@ export function gameverse_claim_pass_json(input_json: string): string;
 export function gameverse_craft_json(input_json: string): string;
 
 /**
+ * Complete a Gameverse daily quest and select its material reward in Rust.
+ */
+export function gameverse_daily_quest_json(input_json: string): string;
+
+/**
  * Calculate Gameverse pet XP remainder, level, and form in Rust.
  */
 export function gameverse_pet_progress_json(pet_xp: number, pet_level: number): string;
@@ -169,6 +174,7 @@ export interface InitOutput {
     readonly gameverse_buy_skill_json: (a: number, b: number, c: number) => void;
     readonly gameverse_claim_pass_json: (a: number, b: number, c: number) => void;
     readonly gameverse_craft_json: (a: number, b: number, c: number) => void;
+    readonly gameverse_daily_quest_json: (a: number, b: number, c: number) => void;
     readonly gameverse_pet_progress_json: (a: number, b: number, c: number) => void;
     readonly gameverse_quiz_reward_json: (a: number, b: number, c: number) => void;
     readonly gameverse_unlock_zone_json: (a: number, b: number, c: number) => void;
