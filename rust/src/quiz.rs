@@ -60,11 +60,11 @@ pub fn select_exam_questions(
     for index in order.into_iter().take(count) {
         let original = &questions[index];
         let question = original.get("q").and_then(serde_json::Value::as_str)
-            .filter(|value| !value.trim().is_empty() && value.len() <= 8192)
+            .filter(|value| !value.trim().is_empty() && value.len() <= 4000)
             .ok_or(SelectionError::InvalidQuestion)?;
         let _ = question;
         let answers = original.get("a").and_then(serde_json::Value::as_array)
-            .filter(|values| (2..=16).contains(&values.len()))
+            .filter(|values| (2..=12).contains(&values.len()) && values.iter().all(|value| value.as_str().is_some_and(|text| !text.trim().is_empty() && text.len() <= 1000)))
             .ok_or(SelectionError::InvalidQuestion)?;
         let correct = original.get("correct").and_then(serde_json::Value::as_u64)
             .and_then(|value| usize::try_from(value).ok())
@@ -145,7 +145,7 @@ mod tests {
         for question in first {
             let answers = question["a"].as_array().unwrap();
             let correct = question["correct"].as_u64().unwrap() as usize;
-            assert!((2..=16).contains(&answers.len()));
+            assert!((2..=12).contains(&answers.len()));
             assert!(correct < answers.len());
         }
     }
