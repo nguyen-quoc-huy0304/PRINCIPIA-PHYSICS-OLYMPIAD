@@ -13,11 +13,15 @@ export function learning_recommend_json(context_json: string): string;
 
 export function learning_review_schedule_json(quality: number, previous_interval_days: number, ease_factor: number): string;
 
+export function physics_collision_1d_json(mass_a: number, velocity_a: number, mass_b: number, velocity_b: number, restitution: number): string;
+
 export function physics_displacement(initial_mps: number, acceleration_mps2: number, seconds: number): number;
 
 export function physics_kinetic_energy(mass_kg: number, speed_mps: number): number;
 
 export function physics_linear_regression_json(points_json: string): string;
+
+export function physics_pendulum_json(length_m: number, gravity_mps2: number, amplitude_degrees: number): string;
 
 export function physics_projectile_json(speed_mps: number, angle_degrees: number, gravity_mps2: number): string;
 
@@ -51,9 +55,11 @@ export interface InitOutput {
     readonly generate_game_challenge_json: (a: number, b: bigint) => void;
     readonly learning_recommend_json: (a: number, b: number, c: number) => void;
     readonly learning_review_schedule_json: (a: number, b: number, c: number, d: number) => void;
+    readonly physics_collision_1d_json: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
     readonly physics_displacement: (a: number, b: number, c: number, d: number) => void;
     readonly physics_kinetic_energy: (a: number, b: number, c: number) => void;
     readonly physics_linear_regression_json: (a: number, b: number, c: number) => void;
+    readonly physics_pendulum_json: (a: number, b: number, c: number, d: number) => void;
     readonly physics_projectile_json: (a: number, b: number, c: number, d: number) => void;
     readonly physics_robot_arm_json: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
     readonly physics_velocity: (a: number, b: number, c: number, d: number) => void;

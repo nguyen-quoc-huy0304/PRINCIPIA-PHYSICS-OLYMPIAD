@@ -7,9 +7,11 @@ export const game_trajectory_json: (a: number, b: number, c: number, d: number, 
 export const generate_game_challenge_json: (a: number, b: bigint) => void;
 export const learning_recommend_json: (a: number, b: number, c: number) => void;
 export const learning_review_schedule_json: (a: number, b: number, c: number, d: number) => void;
+export const physics_collision_1d_json: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
 export const physics_displacement: (a: number, b: number, c: number, d: number) => void;
 export const physics_kinetic_energy: (a: number, b: number, c: number) => void;
 export const physics_linear_regression_json: (a: number, b: number, c: number) => void;
+export const physics_pendulum_json: (a: number, b: number, c: number, d: number) => void;
 export const physics_projectile_json: (a: number, b: number, c: number, d: number) => void;
 export const physics_robot_arm_json: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
 export const physics_velocity: (a: number, b: number, c: number, d: number) => void;
