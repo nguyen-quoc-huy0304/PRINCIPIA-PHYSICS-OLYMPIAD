@@ -13,7 +13,7 @@ window.PrincipiaPendulumMath=Object.freeze({pendulumAt});
 let saved={length:1,gravity:9.81,amplitude:12};
 try{saved={...saved,...JSON.parse(localStorage.getItem(KEY)||'{}')};}catch(_){}
 let params={length:clamp(Number(saved.length)||1,.2,3),gravity:clamp(Number(saved.gravity)||9.81,1,20),amplitude:clamp(Number(saved.amplitude)||12,1,45)};
-let raf=0,start=0,paused=false,calculationRequest=0;
+let raf=0,start=0,paused=false,calculationRequest=0,angularFrequency=0;
 const reduced=()=>window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 function fmt(n,d=2){return Number(n).toLocaleString('vi-VN',{minimumFractionDigits:d,maximumFractionDigits:d});}
@@ -28,7 +28,7 @@ async function updateValues(){
  try{
   const result=await pendulumAt(params.length,params.gravity,params.amplitude);
   if(request!==calculationRequest)return;
-  set('pplPeriod',fmt(result.periodSeconds)+' s');set('pplFrequency',fmt(result.frequencyHz,3)+' Hz');set('pplSpeed',fmt(result.maxSpeedMps)+' m/s');
+  angularFrequency=result.angularFrequencyRadS;set('pplPeriod',fmt(result.periodSeconds)+' s');set('pplFrequency',fmt(result.frequencyHz,3)+' Hz');set('pplSpeed',fmt(result.maxSpeedMps)+' m/s');
  }catch(error){
   if(request!==calculationRequest)return;
   set('pplPeriod','Lỗi tính toán');set('pplFrequency','—');set('pplSpeed','—');
@@ -38,7 +38,7 @@ async function updateValues(){
 window.principiaPendulumSet=function(key,value){if(!Object.prototype.hasOwnProperty.call(params,key))return;const ranges={length:[.2,3],gravity:[1,20],amplitude:[1,45]};params[key]=clamp(Number(value),...ranges[key]);updateValues();};
 window.principiaPendulumToggle=function(){paused=!paused;const b=document.getElementById('pplPause');if(b)b.textContent=paused?'Tiếp tục':'Tạm dừng';if(!paused)animate();};
 window.principiaPendulumReset=function(){params={length:1,gravity:9.81,amplitude:12};['length','gravity','amplitude'].forEach(k=>{const e=document.getElementById('ppl'+k[0].toUpperCase()+k.slice(1));if(e)e.value=params[k];});updateValues();paused=false;const b=document.getElementById('pplPause');if(b)b.textContent='Tạm dừng';animate();};
-function animate(ts){if(paused||document.hidden||reduced())return;const line=document.getElementById('pplString'),bob=document.getElementById('pplBob');if(!line||!bob){raf=0;return;}if(!start)start=ts||performance.now();const t=((ts||performance.now())-start)/1000,theta=params.amplitude*Math.PI/180*Math.cos(Math.sqrt(params.gravity/params.length)*t),x=160+Math.sin(theta)*135,y=28+Math.cos(theta)*135;line.setAttribute('d','M160 28L'+x.toFixed(2)+' '+y.toFixed(2));bob.setAttribute('cx',x.toFixed(2));bob.setAttribute('cy',y.toFixed(2));raf=requestAnimationFrame(animate);}
+function animate(ts){if(paused||document.hidden||reduced())return;const line=document.getElementById('pplString'),bob=document.getElementById('pplBob');if(!line||!bob){raf=0;return;}if(!start)start=ts||performance.now();const t=((ts||performance.now())-start)/1000,theta=params.amplitude*Math.PI/180*Math.cos(angularFrequency*t),x=160+Math.sin(theta)*135,y=28+Math.cos(theta)*135;line.setAttribute('d','M160 28L'+x.toFixed(2)+' '+y.toFixed(2));bob.setAttribute('cx',x.toFixed(2));bob.setAttribute('cy',y.toFixed(2));raf=requestAnimationFrame(animate);}
 function install(){style();if(typeof window.labPage!=='function'||window.__principiaPendulumInstalled)return;const previous=window.labPage;window.labPage=function(){const html=previous.apply(this,arguments)+panel();requestAnimationFrame(()=>{updateValues();if(!paused&&!reduced())animate();});return html;};window.__principiaPendulumInstalled=true;document.addEventListener('visibilitychange',()=>{if(document.hidden){if(raf)cancelAnimationFrame(raf);raf=0;}else if(!paused)animate();});}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();
