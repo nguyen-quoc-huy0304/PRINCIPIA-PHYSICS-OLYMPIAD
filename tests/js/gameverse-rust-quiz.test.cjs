@@ -19,5 +19,6 @@ test('Gameverse does not award results when Rust grading fails', () => {
   assert.match(source, /Kết quả chưa được ghi nhận/);
   assert.match(source, /Rust quiz grading failed/);
   assert.match(source, /data-retry-grade/);
-  assert.match(source, /grade\.passed===true/);
+  assert.match(source, /engine\.gameverseQuizReward\(score,n,mode,state\.rank\.rating\)/);
+  assert.match(source, /reward\.passed/);
 });
