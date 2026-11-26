@@ -22,6 +22,7 @@ pub mod data_analysis;
 pub mod game;
 pub mod gameverse;
 pub mod game_challenge;
+pub mod game_league;
 pub mod science_mystery;
 pub mod daily_challenge;
 #[cfg(target_arch = "wasm32")]
