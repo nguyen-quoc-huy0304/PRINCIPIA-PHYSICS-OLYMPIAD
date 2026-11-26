@@ -73,7 +73,7 @@ test('force puzzle delegates score calculation to Rust WASM', async () => {
   assert.deepEqual(JSON.parse(JSON.stringify(result)), { error: 5, points: 60, target: { x: 0, y: 0 } });
   assert.equal(calls.length, 2);
   assert.equal(calls[0].operation, 'forceBalanceTarget');
-  assert.equal(calls[0].params.forceAX, 0);
+  assert.equal(calls[0].params.forceAX, 1);
   assert.equal(calls[1].operation, 'forceBalanceScore');
   assert.equal(calls[1].params.targetX, 0);
 });
