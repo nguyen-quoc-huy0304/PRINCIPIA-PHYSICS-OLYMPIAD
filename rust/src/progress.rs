@@ -12,7 +12,7 @@ impl Default for Progress {
     fn default() -> Self { Self { experience:0, completed_lessons:0, study_streak_days:0, last_activity_day:None } }
 }
 impl Progress {
-    pub fn record(&mut self, activity: Activity, day: &str) -> Result<(), &'static str> {
+    pub fn record_day(&mut self, day: &str) -> Result<(), &'static str> {
         let current=day_number(day).ok_or("day must be a valid YYYY-MM-DD date")?;
         if self.last_activity_day.as_deref()!=Some(day) {
             self.study_streak_days=match self.last_activity_day.as_deref().and_then(day_number) {
@@ -21,6 +21,10 @@ impl Progress {
             };
             self.last_activity_day=Some(day.to_string());
         }
+        Ok(())
+    }
+    pub fn record(&mut self, activity: Activity, day: &str) -> Result<(), &'static str> {
+        self.record_day(day)?;
         self.experience=self.experience.saturating_add(match activity {
             Activity::LessonCompleted=>50, Activity::QuizSubmitted=>30,
             Activity::AssignmentSubmitted=>30, Activity::ExperimentCompleted=>40,
@@ -69,6 +73,16 @@ mod tests {
         assert!(day_number("2026-11-25").is_some());
     }
 
+    #[test] fn record_day_updates_streak_without_awarding_experience() {
+        let mut p=Progress::default();
+        p.record_day("2026-11-23").unwrap();
+        p.record_day("2026-11-24").unwrap();
+        p.record_day("2026-11-24").unwrap();
+        assert_eq!(p.study_streak_days,2);
+        assert_eq!(p.experience,0);
+        assert_eq!(p.completed_lessons,0);
+        assert_eq!(p.last_activity_day.as_deref(),Some("2026-11-24"));
+    }
     #[test] fn awards_experience_and_counts_lesson() {
         let mut p=Progress::default();
         p.record(Activity::LessonCompleted,"2026-11-22").unwrap();
