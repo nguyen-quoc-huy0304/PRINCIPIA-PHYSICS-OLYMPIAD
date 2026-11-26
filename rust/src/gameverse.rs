@@ -35,6 +35,47 @@ pub fn quiz_reward(correct: u32, total: u32, mode: &str, rating: u64) -> Result<
 }
 
 
+pub fn treasure_question(roll: f64) -> Result<Value, GameverseError> {
+    if !roll.is_finite() || !(0.0..1.0).contains(&roll) { return Err(GameverseError::InvalidRandomInput); }
+    let riddles = [
+        ("mercury", "Hành tinh nào gần Mặt Trời nhất?"),
+        ("frequency", "Đơn vị đo tần số?"),
+        ("gravity", "Lực hút giữ ta trên Trái Đất?"),
+    ];
+    let (id, question) = riddles[(roll * riddles.len() as f64).floor() as usize];
+    Ok(json!({"id":id,"question":question}))
+}
+
+pub fn resolve_treasure(id: &str, answer: &str, already_found: bool) -> Result<Value, GameverseError> {
+    if already_found { return Err(GameverseError::AlreadyClaimed); }
+    let expected = match id {
+        "mercury" => "sao thủy",
+        "frequency" => "hz",
+        "gravity" => "trọng lực",
+        _ => return Err(GameverseError::UnknownDailyQuest),
+    };
+    let found = answer.trim().to_lowercase() == expected;
+    Ok(json!({
+        "found":found,
+        "xp":if found {60} else {0},
+        "coins":if found {90} else {0},
+        "material":if found {"star"} else {""},
+        "amount":if found {1} else {0}
+    }))
+}
+
+pub fn random_event(roll: f64, already_triggered: bool) -> Result<Value, GameverseError> {
+    if already_triggered { return Err(GameverseError::AlreadyClaimed); }
+    if !roll.is_finite() || !(0.0..1.0).contains(&roll) { return Err(GameverseError::InvalidRandomInput); }
+    let events = [
+        ("meteor", "Mưa sao băng", "Thu thập sao +2", "star", 2),
+        ("materials", "Hộp vật liệu", "Nhận gỗ +3", "wood", 3),
+        ("energy", "Năng lượng bí ẩn", "Nhận energy +2", "energy", 2),
+    ];
+    let (id, title, description, material, amount) = events[(roll * events.len() as f64).floor() as usize];
+    Ok(json!({"id":id,"title":title,"description":description,"material":material,"amount":amount,"xp":20,"coins":35}))
+}
+
 pub fn complete_daily_quest(id: &str, done: &[String], material_roll: f64) -> Result<Value, GameverseError> {
     if !matches!(id, "study" | "solve" | "teach" | "explore") { return Err(GameverseError::UnknownDailyQuest); }
     if done.len() > 100 || done.iter().any(|item| item.len() > 64) {
@@ -144,6 +185,20 @@ pub fn craft(recipe_id: &str, materials: &BTreeMap<String, u32>, crafted: &[Stri
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn treasure_answers_and_random_events_are_rust_validated() {
+        let question = treasure_question(0.1).unwrap();
+        assert_eq!(question["id"], "mercury");
+        assert_eq!(resolve_treasure("mercury", " Sao Thủy ", false).unwrap()["found"], true);
+        assert_eq!(resolve_treasure("mercury", "Mars", false).unwrap()["found"], false);
+        assert!(resolve_treasure("mercury", "Sao Thủy", true).is_err());
+        let event = random_event(0.5, false).unwrap();
+        assert_eq!(event["id"], "materials");
+        assert_eq!(event["material"], "wood");
+        assert!(random_event(0.5, true).is_err());
+        assert!(random_event(1.0, false).is_err());
+    }
 
     #[test]
     fn daily_quest_rewards_are_one_time_and_bounded() {
