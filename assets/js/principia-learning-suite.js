@@ -291,7 +291,7 @@
   const topic=document.getElementById('plsExamTopic')?.value||'all',source=topic==='all'?all:all.filter(q=>q.topic===topic);
   if(!source.length){alert('Chủ đề này chưa có câu hỏi hợp lệ.');return}
   const countValue=document.getElementById('plsExamCount')?.value||'10',minutes=Math.max(1,Number(document.getElementById('plsExamMinutes')?.value)||20);
-  const count=countValue==='all'?source.length:Math.min(Number(countValue)||10,source.length);
+  const count=countValue==='all'?Math.min(500,source.length):Math.min(500,Number(countValue)||10,source.length);
   try{
    const selected=await selectRustExamQuestions(source,count);
    exam={questions:selected,answers:{},marked:[],end:Date.now()+minutes*60000,startedAt:Date.now(),submitted:false,topic,warned5:false,warned1:false,currentIndex:0};
