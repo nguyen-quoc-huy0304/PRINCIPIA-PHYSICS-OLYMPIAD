@@ -95,7 +95,9 @@ mod tests {
         let loss = resolve_match(5, 2999, 1, 5, 1, "accuracy").unwrap();
         assert_eq!(loss["won"], false);
         assert_eq!(loss["rp"], 0);
-        assert_eq!(loss["mmr"], 3000);
+        assert_eq!(loss["mmr"], 2981);
+        let upper = resolve_match(0, 2999, 5, 4, 5, "balanced").unwrap();
+        assert_eq!(upper["mmr"], 3000);
         assert!(resolve_match(0, 500, 6, 0, 0, "balanced").is_err());
     }
 
