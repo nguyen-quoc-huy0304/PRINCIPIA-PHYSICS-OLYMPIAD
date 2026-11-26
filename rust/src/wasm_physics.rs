@@ -90,7 +90,8 @@ pub fn physics_pendulum_json(
         "periodSeconds": result.period_seconds,
         "frequencyHz": result.frequency_hz,
         "maxSpeedMps": result.max_speed_mps,
-        "maxAccelerationMps2": result.max_acceleration_mps2
+        "maxAccelerationMps2": result.max_acceleration_mps2,
+        "approximation": "small-angle"
     })).map_err(|error| input_error(&error.to_string()))
 }
 
