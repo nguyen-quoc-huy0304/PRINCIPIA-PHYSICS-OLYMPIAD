@@ -177,6 +177,16 @@ export function robot_assembly_evaluate_json(base: string, joint: string, link1:
 export function score_projectile_json(speed: number, angle_degrees: number, target_m: number, gravity: number): string;
 
 /**
+ * Validate a weekly learning mission claim and return its Rust-owned reward.
+ */
+export function season_mission_claim_json(input_json: string): string;
+
+/**
+ * Generate weekly learning missions with Rust-owned targets and rewards.
+ */
+export function season_missions_json(input_json: string): string;
+
+/**
  * Applies one UI event in the Rust state machine and returns the canonical state snapshot.
  */
 export function ui_reduce_json(route: string, width: number, query: string, dialog: string, event: string, value: string): string;
@@ -245,6 +255,8 @@ export interface InitOutput {
     readonly rank_arena_tier_json: (a: number, b: bigint) => void;
     readonly robot_assembly_evaluate_json: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number, k: number, l: number, m: number, n: number, o: number, p: number, q: number) => void;
     readonly score_projectile_json: (a: number, b: number, c: number, d: number, e: number) => void;
+    readonly season_mission_claim_json: (a: number, b: number, c: number) => void;
+    readonly season_missions_json: (a: number, b: number, c: number) => void;
     readonly ui_reduce_json: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number, k: number, l: number) => void;
     readonly ui_render_html: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => void;
     readonly ui_snapshot_json: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => void;
