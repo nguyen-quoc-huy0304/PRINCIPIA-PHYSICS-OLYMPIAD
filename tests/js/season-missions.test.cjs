@@ -38,7 +38,7 @@ test('invalid local metrics are normalized before calling Rust',async()=>{
   const rows=await api.missions({attempts:[{date:'bad',total:Infinity}],notes:[{date:'bad'}]});
   assert.equal(rows[0].value,2);
   assert.equal(calls[1].payload.attempts[0].total,0);
-  assert.equal(calls[1].payload.notes[0].date,'bad');
+  assert.equal(calls[1].payload.notes[0].date,'');
 });
 
 test('claim validation delegates thresholds and one-time status to Rust',async()=>{
