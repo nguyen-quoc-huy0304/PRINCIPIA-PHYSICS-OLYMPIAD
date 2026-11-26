@@ -881,6 +881,24 @@ pub fn content_tree_query_json(
     serde_json::to_string(&result).map_err(|error| input_error(&error.to_string()))
 }
 
+/// Select and shuffle Olympic exam questions and answers with Rust-owned rules.
+#[wasm_bindgen]
+pub fn quiz_select_exam_json(input_json: &str) -> Result<String, JsValue> {
+    if input_json.len() > 1024 * 1024 { return Err(input_error("Exam selection payload exceeds 1 MiB")); }
+    let input: serde_json::Value = serde_json::from_str(input_json)
+        .map_err(|_| input_error("Exam selection payload must be valid JSON"))?;
+    let questions = input.get("questions").and_then(serde_json::Value::as_array)
+        .ok_or_else(|| input_error("Missing or invalid questions"))?;
+    let count = input.get("count").and_then(serde_json::Value::as_u64)
+        .and_then(|value| usize::try_from(value).ok())
+        .ok_or_else(|| input_error("Missing or invalid question count"))?;
+    let seed = input.get("seed").and_then(serde_json::Value::as_u64)
+        .ok_or_else(|| input_error("Missing or invalid secure random seed"))?;
+    let result = crate::quiz::select_exam_questions(questions, count, seed)
+        .map_err(|error| input_error(&format!("Exam selection failed: {error:?}")))?;
+    serde_json::to_string(&result).map_err(|error| input_error(&error.to_string()))
+}
+
 /// Aggregate learning analytics in Rust; browser code supplies locally stored records.
 #[wasm_bindgen]
 pub fn learning_analytics_summary_json(input_json: &str) -> Result<String, JsValue> {
