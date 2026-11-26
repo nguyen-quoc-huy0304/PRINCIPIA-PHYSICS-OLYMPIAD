@@ -3,7 +3,7 @@ use serde_json::{json, Value};
 use std::collections::BTreeMap;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum GameverseError { InvalidScore, InvalidMode, InvalidRating, UnknownRecipe, AlreadyCrafted, InsufficientMaterials, InvalidInventory, InvalidPetProgress, UnknownZone, AlreadyUnlocked, InsufficientCoins, UnknownSkill, AlreadyOwned, InsufficientSeasonXp, AlreadyClaimed }
+pub enum GameverseError { InvalidScore, InvalidMode, InvalidRating, UnknownRecipe, AlreadyCrafted, InsufficientMaterials, InvalidInventory, InvalidPetProgress, UnknownZone, AlreadyUnlocked, InsufficientCoins, UnknownSkill, AlreadyOwned, InsufficientSeasonXp, AlreadyClaimed, UnknownDailyQuest, InvalidRandomInput }
 
 pub fn quiz_reward(correct: u32, total: u32, mode: &str, rating: u64) -> Result<Value, GameverseError> {
     if total == 0 || total > 200 || correct > total { return Err(GameverseError::InvalidScore); }
@@ -34,6 +34,22 @@ pub fn quiz_reward(correct: u32, total: u32, mode: &str, rating: u64) -> Result<
     }))
 }
 
+
+pub fn complete_daily_quest(id: &str, done: &[String], material_roll: f64) -> Result<Value, GameverseError> {
+    if !matches!(id, "study" | "solve" | "teach" | "explore") { return Err(GameverseError::UnknownDailyQuest); }
+    if done.len() > 100 || done.iter().any(|item| item.len() > 64) {
+        return Err(GameverseError::InvalidInventory);
+    }
+    if done.iter().any(|item| item == id) { return Err(GameverseError::AlreadyClaimed); }
+    if !material_roll.is_finite() || !(0.0..1.0).contains(&material_roll) {
+        return Err(GameverseError::InvalidRandomInput);
+    }
+    let materials = ["wood", "crystal", "gear", "star", "energy"];
+    let material = materials[(material_roll * materials.len() as f64).floor() as usize];
+    let mut next_done = done.to_vec();
+    next_done.push(id.to_owned());
+    Ok(json!({"done":next_done,"xp":30,"coins":50,"material":material,"amount":1}))
+}
 
 pub fn unlock_zone(zone_id: &str, coins: u64, unlocked: &[String]) -> Result<Value, GameverseError> {
     let cost = match zone_id {
@@ -128,6 +144,18 @@ pub fn craft(recipe_id: &str, materials: &BTreeMap<String, u32>, crafted: &[Stri
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn daily_quest_rewards_are_one_time_and_bounded() {
+        let done = vec!["study".to_owned()];
+        let result = complete_daily_quest("solve", &done, 0.5).unwrap();
+        assert_eq!(result["xp"], 30);
+        assert_eq!(result["coins"], 50);
+        assert_eq!(result["material"], "gear");
+        assert!(complete_daily_quest("study", &done, 0.5).is_err());
+        assert!(complete_daily_quest("unknown", &done, 0.5).is_err());
+        assert!(complete_daily_quest("solve", &done, 1.0).is_err());
+    }
 
     #[test]
     fn zone_unlocks_validate_cost_and_ownership() {
