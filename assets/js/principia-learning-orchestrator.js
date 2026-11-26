@@ -191,9 +191,20 @@
         confidence: Number.isFinite(Number(context.confidence)) ? Math.max(1, Math.min(5, Number(context.confidence))) : 3,
         topic: legacy.topic
       });
-      return { ...legacy, goal: plan.goal, steps: plan.steps, estimatedMinutes: plan.focusMinutes, nextAction: plan.nextAction, engine: 'rust-wasm' };
-    } catch (_) {
-      return { ...legacy, engine: 'javascript-fallback' };
+      return {
+        ...legacy,
+        goal: plan.goal,
+        title: plan.title,
+        description: plan.description,
+        steps: plan.steps,
+        estimatedMinutes: plan.focusMinutes,
+        nextAction: plan.nextAction,
+        difficulty: plan.difficulty,
+        engine: 'rust-wasm'
+      };
+    } catch (error) {
+      console.error('[PRINCIPIA] Rust learning engine unavailable:', error);
+      return { ...legacy, engine: 'rust-wasm-unavailable', error: true };
     }
   }
 
@@ -210,6 +221,10 @@
         state.recent = state.recent.slice(-MAX_RECENT);
       }
       save();
+      if (plan.error) {
+        if (window.notify) window.notify('Lõi học tập Rust/WASM chưa sẵn sàng. Không thể tạo lộ trình lúc này.');
+        return null;
+      }
       const prompt = promptFor(plan, context.extra || '', context);
       if (window.principiaLocalAI?.open) window.principiaLocalAI.open(prompt);
       else if (window.principiaSuiteAI) window.principiaSuiteAI();
