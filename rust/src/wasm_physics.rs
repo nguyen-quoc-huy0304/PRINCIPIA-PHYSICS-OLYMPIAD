@@ -560,6 +560,26 @@ pub fn activity_calendar_json(input_json: &str) -> Result<String, JsValue> {
     serde_json::to_string(&result).map_err(|error| input_error(&error.to_string()))
 }
 
+/// Complete a Gameverse daily quest and select its material reward in Rust.
+#[wasm_bindgen]
+pub fn gameverse_daily_quest_json(input_json: &str) -> Result<String, JsValue> {
+    if input_json.len() > 4096 { return Err(input_error("Gameverse daily quest payload exceeds 4 KiB")); }
+    let input: serde_json::Value = serde_json::from_str(input_json)
+        .map_err(|_| input_error("Gameverse daily quest payload must be valid JSON"))?;
+    let id = input.get("id").and_then(serde_json::Value::as_str)
+        .ok_or_else(|| input_error("Missing daily quest identifier"))?;
+    let roll = input.get("materialRoll").and_then(serde_json::Value::as_f64)
+        .ok_or_else(|| input_error("Invalid daily quest material roll"))?;
+    let done = input.get("done").and_then(serde_json::Value::as_array)
+        .ok_or_else(|| input_error("Completed daily quests must be an array"))?
+        .iter().map(|value| value.as_str().map(str::to_owned)
+            .ok_or_else(|| input_error("Invalid completed quest identifier")))
+        .collect::<Result<Vec<_>, _>>()?;
+    let result = crate::gameverse::complete_daily_quest(id, &done, roll)
+        .map_err(|error| input_error(&format!("Gameverse daily quest rejected: {error:?}")))?;
+    serde_json::to_string(&result).map_err(|error| input_error(&error.to_string()))
+}
+
 /// Validate and apply Gameverse zone unlock transactions in Rust.
 #[wasm_bindgen]
 pub fn gameverse_unlock_zone_json(input_json: &str) -> Result<String, JsValue> {
