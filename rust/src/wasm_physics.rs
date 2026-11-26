@@ -388,6 +388,50 @@ pub fn learning_recommend_json(context_json: &str) -> Result<String, JsValue> {
     })).map_err(|error| input_error(&error.to_string()))
 }
 
+
+#[wasm_bindgen]
+pub fn learning_orchestrate_json(input_json: &str) -> Result<String, JsValue> {
+    if input_json.len() > 65_536 { return Err(input_error("Learning orchestration input exceeds 64 KiB")); }
+    use crate::learning::{recommend, select_method, LearningGoal, LearnerContext};
+    let value: serde_json::Value = serde_json::from_str(input_json).map_err(|_| input_error("Learning orchestration input must be valid JSON"))?;
+    let input = value.get("context").ok_or_else(|| input_error("Missing learning context"))?;
+    let goal = match input.get("goal").and_then(serde_json::Value::as_str) {
+        None | Some("") | Some("auto") => None,
+        Some("understand") => Some(LearningGoal::Understand), Some("remember") => Some(LearningGoal::Remember),
+        Some("solve") => Some(LearningGoal::Solve), Some("olympiad") => Some(LearningGoal::Olympiad),
+        Some("teach") => Some(LearningGoal::Teach), Some("recover") => Some(LearningGoal::Recover),
+        _ => return Err(input_error("Unsupported learning goal")),
+    };
+    let context = LearnerContext {
+        goal, percent: input.get("percent").and_then(serde_json::Value::as_f64),
+        error_count: input.get("errorCount").and_then(serde_json::Value::as_u64).unwrap_or(0).min(u32::MAX as u64) as u32,
+        phase: input.get("phase").and_then(serde_json::Value::as_str).unwrap_or("").chars().take(100).collect(),
+        energy: input.get("energy").and_then(serde_json::Value::as_u64).unwrap_or(2).min(u8::MAX as u64) as u8,
+        confidence: input.get("confidence").and_then(serde_json::Value::as_u64).unwrap_or(3).min(u8::MAX as u64) as u8,
+        topic: input.get("topic").and_then(serde_json::Value::as_str).unwrap_or("").chars().take(120).collect(),
+    };
+    let plan = recommend(&context).map_err(|error| input_error(&format!("Learning recommendation failed: {error:?}")))?;
+    let catalog = value.get("catalog").and_then(serde_json::Value::as_array).ok_or_else(|| input_error("Learning catalog must be an array"))?;
+    if catalog.len() > 500 { return Err(input_error("Learning catalog exceeds 500 methods")); }
+    let recent: Vec<String> = value.get("recentIds").and_then(serde_json::Value::as_array).into_iter().flatten()
+        .filter_map(serde_json::Value::as_str).take(12).map(|id| id.chars().take(80).collect()).collect();
+    let sessions = value.get("sessions").and_then(serde_json::Value::as_u64).unwrap_or(0);
+    let selected = select_method(&plan.topic, plan.goal, catalog, &recent, sessions);
+    let goal_name = match plan.goal {
+        LearningGoal::Understand => "understand", LearningGoal::Remember => "remember",
+        LearningGoal::Solve => "solve", LearningGoal::Olympiad => "olympiad",
+        LearningGoal::Teach => "teach", LearningGoal::Recover => "recover",
+    };
+    let steps: Vec<String> = selected.as_ref().filter(|item| !item.steps.is_empty())
+        .map(|item| item.steps.clone()).unwrap_or_else(|| plan.steps.iter().map(|step| step.to_string()).collect());
+    let method_id = selected.map(|item| item.method_id);
+    serde_json::to_string(&serde_json::json!({
+        "goal": goal_name, "difficulty": plan.difficulty, "focusMinutes": plan.focus_minutes,
+        "topic": plan.topic, "steps": steps, "nextAction": plan.next_action,
+        "title": plan.title, "description": plan.description, "methodId": method_id
+    })).map_err(|error| input_error(&error.to_string()))
+}
+
 #[wasm_bindgen]
 pub fn learning_review_schedule_json(quality: u32, previous_interval_days: u32, ease_factor: f64) -> Result<String, JsValue> {
     let quality = u8::try_from(quality).map_err(|_| input_error("Review quality must be an integer from 0 to 5"))?;
