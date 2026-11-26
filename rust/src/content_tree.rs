@@ -162,6 +162,8 @@ fn validate_new_node(node: &Value) -> Result<(), TreeError> {
     if object.get("content").and_then(Value::as_str).is_some_and(|v| v.len() > 256 * 1024) {
         return Err(TreeError::InvalidNode);
     }
+    if object.get("questions").is_some() { validate_questions(&object["questions"])?; }
+    if object.get("quiz").is_some() { validate_questions(&object["quiz"])?; }
     if kind == "tab" && object.get("children").is_some_and(|v| !v.is_array()) {
         return Err(TreeError::InvalidNode);
     }
@@ -205,7 +207,7 @@ fn validate_questions(value: &Value) -> Result<(), TreeError> {
             .filter(|v| !v.trim().is_empty() && v.len() <= 4096).ok_or(TreeError::InvalidNode)?;
         let answers = object.get("a").and_then(Value::as_array)
             .filter(|items| !items.is_empty() && items.len() <= 8).ok_or(TreeError::InvalidNode)?;
-        if answers.iter().any(|answer| answer.as_str().is_none_or(|v| v.len() > 2048)) {
+        if answers.iter().any(|answer| answer.as_str().map_or(true, |v| v.len() > 2048)) {
             return Err(TreeError::InvalidNode);
         }
         let correct = object.get("correct").and_then(Value::as_u64)
