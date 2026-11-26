@@ -221,15 +221,46 @@
     state.cards.push({ id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()), question, answer, dueAt: Date.now(), interval: 0, repetitions: 0 });
     saveState(); revealed = false; render();
   }
-  function rateCard(rating) {
+  let reviewPending = false;
+  async function rateCard(rating) {
+    if (!Number.isInteger(rating) || rating < 1 || rating > 4 || reviewPending) return false;
     const due = dueCards();
     const item = due[reviewIndex % Math.max(1, due.length)];
-    if (!item) return;
-    const intervals = { 1: 0.04, 2: 1, 3: 3, 4: 7 };
-    item.repetitions = rating === 1 ? 0 : item.repetitions + 1;
-    item.interval = rating === 1 ? 0.04 : Math.max(1, item.interval || 1) * (rating === 2 ? 1 : rating === 3 ? 2 : 2.5);
-    item.dueAt = Date.now() + (rating === 1 ? 10 * 60000 : Math.max(intervals[rating], item.interval) * DAY);
-    reviewIndex = 0; revealed = false; saveState(); render();
+    if (!item) return false;
+    const engine = window.PrincipiaWasmPhysics;
+    if (!engine || typeof engine.scheduleReview !== 'function') {
+      alert('Lõi Rust/WASM chưa sẵn sàng. Lịch ôn chưa được thay đổi.');
+      return false;
+    }
+    const quality = ({ 1: 1, 2: 3, 3: 4, 4: 5 })[rating];
+    const previousInterval = Number.isInteger(item.interval) ? Math.max(0, Math.min(36500, item.interval)) : 0;
+    const easeFactor = Number.isFinite(item.easeFactor) ? item.easeFactor : 2.5;
+    reviewPending = true;
+    try {
+      const schedule = await engine.scheduleReview(quality, previousInterval, easeFactor);
+      if (!schedule || !Number.isInteger(schedule.intervalDays) || schedule.intervalDays < 1
+        || schedule.intervalDays > 36500 || schedule.dueAfterDays !== schedule.intervalDays
+        || !Number.isFinite(schedule.easeFactor) || schedule.easeFactor < 1.3
+        || schedule.easeFactor > 3 || typeof schedule.mastered !== 'boolean') {
+        throw new TypeError('Rust returned an invalid spaced-repetition schedule.');
+      }
+      item.repetitions = rating === 1 ? 0 : (Number.isInteger(item.repetitions) ? item.repetitions + 1 : 1);
+      item.interval = schedule.intervalDays;
+      item.easeFactor = schedule.easeFactor;
+      item.dueAt = Date.now() + schedule.dueAfterDays * DAY;
+      item.mastered = schedule.mastered;
+      reviewIndex = 0;
+      revealed = false;
+      saveState();
+      render();
+      return true;
+    } catch (error) {
+      console.error('[PRINCIPIA] Rust spaced-repetition schedule failed:', error);
+      alert('Không thể xác minh lịch ôn bằng Rust/WASM. Thẻ chưa được cập nhật.');
+      return false;
+    } finally {
+      reviewPending = false;
+    }
   }
   function markHabit() {
     const key = todayKey();
