@@ -13,6 +13,7 @@ export const force_balance_target_json: (a: number, b: number, c: number, d: num
 export const game_league_json: (a: number, b: number, c: number) => void;
 export const game_trajectory_json: (a: number, b: number, c: number, d: number, e: number) => void;
 export const gameverse_craft_json: (a: number, b: number, c: number) => void;
+export const gameverse_pet_progress_json: (a: number, b: number, c: number) => void;
 export const gameverse_quiz_reward_json: (a: number, b: number, c: number) => void;
 export const generate_game_challenge_json: (a: number, b: bigint) => void;
 export const global_search_index_json: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;

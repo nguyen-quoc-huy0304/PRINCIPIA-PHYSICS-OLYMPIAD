@@ -44,6 +44,11 @@ export function game_trajectory_json(speed_mps: number, angle_degrees: number, g
 export function gameverse_craft_json(input_json: string): string;
 
 /**
+ * Calculate Gameverse pet XP remainder, level, and form in Rust.
+ */
+export function gameverse_pet_progress_json(pet_xp: number, pet_level: number): string;
+
+/**
  * Resolve Gameverse quiz rewards and ranked rating changes in Rust.
  */
 export function gameverse_quiz_reward_json(input_json: string): string;
@@ -147,6 +152,7 @@ export interface InitOutput {
     readonly game_league_json: (a: number, b: number, c: number) => void;
     readonly game_trajectory_json: (a: number, b: number, c: number, d: number, e: number) => void;
     readonly gameverse_craft_json: (a: number, b: number, c: number) => void;
+    readonly gameverse_pet_progress_json: (a: number, b: number, c: number) => void;
     readonly gameverse_quiz_reward_json: (a: number, b: number, c: number) => void;
     readonly generate_game_challenge_json: (a: number, b: bigint) => void;
     readonly global_search_index_json: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;

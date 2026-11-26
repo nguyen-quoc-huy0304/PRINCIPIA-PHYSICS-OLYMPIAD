@@ -387,6 +387,37 @@ export function gameverse_craft_json(input_json) {
 }
 
 /**
+ * Calculate Gameverse pet XP remainder, level, and form in Rust.
+ * @param {number} pet_xp
+ * @param {number} pet_level
+ * @returns {string}
+ */
+export function gameverse_pet_progress_json(pet_xp, pet_level) {
+    let deferred2_0;
+    let deferred2_1;
+    try {
+        const retptr = wasm.__wbindgen_add_to_stack_pointer(-16) >>> 0;
+        wasm.gameverse_pet_progress_json(retptr, pet_xp, pet_level);
+        var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+        var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+        var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+        var r3 = getDataViewMemory0().getInt32(retptr + 4 * 3, true);
+        var ptr1 = r0;
+        var len1 = r1;
+        if (r3) {
+            ptr1 = 0; len1 = 0;
+            throw takeFromExternrefTable0(r2);
+        }
+        deferred2_0 = ptr1;
+        deferred2_1 = len1;
+        return getStringFromWasm0(ptr1, len1);
+    } finally {
+        wasm.__wbindgen_add_to_stack_pointer(16);
+        wasm.__wbindgen_export3(deferred2_0, deferred2_1, 1);
+    }
+}
+
+/**
  * Resolve Gameverse quiz rewards and ranked rating changes in Rust.
  * @param {string} input_json
  * @returns {string}
