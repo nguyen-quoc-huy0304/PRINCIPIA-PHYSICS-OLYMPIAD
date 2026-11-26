@@ -75,10 +75,12 @@ pub fn ui_render_html(route: &str, width: u32, search_query: &str, dialog: &str)
 /// Expose the Rust spaced-repetition scheduler to browser clients.
 #[wasm_bindgen]
 pub fn learning_review_schedule_json(
-    quality: u8,
+    quality: u32,
     previous_interval_days: u32,
     ease_factor: f64,
 ) -> Result<String, JsValue> {
+    let quality = u8::try_from(quality)
+        .map_err(|_| JsValue::from_str("Review quality must be an integer from 0 to 5"))?;
     let schedule = crate::study_engine::next_review(
         quality,
         previous_interval_days,
