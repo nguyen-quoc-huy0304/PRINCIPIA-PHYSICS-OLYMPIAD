@@ -7,6 +7,7 @@ export const clamp_game_target: (a: number, b: number, c: number, d: number) => 
 export const content_catalog_index_json: (a: number, b: number, c: number, d: number, e: number) => void;
 export const content_tree_query_json: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
 export const course_completion_json: (a: number, b: number, c: number) => void;
+export const experience_reward: (a: number, b: number, c: number) => void;
 export const force_balance_score_json: (a: number, b: number, c: number, d: number, e: number) => void;
 export const force_balance_target_json: (a: number, b: number, c: number, d: number, e: number) => void;
 export const game_league_json: (a: number, b: number, c: number) => void;

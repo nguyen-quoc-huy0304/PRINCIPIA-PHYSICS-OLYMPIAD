@@ -22,6 +22,11 @@ export function content_tree_query_json(catalog_json: string, operation: string,
  */
 export function course_completion_json(completed: number, total: number): string;
 
+/**
+ * Return the canonical XP reward for a validated learning activity.
+ */
+export function experience_reward(activity: string): number;
+
 export function force_balance_score_json(candidate_x: number, candidate_y: number, target_x: number, target_y: number): string;
 
 export function force_balance_target_json(force_a_x: number, force_a_y: number, force_b_x: number, force_b_y: number): string;
@@ -136,6 +141,7 @@ export interface InitOutput {
     readonly content_catalog_index_json: (a: number, b: number, c: number, d: number, e: number) => void;
     readonly content_tree_query_json: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
     readonly course_completion_json: (a: number, b: number, c: number) => void;
+    readonly experience_reward: (a: number, b: number, c: number) => void;
     readonly force_balance_score_json: (a: number, b: number, c: number, d: number, e: number) => void;
     readonly force_balance_target_json: (a: number, b: number, c: number, d: number, e: number) => void;
     readonly game_league_json: (a: number, b: number, c: number) => void;

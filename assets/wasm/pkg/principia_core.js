@@ -204,6 +204,29 @@ export function course_completion_json(completed, total) {
 }
 
 /**
+ * Return the canonical XP reward for a validated learning activity.
+ * @param {string} activity
+ * @returns {number}
+ */
+export function experience_reward(activity) {
+    try {
+        const retptr = wasm.__wbindgen_add_to_stack_pointer(-16) >>> 0;
+        const ptr0 = passStringToWasm0(activity, wasm.__wbindgen_export, wasm.__wbindgen_export2);
+        const len0 = WASM_VECTOR_LEN;
+        wasm.experience_reward(retptr, ptr0, len0);
+        var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+        var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+        var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+        if (r2) {
+            throw takeFromExternrefTable0(r1);
+        }
+        return r0 >>> 0;
+    } finally {
+        wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+}
+
+/**
  * @param {number} candidate_x
  * @param {number} candidate_y
  * @param {number} target_x
