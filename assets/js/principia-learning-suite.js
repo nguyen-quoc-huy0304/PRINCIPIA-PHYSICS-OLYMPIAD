@@ -200,9 +200,20 @@
   html+=reviewSide?btn('Quên · 1 ngày','principiaSuiteRateReview(0)')+btn('Khó · 2 ngày','principiaSuiteRateReview(1)')+btn('Nhớ · 4 ngày','principiaSuiteRateReview(2)')+btn('Dễ · 7 ngày','principiaSuiteRateReview(3)'):btn('Xem đáp án','principiaSuiteFlipReview()','primary');
   html+=btn('Bỏ qua','principiaSuiteSkipReview()')+btn('Về trung tâm','principiaSuiteHome()');open('Ôn tập thông minh',html);
  }
- function rateReview(r){
-  const q=reviewQueue[reviewIndex];if(!q||!Number.isInteger(r)||r<0||r>3)return;const previous=Number((state.review||{})[q.path+'|'+q.q]?.interval)||0;const days=[1,Math.max(2,previous||2),Math.max(4,(previous||2)*2),Math.max(7,(previous||2)*3)][r],interval=Math.min(60,days),next=new Date();next.setDate(next.getDate()+interval);
-  markStudyDay();state.review=state.review||{};state.review[q.path+'|'+q.q]={interval:interval,due:localDateKey(next),last:new Date().toISOString(),rating:r};save();reviewIndex++;reviewSide=false;reviewCard();
+ async function rateReview(r){
+  const q=reviewQueue[reviewIndex];
+  if(!q||!Number.isInteger(r)||r<0||r>3)return;
+  const key=q.path+'|'+q.q,previous=state.review?.[key]||{},intervalDays=Number(previous.interval)||0,easeFactor=Number(previous.easeFactor)||2.5;
+  const quality=[1,3,4,5][r],engine=window.PrincipiaWasmPhysics;
+  if(!engine||typeof engine.scheduleReview!=='function'){console.error('[PRINCIPIA] Rust spaced-repetition engine is unavailable');alert('Không thể lên lịch ôn tập bằng Rust/WASM. Tiến độ chưa thay đổi.');return;}
+  try{
+   const schedule=await engine.scheduleReview(quality,intervalDays,easeFactor);
+   if(!Number.isInteger(schedule?.dueAfterDays)||schedule.dueAfterDays<1||schedule.dueAfterDays>36500||!Number.isFinite(schedule.easeFactor)||schedule.easeFactor<1.3||schedule.easeFactor>3||typeof schedule.mastered!=='boolean')throw new TypeError('Rust returned an invalid spaced-repetition schedule');
+   const next=new Date();next.setDate(next.getDate()+schedule.dueAfterDays);
+   markStudyDay();state.review=state.review||{};
+   state.review[key]={interval:schedule.intervalDays,due:localDateKey(next),last:new Date().toISOString(),rating:r,quality,easeFactor:schedule.easeFactor,mastered:schedule.mastered};
+   save();reviewIndex++;reviewSide=false;reviewCard();
+  }catch(error){console.error('[PRINCIPIA] Rust spaced-repetition scheduling failed:',error);alert('Không thể xác minh lịch ôn tập bằng Rust/WASM. Thẻ chưa được cập nhật.');}
  }
  function skipReview(){reviewIndex++;reviewSide=false;reviewCard()}
  function savedExamDraft(){try{const raw=localStorage.getItem('principia_olympic_exam_draft_v1');if(!raw)return null;const d=JSON.parse(raw);return d&&Array.isArray(d.questions)&&d.questions.length&&d.answers&&Number.isFinite(d.end)&&d.end>Date.now()&&!d.submitted?d:null}catch(_){return null}}
