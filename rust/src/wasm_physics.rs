@@ -202,6 +202,22 @@ pub fn force_balance_score_json(
     })).map_err(|error| input_error(&error.to_string()))
 }
 
+#[wasm_bindgen]
+pub fn robot_assembly_evaluate_json(
+    base: &str, joint: &str, link1: &str, link2: &str, tool: &str,
+    link1_mm: f64, link2_mm: f64, shoulder_deg: f64, elbow_deg: f64,
+    target_x_mm: f64, target_y_mm: f64,
+) -> Result<String, JsValue> {
+    let result = crate::robot_assembly::evaluate(
+        base, joint, link1, link2, tool, link1_mm, link2_mm,
+        shoulder_deg, elbow_deg, target_x_mm, target_y_mm
+    ).map_err(|error| input_error(&format!("Robot assembly evaluation failed: {error:?}")))?;
+    serde_json::to_string(&serde_json::json!({
+        "correct": result.correct, "total": result.total, "ready": result.ready,
+        "x": result.x_mm, "y": result.y_mm, "error": result.error_mm, "earned": result.earned
+    })).map_err(|error| input_error(&error.to_string()))
+}
+
 fn input_error(message: &str) -> JsValue { JsValue::from_str(message) }
 
 #[wasm_bindgen]
