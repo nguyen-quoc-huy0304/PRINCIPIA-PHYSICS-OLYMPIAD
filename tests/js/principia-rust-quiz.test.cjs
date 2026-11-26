@@ -44,6 +44,7 @@ test('legacy Olympiad questions are mapped into the Rust grading contract', asyn
 });
 
 test('adapter rejects invalid question and answer indices before WASM', async () => {
+  calls.length = 0;
   await assert.rejects(
     context.PrincipiaRustQuiz.gradeExam([{ q: 'Q', a: ['A'], correct: 0 }], {}),
     /Invalid question/
