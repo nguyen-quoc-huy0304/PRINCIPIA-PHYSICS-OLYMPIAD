@@ -66,19 +66,21 @@ test('force puzzle delegates score calculation to Rust WASM', async () => {
   context.PrincipiaWasmPhysics = {
     async compute(operation, params) {
       calls.push({ operation, params });
-      return { error: 5, points: 60 };
+      return operation === 'forceBalanceTarget' ? { x: 0, y: 0 } : { error: 5, points: 60 };
     }
   };
   const result = await math.scoreForNative(3, 4, { x: 0, y: 0 });
   assert.deepEqual(JSON.parse(JSON.stringify(result)), { error: 5, points: 60 });
-  assert.equal(calls.length, 1);
-  assert.equal(calls[0].operation, 'forceBalanceScore');
-  assert.equal(calls[0].params.targetX, 0);
+  assert.equal(calls.length, 2);
+  assert.equal(calls[0].operation, 'forceBalanceTarget');
+  assert.equal(calls[0].params.forceAX, 0);
+  assert.equal(calls[1].operation, 'forceBalanceScore');
+  assert.equal(calls[1].params.targetX, 0);
 });
 
 test('force puzzle scoring falls back safely when Rust WASM fails', async () => {
   context.PrincipiaWasmPhysics = { async compute() { throw new Error('WASM unavailable'); } };
-  const result = await math.scoreForNative(3, 4, { x: 0, y: 0 });
+  const result = await math.scoreForNative(3, 4, { x: 0, y: 0 }, { a: { x: 0, y: 0 }, b: { x: 0, y: 0 } });
   assert.equal(result.error, 5);
   assert.equal(result.points, 60);
 });
