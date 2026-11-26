@@ -24,20 +24,21 @@ test('week key remains Monday-based and local-calendar aware',()=>{
 });
 
 test('mission generation delegates metrics and week to Rust WASM',async()=>{
-  const rows=await api.missions({sessions:2.9,questions:15,notes:2},new Date(2026,10,22));
+  const rows=await api.missions({attempts:[{date:'2026-11-23T10:00:00Z',total:2.9}],notes:[{date:'2026-11-24'}]},new Date(2026,10,22));
   assert.equal(rows.length,3);
   assert.equal(rows[0].progress,67);
   assert.equal(rows[2].complete,true);
-  assert.equal(calls[0].payload.sessions,2);
+  assert.equal(calls[0].payload.attempts[0].total,2);
+  assert.equal(calls[0].payload.notes.length,1);
   assert.equal(calls[0].payload.week,'2026-11-16');
+  assert.equal(calls[0].payload.weekEnd,'2026-11-23');
 });
 
 test('invalid local metrics are normalized before calling Rust',async()=>{
-  const rows=await api.missions({sessions:Infinity,questions:'x',notes:-1});
+  const rows=await api.missions({attempts:[{date:'bad',total:Infinity}],notes:[{date:'bad'}]});
   assert.equal(rows[0].value,2);
-  assert.equal(calls[1].payload.sessions,0);
-  assert.equal(calls[1].payload.questions,0);
-  assert.equal(calls[1].payload.notes,0);
+  assert.equal(calls[1].payload.attempts[0].total,0);
+  assert.equal(calls[1].payload.notes[0].date,'bad');
 });
 
 test('claim validation delegates thresholds and one-time status to Rust',async()=>{
