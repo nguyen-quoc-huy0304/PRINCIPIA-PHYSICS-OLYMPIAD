@@ -949,7 +949,7 @@ async function dailyReward(){
  })().catch(error=>{
   console.error('[PRINCIPIA] Rust daily streak update failed:',error);
   notify('Không thể cập nhật chuỗi ngày học bằng Rust/WASM.');
-  throw error;
+  return null;
  }).finally(()=>{dailyRewardPromise=null;});
  return dailyRewardPromise;
 }
