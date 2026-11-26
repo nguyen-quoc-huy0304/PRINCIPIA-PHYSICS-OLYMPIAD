@@ -120,6 +120,41 @@ pub fn physics_collision_1d_json(
     })).map_err(|error| input_error(&error.to_string()))
 }
 
+
+fn parse_collision_disk(input: &str) -> Result<crate::collision::Disk, JsValue> {
+    if input.len() > 4096 { return Err(input_error("Disk input exceeds 4 KiB")); }
+    let value: serde_json::Value = serde_json::from_str(input)
+        .map_err(|_| input_error("Disk input must be valid JSON"))?;
+    let number = |key: &str| value.get(key).and_then(serde_json::Value::as_f64)
+        .ok_or_else(|| input_error("Disk input contains a missing or invalid numeric field"));
+    Ok(crate::collision::Disk {
+        x: number("x")?,
+        y: number("y")?,
+        vx: number("vx")?,
+        vy: number("vy")?,
+        mass: number("mass")?,
+        radius: number("radius")?,
+    })
+}
+
+#[wasm_bindgen]
+pub fn physics_disk_collision_json(
+    body_a_json: &str,
+    body_b_json: &str,
+    restitution: f64,
+) -> Result<String, JsValue> {
+    let body_a = parse_collision_disk(body_a_json)?;
+    let body_b = parse_collision_disk(body_b_json)?;
+    let result = crate::collision::resolve_disks(body_a, body_b, restitution)
+        .map_err(|error| input_error(&format!("Disk collision failed: {error:?}")))?;
+    serde_json::to_string(&serde_json::json!({
+        "collided": result.collided,
+        "impulse": result.impulse,
+        "a": { "x": result.a.x, "y": result.a.y, "vx": result.a.vx, "vy": result.a.vy },
+        "b": { "x": result.b.x, "y": result.b.y, "vx": result.b.vx, "vy": result.b.vy }
+    })).map_err(|error| input_error(&error.to_string()))
+}
+
 fn input_error(message: &str) -> JsValue { JsValue::from_str(message) }
 
 #[wasm_bindgen]
