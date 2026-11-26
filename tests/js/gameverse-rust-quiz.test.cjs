@@ -5,6 +5,8 @@ const fs = require('node:fs');
 
 const source = fs.readFileSync('assets/js/principia-game-worlds.js', 'utf8');
 const bridge = fs.readFileSync('assets/js/principia-wasm-physics.js', 'utf8');
+const wasm = fs.readFileSync('rust/src/wasm_physics.rs', 'utf8');
+const rust = fs.readFileSync('rust/src/gameverse.rs', 'utf8');
 
 test('Gameverse sends quiz attempts to the Rust assessment engine', () => {
   assert.match(source, /async function finishQuiz\(\)/);
