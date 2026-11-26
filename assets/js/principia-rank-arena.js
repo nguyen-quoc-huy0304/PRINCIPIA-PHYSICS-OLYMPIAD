@@ -126,7 +126,7 @@
   async function renderHome() {
     if (state.daily !== todayKey()) { state.daily = todayKey(); state.dailyMatches = 0; saveState(); }
     const tier = await currentTier(state.rp);
-    const nextText = tier.next ? (tier.next.min - state.rp) + ' RP đến ' + tier.next.name : 'Đã đạt bậc cao nhất';
+    const nextText = tier.next ? (tier.next.minimum - state.rp) + ' RP đến ' + tier.next.name : 'Đã đạt bậc cao nhất';
     const recent = state.matches.slice(-5).reverse();
     const history = recent.length ? recent.map(match => '<div style="display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid #38324d"><span>' + escapeHtml(match.rival) + ' · ' + new Date(match.date).toLocaleString('vi-VN') + '</span><b style="color:' + (match.result === 'win' ? '#78e0ac' : '#f2a2a2') + '">' + (match.result === 'win' ? 'THẮNG' : 'THUA') + ' · ' + (match.rpChange > 0 ? '+' : '') + match.rpChange + ' RP</b></div>').join('') : '<p style="color:#aaa">Chưa có trận xếp hạng.</p>';
     const thisWeek = weekKey();
@@ -265,7 +265,7 @@
     state.rp = Math.min(1000000, state.rp + decision.reward);
     updateAchievements();
     saveState();
-    renderHome();
+    await renderHomeSafe();
   }
 
   async function renderHomeSafe() { try { await renderHome(); } catch (error) { console.error('[PRINCIPIA] Rust ranked tier unavailable', error); show('ĐẤU TRƯỜNG TẠM THỜI KHÔNG KHẢ DỤNG', '<p>Không thể tải hạng đấu vì lõi Rust/WASM chưa sẵn sàng.</p>' + button('Đóng', 'principiaRankClose()')); } }
