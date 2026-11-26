@@ -23,6 +23,8 @@ pub struct LearningPlan {
     pub topic: String,
     pub steps: [&'static str; 3],
     pub next_action: &'static str,
+    pub title: &'static str,
+    pub description: &'static str,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -100,11 +102,19 @@ pub fn recommend(context: &LearnerContext) -> Result<LearningPlan, LearningError
         LearningGoal::Teach => "teach_back",
         LearningGoal::Understand => "build_model",
     };
+    let (title, description) = match goal {
+        LearningGoal::Recover => ("Gỡ đúng chỗ đang vướng", "Ưu tiên tìm lỗ hổng kiến thức và sửa đúng bước đang sai."),
+        LearningGoal::Remember => ("Kiểm tra trí nhớ trước khi xem lại", "Tự truy xuất kiến thức trước, sau đó đối chiếu và củng cố phần còn thiếu."),
+        LearningGoal::Solve => ("Thử thách vận dụng tiếp theo", "Áp dụng nguyên lý vào bài toán có dữ kiện hoặc cách biểu diễn mới."),
+        LearningGoal::Olympiad => ("Thử thách tư duy Olympic", "Nhận diện cấu trúc, tìm bất biến và kiểm tra trường hợp biên."),
+        LearningGoal::Teach => ("Giải thích lại để kiểm tra hiểu sâu", "Giảng bằng lời của mình và tự bảo vệ từng lập luận."),
+        LearningGoal::Understand => ("Xây nền tảng rồi tự thử", "Hình dung hiện tượng, xác định giả thiết rồi mới đi vào công thức."),
+    };
     let topic = context.topic.trim();
     Ok(LearningPlan {
         goal, difficulty, focus_minutes,
         topic: if topic.is_empty() { "Vật lý".to_owned() } else { topic.chars().take(120).collect() },
-        steps, next_action,
+        steps, next_action, title, description,
     })
 }
 
