@@ -10,7 +10,7 @@ const bridge = fs.readFileSync('assets/js/principia-wasm-physics.js', 'utf8');
 test('Gameverse delegates XP level calculation to the shared Rust progression engine', () => {
   assert.match(source, /async function refreshLevel\(\)/);
   assert.match(source, /engine\.progression\(\{xp:state\.xp\}\)/);
-  assert.match(source, /state\.level=level/);
+  assert.match(source, /state\.level=progress\.level/);
   assert.doesNotMatch(source, /function xpLevel\(/);
   assert.doesNotMatch(source, /state\.level=xpLevel\(/);
   assert.match(bridge, /progression:\(metrics\)=>compute\('progressionSummary',metrics\)/);
@@ -20,7 +20,7 @@ test('Gameverse delegates XP level calculation to the shared Rust progression en
 test('Gameverse does not silently fall back to JavaScript level rules', () => {
   assert.match(source, /Rust progression engine is unavailable/);
   assert.match(source, /Rust level calculation failed/);
-  assert.match(source, /Rust level initialization failed/);
+  assert.match(source, /Rust progression initialization failed/);
 });
 
 test('Gameverse level progress bar uses the shared Rust progression result',()=>{
