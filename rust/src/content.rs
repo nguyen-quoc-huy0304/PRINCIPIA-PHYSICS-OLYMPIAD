@@ -42,24 +42,39 @@ pub enum CatalogError { InvalidJson, InvalidRoot, TooLarge, TooManyNodes, TooDee
 /// Validate the hierarchical content tree used by the legacy browser application.
 /// Returns a normalized flat index; all traversal and hierarchy checks execute in Rust.
 pub fn index_catalog_json(input: &str, query: &str) -> Result<Value, CatalogError> {
+    global_search_index_json(input, query, "lesson")
+}
+
+/// Rust-owned global search index. Traversal, inherited content kinds, question
+/// normalization and matching all execute in the core rather than browser JS.
+pub fn global_search_index_json(
+    input: &str,
+    query: &str,
+    default_kind: &str,
+) -> Result<Value, CatalogError> {
     if input.len() > MAX_CATALOG_BYTES { return Err(CatalogError::TooLarge); }
+    if query.len() > 512 { return Err(CatalogError::InvalidNode); }
+    if !matches!(default_kind, "lesson" | "quiz" | "fun") {
+        return Err(CatalogError::InvalidNode);
+    }
     let root: Value = serde_json::from_str(input).map_err(|_| CatalogError::InvalidJson)?;
     let nodes = root.as_array().ok_or(CatalogError::InvalidRoot)?;
     let needle = query.trim().to_lowercase();
-    if needle.len() > 512 { return Err(CatalogError::InvalidNode); }
     let mut ids = HashSet::new();
     let mut flat = Vec::new();
+    let mut path = Vec::new();
     for node in nodes {
-        visit_node(node, None, 0, &needle, &mut ids, &mut flat)?;
+        visit_node(node, 0, default_kind, &needle, &mut path, &mut ids, &mut flat)?;
     }
     Ok(json!({ "count": flat.len(), "items": flat }))
 }
 
 fn visit_node(
     node: &Value,
-    parent_id: Option<&str>,
     depth: usize,
+    inherited_kind: &str,
     query: &str,
+    path: &mut Vec<String>,
     ids: &mut HashSet<String>,
     output: &mut Vec<Value>,
 ) -> Result<(), CatalogError> {
@@ -68,30 +83,75 @@ fn visit_node(
     let object = node.as_object().ok_or(CatalogError::InvalidNode)?;
     let id = object.get("id").and_then(Value::as_str)
         .filter(|v| !v.trim().is_empty() && v.len() <= 128).ok_or(CatalogError::InvalidNode)?;
-    let name = object.get("name").and_then(Value::as_str)
-        .filter(|v| !v.trim().is_empty() && v.len() <= 512).ok_or(CatalogError::InvalidNode)?;
-    let kind = object.get("type").and_then(Value::as_str)
-        .filter(|v| v.len() <= 32).ok_or(CatalogError::InvalidNode)?;
     if !ids.insert(id.to_owned()) { return Err(CatalogError::DuplicateId); }
+    let name = object.get("name").and_then(Value::as_str).unwrap_or("Không tên");
+    if name.len() > 512 { return Err(CatalogError::InvalidNode); }
     let content = object.get("content").and_then(Value::as_str).unwrap_or("");
     if content.len() > 256 * 1024 { return Err(CatalogError::InvalidNode); }
-    let matched = query.is_empty() || name.to_lowercase().contains(query)
-        || content.to_lowercase().contains(query) || id.to_lowercase().contains(query);
-    if matched {
+    let kind = match object.get("type").and_then(Value::as_str) {
+        Some("quiz") => "quiz",
+        Some("fun") => "fun",
+        Some("lesson") => "lesson",
+        _ => inherited_kind,
+    };
+    path.push(name.to_owned());
+    let path_text = path.join(" › ");
+    let questions = normalize_search_questions(object.get("questions"))?;
+    let question_text = questions.iter().map(|question| {
+        let prompt = question.get("q").and_then(Value::as_str).unwrap_or("");
+        let explanation = question.get("explanation").and_then(Value::as_str).unwrap_or("");
+        let answers = question.get("a").and_then(Value::as_array)
+            .map(|items| items.iter().filter_map(Value::as_str).collect::<Vec<_>>().join(" "))
+            .unwrap_or_default();
+        format!("{prompt} {answers} {explanation}")
+    }).collect::<Vec<_>>().join(" ");
+    let searchable = format!("{id} {name} {path_text} {content} {question_text}").to_lowercase();
+    if query.is_empty() || searchable.contains(query) {
         output.push(json!({
-            "id": id, "name": name, "type": kind,
-            "parentId": parent_id, "depth": depth,
+            "id": id, "name": name, "type": kind, "kind": kind,
+            "path": path_text, "depth": depth, "content": content,
             "icon": object.get("icon").and_then(Value::as_str).unwrap_or(""),
-            "content": content
+            "questions": questions
         }));
     }
     if let Some(children) = object.get("children") {
         let children = children.as_array().ok_or(CatalogError::InvalidNode)?;
         for child in children {
-            visit_node(child, Some(id), depth + 1, query, ids, output)?;
+            visit_node(child, depth + 1, kind, query, path, ids, output)?;
         }
     }
+    path.pop();
     Ok(())
+}
+
+fn normalize_search_questions(value: Option<&Value>) -> Result<Vec<Value>, CatalogError> {
+    let Some(value) = value else { return Ok(Vec::new()); };
+    let items = value.as_array().filter(|items| items.len() <= 500)
+        .ok_or(CatalogError::InvalidNode)?;
+    let mut normalized = Vec::with_capacity(items.len());
+    for item in items {
+        let (prompt, answers, explanation) = if let Some(prompt) = item.as_str() {
+            (prompt, Vec::new(), "")
+        } else {
+            let object = item.as_object().ok_or(CatalogError::InvalidNode)?;
+            let prompt = object.get("q").and_then(Value::as_str).unwrap_or("");
+            let explanation = object.get("explanation").and_then(Value::as_str).unwrap_or("");
+            let answers = object.get("a").and_then(Value::as_array)
+                .map(|values| values.iter().filter_map(|answer| match answer {
+                    Value::String(value) => Some(value.clone()),
+                    Value::Number(value) => Some(value.to_string()),
+                    Value::Bool(value) => Some(value.to_string()),
+                    _ => None,
+                }).collect::<Vec<_>>()).unwrap_or_default();
+            (prompt, answers, explanation)
+        };
+        if prompt.len() > 4096 || explanation.len() > 16_384
+            || answers.iter().any(|answer| answer.len() > 2048) {
+            return Err(CatalogError::InvalidNode);
+        }
+        normalized.push(json!({ "q": prompt, "a": answers, "explanation": explanation }));
+    }
+    Ok(normalized)
 }
 
 #[cfg(test)]
