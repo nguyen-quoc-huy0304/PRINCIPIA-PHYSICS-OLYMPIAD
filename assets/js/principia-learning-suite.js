@@ -278,18 +278,30 @@
   const resume=draft?panel('Có bài thi chưa hoàn tất','<p>Bản nháp còn '+clock(draft.end-Date.now())+' · '+Object.keys(draft.answers||{}).length+'/'+draft.questions.length+' câu đã trả lời.</p>'+btn('Tiếp tục bài thi','principiaSuiteResumeExam()','primary')+btn('Xóa bản nháp','principiaSuiteDiscardExamDraft()')):'';
   open('Phòng luyện Olympic',resume+'<p>Đề lấy ngẫu nhiên từ ngân hàng Quiz và câu hỏi cuối bài học. Có thể chọn chủ đề trước khi thi.</p>'+panel('Thiết lập bài thi','<label>Chủ đề <select id="plsExamTopic" style="margin:8px;padding:8px;max-width:100%"><option value="all">Tất cả chủ đề ('+all.length+')</option>'+topics.map(t=>'<option value="'+esc(t)+'">'+esc(t)+' ('+all.filter(q=>q.topic===t).length+')</option>').join('')+'</select></label><br><label>Số câu <select id="plsExamCount" style="margin:8px;padding:8px"><option value="5">5 câu</option><option value="10" selected>10 câu</option><option value="20">20 câu</option><option value="all">Tất cả</option></select></label><label>Thời gian <select id="plsExamMinutes" style="margin:8px;padding:8px"><option value="10">10 phút</option><option value="20" selected>20 phút</option><option value="30">30 phút</option><option value="45">45 phút</option></select></label><p class="small muted">'+all.length+' câu hỏi · đáp án được đảo thứ tự ngẫu nhiên trong mỗi đề.</p>'+btn('Bắt đầu thi','principiaSuiteStartExam()','primary'))+btn('Quay lại','principiaSuiteHome()'));
  }
- function shuffledQuestion(q){
-  const choices=secureShuffle(q.a.map((value,index)=>({value,index})));
-  return Object.assign({},q,{a:choices.map(x=>x.value),correct:choices.findIndex(x=>x.index===q.correct)});
+ async function selectRustExamQuestions(source,count){
+  const engine=window.PrincipiaWasmPhysics;
+  if(!engine||typeof engine.selectExamQuestions!=='function')throw new Error('Rust exam selection engine is unavailable');
+  if(!globalThis.crypto?.getRandomValues)throw new Error('Secure random generator is unavailable');
+  const random=new Uint32Array(2);globalThis.crypto.getRandomValues(random);
+  const seed=(random[0]&0x1fffff)*0x100000000+random[1];
+  const selected=await engine.selectExamQuestions(source,count,seed);
+  if(!Array.isArray(selected)||selected.length!==count||selected.some(question=>
+   !question||typeof question.q!=='string'||!Array.isArray(question.a)||question.a.length<2
+   ||question.a.length>16||!Number.isInteger(question.correct)||question.correct<0||question.correct>=question.a.length))
+   throw new TypeError('Rust returned an invalid Olympic exam question set');
+  return selected;
  }
- function startExam(){
+ async function startExam(){
   const all=pool();if(!all.length){open('Chưa có ngân hàng đề','<p>Hiện chưa tìm thấy câu hỏi hợp lệ trong Quiz hoặc bài học. Hãy thêm câu hỏi trước khi mở phòng luyện.</p>'+btn('Đóng','principiaSuiteHome()'));return}
   const topic=document.getElementById('plsExamTopic')?.value||'all',source=topic==='all'?all:all.filter(q=>q.topic===topic);
   if(!source.length){alert('Chủ đề này chưa có câu hỏi hợp lệ.');return}
   const countValue=document.getElementById('plsExamCount')?.value||'10',minutes=Math.max(1,Number(document.getElementById('plsExamMinutes')?.value)||20);
-  const shuffled=secureShuffle(source),selected=countValue==='all'?shuffled:shuffled.slice(0,Math.min(Number(countValue)||10,shuffled.length));
-  exam={questions:selected.map(shuffledQuestion),answers:{},marked:[],end:Date.now()+minutes*60000,startedAt:Date.now(),submitted:false,topic,warned5:false,warned1:false,currentIndex:0};
-  examCurrentIndex=0;examView='all';saveExamDraft();renderExam();startTimer();
+  const count=countValue==='all'?source.length:Math.min(Number(countValue)||10,source.length);
+  try{
+   const selected=await selectRustExamQuestions(source,count);
+   exam={questions:selected,answers:{},marked:[],end:Date.now()+minutes*60000,startedAt:Date.now(),submitted:false,topic,warned5:false,warned1:false,currentIndex:0};
+   examCurrentIndex=0;examView='all';saveExamDraft();renderExam();startTimer();
+  }catch(error){console.error('[PRINCIPIA] Rust Olympic exam selection failed:',error);alert('Không thể tạo đề bằng Rust/WASM. Chưa có bài thi nào được mở.');}
  }
  function stopTimer(){if(examTimer){clearInterval(examTimer);examTimer=null}}
  function startTimer(){stopTimer();examTimer=setInterval(()=>{if(!exam)return;const left=Math.max(0,exam.end-Date.now()),el=document.getElementById('plsExamClock');if(el){el.textContent=clock(left);el.style.color=left<=60000?'#ff6464':left<=300000?'#ffb454':''}if(left<=300000&&!exam.warned5){exam.warned5=true;if(left>60000)showExamNotice('Còn 5 phút hoặc ít hơn — kiểm tra các câu còn bỏ trống.')}if(left<=60000&&!exam.warned1){exam.warned1=true;showExamNotice('Còn 1 phút — chuẩn bị nộp bài!')}if(!left)submitExam(true)},1000)}
@@ -398,12 +410,15 @@
   open('Kết quả luyện Olympic',html+btn('Luyện lại câu sai','principiaSuiteRetryMistakes()','primary')+btn('Về trung tâm','principiaSuiteHome()')+btn('Thi lượt mới','principiaSuiteExamSetup()'));
  }
  function examResultFilter(onlyWrong){renderExamResult(!!onlyWrong)}
- function retryExamMistakes(){
+ async function retryExamMistakes(){
   if(!lastExamReview)return;
-  const wrong=lastExamReview.filter(x=>!x.correct).map(x=>shuffledQuestion(x.q));
+  const wrong=lastExamReview.filter(item=>!item.correct).map(item=>item.q);
   if(!wrong.length){alert('Bạn không có câu sai để luyện lại.');return}
-  exam={questions:wrong,answers:{},marked:[],end:Date.now()+Math.max(5,wrong.length*2)*60000,startedAt:Date.now(),submitted:false,topic:'Ôn câu sai',warned5:false,warned1:false,currentIndex:0};
-  examCurrentIndex=0;examView='all';saveExamDraft();renderExam();startTimer();
+  try{
+   const questions=await selectRustExamQuestions(wrong,wrong.length);
+   exam={questions,answers:{},marked:[],end:Date.now()+Math.max(5,wrong.length*2)*60000,startedAt:Date.now(),submitted:false,topic:'Ôn câu sai',warned5:false,warned1:false,currentIndex:0};
+   examCurrentIndex=0;examView='all';saveExamDraft();renderExam();startTimer();
+  }catch(error){console.error('[PRINCIPIA] Rust mistake review selection failed:',error);alert('Không thể tạo đề ôn câu sai bằng Rust/WASM.');}
  }
  let attemptQuery='',attemptMode='all';
  function renderAttemptHistory(){
@@ -637,7 +652,15 @@
  function toggleMastered(){const qs=flashMode==='favorites'?pool().filter(q=>(state.favoriteQuestions||[]).includes(questionKey(q))):flashMode==='mastered'?pool().filter(q=>(state.masteredQuestions||[]).includes(questionKey(q))):pool();const q=qs[flashIndex%Math.max(1,qs.length)];if(!q)return;const list=Array.isArray(state.masteredQuestions)?state.masteredQuestions:[],key=questionKey(q),i=list.indexOf(key);if(i>=0)list.splice(i,1);else list.push(key);state.masteredQuestions=list;save();renderFlash()}
  function masteredFlashcards(){flashMode='mastered';flashIndex=0;flashSide=false;renderFlash()}
  function shuffleFlashcards(){let qs=pool();if(flashMode==='favorites')qs=qs.filter(q=>(state.favoriteQuestions||[]).includes(questionKey(q)));else if(flashMode==='mastered')qs=qs.filter(q=>(state.masteredQuestions||[]).includes(questionKey(q)));else if(flashMode==='errors')qs=state.errors||[];if(qs.length>1){const old=flashIndex,pick=secureRandomIndex(qs.length-1);flashIndex=pick>=old?pick+1:pick}else flashIndex=0;flashSide=false;renderFlash()}
- function startFavoritePractice(){const qs=pool().filter(q=>(state.favoriteQuestions||[]).includes(questionKey(q)));if(!qs.length){open('Luyện câu yêu thích','<p>Bạn chưa lưu câu hỏi yêu thích nào.</p>'+btn('Mở ngân hàng câu hỏi','principiaSuiteQuestionBank()'));return}exam={questions:secureShuffle(qs).slice(0,Math.min(10,qs.length)),answers:{},end:Date.now()+15*60000,submitted:false};renderExam();startTimer()}
+ async function startFavoritePractice(){
+  const questions=pool().filter(question=>(state.favoriteQuestions||[]).includes(questionKey(question)));
+  if(!questions.length){open('Luyện câu yêu thích','<p>Bạn chưa lưu câu hỏi yêu thích nào.</p>'+btn('Mở ngân hàng câu hỏi','principiaSuiteQuestionBank()'));return}
+  try{
+   const selected=await selectRustExamQuestions(questions,Math.min(10,questions.length));
+   exam={questions:selected,answers:{},end:Date.now()+15*60000,submitted:false,topic:'Câu hỏi yêu thích'};
+   renderExam();startTimer();
+  }catch(error){console.error('[PRINCIPIA] Rust favorite practice selection failed:',error);alert('Không thể tạo đề câu hỏi yêu thích bằng Rust/WASM.');}
+ }
  function reviewErrors(){
   if(!(state.errors||[]).length){open('Ôn lại lỗi sai','<p>Chưa có lỗi sai nào được lưu. Làm bài luyện tập để hệ thống ghi nhận câu trả lời sai.</p>'+btn('Về trung tâm','principiaSuiteHome()'));return}
   flashMode='errors';flashIndex=0;flashSide=false;renderFlash();
