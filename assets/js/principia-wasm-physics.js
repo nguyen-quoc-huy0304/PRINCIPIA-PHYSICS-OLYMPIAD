@@ -36,7 +36,8 @@ async function compute(operation,params){
     case 'forceBalanceScore': return JSON.parse(wasm.force_balance_score_json(p.x,p.y,p.targetX,p.targetY));
     case 'gradeQuiz': return JSON.parse(wasm.assessment_grade_json(JSON.stringify(p)));
     case 'recordProgress': return JSON.parse(wasm.progress_record_json(JSON.stringify(p.progress||{}),p.activity,p.day));
-    case 'learningRecommend': return JSON.parse(wasm.learning_recommend_json(JSON.stringify(p)));\n    case 'learningOrchestrate': return JSON.parse(wasm.learning_orchestrate_json(JSON.stringify(p)));
+    case 'learningRecommend': return JSON.parse(wasm.learning_recommend_json(JSON.stringify(p)));
+    case 'learningOrchestrate': return JSON.parse(wasm.learning_orchestrate_json(JSON.stringify(p)));
     case 'reviewSchedule': return JSON.parse(wasm.learning_review_schedule_json(p.quality,p.previousIntervalDays,p.easeFactor));
     case 'progressionSummary': return JSON.parse(wasm.progression_summary_json(JSON.stringify(p)));
     case 'gameChallenge': return JSON.parse(wasm.generate_game_challenge_json(p.seed));
