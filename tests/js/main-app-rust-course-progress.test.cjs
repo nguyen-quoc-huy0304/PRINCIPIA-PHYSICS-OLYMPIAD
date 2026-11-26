@@ -13,7 +13,7 @@ test('main learning progress percentage is calculated by Rust/WASM', () => {
   assert.match(app, /requestPrincipiaCourseProgress\(done,total\)/);
   assert.doesNotMatch(app, /Math\.round\(completed\.length\/total\*100\)/);
   assert.match(bridge, /courseProgress:\(completed,total\)=>compute\('courseProgress'/);
-  assert.match(wasm, /course_completion_json\(completed: u64, total: u64\)/);
+  assert.match(wasm, /course_completion_json\(completed: u32, total: u32\)/);
   assert.match(rust, /pub fn course_completion\(completed: u64, total: u64\)/);
 });
 
