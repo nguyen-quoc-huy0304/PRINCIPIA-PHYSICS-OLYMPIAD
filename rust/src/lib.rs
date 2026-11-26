@@ -9,6 +9,7 @@ pub mod session;
 pub mod assessment;
 pub mod quiz;
 pub mod features;
+pub mod force_balance;
 pub mod physics;
 pub mod collision;
 pub mod pendulum;
