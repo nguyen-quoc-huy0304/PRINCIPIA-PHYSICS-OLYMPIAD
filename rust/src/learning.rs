@@ -57,7 +57,7 @@ pub fn select_method(topic: &str, goal: LearningGoal, catalog: &[serde_json::Val
             serde_json::Value::String(text) => text.clone(),
             other => other.to_string(),
         })?;
-        let steps = item.get("steps").and_then(serde_json::Value::as_array)
+        let steps: Vec<String> = item.get("steps").and_then(serde_json::Value::as_array)
             .map(|values| values.iter().filter_map(serde_json::Value::as_str)
                 .map(|step| step.chars().take(500).collect()).take(5).collect())
             .unwrap_or_default();
