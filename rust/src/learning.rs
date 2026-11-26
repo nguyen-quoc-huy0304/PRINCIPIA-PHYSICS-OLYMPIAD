@@ -220,6 +220,32 @@ mod tests {
     #[test] fn spaced_repetition_increases_interval_after_success() {
         assert_eq!(schedule_review(5, 1, 2.5).unwrap().interval_days, 6);
     }
+    #[test]
+    fn method_selection_prefers_topic_and_goal_relevance() {
+        let catalog = vec![
+            serde_json::json!({"id": 1, "title": "Flashcard ghi nhớ quang học", "desc": "Ôn tập truy xuất", "steps": ["Tự nhớ lại"]}),
+            serde_json::json!({"id": 2, "title": "Mô hình hóa cơ học", "desc": "Giải thích bằng hình", "steps": ["Vẽ sơ đồ"]}),
+        ];
+        let selected = select_method("cơ học", LearningGoal::Understand, &catalog, &[], 0).unwrap();
+        assert_eq!(selected.method_id, "2");
+        assert_eq!(selected.steps, vec!["Vẽ sơ đồ"]);
+    }
+
+    #[test]
+    fn method_selection_avoids_recent_method_when_alternative_exists() {
+        let catalog = vec![
+            serde_json::json!({"id": "a", "title": "Hiểu khái niệm bằng mô hình", "steps": ["Bước A"]}),
+            serde_json::json!({"id": "b", "title": "Hiểu sâu qua ví dụ", "steps": ["Bước B"]}),
+        ];
+        let selected = select_method("vật lý", LearningGoal::Understand, &catalog, &["a".into()], 0).unwrap();
+        assert_eq!(selected.method_id, "b");
+    }
+
+    #[test]
+    fn method_selection_handles_empty_catalog() {
+        assert!(select_method("vật lý", LearningGoal::Understand, &[], &[], 0).is_none());
+    }
+
     #[test] fn rejects_invalid_context_and_schedule() {
         let mut input = context(); input.percent = Some(f64::NAN);
         assert_eq!(recommend(&input), Err(LearningError::InvalidPercent));
