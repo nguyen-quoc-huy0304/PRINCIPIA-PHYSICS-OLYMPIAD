@@ -785,14 +785,19 @@ function addNode(type){
  let title=type==='tab'?'Tạo tab mới':type==='lesson'?'Thêm bài học':type==='quiz'?'Thêm bài kiểm tra':'Thêm bài đố vui';
  modal(`<h2>＋ ${title}</h2><label>Tên</label><input id="newname" placeholder="Nhập tên..."><label>Biểu tượng</label><input id="newicon" value="${type==='tab'?'📁':type==='lesson'?'📘':type==='quiz'?'📝':'🧩'}"><div id="newextra">${type!=='tab'?`<label>Nội dung / câu hỏi mô tả</label><textarea id="newcontent" placeholder="Nhập nội dung..."></textarea>`:''}</div><div class="modalactions"><button class="secondary" onclick="closeModal()">Hủy</button><button class="primary" onclick="createNode('${type}')">Tạo</button></div>`);
 }
-function createNode(type){
+async function createNode(type){
  if(!requireAdmin())return;
- let name=$('#newname').value.trim();if(!name){notify('Hãy nhập tên');return}
- let n={id:uid(),name,icon:$('#newicon').value||'📁',type};
- if(type==='tab')n.children=[];
- if(type==='lesson'){n.content=$('#newcontent').value;n.quiz=[]}
- if(type==='quiz'||type==='fun'){n.questions=[];n.description=$('#newcontent').value}
- currentNodes().push(n);saveAll();closeModal();render();notify('Đã thêm thành công');
+ const name=$('#newname')?.value.trim();if(!name){notify('Hãy nhập tên');return}
+ if(!['tab','lesson','quiz','fun'].includes(type)){notify('Loại nội dung không hợp lệ');return}
+ const node={id:uid(),name,icon:$('#newicon')?.value||'📁',type};
+ if(type==='tab')node.children=[];
+ if(type==='lesson'){node.content=$('#newcontent')?.value||'';node.quiz=[]}
+ if(type==='quiz'||type==='fun'){node.questions=[];node.description=$('#newcontent')?.value||''}
+ try{
+  const result=await window.PrincipiaContentTree.create(tree(),node,stack.at(-1)||'');
+  if(!Array.isArray(result?.catalog))throw new Error('Rust returned an invalid catalog');
+  replaceTreeCatalog(result.catalog);saveAll();closeModal();render();notify('Đã thêm thành công');
+ }catch(error){console.error('[PRINCIPIA] Rust content creation failed',error);notify('Không thể tạo nội dung: dữ liệu không hợp lệ hoặc lõi Rust không sẵn sàng');}
 }
 function editNode(id){
  if(!requirePermission('content'))return;
@@ -806,12 +811,17 @@ function questionEditor(q,i){
 }
 function addQuestion(){
  if(!requireAdmin())return;$('#questions').insertAdjacentHTML('beforeend',questionEditor({q:'',a:['','','',''],correct:0},$('#questions').children.length))}
-function saveNode(id){
+async function saveNode(id){
  if(!requirePermission('content'))return;
- let n=find(id,tree());n.name=$('#ename').value.trim()||n.name;n.icon=$('#eicon').value||n.icon;
- if(n.type==='lesson')n.content=$('#econtent').value;
- if(n.type==='quiz'||n.type==='fun')n.questions=[...$('#questions').children].map(el=>({q:el.querySelector('.qq').value,a:[...el.querySelectorAll('.qa')].map(x=>x.value),correct:+el.querySelector('.qc').value})).filter(q=>q.q&&q.a.some(Boolean));
- saveAll();closeModal();render();notify('Đã lưu');
+ const n=find(id,tree());if(!n)return;
+ const patch={name:$('#ename')?.value.trim()||n.name,icon:$('#eicon')?.value||n.icon};
+ if(n.type==='lesson')patch.content=$('#econtent')?.value||'';
+ if(n.type==='quiz'||n.type==='fun')patch.questions=[...($('#questions')?.children||[])].map(el=>({q:el.querySelector('.qq')?.value||'',a:[...el.querySelectorAll('.qa')].map(x=>x.value),correct:Number(el.querySelector('.qc')?.value||0)})).filter(q=>q.q.trim()&&q.a.some(Boolean));
+ try{
+  const result=await window.PrincipiaContentTree.update(tree(),id,patch);
+  if(!Array.isArray(result?.catalog))throw new Error('Rust returned an invalid catalog');
+  replaceTreeCatalog(result.catalog);saveAll();closeModal();render();notify('Đã lưu');
+ }catch(error){console.error('[PRINCIPIA] Rust content update failed',error);notify('Không thể lưu: hãy kiểm tra tên và dữ liệu câu hỏi');}
 }
 async function deleteNode(id){
  if(!requirePermission('content'))return;
@@ -865,10 +875,15 @@ function editLessonQuiz(id){
  let l=find(id,data);
  modal(`<h2>Câu hỏi bài học</h2><div id="questions">${(l.quiz||[]).map((q,i)=>questionEditor(q,i)).join('')}</div><button class="secondary" onclick="addQuestion()">＋ Thêm câu hỏi</button><div class="modalactions"><button class="secondary" onclick="closeModal()">Hủy</button><button class="primary" onclick="saveLessonQuiz('${id}')">Lưu</button></div>`);
 }
-function saveLessonQuiz(id){
+async function saveLessonQuiz(id){
  if(!requireAdmin())return;
- let l=find(id,data);l.quiz=[...$('#questions').children].map(el=>({q:el.querySelector('.qq').value,a:[...el.querySelectorAll('.qa')].map(x=>x.value),correct:+el.querySelector('.qc').value})).filter(q=>q.q&&q.a.some(Boolean));
- saveAll();closeModal();render();notify('Đã lưu câu hỏi');
+ const lesson=find(id,data);if(!lesson)return;
+ const quiz=[...($('#questions')?.children||[])].map(el=>({q:el.querySelector('.qq')?.value||'',a:[...el.querySelectorAll('.qa')].map(x=>x.value),correct:Number(el.querySelector('.qc')?.value||0)})).filter(q=>q.q.trim()&&q.a.some(Boolean));
+ try{
+  const result=await window.PrincipiaContentTree.update(data,id,{quiz});
+  if(!Array.isArray(result?.catalog))throw new Error('Rust returned an invalid catalog');
+  data=result.catalog;saveAll();closeModal();render();notify('Đã lưu câu hỏi');
+ }catch(error){console.error('[PRINCIPIA] Rust lesson quiz update failed',error);notify('Không thể lưu câu hỏi: dữ liệu không hợp lệ');}
 }
 async function answerQuestion(){
  let selected=document.querySelector('input[name="ans"]:checked');if(!selected){notify('Hãy chọn đáp án');return}
