@@ -303,6 +303,32 @@ pub fn assessment_grade_json(input_json: &str) -> Result<String, JsValue> {
 }
 
 #[wasm_bindgen]
+/// Record a study day without awarding XP or incrementing lesson counters.
+#[wasm_bindgen]
+pub fn progress_day_json(progress_json: &str, day: &str) -> Result<String, JsValue> {
+    if progress_json.len() > 16 * 1024 { return Err(input_error("Progress payload exceeds 16 KiB")); }
+    use crate::progress::Progress;
+    if day.len() != 10 { return Err(input_error("Activity day must use YYYY-MM-DD")); }
+    let value: serde_json::Value = serde_json::from_str(progress_json)
+        .map_err(|_| input_error("Progress payload must be valid JSON"))?;
+    let mut progress = Progress {
+        experience: value.get("experience").and_then(serde_json::Value::as_u64).unwrap_or(0),
+        completed_lessons: value.get("completedLessons").and_then(serde_json::Value::as_u64).unwrap_or(0),
+        study_streak_days: value.get("studyStreakDays").and_then(serde_json::Value::as_u64)
+            .unwrap_or(0).min(u32::MAX as u64) as u32,
+        last_activity_day: value.get("lastActivityDay").and_then(serde_json::Value::as_str).map(str::to_owned),
+    };
+    progress.record_day(day).map_err(input_error)?;
+    serde_json::to_string(&serde_json::json!({
+        "experience": progress.experience,
+        "completedLessons": progress.completed_lessons,
+        "studyStreakDays": progress.study_streak_days,
+        "lastActivityDay": progress.last_activity_day,
+        "level": progress.level(),
+        "experienceIntoLevel": progress.experience_into_level()
+    })).map_err(|error| input_error(&error.to_string()))
+}
+
 pub fn progress_record_json(progress_json: &str, activity: &str, day: &str) -> Result<String, JsValue> {
     if progress_json.len() > 16 * 1024 { return Err(input_error("Progress payload exceeds 16 KiB")); }
     use crate::progress::{Activity, Progress};
