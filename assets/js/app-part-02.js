@@ -180,7 +180,7 @@ function updatePrincipiaClockBar(){const t=document.getElementById('principiaLiv
 function startPrincipiaLiveClock(){if(window.__principiaWallClock)return;updatePrincipiaClockBar();window.__principiaWallClock=setInterval(updatePrincipiaClockBar,60000);}
 function toggleTopbarStudyClock(){if(principiaClock.mode!=='stopwatch'){if(principiaClock.interval)clearInterval(principiaClock.interval);principiaClock.mode='stopwatch';principiaClock.seconds=0;principiaClock.running=false;}toggleStudyClock();updatePrincipiaClockBar();}
 function fmtClock(n){n=Math.max(0,Math.floor(n));return String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0')}
-async function openGameStats(){
+async async function openGameStats(){
  try{
   const engine=window.PrincipiaWasmPhysics;
   if(!engine||typeof engine.progression!=='function')throw new Error('Rust progression engine is unavailable');
