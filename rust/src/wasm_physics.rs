@@ -600,6 +600,35 @@ pub fn gameverse_quiz_reward_json(input_json: &str) -> Result<String, JsValue> {
     serde_json::to_string(&result).map_err(|error| input_error(&error.to_string()))
 }
 
+/// Resolve deterministic AI league operations in the Rust core.
+#[wasm_bindgen]
+pub fn game_league_json(input_json: &str) -> Result<String, JsValue> {
+    if input_json.len() > 4096 { return Err(input_error("Game league payload exceeds 4 KiB")); }
+    let input: serde_json::Value = serde_json::from_str(input_json)
+        .map_err(|_| input_error("Game league payload must be valid JSON"))?;
+    let operation = input.get("operation").and_then(serde_json::Value::as_str)
+        .ok_or_else(|| input_error("Missing game league operation"))?;
+    let week = input.get("week").and_then(serde_json::Value::as_str)
+        .ok_or_else(|| input_error("Missing game league week"))?;
+    let result = match operation {
+        "bots" => crate::game_league::bots(week),
+        "match" => {
+            let number = |key: &str| input.get(key).and_then(serde_json::Value::as_u64)
+                .ok_or_else(|| input_error(&format!("Missing or invalid {key}")));
+            let random = |key: &str| input.get(key).and_then(serde_json::Value::as_f64)
+                .ok_or_else(|| input_error(&format!("Missing or invalid {key}")));
+            let points = number("points")?;
+            let matches = u32::try_from(number("matches")?)
+                .map_err(|_| input_error("Match count is outside supported bounds"))?;
+            let wins = u32::try_from(number("wins")?)
+                .map_err(|_| input_error("Win count is outside supported bounds"))?;
+            crate::game_league::resolve_match(points, matches, wins, random("opponentRoll")?, random("resultRoll")?, week)
+        }
+        _ => return Err(input_error("Unsupported game league operation")),
+    }.map_err(|error| input_error(&format!("Game league operation rejected: {error:?}")))?;
+    serde_json::to_string(&result).map_err(|error| input_error(&error.to_string()))
+}
+
 /// Return the canonical ranked arena tier for a rating-point total.
 #[wasm_bindgen]
 pub fn rank_arena_tier_json(rp: u64) -> Result<String, JsValue> {
