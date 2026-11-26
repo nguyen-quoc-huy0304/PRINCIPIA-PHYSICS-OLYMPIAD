@@ -17,6 +17,12 @@
   date.setDate(date.getDate()-((date.getDay()+6)%7));
   return dateKey(date);
  }
+ function localRecordDate(value){
+  const raw=String(value||'');
+  if(/^\\d{4}-\\d{2}-\\d{2}$/.test(raw))return raw;
+  const date=new Date(raw);
+  return Number.isFinite(date.getTime())?dateKey(date):'';
+ }
  function countMetric(value){
   const number=Number(value);
   return Number.isFinite(number)&&number>0?Math.min(1_000_000,Math.floor(number)):0;
@@ -30,9 +36,9 @@
   const week=weekKey(now),start=new Date(week+'T00:00:00');
   start.setDate(start.getDate()+7);
   const attempts=(Array.isArray(records.attempts)?records.attempts:[]).slice(0,10000)
-   .map(item=>({date:String(item?.date||''),total:countMetric(item?.total)}));
+   .map(item=>({date:localRecordDate(item?.date),total:countMetric(item?.total)}));
   const notes=(Array.isArray(records.notes)?records.notes:[]).slice(0,10000)
-   .map(item=>({date:String(item?.date||'')}));
+   .map(item=>({date:localRecordDate(item?.date)}));
   const result=await engine().seasonMissions({week,weekEnd:dateKey(start),attempts,notes});
   if(!Array.isArray(result)||result.length!==3||result.some(item=>
    typeof item.id!=='string'||typeof item.name!=='string'||typeof item.description!=='string'
