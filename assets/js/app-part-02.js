@@ -846,21 +846,15 @@ async function moveNodeTo(id,targetId){
   replaceTreeCatalog(result.catalog);saveAll();closeModal();render();notify('Đã di chuyển nội dung');
  }catch(error){console.error('[PRINCIPIA] Rust content move failed',error);notify('Vị trí di chuyển không hợp lệ hoặc tạo vòng lặp');}
 }
-function dropItem(e,id){
+async function dropItem(e,id){
  if(!requirePermission('content'))return;
  e.preventDefault();if(!dragId||dragId===id)return;
- let nodes=tree(),item=find(dragId,nodes),target=find(id,nodes);
- if(!item||!target||!locate(dragId,nodes))return;
- let source=locate(dragId,nodes);
- if(source===locate(id,nodes)){
-  let a=source.findIndex(x=>x.id===dragId),b=source.findIndex(x=>x.id===id);
-  let [moving]=source.splice(a,1);source.splice(b,0,moving);
- }else{
-  if(target.type!=='tab'){notify('Chỉ có thể thả vào tab');return}
-  if(chain(dragId,nodes).some(x=>x.id===id)){notify('Không thể chuyển tab vào chính nó');return}
-  source.splice(source.findIndex(x=>x.id===dragId),1);target.children.push(item);
- }
- dragId=null;saveAll();render();notify('Đã sắp xếp');
+ const movingId=dragId;dragId=null;
+ try{
+  const result=await window.PrincipiaContentTree.drop(tree(),movingId,id);
+  if(!Array.isArray(result?.catalog))throw new Error('Rust returned an invalid catalog');
+  replaceTreeCatalog(result.catalog);saveAll();render();notify('Đã sắp xếp');
+ }catch(error){console.error('[PRINCIPIA] Rust drag-and-drop failed',error);notify('Không thể sắp xếp: chỉ thả vào tab hợp lệ và tránh vòng lặp');}
 }
 function lessonQuiz(id){
  let l=find(id,data);if(!l.quiz?.length){notify('Bài học chưa có câu hỏi');return}
