@@ -62,6 +62,21 @@ export function progress_record_json(progress_json: string, activity: string, da
 
 export function progression_summary_json(input_json: string): string;
 
+/**
+ * Validate ranked arena mission claims and return the reward decided by Rust.
+ */
+export function rank_arena_claim_json(id: string, progress: number, already_claimed: boolean): string;
+
+/**
+ * Resolve a ranked arena match using Rust-owned scoring rules.
+ */
+export function rank_arena_resolve_json(input_json: string): string;
+
+/**
+ * Return the canonical ranked arena tier for a rating-point total.
+ */
+export function rank_arena_tier_json(rp: bigint): string;
+
 export function robot_assembly_evaluate_json(base: string, joint: string, link1: string, link2: string, tool: string, link1_mm: number, link2_mm: number, shoulder_deg: number, elbow_deg: number, target_x_mm: number, target_y_mm: number): string;
 
 export function score_projectile_json(speed: number, angle_degrees: number, target_m: number, gravity: number): string;
@@ -111,6 +126,9 @@ export interface InitOutput {
     readonly physics_velocity: (a: number, b: number, c: number, d: number) => void;
     readonly progress_record_json: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
     readonly progression_summary_json: (a: number, b: number, c: number) => void;
+    readonly rank_arena_claim_json: (a: number, b: number, c: number, d: number, e: number) => void;
+    readonly rank_arena_resolve_json: (a: number, b: number, c: number) => void;
+    readonly rank_arena_tier_json: (a: number, b: bigint) => void;
     readonly robot_assembly_evaluate_json: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number, k: number, l: number, m: number, n: number, o: number, p: number, q: number) => void;
     readonly score_projectile_json: (a: number, b: number, c: number, d: number, e: number) => void;
     readonly ui_reduce_json: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number, k: number, l: number) => void;
