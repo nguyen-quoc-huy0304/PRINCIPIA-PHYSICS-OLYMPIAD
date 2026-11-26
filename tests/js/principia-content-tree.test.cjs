@@ -47,7 +47,7 @@ test('content tree adapter rejects invalid input before crossing WASM boundary',
   const { api, calls } = createAdapter();
   await assert.rejects(api.find({}, 'x'), /catalog must be an array/i);
   await assert.rejects(api.execute([], 'eval'), /unsupported/i);
-  await assert.rejects(api.find([], 'x'.repeat(129)), /id is invalid/i);
+  await assert.rejects(api.find([], 'x'.repeat(129)), /target is invalid/i);
   assert.equal(calls.length, 0);
 });
 
@@ -58,9 +58,9 @@ test('content tree adapter fails closed when Rust/WASM is unavailable', async ()
 });
 
 test('legacy content editor delegates delete, reorder and move mutations to Rust', () => {
-  assert.match(appSource, /async function deleteNode[\\s\\S]*PrincipiaContentTree\\.remove/);
-  assert.match(appSource, /async function shiftNode[\\s\\S]*PrincipiaContentTree\\.reorder/);
-  assert.match(appSource, /async function moveNodeTo[\\s\\S]*PrincipiaContentTree\\.move/);
-  assert.match(appSource, /async function dropItem[\\s\\S]*PrincipiaContentTree\\.drop/);
+  assert.match(appSource, /async function deleteNode[\s\S]*PrincipiaContentTree\\.remove/);
+  assert.match(appSource, /async function shiftNode[\s\S]*PrincipiaContentTree\\.reorder/);
+  assert.match(appSource, /async function moveNodeTo[\s\S]*PrincipiaContentTree\\.move/);
+  assert.match(appSource, /async function dropItem[\s\S]*PrincipiaContentTree\\.drop/);
   assert.match(appSource, /function replaceTreeCatalog/);
 });
