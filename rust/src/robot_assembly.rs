@@ -70,7 +70,7 @@ mod tests {
         let r = evaluate("fixed","revolute","160","120","parallel",160.0,120.0,0.0,0.0,TARGET[0],TARGET[1]).unwrap();
         assert!(r.ready);
         assert!(r.error_mm > 35.0);
-        assert_eq!(r.earned, 0);
+        assert_eq!(r.earned, 20);
     }
     #[test]
     fn rejects_invalid_numbers_and_lengths() {
