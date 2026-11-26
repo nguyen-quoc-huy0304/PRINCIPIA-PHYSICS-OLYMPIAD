@@ -24,6 +24,7 @@ async function compute(operation,params){
     case 'kineticEnergy': return wasm.physics_kinetic_energy(p.massKg,p.speedMps);
     case 'pendulum': return JSON.parse(wasm.physics_pendulum_json(p.lengthM,p.gravityMps2,p.amplitudeDeg));
     case 'collision1D': return JSON.parse(wasm.physics_collision_1d_json(p.massA,p.velocityA,p.massB,p.velocityB,p.restitution));
+    case 'scoreProjectile': return JSON.parse(wasm.score_projectile_json(p.speed,p.angleDeg,p.targetM,p.gravity));
     case 'projectileRange': return JSON.parse(wasm.physics_projectile_json(p.speed,p.angleDeg,p.gravity)).range;
     case 'projectileMaxHeight': return JSON.parse(wasm.physics_projectile_json(p.speed,p.angleDeg,p.gravity)).maxHeight;
     case 'linearRegression': return JSON.parse(wasm.physics_linear_regression_json(JSON.stringify(p.points)));
