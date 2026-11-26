@@ -7,7 +7,7 @@
     if (!wasmPromise) {
       wasmPromise = import(wasmUrl).then(async mod => {
         await mod.default();
-        if (typeof mod.ui_render_html !== 'function') throw new Error('Rust UI renderer export is missing');
+        if (typeof mod.ui_render_html !== 'function' || typeof mod.ui_reduce_json !== 'function') throw new Error('Rust UI WASM exports are missing');
         return mod;
       }).catch(error => {
         wasmPromise = null;
@@ -24,6 +24,12 @@
     const wasm = await load();
     return wasm.ui_render_html(route, width, query, dialog);
   }
+  async function reduce(route, width, query, dialog, event, value) {
+    const wasm = await load();
+    const result = JSON.parse(wasm.ui_reduce_json(route, width, query, dialog, event, value));
+    const state = JSON.parse(result.state);
+    return { html: result.html, state };
+  }
   function mount(root, options = {}) {
     if (!root || typeof root.replaceChildren !== 'function') throw new TypeError('A DOM root element is required');
     let route = options.route || 'home';
@@ -33,7 +39,8 @@
     let renderSeq = 0;
     async function refresh() {
       const seq = ++renderSeq;
-      const markup = await render(route, root.ownerDocument?.defaultView?.innerWidth || globalThis.innerWidth || 1280, query, dialog);
+      const viewport = root.ownerDocument?.defaultView?.innerWidth || globalThis.innerWidth || 1280;
+      const markup = await render(route, viewport, query, dialog);
       if (destroyed || seq !== renderSeq) return;
       root.innerHTML = markup;
     }
@@ -41,26 +48,35 @@
       const routeButton = event.target?.closest?.('[data-pr-route]');
       if (routeButton && root.contains(routeButton)) {
         route = routeButton.getAttribute('data-pr-route') || route;
-        refresh().then(() => options.onRoute?.(route)).catch(options.onError || (() => {}));
+        reduce(route, root.ownerDocument?.defaultView?.innerWidth || globalThis.innerWidth || 1280, query, dialog, 'navigate', route)
+          .then(result => { root.innerHTML = result.html; options.onRoute?.(route); })
+          .catch(options.onError || (() => {}));
         return;
       }
       const sidebarButton = event.target?.closest?.('[data-pr-sidebar]');
       if (sidebarButton && root.contains(sidebarButton)) {
         const collapsed = root.classList.toggle('pr-sidebar-collapsed');
         sidebarButton.setAttribute('aria-expanded', String(!collapsed));
+        reduce(route, root.ownerDocument?.defaultView?.innerWidth || globalThis.innerWidth || 1280, query, dialog, 'toggle_sidebar', '')
+          .catch(options.onError || (() => {}));
         return;
       }
       const searchButton = event.target?.closest?.('[data-pr-search]');
       if (searchButton && root.contains(searchButton)) {
         dialog = dialog === 'search' ? '' : 'search';
-        refresh().then(() => root.querySelector('[data-pr-search-form] input')?.focus()).catch(options.onError || (() => {}));
+        const eventName = dialog === 'search' ? 'open_search' : 'close_search';
+        reduce(route, root.ownerDocument?.defaultView?.innerWidth || globalThis.innerWidth || 1280, query, dialog, eventName, '')
+          .then(result => { root.innerHTML = result.html; root.querySelector('[data-pr-search-form] input')?.focus(); })
+          .catch(options.onError || (() => {}));
       }
     }
     function onSubmit(event) {
       if (!event.target?.matches?.('[data-pr-search-form]')) return;
       event.preventDefault();
       query = String(new FormData(event.target).get('q') || '').slice(0, 256);
-      refresh().then(() => options.onSearch?.(query)).catch(options.onError || (() => {}));
+      reduce(route, root.ownerDocument?.defaultView?.innerWidth || globalThis.innerWidth || 1280, '', '', 'search', query)
+        .then(result => { root.innerHTML = result.html; options.onSearch?.(query); })
+        .catch(options.onError || (() => {}));
     }
     root.addEventListener('click', onClick);
     root.addEventListener('submit', onSubmit);
