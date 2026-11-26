@@ -31,6 +31,7 @@ async function compute(operation,params){
     case 'linearRegression': return JSON.parse(wasm.physics_linear_regression_json(JSON.stringify(p.points)));
     case 'robotArmIK': return JSON.parse(wasm.physics_robot_arm_json(p.l1M,p.l2M,p.targetXM,p.targetYM,p.elbowBranch));
     case 'robotForwardKinematics': return JSON.parse(wasm.physics_robot_forward_json(p.l1,p.l2,p.shoulderRad,p.elbowRad));
+    case 'robotAssemblyCheck': return JSON.parse(wasm.robot_assembly_evaluate_json(p.base,p.joint,p.link1,p.link2,p.tool,p.link1Mm,p.link2Mm,p.shoulderDeg,p.elbowDeg,p.targetX,p.targetY));
     case 'forceBalanceTarget': return JSON.parse(wasm.force_balance_target_json(p.forceAX,p.forceAY,p.forceBX,p.forceBY));
     case 'forceBalanceScore': return JSON.parse(wasm.force_balance_score_json(p.x,p.y,p.targetX,p.targetY));
     case 'gradeQuiz': return JSON.parse(wasm.assessment_grade_json(JSON.stringify(p)));
