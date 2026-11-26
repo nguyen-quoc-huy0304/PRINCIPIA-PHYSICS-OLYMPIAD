@@ -5,16 +5,6 @@
   const STORAGE_KEY = 'principia_rank_arena_v1';
   const DAILY_LIMIT = 10;
   const MATCH_SIZE = 5;
-  const TIERS = [
-    { id: 'bronze', name: 'Đồng', icon: '🥉', min: 0 },
-    { id: 'silver', name: 'Bạc', icon: '🥈', min: 100 },
-    { id: 'gold', name: 'Vàng', icon: '🥇', min: 250 },
-    { id: 'platinum', name: 'Bạch kim', icon: '💠', min: 450 },
-    { id: 'diamond', name: 'Kim cương', icon: '💎', min: 700 },
-    { id: 'elite', name: 'Tinh anh', icon: '⚔️', min: 1000 },
-    { id: 'master', name: 'Cao thủ', icon: '👑', min: 1400 },
-    { id: 'challenger', name: 'Thách đấu', icon: '🏆', min: 1900 }
-  ];
   const RIVALS = [
     { id: 'void', name: 'VOID', style: 'Chiến thuật', rating: 650, icon: '◈', line: 'Đừng để áp lực làm bạn mất nhịp.' },
     { id: 'rin', name: 'RIN', style: 'Tốc độ', rating: 480, icon: '✦', line: 'Tôi sẽ không bỏ qua một giây nào.' },
@@ -71,15 +61,13 @@
     return [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
   }
 
-  function currentTier(rp) {
-    let index = 0;
-    for (let i = 1; i < TIERS.length; i += 1) if (rp >= TIERS[i].min) index = i;
-    const tier = TIERS[index];
-    const next = TIERS[index + 1] || null;
-    const span = next ? next.min - tier.min : 100;
-    const progress = next ? (rp - tier.min) / span : 1;
-    const division = next ? (progress >= 2 / 3 ? 'I' : progress >= 1 / 3 ? 'II' : 'III') : null;
-    return { ...tier, next, division, label: division ? tier.name + ' ' + division : tier.name, progress: Math.max(0, Math.min(1, progress)) };
+  async function currentTier(rp) {
+    const tier = await window.PrincipiaWasmPhysics.rankArenaTier(rp);
+    if (!tier || typeof tier.id !== 'string' || typeof tier.label !== 'string'
+      || !Number.isFinite(tier.progress) || typeof tier.icon !== 'string') {
+      throw new TypeError('Rust returned an invalid ranked tier');
+    }
+    return tier;
   }
 
   function collectQuestions() {
@@ -135,9 +123,9 @@
     return '<button type="button" onclick="' + action + '" style="border:1px solid ' + (primary ? '#c7a7ff' : '#62577f') + ';border-radius:11px;padding:11px 15px;margin:5px 6px 5px 0;background:' + (primary ? 'linear-gradient(120deg,#7652c8,#47308a)' : '#25223b') + ';color:#fff;font-weight:750;cursor:pointer">' + label + '</button>';
   }
 
-  function renderHome() {
+  async function renderHome() {
     if (state.daily !== todayKey()) { state.daily = todayKey(); state.dailyMatches = 0; saveState(); }
-    const tier = currentTier(state.rp);
+    const tier = await currentTier(state.rp);
     const nextText = tier.next ? (tier.next.min - state.rp) + ' RP đến ' + tier.next.name : 'Đã đạt bậc cao nhất';
     const recent = state.matches.slice(-5).reverse();
     const history = recent.length ? recent.map(match => '<div style="display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid #38324d"><span>' + escapeHtml(match.rival) + ' · ' + new Date(match.date).toLocaleString('vi-VN') + '</span><b style="color:' + (match.result === 'win' ? '#78e0ac' : '#f2a2a2') + '">' + (match.result === 'win' ? 'THẮNG' : 'THUA') + ' · ' + (match.rpChange > 0 ? '+' : '') + match.rpChange + ' RP</b></div>').join('') : '<p style="color:#aaa">Chưa có trận xếp hạng.</p>';
@@ -178,10 +166,9 @@
       return;
     }
     const shuffled = questions.slice().sort(() => Math.random() - 0.5).slice(0, MATCH_SIZE);
-    const tier = currentTier(state.rp);
     const rivalPool = RIVALS.slice().sort((a, b) => Math.abs(a.rating - state.mmr) - Math.abs(b.rating - state.mmr));
     const rival = rivalPool[Math.floor(Math.random() * Math.min(3, rivalPool.length))];
-    activeMatch = { mode, questions: shuffled, rival, index: 0, answers: [], combo: 0, bestCombo: 0, startedAt: Date.now(), tierAtStart: tier.id };
+    activeMatch = { mode, questions: shuffled, rival, index: 0, answers: [], combo: 0, bestCombo: 0, startedAt: Date.now() };
     renderQuestion();
   }
 
@@ -203,24 +190,27 @@
     match.combo = correct ? match.combo + 1 : 0;
     match.bestCombo = Math.max(match.bestCombo, match.combo);
     match.index += 1;
-    if (match.index >= MATCH_SIZE) finishMatch();
+    if (match.index >= MATCH_SIZE) finishMatch().catch(error => { console.error('[PRINCIPIA] Rust ranked match resolution failed', error); show('KHÔNG THỂ TÍNH KẾT QUẢ', '<p>Lõi Rust/WASM chưa sẵn sàng. Kết quả chưa được ghi nhận.</p>' + button('Quay lại đấu trường', 'principiaRankHome()')); });
     else renderQuestion();
   }
 
-  function finishMatch() {
+  async function finishMatch() {
     const match = activeMatch;
     if (!match) return;
     const correct = match.answers.filter(a => a.correct).length;
-    const accuracy = correct / MATCH_SIZE;
-    const base = match.rival.rating / 1000;
-    const modeBonus = match.mode === 'combo' ? match.bestCombo * 0.025 : 0;
-    const rivalCorrect = Math.max(1, Math.min(MATCH_SIZE, Math.round((0.48 + base * 0.28 + (Math.random() * 0.2 - 0.1)) * MATCH_SIZE)));
-    const userScore = accuracy + modeBonus;
-    const rivalScore = rivalCorrect / MATCH_SIZE + (match.mode === 'accuracy' ? 0.02 : 0);
-    const won = userScore > rivalScore || (userScore === rivalScore && correct >= 4);
-    const rpChange = won ? 20 : -8;
-    state.rp = Math.max(0, state.rp + rpChange);
-    state.mmr = validInt(state.mmr + (won ? 18 : -12) + Math.round((accuracy - 0.5) * 20), 100, 3000);
+    const rivalCorrect = Math.max(1, Math.min(MATCH_SIZE, Math.round((0.48 + (match.rival.rating / 1000) * 0.28 + (Math.random() * 0.2 - 0.1)) * MATCH_SIZE)));
+    const result = await window.PrincipiaWasmPhysics.resolveRankArenaMatch({
+      rp: state.rp, mmr: state.mmr, correct, rivalCorrect,
+      bestCombo: match.bestCombo, mode: match.mode
+    });
+    if (!result || typeof result.won !== 'boolean' || !Number.isInteger(result.rp)
+      || !Number.isInteger(result.mmr) || !Number.isInteger(result.rpChange) || !result.tier) {
+      throw new TypeError('Rust returned an invalid ranked match result');
+    }
+    const won = result.won;
+    const rpChange = result.rpChange;
+    state.rp = result.rp;
+    state.mmr = result.mmr;
     state.dailyMatches += 1;
     if (won) state.wins += 1; else state.losses += 1;
     const record = { date: new Date().toISOString(), rival: match.rival.name, mode: match.mode, correct, total: MATCH_SIZE, rivalCorrect, result: won ? 'win' : 'loss', rpChange, bestCombo: match.bestCombo };
@@ -228,7 +218,7 @@
     updateAchievements();
     saveState();
     activeMatch = null;
-    const tier = currentTier(state.rp);
+    const tier = result.tier;
     const answerReview = match.questions.map((q, i) => '<div style="padding:9px 0;border-bottom:1px solid #38324d"><b>' + (match.answers[i].correct ? '✓' : '✕') + ' ' + escapeHtml(q.q) + '</b><div style="font-size:12px;color:#aaa;margin-top:4px">Đáp án đúng: ' + escapeHtml(q.a[q.correct]) + '</div></div>').join('');
     show(won ? 'CHIẾN THẮNG' : 'TRẬN ĐẤU KẾT THÚC', '<div style="text-align:center;padding:18px;border:1px solid ' + (won ? '#8d75ca' : '#75515b') + ';border-radius:16px;background:linear-gradient(140deg,#342650,#141426)"><div style="font-size:38px">' + (won ? '🏆' : '⚔️') + '</div><h2 style="font-size:26px;margin:6px 0">' + (won ? 'VICTORY' : 'DEFEAT') + '</h2><div style="font-size:22px;font-weight:850;color:' + (rpChange > 0 ? '#8be3b3' : '#f1a0a0') + '">' + (rpChange > 0 ? '+' : '') + rpChange + ' RP</div><p style="color:#c7bddb">' + match.rival.name + ' · AI · ' + rivalCorrect + '/' + MATCH_SIZE + ' câu</p><p>Bạn: ' + correct + '/' + MATCH_SIZE + ' câu đúng · Combo tốt nhất: ' + match.bestCombo + '</p><div style="font-size:21px">' + tier.icon + ' ' + tier.label + '</div></div><h3>Phân tích đáp án</h3>' + answerReview + button('Trở về đấu trường', 'principiaRankHome()', true) + button('Chơi trận tiếp', 'principiaRankStart("' + match.mode + '")'));
   }
@@ -247,7 +237,7 @@
     });
   }
 
-  function claimMission(id) {
+  async function claimMission(id) {
     const today = todayKey();
     if (state.daily !== today) { state.daily = today; state.dailyMatches = 0; }
     const thisWeek = weekKey();
@@ -260,16 +250,25 @@
       'weekly-win3': { value: weekMatches.filter(item => item.result === 'win').length, target: 3, reward: 60, period: 'week' }
     };
     const mission = definitions[id];
-    const key = (mission && mission.period === 'week' ? thisWeek : today) + ':' + id;
-    if (!mission || mission.value < mission.target || state.claims.includes(key)) return;
+    if (!mission) return;
+    const key = (mission.period === 'week' ? thisWeek : today) + ':' + id;
+    let decision;
+    try {
+      decision = await window.PrincipiaWasmPhysics.claimRankArenaMission(id, mission.value, state.claims.includes(key));
+    } catch (error) {
+      console.error('[PRINCIPIA] Rust ranked mission validation failed', error);
+      show('KHÔNG THỂ NHẬN THƯỞNG', '<p>Lõi Rust/WASM chưa sẵn sàng.</p>' + button('Quay lại', 'principiaRankHome()'));
+      return;
+    }
+    if (!decision || decision.allowed !== true || !Number.isInteger(decision.reward) || decision.reward <= 0) return;
     state.claims.push(key);
-    state.rp = Math.min(1000000, state.rp + mission.reward);
+    state.rp = Math.min(1000000, state.rp + decision.reward);
     updateAchievements();
     saveState();
     renderHome();
   }
 
-  function renderHomeSafe() { renderHome(); }
+  async function renderHomeSafe() { try { await renderHome(); } catch (error) { console.error('[PRINCIPIA] Rust ranked tier unavailable', error); show('ĐẤU TRƯỜNG TẠM THỜI KHÔNG KHẢ DỤNG', '<p>Không thể tải hạng đấu vì lõi Rust/WASM chưa sẵn sàng.</p>' + button('Đóng', 'principiaRankClose()')); } }
   window.principiaRankHome = renderHomeSafe;
   window.principiaRankStart = startMatch;
   window.principiaRankAnswer = answerQuestion;
