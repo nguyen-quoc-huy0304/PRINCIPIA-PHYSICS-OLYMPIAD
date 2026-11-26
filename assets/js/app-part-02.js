@@ -569,14 +569,43 @@ function entertainmentPage(){
  return `<div class="eyebrow">PLAY · THINK · COMPETE</div><h1>Giải trí & tư duy</h1><p class="muted">Tổ chức trò chơi theo tab lớn, tab con và nền tảng bên trong.</p>${trail}<div class="toolbar" style="margin:12px 0"><button class="primary" onclick="addNode('tab')">＋ Tạo tab</button><button class="secondary" onclick="addEntertainmentGame()">＋ Thêm trò chơi / nền tảng</button></div><div class="grid">${items.length?items.map(card).join(''):'<div class="empty">Tab này chưa có nội dung. Hãy tạo tab con hoặc thêm trò chơi.</div>'}</div>${gamePanel}<div class="panel"><div class="sectionhead"><h2>AI phân tích cờ vua</h2><span class="pill">Engine phân tích</span></div><p class="muted small">Dán PGN hoặc FEN để mở bàn phân tích Lichess với engine cờ vua.</p><textarea id="chessPosition" rows="3" placeholder="Dán PGN hoặc FEN của ván cờ vào đây..."></textarea><button class="primary" onclick="analyzeChessPosition()">Phân tích nước đi</button></div>`;
 }
 function simulateAiMatch(){let st=entertainmentState();const bots=leagueBots();const opponent=bots[Math.floor(Math.random()*bots.length)];const win=Math.random()<.62;const gain=win?30:12;st.points+=gain;st.matches++;if(win)st.wins++;localStorage.setItem('principia_fun_league',JSON.stringify(st));const before=leagueRank(st.points-gain),after=leagueRank(st.points);render();notify((win?'🏆 Bạn thắng '+opponent.name:'🤝 Trận đấu với '+opponent.name+' kết thúc')+' · +'+gain+' điểm'+(before.name!==after.name?' · Thăng hạng '+after.name+'!':''));if(before.name!==after.name)setTimeout(()=>notify('🎉 Tuyệt vời! Bạn đã lên '+after.name+' '+after.icon+'!'),500)}
+let principiaCourseProgressCache=null;
+let principiaCourseProgressRequest=null;
+
+function requestPrincipiaCourseProgress(done,total){
+ const key=done+':'+total;
+ if(principiaCourseProgressCache?.key===key)return Promise.resolve(principiaCourseProgressCache.value);
+ if(principiaCourseProgressRequest?.key===key)return principiaCourseProgressRequest.promise;
+ const engine=window.PrincipiaWasmPhysics;
+ if(!engine||typeof engine.courseProgress!=='function')return Promise.reject(new Error('Rust course progress engine is unavailable'));
+ const promise=engine.courseProgress(done,total).then(result=>{
+  if(result?.completed!==done||result?.total!==total||!Number.isFinite(result?.percent)||result.percent<0||result.percent>100)throw new TypeError('Rust returned invalid course completion metrics');
+  principiaCourseProgressCache={key,value:result};
+  return result;
+ }).finally(()=>{if(principiaCourseProgressRequest?.key===key)principiaCourseProgressRequest=null;});
+ principiaCourseProgressRequest={key,promise};
+ return promise;
+}
+
 function progressPage(){
- let total=lessons().length,pct=total?Math.round(completed.length/total*100):0;
+ const total=lessons().length,done=completed.length,key=done+':'+total;
+ const cached=principiaCourseProgressCache?.key===key?principiaCourseProgressCache.value:null;
+ const pct=cached?cached.percent:0;
+ if(!cached){
+  void requestPrincipiaCourseProgress(done,total).then(()=>{
+   if(page==='progress')render();
+  }).catch(error=>{
+   console.error('[PRINCIPIA] Rust course progress calculation failed:',error);
+   notify('Không thể tính tỷ lệ hoàn thành bằng lõi Rust/WASM.');
+  });
+ }
  const acc=getPrincipiaAccount(),studentName=acc?.name||profile.name||'Bạn';
  if(window.watchPrincipiaLeaderboard)window.watchPrincipiaLeaderboard();
  const rows=window.principiaLeaderboardRows||[];
  const leaderboard=rows.length?rows.map((r,i)=>`<div class="file principia-rank-row"><b class="principia-rank-number">${i+1}</b><div class="principia-rank-avatar">${(r.uid||'')===acc?.uid?'Bạn':'Học sinh'}</div><div class="principia-rank-meta"><b>${esc(r.name||'Học sinh')}</b><div class="small muted">${Number(r.completedCount)||0} bài học · ${Number(r.streak)||0} ngày streak</div></div><b class="principia-rank-xp">${Number(r.xp)||0} XP</b></div>`).join(''):`<div class="empty">Đang tải bảng xếp hạng học tập. Khi các tài khoản đồng bộ dữ liệu, danh sách sẽ hiện tại đây.</div>`;
  const status=window.principiaLeaderboardError?'<p class="small" style="color:#c45b5b">Chưa thể tải bảng xếp hạng. Kiểm tra quyền Firestore.</p>':'<p class="small muted">Xếp hạng theo XP học tập từ các tài khoản đã đăng nhập.</p>';
- return `<div class="eyebrow">YOUR JOURNEY</div><h1>Tiến độ học tập</h1><div class="panel"><h2>${pct}% hoàn thành</h2><div class="progress"><div style="width:${pct}%"></div></div><p class="muted small">${completed.length}/${total} bài học</p><h3>${xp} XP · ${streak} ngày streak</h3></div><div class="sectionhead"><div><div class="eyebrow">LEARNING LEADERBOARD</div><h2>Bảng xếp hạng học tập</h2></div><span class="pill">Theo XP</span></div><div class="panel" id="principiaLearningLeaderboard">${leaderboard}${status}</div><div class="sectionhead"><h2>Bài học</h2></div>${lessons().map(l=>`<div class="file"><span>${esc(l.name)}</span><span>${completed.includes(l.id)?'Đã học':'Chưa học'}</span></div>`).join('')}`;
+ const completionStatus=cached?'Tỷ lệ hoàn thành do Rust/WASM tính toán.':'Đang tính tỷ lệ hoàn thành bằng Rust/WASM…';
+ return `<div class="eyebrow">YOUR JOURNEY</div><h1>Tiến độ học tập</h1><div class="panel"><h2>${Math.round(pct)}% hoàn thành</h2><div class="progress"><div style="width:${pct}%"></div></div><p class="muted small">${done}/${total} bài học · ${completionStatus}</p><h3>${xp} XP · ${streak} ngày streak</h3></div><div class="sectionhead"><div><div class="eyebrow">LEARNING LEADERBOARD</div><h2>Bảng xếp hạng học tập</h2></div><span class="pill">Theo XP</span></div><div class="panel" id="principiaLearningLeaderboard">${leaderboard}${status}</div><div class="sectionhead"><h2>Bài học</h2></div>${lessons().map(l=>`<div class="file"><span>${esc(l.name)}</span><span>${completed.includes(l.id)?'Đã học':'Chưa học'}</span></div>`).join('')}`;
 }
 function morePage(){
  const currentTheme=localStorage.getItem('principia_theme')||'dark';
