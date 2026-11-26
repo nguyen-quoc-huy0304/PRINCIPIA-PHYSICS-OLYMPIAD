@@ -1,9 +1,55 @@
-const test=require('node:test');const assert=require('node:assert/strict');const api=require('../../assets/js/principia-season-core.js');
-test('week starts Monday and remains stable during week',()=>{assert.equal(api.weekKey(new Date(2026,10,16)),api.weekKey(new Date(2026,10,22)))});
-test('missions calculate progress and completion',()=>{const x=api.missions({sessions:2,questions:15,notes:2},new Date(2026,10,22));assert.equal(x[0].progress,67);assert.equal(x[0].complete,false);assert.equal(x[2].complete,true)});
-test('negative and invalid metrics do not create progress',()=>{const x=api.missions({sessions:-5,questions:'x',notes:0});assert.equal(x[0].value,0);assert.equal(x[1].value,0)});
-test('claim requires complete mission and prevents duplicate weekly claim',()=>{const x=api.missions({sessions:3});assert.equal(api.canClaim(x,'practice',[]),true);assert.equal(api.canClaim(x,'practice',[x[0].week+':practice']),false);assert.equal(api.canClaim(x,'notes',[]),false)});
-test('unknown mission cannot be claimed',()=>{assert.equal(api.canClaim([], 'unknown', []),false)});
+'use strict';
+const test=require('node:test');
+const assert=require('node:assert/strict');
 
-test('mission counters reject non-finite values and count whole events only',()=>{const x=api.missions({sessions:Infinity,questions:2.9,notes:-1});assert.equal(x[0].value,0);assert.equal(x[1].value,2);assert.equal(x[2].value,0)});
-test('very large finite counters are capped safely',()=>{const x=api.missions({sessions:Number.MAX_VALUE});assert.equal(x[0].value,Number.MAX_SAFE_INTEGER);assert.equal(x[0].complete,true);assert.equal(Number.isFinite(x[0].progress),true)});
+const calls=[];
+globalThis.PrincipiaWasmPhysics={
+  seasonMissions:async payload=>{
+    calls.push({operation:'missions',payload});
+    return [
+      {id:'practice',name:'Chiến binh luyện tập',description:'Hoàn thành 3 lượt luyện',value:2,target:3,xp:60,complete:false,progress:67,week:payload.week},
+      {id:'questions',name:'Bậc thầy câu hỏi',description:'Trả lời 30 câu hỏi',value:15,target:30,xp:80,complete:false,progress:50,week:payload.week},
+      {id:'notes',name:'Nhà ghi chép',description:'Lưu 2 ghi chú học tập',value:2,target:2,xp:40,complete:true,progress:100,week:payload.week}
+    ];
+  },
+  claimSeasonMission:async payload=>{
+    calls.push({operation:'claim',payload});
+    return {allowed:payload.value>=3&&!payload.alreadyClaimed,reward:payload.value>=3&&!payload.alreadyClaimed?60:0,target:3};
+  }
+};
+const api=require('../../assets/js/principia-season-core.js');
+
+test('week key remains Monday-based and local-calendar aware',()=>{
+  assert.equal(api.weekKey(new Date(2026,10,16)),api.weekKey(new Date(2026,10,22)));
+});
+
+test('mission generation delegates metrics and week to Rust WASM',async()=>{
+  const rows=await api.missions({sessions:2.9,questions:15,notes:2},new Date(2026,10,22));
+  assert.equal(rows.length,3);
+  assert.equal(rows[0].progress,67);
+  assert.equal(rows[2].complete,true);
+  assert.equal(calls[0].payload.sessions,2);
+  assert.equal(calls[0].payload.week,'2026-11-16');
+});
+
+test('invalid local metrics are normalized before calling Rust',async()=>{
+  const rows=await api.missions({sessions:Infinity,questions:'x',notes:-1});
+  assert.equal(rows[0].value,2);
+  assert.equal(calls[1].payload.sessions,0);
+  assert.equal(calls[1].payload.questions,0);
+  assert.equal(calls[1].payload.notes,0);
+});
+
+test('claim validation delegates thresholds and one-time status to Rust',async()=>{
+  assert.equal((await api.claim('practice',2,false)).allowed,false);
+  assert.equal((await api.claim('practice',3,false)).reward,60);
+  assert.equal((await api.claim('practice',3,true)).allowed,false);
+  assert.equal(calls[2].payload.alreadyClaimed,false);
+});
+
+test('malformed Rust mission results are rejected',async()=>{
+  const original=globalThis.PrincipiaWasmPhysics.seasonMissions;
+  globalThis.PrincipiaWasmPhysics.seasonMissions=async()=>[];
+  await assert.rejects(api.missions(),/invalid weekly season missions/);
+  globalThis.PrincipiaWasmPhysics.seasonMissions=original;
+});
