@@ -26,6 +26,7 @@ pub mod learning;
 pub mod study_engine;
 pub mod progression;
 pub mod store;
+pub mod ui_state;
 
 pub const APP_NAME: &str = "PRINCIPIA";
 pub const CORE_VERSION: &str = env!("CARGO_PKG_VERSION");
