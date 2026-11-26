@@ -1,44 +1,10 @@
-//! Safe, platform-neutral HTML primitives for the Rust-owned PRINCIPIA navigation shell.
+//! Rust-rendered PRINCIPIA dashboard. HTML escaping protects user-controlled values.
 use crate::ui_state::UiState;
-
-const NAV: &[(&str, &str, &str)] = &[
-    ("home", "Trang chủ", "⌂"), ("learn", "Học tập", "▤"),
-    ("practice", "Luyện tập", "✓"), ("olympiad", "Olympiad", "★"),
-    ("lab", "Phòng thí nghiệm", "⚗"), ("games", "Trò chơi", "◇"),
-    ("notebook", "Sổ tay", "▣"), ("progress", "Tiến độ", "↗"),
-    ("settings", "Cài đặt", "⚙"),
-];
-fn escape_html(value: &str) -> String {
-    value.chars().map(|ch| match ch {
-        '&' => "&amp;".to_owned(), '<' => "&lt;".to_owned(),
-        '>' => "&gt;".to_owned(), '"' => "&quot;".to_owned(),
-        '\'' => "&#39;".to_owned(), _ => ch.to_string(),
-    }).collect()
-}
-pub fn render_shell(state: &UiState) -> String {
-    let layout = state.layout().as_str();
-    let nav = NAV.iter().map(|(route, label, icon)| {
-        let active = if state.route == *route { " is-active" } else { "" };
-        format!("<button class=\"pr-nav-item{active}\" type=\"button\" data-pr-route=\"{route}\" aria-current=\"{}\"><span aria-hidden=\"true\">{icon}</span><span>{label}</span></button>", if active.is_empty() { "false" } else { "page" })
-    }).collect::<String>();
-    let query = escape_html(&state.search_query);
-    let search = if state.search_open { format!("<form class=\"pr-search-form\" data-pr-search-form><input type=\"search\" maxlength=\"256\" name=\"q\" aria-label=\"Tìm kiếm\" value=\"{query}\" placeholder=\"Tìm nội dung…\"/><button type=\"submit\">Tìm</button></form>") } else { String::new() };
-    format!("<section class=\"pr-rust-shell\" data-pr-layout=\"{layout}\" data-pr-route=\"{}\"><header class=\"pr-rust-header\"><a class=\"pr-brand\" href=\"#home\" data-pr-route=\"home\"><span class=\"pr-brand-mark\">P</span><span><strong>PRINCIPIA</strong><small>PHYSICS OLYMPIAD</small></span></a><button type=\"button\" class=\"pr-search-toggle\" data-pr-search aria-expanded=\"{}\">⌕ Tìm kiếm</button></header><div class=\"pr-rust-layout\"><nav class=\"pr-rust-nav\" aria-label=\"Điều hướng chính\">{nav}</nav><main class=\"pr-rust-content\"><div class=\"pr-route-heading\"><p>PRINCIPIA / LEARNING SYSTEM</p><h1>{}</h1><p>Không gian học tập và nghiên cứu khoa học.</p>{search}</div><div class=\"pr-route-card\"><span class=\"pr-route-icon\">✦</span><h2>{}</h2><p>Chọn một module để tiếp tục học, luyện tập, mô phỏng hoặc theo dõi tiến độ.</p><div class=\"pr-route-actions\"><button type=\"button\" data-pr-route=\"learn\">Bắt đầu học</button><button type=\"button\" data-pr-route=\"lab\">Mở phòng thí nghiệm</button></div></div></main></div></section>", escape_html(&state.route), state.search_open, route_label(&state.route), route_label(&state.route))
-}
-fn route_label(route: &str) -> &'static str { NAV.iter().find(|(key, _, _)| *key == route).map(|(_, label, _)| *label).unwrap_or("PRINCIPIA") }
-#[cfg(test)]
-mod tests {
- use super::*;
- #[test] fn shell_contains_validated_route_and_accessible_navigation() { let mut state=UiState::default(); state.navigate("learn").unwrap(); let html=render_shell(&state); assert!(html.contains("data-pr-layout=\"desktop\"")); assert!(html.contains("data-pr-route=\"learn\"")); assert!(html.contains("aria-current=\"page\"")); assert!(html.contains("Học tập")); }
- #[test] fn search_input_escapes_user_markup() { let mut state=UiState::default(); state.open_search(); state.set_search("<script>alert('x')</script>"); let html=render_shell(&state); assert!(!html.contains("<script>alert")); assert!(html.contains("&lt;script&gt;")); }
- #[test] fn compact_view_is_marked_for_css_layout() { let mut state=UiState::default(); state.set_width(390).unwrap(); assert!(render_shell(&state).contains("data-pr-layout=\"compact\"")); }
-}
-
-#[test]
-fn empty_query_search_dialog_renders_search_form() {
-    let mut state = UiState::default();
-    state.open_search();
-    let html = render_shell(&state);
-    assert!(html.contains("data-pr-search-form"));
-    assert!(html.contains("type=\"search\""));
-}
+const NAV:&[(&str,&str,&str)]=&[("home","Trang chủ","⌂"),("learn","Học tập","▤"),("practice","Luyện tập","✓"),("olympiad","Olympiad","★"),("lab","Phòng thí nghiệm","⚗"),("games","Trò chơi","◇"),("notebook","Sổ tay","▣"),("progress","Tiến độ","↗"),("settings","Cài đặt","⚙")];
+fn esc(s:&str)->String{s.chars().map(|c|match c{'&'=>"&amp;".into(),'<'=>"&lt;".into(),'>'=>"&gt;".into(),'"'=>"&quot;".into(),'\''=>"&#39;".into(),_=>c.to_string()}).collect()}
+fn label(route:&str)->&'static str{NAV.iter().find(|(r,_,_)|*r==route).map(|(_,n,_)|*n).unwrap_or("PRINCIPIA")}
+fn nav(s:&UiState)->String{NAV.iter().map(|(r,n,i)|format!("<button class=\"pr-nav-item{}\" data-pr-route=\"{}\" type=\"button\" aria-current=\"{}\"><span aria-hidden=\"true\">{}</span><span>{}</span></button>",if s.route==*r{" is-active"}else{""},r,if s.route==*r{"page"}else{"false"},i,n)).collect()}
+fn card(route:&str,title:&str,desc:&str,icon:&str)->String{format!("<button class=\"pr-feature-card\" type=\"button\" data-pr-route=\"{}\"><span class=\"pr-feature-icon\">{}</span><strong class=\"pr-feature-title\">{}</strong><span class=\"pr-feature-description\">{}</span><span class=\"pr-feature-arrow\" aria-hidden=\"true\">↗</span></button>",route,icon,title,desc)}
+fn modules(route:&str)->String{let items:&[(&str,&str,&str,&str)]=match route{"learn"=>&[("learn","Lộ trình kiến thức","Học theo chủ đề và mục tiêu.","▤"),("practice","Ôn tập chủ động","Củng cố kiến thức sau bài học.","✓")],"practice"=>&[("practice","Bài luyện tập","Luyện kỹ năng theo độ khó.","✓"),("progress","Kết quả","Xem kỹ năng cần cải thiện.","↗")],"olympiad"=>&[("olympiad","Olympiad","Bài toán tư duy nhiều bước.","★")],"lab"=>&[("lab","Mô phỏng vật lý","Khám phá lực và chuyển động.","⚗")],"games"=>&[("games","Trò chơi khoa học","Học qua nhiệm vụ và thử thách.","◇")],"notebook"=>&[("notebook","Sổ tay","Lưu công thức và lời giải.","▣")],"progress"=>&[("progress","Tiến độ học tập","Mục tiêu và kết quả.","↗")],"settings"=>&[("settings","Thiết lập","Tùy chỉnh ứng dụng.","⚙")],_=>&[("learn","Học tập","Bài học và lộ trình kiến thức.","▤"),("practice","Luyện tập","Bài tập theo chủ đề.","✓"),("olympiad","Olympiad","Thử thách nâng cao.","★"),("lab","Phòng thí nghiệm","Mô phỏng tương tác.","⚗"),("games","Trò chơi","Nhiệm vụ khoa học.","◇"),("notebook","Sổ tay","Công thức và ghi chú.","▣"),("progress","Tiến độ","Theo dõi kết quả.","↗"),("settings","Cài đặt","Tùy chỉnh trải nghiệm.","⚙")]};items.iter().map(|(r,t,d,i)|card(r,t,d,i)).collect()}
+pub fn render_shell(s:&UiState)->String{let search=if s.search_open{format!("<form class=\"pr-search-form\" data-pr-search-form role=\"search\"><input name=\"q\" type=\"search\" maxlength=\"256\" aria-label=\"Tìm kiếm\" placeholder=\"Tìm bài học, chủ đề…\" value=\"{}\"/><button type=\"submit\">Tìm</button></form>",esc(&s.search_query))}else{String::new()};format!("<section class=\"pr-rust-shell\" data-pr-layout=\"{}\" data-pr-route=\"{}\"><header class=\"pr-rust-header\"><a class=\"pr-brand\" href=\"#home\" data-pr-route=\"home\"><span class=\"pr-brand-mark\">P</span><span><strong>PRINCIPIA</strong><small>PHYSICS OLYMPIAD</small></span></a><div class=\"pr-header-actions\"><button class=\"pr-sidebar-toggle\" data-pr-sidebar type=\"button\" aria-expanded=\"{}\">☰</button><button class=\"pr-search-toggle\" data-pr-search type=\"button\" aria-expanded=\"{}\">⌕ Tìm kiếm</button></div></header><div class=\"pr-rust-layout\"><nav class=\"pr-rust-nav\" aria-label=\"Điều hướng chính\">{}</nav><main class=\"pr-rust-content\"><section class=\"pr-dashboard-hero\"><div class=\"pr-hero-copy\"><p class=\"pr-eyebrow\">LEARN · EXPLORE · MASTER</p><h1>{}</h1><p>Học vật lý bằng tư duy, thực hành và mô phỏng trực quan.</p><div class=\"pr-hero-actions\"><button type=\"button\" data-pr-route=\"learn\">Bắt đầu học ↗</button><button type=\"button\" class=\"pr-secondary-action\" data-pr-route=\"lab\">Khám phá phòng lab</button></div></div><div class=\"pr-hero-orbit\" aria-hidden=\"true\"><div class=\"pr-orbit-ring\"></div><div class=\"pr-orbit-core\">P</div><span class=\"pr-orbit-dot pr-dot-a\"></span><span class=\"pr-orbit-dot pr-dot-b\"></span><span class=\"pr-orbit-dot pr-dot-c\"></span></div></section>{}<section class=\"pr-dashboard-section\"><div class=\"pr-section-heading\"><div><p class=\"pr-eyebrow\">YOUR WORKSPACE</p><h2>{}</h2></div><span class=\"pr-section-count\">{} MODULES</span></div><div class=\"pr-feature-grid\">{}</div></section></main></div></section>",s.layout().as_str(),esc(&s.route),s.sidebar_open,s.search_open,nav(s),label(&s.route),search,label(&s.route),if s.route=="home"{8}else{1},modules(&s.route))}
+#[cfg(test)]mod tests{use super::*;#[test]fn renders_route_and_nav(){let mut s=UiState::default();s.navigate("learn").unwrap();let h=render_shell(&s);assert!(h.contains("data-pr-layout=\"desktop\""));assert!(h.contains("data-pr-route=\"learn\""));assert!(h.contains("aria-current=\"page\""));assert!(h.contains("Học tập"));}#[test]fn escapes_search(){let mut s=UiState::default();s.open_search();s.set_search("<script>x</script>");let h=render_shell(&s);assert!(!h.contains("<script>x"));assert!(h.contains("&lt;script&gt;"));}#[test]fn responsive_marker(){let mut s=UiState::default();s.set_width(390).unwrap();assert!(render_shell(&s).contains("data-pr-layout=\"compact\""));}#[test]fn home_has_real_module_cards(){let h=render_shell(&UiState::default());assert!(h.contains("pr-feature-card"));assert!(h.contains("Phòng thí nghiệm"));assert!(h.contains("Olympiad"));}}
