@@ -19,7 +19,7 @@ fn parse_day(value: &str) -> Result<i64, CalendarError> {
     let max=match month {1|3|5|7|8|10|12=>31,4|6|9|11=>30,2=>if leap{29}else{28},_=>return Err(CalendarError::InvalidDate)};
     if day<1 || day>max { return Err(CalendarError::InvalidDate); }
     let y=year-i64::from(month<=2);
-    let era=if y>=0 {y} else {y-399}/400;
+    let era=(if y>=0 {y} else {y-399})/400;
     let yoe=y-era*400;
     let mp=month+if month>2 {-3}else{9};
     let doy=(153*mp+2)/5+day-1;
@@ -27,7 +27,7 @@ fn parse_day(value: &str) -> Result<i64, CalendarError> {
 }
 
 fn format_day(ordinal:i64)->String {
-    let era=if ordinal>=0 {ordinal} else {ordinal-146096}/146097;
+    let era=(if ordinal>=0 {ordinal} else {ordinal-146096})/146097;
     let doe=ordinal-era*146097;
     let yoe=(doe-doe/1460+doe/36524-doe/146096)/365;
     let mut year=yoe+era*400;
