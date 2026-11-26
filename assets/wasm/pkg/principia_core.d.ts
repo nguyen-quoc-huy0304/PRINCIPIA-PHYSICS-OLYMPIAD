@@ -63,6 +63,11 @@ export function physics_robot_forward_json(l1: number, l2: number, shoulder_rad:
 
 export function physics_velocity(initial_mps: number, acceleration_mps2: number, seconds: number): number;
 
+/**
+ * Record a study day without awarding XP or incrementing lesson counters.
+ */
+export function progress_day_json(progress_json: string, day: string): string;
+
 export function progress_record_json(progress_json: string, activity: string, day: string): string;
 
 export function progression_summary_json(input_json: string): string;
@@ -130,6 +135,7 @@ export interface InitOutput {
     readonly physics_robot_arm_json: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
     readonly physics_robot_forward_json: (a: number, b: number, c: number, d: number, e: number) => void;
     readonly physics_velocity: (a: number, b: number, c: number, d: number) => void;
+    readonly progress_day_json: (a: number, b: number, c: number, d: number, e: number) => void;
     readonly progress_record_json: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
     readonly progression_summary_json: (a: number, b: number, c: number) => void;
     readonly rank_arena_claim_json: (a: number, b: number, c: number, d: number, e: number) => void;
