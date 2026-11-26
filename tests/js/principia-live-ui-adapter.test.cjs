@@ -55,7 +55,7 @@ test('Rust UI bridge is loaded without replacing the legacy app root', () => {
   assert.match(js, /ui_render_html/);
   assert.match(js, /function mount\(root, options = \{\}\)/);
   assert.doesNotMatch(js, /document\.getElementById\(['"]app['"]\)/);
-  assert.match(css, /@media\(max-width:700px\)/);
+  assert.match(css, /@media\(max-width:850px\)/);
 });
 
 
