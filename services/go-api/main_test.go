@@ -10,6 +10,37 @@ import (
 )
 
 
+
+func TestValidateGradeQuizRequest(t *testing.T) {
+	valid := map[string]any{
+		"op": "gradeQuiz",
+		"passPercent": json.Number("75"),
+		"questions": []any{
+			map[string]any{"id":"q1","selectedIndex":json.Number("1"),"correctIndex":json.Number("1"),"optionCount":json.Number("4"),"points":json.Number("2")},
+			map[string]any{"id":"q2","selectedIndex":json.Number("0"),"correctIndex":json.Number("2"),"optionCount":json.Number("4"),"points":json.Number("1")},
+		},
+	}
+	if err := validateFields(valid, operationFields["gradeQuiz"]); err != nil {
+		t.Fatalf("valid quiz rejected: %v", err)
+	}
+}
+
+func TestValidateGradeQuizRejectsMalformedAttempts(t *testing.T) {
+	baseQuestion := map[string]any{"id":"q1","selectedIndex":json.Number("0"),"correctIndex":json.Number("1"),"optionCount":json.Number("4"),"points":json.Number("1")}
+	cases := []map[string]any{
+		{"op":"gradeQuiz","passPercent":json.Number("75"),"questions":[]any{}},
+		{"op":"gradeQuiz","passPercent":json.Number("101"),"questions":[]any{baseQuestion}},
+		{"op":"gradeQuiz","passPercent":json.Number("75"),"questions":[]any{baseQuestion, baseQuestion}},
+		{"op":"gradeQuiz","passPercent":json.Number("75"),"questions":[]any{map[string]any{"id":"q1","selectedIndex":json.Number("4"),"correctIndex":json.Number("1"),"optionCount":json.Number("4"),"points":json.Number("1")}}},
+		{"op":"gradeQuiz","passPercent":json.Number("75"),"questions":[]any{map[string]any{"id":"q1","selectedIndex":json.Number("0"),"correctIndex":json.Number("1"),"optionCount":json.Number("1"),"points":json.Number("1")}}},
+	}
+	for _, input := range cases {
+		if err := validateFields(input, operationFields["gradeQuiz"]); err == nil {
+			t.Errorf("expected malformed quiz rejected: %#v", input)
+		}
+	}
+}
+
 func TestValidateStudyPlanAllowsOptionalContextAndRejectsInvalidValues(t *testing.T) {
 	valid := map[string]any{
 		"op": "studyPlan", "errorCount": json.Number("2"),
