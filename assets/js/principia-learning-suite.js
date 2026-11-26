@@ -536,11 +536,8 @@
   const api=window.PrincipiaSeasonCore;
   if(!api){open('Mùa giải tuần','<p>Module mùa giải chưa tải được.</p>'+btn('Về trung tâm','principiaSuiteHome()'));return}
   const now=new Date(),week=api.weekKey(now);
-  const attempts=(state.attempts||[]).filter(item=>{try{return api.weekKey(new Date(item.date))===week}catch(_){return false}});
-  const questions=attempts.reduce((sum,item)=>sum+Math.max(0,Number(item.total)||0),0);
-  const notes=(state.notes||[]).filter(item=>{try{return api.weekKey(new Date(item.date))===week}catch(_){return false}}).length;
   let list;
-  try{list=await api.missions({sessions:attempts.length,questions,notes},now);}
+  try{list=await api.missions({attempts:state.attempts||[],notes:state.notes||[]},now);}
   catch(error){console.error('[PRINCIPIA] Rust season missions failed:',error);open('Mùa giải tuần','<p>Không thể tải nhiệm vụ tuần từ lõi Rust/WASM.</p>'+btn('Thử lại','principiaSuiteSeasonMissions()','primary')+btn('Về trung tâm','principiaSuiteHome()'));return}
   const claimed=Array.isArray(state.seasonClaims)?state.seasonClaims:[];
   const body=list.map(item=>{const done=claimed.includes(item.week+':'+item.id);return panel((item.complete?'✓ ':'○ ')+esc(item.name),'<p>'+esc(item.description)+'</p><div style="height:8px;border-radius:10px;background:var(--line,#444);overflow:hidden"><div style="height:100%;width:'+item.progress+'%;background:var(--purple,#9b87ff)"></div></div><p class="small muted">'+Math.min(item.value,item.target)+'/'+item.target+' · '+item.progress+'% · thưởng '+item.xp+' XP</p>'+(done?'<b class="small" style="color:#55b98a">Đã nhận thưởng tuần này</b>':item.complete?btn('Nhận '+item.xp+' XP','principiaSuiteClaimSeason(\\''+item.id+'\\')','primary'):'<small class="muted">Tiếp tục hoạt động để hoàn thành</small>'))}).join('');
@@ -549,11 +546,8 @@
  async function claimSeason(id){
   const api=window.PrincipiaSeasonCore;if(!api)return;
   const now=new Date(),week=api.weekKey(now);
-  const attempts=(state.attempts||[]).filter(item=>{try{return api.weekKey(new Date(item.date))===week}catch(_){return false}});
-  const questions=attempts.reduce((sum,item)=>sum+Math.max(0,Number(item.total)||0),0);
-  const notes=(state.notes||[]).filter(item=>{try{return api.weekKey(new Date(item.date))===week}catch(_){return false}}).length;
   let list;
-  try{list=await api.missions({sessions:attempts.length,questions,notes},now);}
+  try{list=await api.missions({attempts:state.attempts||[],notes:state.notes||[]},now);}
   catch(error){console.error('[PRINCIPIA] Rust season mission refresh failed:',error);alert('Không thể xác minh nhiệm vụ tuần bằng Rust/WASM.');return}
   const item=list.find(row=>row.id===id),claimed=Array.isArray(state.seasonClaims)?state.seasonClaims:[];
   if(!item)return;
