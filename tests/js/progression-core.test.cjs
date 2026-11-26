@@ -16,3 +16,18 @@ test('invalid stored dates cannot extend the current streak',()=>{const d=new Da
 test('invalid stored dates cannot inflate the longest streak',()=>{assert.equal(P.streak(['2026-11-18','2026-11-19','2026-02-30'],new Date(2026,10,22)).longest,2)});
 
 test('accepts well-formed local calendar keys and rejects malformed keys',()=>{assert.deepEqual(P.recordActivity(['2026-11-21'],new Date(2026,10,22)),['2026-11-21','2026-11-22']);assert.deepEqual(P.recordActivity(['2026/11/21','abcd-11-21','2026-11-21x'],new Date(2026,10,22)),['2026-11-22'])});
+
+test('Rust progression adapter forwards validated learner metrics', async()=>{
+ const previous=global.PrincipiaWasmPhysics;let payload;
+ global.PrincipiaWasmPhysics={async progression(value){payload=value;return {level:{level:2,title:'Tập sự'},achievements:[]};}};
+ try{
+  const result=await P.summarizeWithRust(150,{sessions:3,questions:40,bestPercent:88,lessons:2,streak:4,experiments:1,levelsCreated:0});
+  assert.equal(payload.xp,150);assert.equal(payload.questions,40);assert.equal(payload.bestPercent,88);
+  assert.equal(result.level.level,2);
+ }finally{if(previous===undefined)delete global.PrincipiaWasmPhysics;else global.PrincipiaWasmPhysics=previous;}
+});
+test('Rust progression adapter rejects when the WASM engine is unavailable', async()=>{
+ const previous=global.PrincipiaWasmPhysics;delete global.PrincipiaWasmPhysics;
+ try{await assert.rejects(P.summarizeWithRust(0),/unavailable/);}
+ finally{if(previous===undefined)delete global.PrincipiaWasmPhysics;else global.PrincipiaWasmPhysics=previous;}
+});
