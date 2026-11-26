@@ -1,6 +1,4 @@
-use serde::{Deserialize, Serialize};
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct GrantDecision { pub email: String, pub role: String, pub remove: bool }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
