@@ -44,3 +44,25 @@ test('Gameverse pet progression and reward updates are Rust-owned and serialized
  assert.match(wasm,/gameverse_pet_progress_json/);
  assert.match(rust,/pub fn pet_progress\(pet_xp: u32, pet_level: u32\)/);
 });
+
+test('Gameverse zone, pass, and skill purchases are validated by Rust',()=>{
+ assert.match(game,/engine\.gameverseUnlockZone\(id,state\.coins,state\.unlocked\)/);
+ assert.match(game,/engine\.gameverseClaimPass\(Number\(tier\),state\.season\.xp,state\.season\.claimed\)/);
+ assert.match(game,/engine\.gameverseBuySkill\(id,state\.coins,owned\)/);
+ assert.doesNotMatch(game,/const costs=\{focus:80,recall:100,craft:120,explorer:150\}/);
+ assert.doesNotMatch(game,/state\.season\.xp<\(Number\(tier\)\*100\)/);
+ assert.match(rust,/pub fn unlock_zone\(/);
+ assert.match(rust,/pub fn claim_pass\(/);
+ assert.match(rust,/pub fn buy_skill\(/);
+ assert.match(wasm,/gameverse_unlock_zone_json/);
+ assert.match(wasm,/gameverse_claim_pass_json/);
+ assert.match(wasm,/gameverse_buy_skill_json/);
+ assert.match(bridge,/gameverseUnlockZone:/);
+ assert.match(bridge,/gameverseClaimPass:/);
+ assert.match(bridge,/gameverseBuySkill:/);
+});
+
+test('Gameverse transactions reject duplicate concurrent actions',()=>{
+ assert.match(game,/gameversePendingActions\.has\(lock\)/);
+ assert.match(game,/finally\{gameversePendingActions\.delete\(lock\);\}/);
+});
