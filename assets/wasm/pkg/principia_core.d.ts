@@ -31,6 +31,11 @@ export function progression_summary_json(input_json: string): string;
 
 export function score_projectile_json(speed: number, angle_degrees: number, target_m: number, gravity: number): string;
 
+/**
+ * Builds a validated responsive UI state snapshot for browser/native renderers.
+ */
+export function ui_snapshot_json(route: string, width: number, search_query: string, dialog: string): string;
+
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 
 export interface InitOutput {
@@ -50,6 +55,7 @@ export interface InitOutput {
     readonly progress_record_json: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
     readonly progression_summary_json: (a: number, b: number, c: number) => void;
     readonly score_projectile_json: (a: number, b: number, c: number, d: number, e: number) => void;
+    readonly ui_snapshot_json: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => void;
     readonly __wbindgen_externrefs: WebAssembly.Table;
     readonly __wbindgen_add_to_stack_pointer: (a: number) => number;
     readonly __wbindgen_export: (a: number, b: number) => number;

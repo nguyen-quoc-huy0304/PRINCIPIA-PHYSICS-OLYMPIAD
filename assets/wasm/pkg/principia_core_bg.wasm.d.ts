@@ -16,6 +16,7 @@ export const physics_velocity: (a: number, b: number, c: number, d: number) => v
 export const progress_record_json: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
 export const progression_summary_json: (a: number, b: number, c: number) => void;
 export const score_projectile_json: (a: number, b: number, c: number, d: number, e: number) => void;
+export const ui_snapshot_json: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => void;
 export const __wbindgen_externrefs: WebAssembly.Table;
 export const __wbindgen_add_to_stack_pointer: (a: number) => number;
 export const __wbindgen_export: (a: number, b: number) => number;
