@@ -35,12 +35,16 @@ test('content tree adapter delegates every operation to Rust/WASM', async () => 
   await api.reorder(catalog, 'physics', -1);
   await api.move(catalog, 'physics', 'root');
   await api.drop(catalog, 'physics', 'target');
+  await api.create(catalog, { id: 'new', name: 'New', type: 'lesson' }, 'physics');
+  await api.update(catalog, 'physics', { name: 'Physics' });
   assert.deepEqual(calls.map(call => call.operation),
-    ['find', 'parent', 'siblings', 'chain', 'lessons', 'count', 'remove', 'reorder', 'move', 'drop']);
+    ['find', 'parent', 'siblings', 'chain', 'lessons', 'count', 'remove', 'reorder', 'move', 'drop', 'create', 'update']);
   assert.equal(calls[0].catalog, catalog);
   assert.deepEqual(JSON.parse(calls[7].targetId), { id: 'physics', delta: -1 });
   assert.deepEqual(JSON.parse(calls[8].targetId), { id: 'physics', targetId: 'root' });
   assert.deepEqual(JSON.parse(calls[9].targetId), { id: 'physics', targetId: 'target' });
+  assert.deepEqual(JSON.parse(calls[10].targetId), { node: { id: 'new', name: 'New', type: 'lesson' }, parentId: 'physics' });
+  assert.deepEqual(JSON.parse(calls[11].targetId), { id: 'physics', patch: { name: 'Physics' } });
 });
 
 test('content tree adapter rejects invalid input before crossing WASM boundary', async () => {
