@@ -3,7 +3,7 @@ use serde_json::{json, Value};
 use std::collections::BTreeMap;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum GameverseError { InvalidScore, InvalidMode, InvalidRating, UnknownRecipe, AlreadyCrafted, InsufficientMaterials, InvalidInventory, InvalidPetProgress }
+pub enum GameverseError { InvalidScore, InvalidMode, InvalidRating, UnknownRecipe, AlreadyCrafted, InsufficientMaterials, InvalidInventory, InvalidPetProgress, UnknownZone, AlreadyUnlocked, InsufficientCoins, UnknownSkill, AlreadyOwned, InsufficientSeasonXp, AlreadyClaimed }
 
 pub fn quiz_reward(correct: u32, total: u32, mode: &str, rating: u64) -> Result<Value, GameverseError> {
     if total == 0 || total > 200 || correct > total { return Err(GameverseError::InvalidScore); }
@@ -34,6 +34,50 @@ pub fn quiz_reward(correct: u32, total: u32, mode: &str, rating: u64) -> Result<
     }))
 }
 
+
+pub fn unlock_zone(zone_id: &str, coins: u64, unlocked: &[String]) -> Result<Value, GameverseError> {
+    let cost = match zone_id {
+        "city" => 120, "craft" => 180, "arena" => 250, "space" => 400,
+        "camp" | "stadium" => return Err(GameverseError::AlreadyUnlocked),
+        _ => return Err(GameverseError::UnknownZone),
+    };
+    if unlocked.len() > 32 || unlocked.iter().any(|id| id.len() > 64) {
+        return Err(GameverseError::InvalidInventory);
+    }
+    if unlocked.iter().any(|id| id == zone_id) { return Err(GameverseError::AlreadyUnlocked); }
+    if coins < cost { return Err(GameverseError::InsufficientCoins); }
+    let mut next_unlocked = unlocked.to_vec();
+    next_unlocked.push(zone_id.to_owned());
+    Ok(json!({"coins":coins-cost,"unlocked":next_unlocked,"zoneId":zone_id,"cost":cost}))
+}
+
+pub fn claim_pass(tier: u32, season_xp: u64, claimed: &[String]) -> Result<Value, GameverseError> {
+    if !(1..=100).contains(&tier) || claimed.len() > 100 {
+        return Err(GameverseError::InvalidInventory);
+    }
+    let id = tier.to_string();
+    if claimed.iter().any(|item| item == &id) { return Err(GameverseError::AlreadyClaimed); }
+    let threshold = u64::from(tier) * 100;
+    if season_xp < threshold { return Err(GameverseError::InsufficientSeasonXp); }
+    let mut next_claimed = claimed.to_vec();
+    next_claimed.push(id);
+    Ok(json!({"claimed":next_claimed,"coins":40 + u64::from(tier) * 5,"crystals":1,"tier":tier}))
+}
+
+pub fn buy_skill(skill_id: &str, coins: u64, skills: &[String]) -> Result<Value, GameverseError> {
+    let cost = match skill_id {
+        "focus" => 80, "recall" => 100, "craft" => 120, "explorer" => 150,
+        _ => return Err(GameverseError::UnknownSkill),
+    };
+    if skills.len() > 32 || skills.iter().any(|id| id.len() > 64) {
+        return Err(GameverseError::InvalidInventory);
+    }
+    if skills.iter().any(|id| id == skill_id) { return Err(GameverseError::AlreadyOwned); }
+    if coins < cost { return Err(GameverseError::InsufficientCoins); }
+    let mut next_skills = skills.to_vec();
+    next_skills.push(skill_id.to_owned());
+    Ok(json!({"coins":coins-cost,"skills":next_skills,"skillId":skill_id,"cost":cost}))
+}
 
 pub fn pet_progress(pet_xp: u32, pet_level: u32) -> Result<Value, GameverseError> {
     if pet_xp > 1_000_000 || !(1..=1000).contains(&pet_level) { return Err(GameverseError::InvalidPetProgress); }
@@ -84,6 +128,29 @@ pub fn craft(recipe_id: &str, materials: &BTreeMap<String, u32>, crafted: &[Stri
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn zone_unlocks_validate_cost_and_ownership() {
+        let unlocked = vec!["camp".to_owned(), "stadium".to_owned()];
+        let result = unlock_zone("city", 150, &unlocked).unwrap();
+        assert_eq!(result["coins"], 30);
+        assert!(result["unlocked"].as_array().unwrap().iter().any(|id| id == "city"));
+        assert_eq!(unlock_zone("city", 500, &unlocked).unwrap()["cost"], 120);
+        assert!(unlock_zone("city", 10, &unlocked).is_err());
+        assert!(unlock_zone("camp", 500, &unlocked).is_err());
+    }
+
+    #[test]
+    fn season_pass_and_skill_purchases_are_validated() {
+        let claimed = vec!["1".to_owned()];
+        assert_eq!(claim_pass(2, 200, &claimed).unwrap()["coins"], 50);
+        assert!(claim_pass(1, 200, &claimed).is_err());
+        assert!(claim_pass(3, 200, &claimed).is_err());
+        let skills = vec!["focus".to_owned()];
+        assert_eq!(buy_skill("recall", 120, &skills).unwrap()["coins"], 20);
+        assert!(buy_skill("focus", 500, &skills).is_err());
+        assert!(buy_skill("recall", 10, &skills).is_err());
+    }
 
     #[test]
     fn pet_progression_levels_up_with_bounded_values() {
