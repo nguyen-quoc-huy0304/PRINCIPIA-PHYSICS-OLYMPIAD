@@ -182,7 +182,7 @@ mod catalog_tests {
         assert_eq!(result["items"][0]["parentId"], "root");
         assert_eq!(result["items"][0]["path"], "Cơ học › Ôn tập");
         let all = global_search_index_json(input, "", "lesson").unwrap();
-        assert_eq!(all["items"][1]["kind"], "lesson");
+        assert_eq!(all["items"][2]["kind"], "lesson");
     }
 
     #[test]
