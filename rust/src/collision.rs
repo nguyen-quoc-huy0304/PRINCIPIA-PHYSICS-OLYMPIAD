@@ -55,6 +55,68 @@ pub fn collide_1d(mass_a: f64, velocity_a: f64, mass_b: f64, velocity_b: f64, re
     })
 }
 
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Disk {
+    pub x: f64,
+    pub y: f64,
+    pub vx: f64,
+    pub vy: f64,
+    pub mass: f64,
+    pub radius: f64,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DiskCollision {
+    pub collided: bool,
+    pub impulse: f64,
+    pub a: Disk,
+    pub b: Disk,
+}
+
+pub fn resolve_disks(mut a: Disk, mut b: Disk, restitution: f64) -> Result<DiskCollision, CollisionError> {
+    let inputs = [a.x,a.y,a.vx,a.vy,a.mass,a.radius,b.x,b.y,b.vx,b.vy,b.mass,b.radius,restitution];
+    if !inputs.iter().all(|value| value.is_finite()) { return Err(CollisionError::NonFinite); }
+    if a.mass <= 0.0 || b.mass <= 0.0 || a.radius <= 0.0 || b.radius <= 0.0 {
+        return Err(CollisionError::InvalidMass);
+    }
+    if !(0.0..=1.0).contains(&restitution) { return Err(CollisionError::InvalidRestitution); }
+
+    let mut dx = b.x - a.x;
+    let mut dy = b.y - a.y;
+    let mut distance = dx.hypot(dy);
+    let minimum_distance = a.radius + b.radius;
+    if distance >= minimum_distance {
+        return Ok(DiskCollision { collided: false, impulse: 0.0, a, b });
+    }
+    if distance < 1e-12 { dx = 1.0; dy = 0.0; distance = 1.0; }
+    let nx = dx / distance;
+    let ny = dy / distance;
+    let inverse_a = 1.0 / a.mass;
+    let inverse_b = 1.0 / b.mass;
+    let inverse_sum = inverse_a + inverse_b;
+    let relative_normal = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
+    let penetration = minimum_distance - distance;
+    let correction = (penetration - 0.01).max(0.0) * 0.8 / inverse_sum;
+    a.x -= nx * correction * inverse_a;
+    a.y -= ny * correction * inverse_a;
+    b.x += nx * correction * inverse_b;
+    b.y += ny * correction * inverse_b;
+
+    let impulse = if relative_normal < 0.0 {
+        let impulse = -(1.0 + restitution) * relative_normal / inverse_sum;
+        a.vx -= impulse * inverse_a * nx;
+        a.vy -= impulse * inverse_a * ny;
+        b.vx += impulse * inverse_b * nx;
+        b.vy += impulse * inverse_b * ny;
+        impulse
+    } else { 0.0 };
+
+    let outputs = [a.x,a.y,a.vx,a.vy,b.x,b.y,b.vx,b.vy,impulse];
+    if !outputs.iter().all(|value| value.is_finite()) { return Err(CollisionError::NonFinite); }
+    Ok(DiskCollision { collided: true, impulse, a, b })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -74,6 +136,35 @@ mod tests {
         assert!((result.velocity_a - 1.0).abs() < 1e-12);
         assert!((result.velocity_b - 1.0).abs() < 1e-12);
         assert!(result.energy_loss > 0.0);
+    }
+
+
+    #[test]
+    fn equal_mass_elastic_disk_collision_exchanges_normal_velocity() {
+        let a = Disk { x: 0.0, y: 0.0, vx: 1.0, vy: 0.0, mass: 1.0, radius: 1.0 };
+        let b = Disk { x: 1.5, y: 0.0, vx: -1.0, vy: 0.0, mass: 1.0, radius: 1.0 };
+        let result = resolve_disks(a, b, 1.0).unwrap();
+        assert!(result.collided);
+        assert!((result.a.vx + 1.0).abs() < 1e-12);
+        assert!((result.b.vx - 1.0).abs() < 1e-12);
+    }
+
+    #[test]
+    fn separating_disks_are_corrected_without_impulse() {
+        let a = Disk { x: 0.0, y: 0.0, vx: -1.0, vy: 0.0, mass: 1.0, radius: 1.0 };
+        let b = Disk { x: 1.0, y: 0.0, vx: 1.0, vy: 0.0, mass: 1.0, radius: 1.0 };
+        let result = resolve_disks(a, b, 0.5).unwrap();
+        assert_eq!(result.impulse, 0.0);
+        assert!(result.b.x - result.a.x >= 1.79);
+    }
+
+    #[test]
+    fn disk_collision_rejects_invalid_mass_and_restitution() {
+        let a = Disk { x: 0.0, y: 0.0, vx: 0.0, vy: 0.0, mass: 0.0, radius: 1.0 };
+        let b = Disk { x: 1.0, y: 0.0, vx: 0.0, vy: 0.0, mass: 1.0, radius: 1.0 };
+        assert_eq!(resolve_disks(a, b, 1.0), Err(CollisionError::InvalidMass));
+        let valid = Disk { mass: 1.0, ..a };
+        assert_eq!(resolve_disks(valid, b, 1.1), Err(CollisionError::InvalidRestitution));
     }
 
     #[test]
