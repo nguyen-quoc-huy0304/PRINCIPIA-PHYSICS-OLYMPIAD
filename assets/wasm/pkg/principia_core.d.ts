@@ -23,6 +23,11 @@ export function force_balance_target_json(force_a_x: number, force_a_y: number, 
 
 export function game_trajectory_json(speed_mps: number, angle_degrees: number, gravity_mps2: number, samples: number): string;
 
+/**
+ * Resolve Gameverse quiz rewards and ranked rating changes in Rust.
+ */
+export function gameverse_quiz_reward_json(input_json: string): string;
+
 export function generate_game_challenge_json(seed: bigint): string;
 
 /**
@@ -118,6 +123,7 @@ export interface InitOutput {
     readonly force_balance_score_json: (a: number, b: number, c: number, d: number, e: number) => void;
     readonly force_balance_target_json: (a: number, b: number, c: number, d: number, e: number) => void;
     readonly game_trajectory_json: (a: number, b: number, c: number, d: number, e: number) => void;
+    readonly gameverse_quiz_reward_json: (a: number, b: number, c: number) => void;
     readonly generate_game_challenge_json: (a: number, b: bigint) => void;
     readonly global_search_index_json: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
     readonly learning_orchestrate_json: (a: number, b: number, c: number) => void;
