@@ -1,27 +1,15 @@
 (function () {
   'use strict';
 
-  function collide1D(m1, u1, m2, u2, restitution) {
+  async function collide1D(m1, u1, m2, u2, restitution) {
     const values = [m1, u1, m2, u2, restitution];
     if (!values.every(Number.isFinite)) throw new TypeError('All inputs must be finite numbers.');
     if (m1 <= 0 || m2 <= 0) throw new RangeError('Masses must be greater than zero.');
     if (restitution < 0 || restitution > 1) throw new RangeError('Coefficient of restitution must be between 0 and 1.');
-
-    const totalMass = m1 + m2;
-    const momentumBefore = m1 * u1 + m2 * u2;
-    const relativeApproach = u1 - u2;
-    const v1 = (m1 * u1 + m2 * u2 - m2 * restitution * relativeApproach) / totalMass;
-    const v2 = (m1 * u1 + m2 * u2 + m1 * restitution * relativeApproach) / totalMass;
-    const momentumAfter = m1 * v1 + m2 * v2;
-    const kineticBefore = 0.5 * m1 * u1 * u1 + 0.5 * m2 * u2 * u2;
-    const kineticAfter = 0.5 * m1 * v1 * v1 + 0.5 * m2 * v2 * v2;
-
-    return {
-      v1, v2, momentumBefore, momentumAfter, momentumError: momentumAfter - momentumBefore,
-      kineticBefore, kineticAfter, kineticChange: kineticAfter - kineticBefore,
-      energyLoss: Math.max(0, kineticBefore - kineticAfter),
-      restitution, totalMass
-    };
+    if (!window.PrincipiaWasmPhysics) throw new Error('Rust/WASM physics core is unavailable.');
+    return window.PrincipiaWasmPhysics.compute('collision1D', {
+      massA: m1, velocityA: u1, massB: m2, velocityB: u2, restitution
+    });
   }
 
   function resolveDiskCollision(a, b, restitution) {
