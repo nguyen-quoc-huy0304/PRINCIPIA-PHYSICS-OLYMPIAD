@@ -3,7 +3,7 @@ use serde_json::{json, Value};
 use std::collections::BTreeMap;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum GameverseError { InvalidScore, InvalidMode, InvalidRating, UnknownRecipe, AlreadyCrafted, InsufficientMaterials, InvalidInventory }
+pub enum GameverseError { InvalidScore, InvalidMode, InvalidRating, UnknownRecipe, AlreadyCrafted, InsufficientMaterials, InvalidInventory, InvalidPetProgress }
 
 pub fn quiz_reward(correct: u32, total: u32, mode: &str, rating: u64) -> Result<Value, GameverseError> {
     if total == 0 || total > 200 || correct > total { return Err(GameverseError::InvalidScore); }
@@ -34,6 +34,17 @@ pub fn quiz_reward(correct: u32, total: u32, mode: &str, rating: u64) -> Result<
     }))
 }
 
+
+pub fn pet_progress(pet_xp: u32, pet_level: u32) -> Result<Value, GameverseError> {
+    if pet_xp > 1_000_000 || !(1..=1000).contains(&pet_level) { return Err(GameverseError::InvalidPetProgress); }
+    let mut remaining = pet_xp;
+    let mut level = pet_level;
+    while level < 1000 && remaining >= level.saturating_mul(100) {
+        remaining -= level.saturating_mul(100);
+        level += 1;
+    }
+    Ok(json!({"xp":remaining,"level":level,"form":(level / 3).min(4)}))
+}
 
 pub fn craft(recipe_id: &str, materials: &BTreeMap<String, u32>, crafted: &[String]) -> Result<Value, GameverseError> {
     let recipe: &[(&str, u32)] = match recipe_id {
@@ -73,6 +84,16 @@ pub fn craft(recipe_id: &str, materials: &BTreeMap<String, u32>, crafted: &[Stri
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn pet_progression_levels_up_with_bounded_values() {
+        let result = pet_progress(300, 1).unwrap();
+        assert_eq!(result["level"], 3);
+        assert_eq!(result["xp"], 0);
+        assert_eq!(result["form"], 1);
+        assert!(pet_progress(1_000_001, 1).is_err());
+        assert!(pet_progress(0, 0).is_err());
+    }
 
     #[test]
     fn quick_match_rewards_are_deterministic() {
