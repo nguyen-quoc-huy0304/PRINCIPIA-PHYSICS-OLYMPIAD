@@ -22,3 +22,9 @@ test('Gameverse does not silently fall back to JavaScript level rules', () => {
   assert.match(source, /Rust level calculation failed/);
   assert.match(source, /Rust level initialization failed/);
 });
+
+test('Gameverse level progress bar uses the shared Rust progression result',()=>{
+  assert.match(source, /state\.levelProgress=progress\.progress/);
+  assert.match(source, /Number\(state\.levelProgress\)\|\|0/);
+  assert.doesNotMatch(source, /xpNext=state\.level\*state\.level\*120/);
+});
