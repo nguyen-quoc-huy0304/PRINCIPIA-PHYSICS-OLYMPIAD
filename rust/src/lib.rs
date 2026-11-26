@@ -20,6 +20,7 @@ pub mod robotics;
 pub mod robot_assembly;
 pub mod data_analysis;
 pub mod game;
+pub mod gameverse;
 pub mod game_challenge;
 pub mod science_mystery;
 pub mod daily_challenge;
