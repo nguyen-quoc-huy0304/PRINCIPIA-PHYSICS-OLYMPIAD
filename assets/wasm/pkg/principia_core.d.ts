@@ -1,6 +1,11 @@
 /* tslint:disable */
 /* eslint-disable */
 
+/**
+ * Calculate study streaks and normalize activity dates in Rust.
+ */
+export function activity_calendar_json(input_json: string): string;
+
 export function assessment_grade_json(input_json: string): string;
 
 export function clamp_game_target(target_m: number, speed_mps: number, gravity_mps2: number): number;
@@ -100,6 +105,7 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 
 export interface InitOutput {
     readonly memory: WebAssembly.Memory;
+    readonly activity_calendar_json: (a: number, b: number, c: number) => void;
     readonly assessment_grade_json: (a: number, b: number, c: number) => void;
     readonly clamp_game_target: (a: number, b: number, c: number, d: number) => void;
     readonly content_catalog_index_json: (a: number, b: number, c: number, d: number, e: number) => void;

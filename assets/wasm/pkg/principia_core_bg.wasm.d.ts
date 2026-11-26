@@ -1,6 +1,7 @@
 /* tslint:disable */
 /* eslint-disable */
 export const memory: WebAssembly.Memory;
+export const activity_calendar_json: (a: number, b: number, c: number) => void;
 export const assessment_grade_json: (a: number, b: number, c: number) => void;
 export const clamp_game_target: (a: number, b: number, c: number, d: number) => void;
 export const content_catalog_index_json: (a: number, b: number, c: number, d: number, e: number) => void;
