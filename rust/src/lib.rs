@@ -10,6 +10,7 @@ pub mod assessment;
 pub mod quiz;
 pub mod features;
 pub mod physics;
+pub mod collision;
 pub mod pendulum;
 pub mod rigid_body;
 pub mod robotics;
