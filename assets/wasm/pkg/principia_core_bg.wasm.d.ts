@@ -15,6 +15,7 @@ export const physics_linear_regression_json: (a: number, b: number, c: number) =
 export const physics_pendulum_json: (a: number, b: number, c: number, d: number) => void;
 export const physics_projectile_json: (a: number, b: number, c: number, d: number) => void;
 export const physics_robot_arm_json: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
+export const physics_robot_forward_json: (a: number, b: number, c: number, d: number, e: number) => void;
 export const physics_velocity: (a: number, b: number, c: number, d: number) => void;
 export const progress_record_json: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
 export const progression_summary_json: (a: number, b: number, c: number) => void;

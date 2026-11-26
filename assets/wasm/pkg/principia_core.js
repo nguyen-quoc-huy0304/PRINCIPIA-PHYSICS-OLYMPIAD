@@ -422,6 +422,38 @@ export function physics_robot_arm_json(l1_m, l2_m, target_x_m, target_y_m, elbow
 }
 
 /**
+ * @param {number} l1
+ * @param {number} l2
+ * @param {number} shoulder_rad
+ * @param {number} elbow_rad
+ * @returns {string}
+ */
+export function physics_robot_forward_json(l1, l2, shoulder_rad, elbow_rad) {
+    let deferred2_0;
+    let deferred2_1;
+    try {
+        const retptr = wasm.__wbindgen_add_to_stack_pointer(-16) >>> 0;
+        wasm.physics_robot_forward_json(retptr, l1, l2, shoulder_rad, elbow_rad);
+        var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+        var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+        var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+        var r3 = getDataViewMemory0().getInt32(retptr + 4 * 3, true);
+        var ptr1 = r0;
+        var len1 = r1;
+        if (r3) {
+            ptr1 = 0; len1 = 0;
+            throw takeFromExternrefTable0(r2);
+        }
+        deferred2_0 = ptr1;
+        deferred2_1 = len1;
+        return getStringFromWasm0(ptr1, len1);
+    } finally {
+        wasm.__wbindgen_add_to_stack_pointer(16);
+        wasm.__wbindgen_export3(deferred2_0, deferred2_1, 1);
+    }
+}
+
+/**
  * @param {number} initial_mps
  * @param {number} acceleration_mps2
  * @param {number} seconds

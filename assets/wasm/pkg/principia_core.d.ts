@@ -29,6 +29,8 @@ export function physics_projectile_json(speed_mps: number, angle_degrees: number
 
 export function physics_robot_arm_json(l1_m: number, l2_m: number, target_x_m: number, target_y_m: number, elbow_branch: number): string;
 
+export function physics_robot_forward_json(l1: number, l2: number, shoulder_rad: number, elbow_rad: number): string;
+
 export function physics_velocity(initial_mps: number, acceleration_mps2: number, seconds: number): number;
 
 export function progress_record_json(progress_json: string, activity: string, day: string): string;
@@ -65,6 +67,7 @@ export interface InitOutput {
     readonly physics_pendulum_json: (a: number, b: number, c: number, d: number) => void;
     readonly physics_projectile_json: (a: number, b: number, c: number, d: number) => void;
     readonly physics_robot_arm_json: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
+    readonly physics_robot_forward_json: (a: number, b: number, c: number, d: number, e: number) => void;
     readonly physics_velocity: (a: number, b: number, c: number, d: number) => void;
     readonly progress_record_json: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
     readonly progression_summary_json: (a: number, b: number, c: number) => void;
