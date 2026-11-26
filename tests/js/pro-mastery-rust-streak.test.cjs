@@ -21,3 +21,20 @@ test('Pro Mastery validates Rust streak results and deduplicates concurrent requ
   assert.match(source, /Rust Pro Mastery streak calculation failed/);
   assert.match(source, /streakRequest = \{ key, promise \}/);
 });
+
+test('Pro Mastery spaced repetition intervals and ease factors are computed by Rust', () => {
+  assert.match(source, /async function rateCard\(rating\)/);
+  assert.match(source, /engine\.scheduleReview\(quality, previousInterval, easeFactor\)/);
+  assert.match(source, /item\.interval = schedule\.intervalDays/);
+  assert.match(source, /item\.easeFactor = schedule\.easeFactor/);
+  assert.match(source, /schedule\.dueAfterDays \* DAY/);
+  assert.doesNotMatch(source, /const intervals = \{ 1: 0\.04/);
+  assert.doesNotMatch(source, /Math\.max\(intervals\[rating\], item\.interval\)/);
+});
+
+test('Pro Mastery does not mutate a review card when Rust scheduling fails', () => {
+  assert.match(source, /reviewPending = true/);
+  assert.match(source, /Rust spaced-repetition schedule failed/);
+  assert.match(source, /Thẻ chưa được cập nhật/);
+  assert.match(source, /finally \{\s*reviewPending = false/);
+});
