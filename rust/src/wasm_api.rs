@@ -85,3 +85,66 @@ pub fn ui_reduce_json(route:&str,width:u32,query:&str,dialog:&str,event:&str,val
  serde_json::to_string(&serde_json::json!({"state":state.snapshot_json(),"html":crate::ui_renderer::render_shell(&state)}))
   .map_err(|e|JsValue::from_str(&e.to_string()))
 }
+
+
+/// Produces an adaptive learning plan in Rust; browser code only presents the result.
+#[wasm_bindgen]
+pub fn learning_plan_json(
+    topic:&str, phase:&str, percent:f64, has_percent:bool,
+    error_count:u32, energy:u8, confidence:u8, goal:&str,
+)->Result<String,JsValue>{
+    let selected_goal=match goal {
+        ""=>"auto", "understand"=>"understand", "remember"=>"remember",
+        "solve"=>"solve", "olympiad"=>"olympiad", "teach"=>"teach",
+        "recover"=>"recover", _=>return Err(JsValue::from_str("Invalid learning goal")),
+    };
+    let goal_value=match selected_goal {
+        "understand"=>Some(crate::learning::LearningGoal::Understand),
+        "remember"=>Some(crate::learning::LearningGoal::Remember),
+        "solve"=>Some(crate::learning::LearningGoal::Solve),
+        "olympiad"=>Some(crate::learning::LearningGoal::Olympiad),
+        "teach"=>Some(crate::learning::LearningGoal::Teach),
+        "recover"=>Some(crate::learning::LearningGoal::Recover),
+        _=>None,
+    };
+    let context=crate::learning::LearnerContext{
+        goal:goal_value, percent:if has_percent{Some(percent)}else{None},
+        error_count, phase:phase.chars().take(80).collect(),
+        energy, confidence, topic:topic.chars().take(120).collect(),
+    };
+    let plan=crate::learning::recommend(&context)
+        .map_err(|_|JsValue::from_str("Invalid learner context"))?;
+    serde_json::to_string(&serde_json::json!({
+        "goal":format!("{:?}",plan.goal).to_lowercase(),
+        "difficulty":plan.difficulty,"focusMinutes":plan.focus_minutes,
+        "topic":plan.topic,"steps":plan.steps,"nextAction":plan.next_action
+    })).map_err(|error|JsValue::from_str(&error.to_string()))
+}
+
+/// Records a learning activity and returns the updated progress snapshot.
+#[wasm_bindgen]
+pub fn progress_record_json(
+    experience:u64, completed_lessons:u64, streak_days:u32,
+    last_activity_day:&str, activity:&str, day:&str,
+)->Result<String,JsValue>{
+    let kind=match activity{
+        "lesson"=>crate::progress::Activity::LessonCompleted,
+        "quiz"=>crate::progress::Activity::QuizSubmitted,
+        "assignment"=>crate::progress::Activity::AssignmentSubmitted,
+        "experiment"=>crate::progress::Activity::ExperimentCompleted,
+        _=>return Err(JsValue::from_str("Invalid activity")),
+    };
+    let mut progress=crate::progress::Progress{
+        experience,completed_lessons,study_streak_days:streak_days,
+        last_activity_day:if last_activity_day.is_empty(){None}else{Some(last_activity_day.chars().take(10).collect())},
+    };
+    progress.record(kind,day).map_err(JsValue::from_str)?;
+    serde_json::to_string(&serde_json::json!({
+        "experience":progress.experience,
+        "completedLessons":progress.completed_lessons,
+        "streakDays":progress.study_streak_days,
+        "lastActivityDay":progress.last_activity_day,
+        "level":progress.level(),
+        "experienceIntoLevel":progress.experience_into_level()
+    })).map_err(|error|JsValue::from_str(&error.to_string()))
+}
