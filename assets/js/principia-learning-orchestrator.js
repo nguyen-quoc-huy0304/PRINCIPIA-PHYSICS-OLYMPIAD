@@ -197,21 +197,28 @@
     }
   }
 
-  function begin(context = {}) {
-    const plan = getNext(context);
-    state.sessions += 1;
-    if (plan.methodId != null) {
-      state.recent = state.recent.filter(item => item.id !== plan.methodId);
-      state.recent.push({ id: plan.methodId, at: Date.now() });
-      state.recent = state.recent.slice(-MAX_RECENT);
+  let beginInProgress = false;
+  async function begin(context = {}) {
+    if (beginInProgress) return null;
+    beginInProgress = true;
+    try {
+      const plan = await getNextWithRust(context);
+      state.sessions += 1;
+      if (plan.methodId != null) {
+        state.recent = state.recent.filter(item => item.id !== plan.methodId);
+        state.recent.push({ id: plan.methodId, at: Date.now() });
+        state.recent = state.recent.slice(-MAX_RECENT);
+      }
+      save();
+      const prompt = promptFor(plan, context.extra || '', context);
+      if (window.principiaLocalAI?.open) window.principiaLocalAI.open(prompt);
+      else if (window.principiaSuiteAI) window.principiaSuiteAI();
+      else if (window.notify) window.notify('Trợ lý học tập đang khởi động. Hãy thử lại sau.');
+      else alert('Trợ lý học tập chưa sẵn sàng. Hãy thử lại sau.');
+      return { title: plan.title, topic: plan.topic, engine: plan.engine };
+    } finally {
+      beginInProgress = false;
     }
-    save();
-    const prompt = promptFor(plan, context.extra || '', context);
-    if (window.principiaLocalAI?.open) window.principiaLocalAI.open(prompt);
-    else if (window.principiaSuiteAI) window.principiaSuiteAI();
-    else if (window.notify) window.notify('Trợ lý học tập đang khởi động. Hãy thử lại sau.');
-    else alert('Trợ lý học tập chưa sẵn sàng. Hãy thử lại sau.');
-    return { title: plan.title, topic: plan.topic };
   }
 
   function directive(context = {}) {
