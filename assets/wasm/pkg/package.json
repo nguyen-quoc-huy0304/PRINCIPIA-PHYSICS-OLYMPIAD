@@ -1,5 +1,6 @@
 {
   "name": "principia-core",
+  "type": "module",
   "description": "PRINCIPIA primary Rust application core with native C++ physics kernels",
   "version": "0.1.0",
   "license": "UNLICENSED",
@@ -8,7 +9,9 @@
     "principia_core.js",
     "principia_core.d.ts"
   ],
-  "module": "principia_core.js",
+  "main": "principia_core.js",
   "types": "principia_core.d.ts",
-  "sideEffects": false
+  "sideEffects": [
+    "./snippets/*"
+  ]
 }
