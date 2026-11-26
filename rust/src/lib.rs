@@ -4,6 +4,7 @@
 #[cfg(not(target_arch = "wasm32"))]
 pub mod cpp_physics;
 pub mod access;
+pub mod activity_calendar;
 pub mod content;
 pub mod content_tree;
 pub mod session;
