@@ -76,6 +76,24 @@ pub fn physics_robot_arm_json(
 }
 
 
+
+#[wasm_bindgen]
+pub fn physics_pendulum_json(
+    length_m: f64,
+    gravity_mps2: f64,
+    amplitude_degrees: f64,
+) -> Result<String, JsValue> {
+    let result = crate::pendulum::calculate(length_m, gravity_mps2, amplitude_degrees)
+        .map_err(|error| input_error(&format!("Pendulum calculation failed: {error:?}")))?;
+    serde_json::to_string(&serde_json::json!({
+        "angularFrequencyRadS": result.angular_frequency_rad_s,
+        "periodSeconds": result.period_seconds,
+        "frequencyHz": result.frequency_hz,
+        "maxSpeedMps": result.max_speed_mps,
+        "maxAccelerationMps2": result.max_acceleration_mps2
+    })).map_err(|error| input_error(&error.to_string()))
+}
+
 fn input_error(message: &str) -> JsValue { JsValue::from_str(message) }
 
 #[wasm_bindgen]
