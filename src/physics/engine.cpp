@@ -1,5 +1,6 @@
 // PRINCIPIA Physics Core — C++17 native/WASM numerical kernel. SI units.
 #include "engine.h"
+#include "trajectory_c.h"
 #include <cmath>
 #include <initializer_list>
 #include <limits>
@@ -36,15 +37,7 @@ PRINCIPIA_EXPORT double principia_projectile_range(double speed, double angle_de
   return (speed*std::cos(rad)) * (2.0*speed*std::sin(rad)/gravity);
 }
 PRINCIPIA_EXPORT int principia_projectile_trajectory(double speed, double angle_deg, double gravity, double duration, int count, double* x, double* y) {
-  if (!x || !y || count < 2 || count > 1000000 || !finite({speed,angle_deg,gravity,duration}) || speed < 0.0 || gravity <= 0.0 || duration < 0.0) return 0;
-  const double rad = angle_deg * PI / 180.0;
-  const double vx = speed * std::cos(rad), vy = speed * std::sin(rad);
-  for (int i = 0; i < count; ++i) {
-    const double t = duration * static_cast<double>(i) / static_cast<double>(count - 1);
-    x[i] = vx * t; y[i] = vy * t - 0.5 * gravity * t * t;
-    if (!finite({x[i], y[i]})) return 0;
-  }
-  return count;
+  return principia_c_sample_projectile(speed, angle_deg, gravity, duration, count, x, y);
 }
 PRINCIPIA_EXPORT double principia_projectile_max_height(double speed, double angle_deg, double gravity) {
   if (!finite({speed,angle_deg,gravity}) || speed < 0.0 || gravity <= 0.0) return invalid();
