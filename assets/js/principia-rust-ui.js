@@ -25,7 +25,7 @@
     return wasm.ui_render_html(route, width, query, dialog);
   }
   function mount(root, options = {}) {
-    if (!root || typeof root.replaceChildren !== 'function') throw new TypeTypeError('A DOM root element is required');
+    if (!root || typeof root.replaceChildren !== 'function') throw new TypeError('A DOM root element is required');
     let route = options.route || 'home';
     let query = '';
     let destroyed = false;
