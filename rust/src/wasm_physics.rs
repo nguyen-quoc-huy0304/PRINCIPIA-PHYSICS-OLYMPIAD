@@ -560,6 +560,13 @@ pub fn activity_calendar_json(input_json: &str) -> Result<String, JsValue> {
     serde_json::to_string(&result).map_err(|error| input_error(&error.to_string()))
 }
 
+/// Calculate Gameverse season pass level and progress in Rust.
+#[wasm_bindgen]
+pub fn gameverse_season_progress_json(season_xp: u32) -> Result<String, JsValue> {
+    serde_json::to_string(&crate::gameverse::season_progress(u64::from(season_xp)))
+        .map_err(|error| input_error(&error.to_string()))
+}
+
 /// Validate a Gameverse card pack purchase and select an unowned card in Rust.
 #[wasm_bindgen]
 pub fn gameverse_card_pack_json(input_json: &str) -> Result<String, JsValue> {
