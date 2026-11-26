@@ -560,6 +560,26 @@ pub fn activity_calendar_json(input_json: &str) -> Result<String, JsValue> {
     serde_json::to_string(&result).map_err(|error| input_error(&error.to_string()))
 }
 
+/// Validate a Gameverse card pack purchase and select an unowned card in Rust.
+#[wasm_bindgen]
+pub fn gameverse_card_pack_json(input_json: &str) -> Result<String, JsValue> {
+    if input_json.len() > 4096 { return Err(input_error("Gameverse card pack payload exceeds 4 KiB")); }
+    let input: serde_json::Value = serde_json::from_str(input_json)
+        .map_err(|_| input_error("Gameverse card pack payload must be valid JSON"))?;
+    let coins = input.get("coins").and_then(serde_json::Value::as_u64)
+        .ok_or_else(|| input_error("Invalid Gameverse coin balance"))?;
+    let roll = input.get("roll").and_then(serde_json::Value::as_f64)
+        .ok_or_else(|| input_error("Invalid Gameverse card selection roll"))?;
+    let collection = input.get("collection").and_then(serde_json::Value::as_array)
+        .ok_or_else(|| input_error("Gameverse collection must be an array"))?
+        .iter().map(|value| value.as_str().map(str::to_owned)
+            .ok_or_else(|| input_error("Invalid collection card identifier")))
+        .collect::<Result<Vec<_>, _>>()?;
+    let result = crate::gameverse::open_card_pack(coins, &collection, roll)
+        .map_err(|error| input_error(&format!("Gameverse card pack rejected: {error:?}")))?;
+    serde_json::to_string(&result).map_err(|error| input_error(&error.to_string()))
+}
+
 /// Validate and randomly select Gameverse quiz questions in Rust.
 #[wasm_bindgen]
 pub fn gameverse_quiz_select_json(input_json: &str) -> Result<String, JsValue> {
