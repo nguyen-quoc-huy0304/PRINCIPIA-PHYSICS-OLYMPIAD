@@ -879,3 +879,14 @@ pub fn content_tree_query_json(
         .map_err(|error| input_error(&format!("Content tree operation failed: {error:?}")))?;
     serde_json::to_string(&result).map_err(|error| input_error(&error.to_string()))
 }
+
+/// Aggregate learning analytics in Rust; browser code supplies locally stored records.
+#[wasm_bindgen]
+pub fn learning_analytics_summary_json(input_json: &str) -> Result<String, JsValue> {
+    if input_json.len() > 1024 * 1024 { return Err(input_error("Learning analytics payload exceeds 1 MiB")); }
+    let input: serde_json::Value = serde_json::from_str(input_json)
+        .map_err(|_| input_error("Learning analytics payload must be valid JSON"))?;
+    let summary = crate::learning_analytics::summarize(&input)
+        .map_err(|error| input_error(&format!("Learning analytics rejected: {error:?}")))?;
+    serde_json::to_string(&summary).map_err(|error| input_error(&error.to_string()))
+}
