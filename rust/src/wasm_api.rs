@@ -71,3 +71,17 @@ pub fn ui_render_html(route: &str, width: u32, search_query: &str, dialog: &str)
     if !dialog.is_empty() && dialog != "search" { state.open_dialog(dialog).map_err(|_| JsValue::from_str("Invalid dialog"))?; }
     Ok(crate::ui_renderer::render_shell(&state))
 }
+
+
+/// Applies one UI event in the Rust state machine and returns the canonical state snapshot.
+#[wasm_bindgen]
+pub fn ui_reduce_json(route:&str,width:u32,query:&str,dialog:&str,event:&str,value:&str)->Result<String,JsValue>{
+ let mut state=crate::ui_state::UiState::default();
+ state.navigate(route).map_err(|_|JsValue::from_str("Invalid UI route"))?;
+ state.set_width(width).map_err(|_|JsValue::from_str("Invalid viewport width"))?;
+ if !query.is_empty(){state.open_search();state.set_search(query);}
+ if !dialog.is_empty() && dialog!="search"{state.open_dialog(dialog).map_err(|_|JsValue::from_str("Invalid dialog"))?;}
+ state.apply_event(event,value,width).map_err(|_|JsValue::from_str("Invalid UI event"))?;
+ serde_json::to_string(&serde_json::json!({"state":state.snapshot_json(),"html":crate::ui_renderer::render_shell(&state)}))
+  .map_err(|e|JsValue::from_str(&e.to_string()))
+}
