@@ -226,12 +226,12 @@
    const grade=await grader.gradeExam([{q:d.q,a:d.a,correct:d.correct}],{0:i},{id:'daily-'+d.date,title:'PRINCIPIA Daily Challenge'});
    if(!grade||!Number.isInteger(grade.correctCount)||grade.correctCount<0||grade.correctCount>1)throw new TypeError('Rust returned an invalid daily challenge grade');
    const correct=grade.correctCount===1;
+   if(correct)await awardLearningExperience('daily-challenge-correct');
    d.choice=i;d.answered=true;d.submitting=false;void markStudyDay();
    state.dailyHistory=Array.isArray(state.dailyHistory)?state.dailyHistory:[];
    state.dailyHistory.unshift({date:localDateKey(),topic:d.topic,correct});
    state.dailyHistory=state.dailyHistory.slice(0,30);
-   if(correct)await awardLearningExperience('daily-challenge-correct');
-   else state.errors.unshift({title:d.q,body:'Bạn chọn: '+d.a[i]+'\\nĐáp án đúng: '+d.a[d.correct]+'\\nChủ đề: '+d.topic,date:new Date().toISOString()});
+   if(!correct)state.errors.unshift({title:d.q,body:'Bạn chọn: '+d.a[i]+'\\nĐáp án đúng: '+d.a[d.correct]+'\\nChủ đề: '+d.topic,date:new Date().toISOString()});
    save();dailyChallenge();
   }catch(error){d.submitting=false;console.error('[PRINCIPIA] Rust daily challenge grading failed:',error);alert('Không thể chấm thử thách bằng Rust/WASM. Câu trả lời chưa được ghi nhận; hãy thử lại.');}
  }
