@@ -14,4 +14,8 @@ pub fn schedule(c:&CardSchedule,grade:u8,now:i64)->Result<CardSchedule,ScheduleE
 #[cfg(test)]mod tests{use super::*;fn c()->CardSchedule{CardSchedule{repetitions:0,ease:2.5,interval_days:0,due_at_ms:0}}
 #[test]fn first_review_day(){let x=schedule(&c(),4,100).unwrap();assert_eq!(x.interval_days,1);assert_eq!(x.repetitions,1);}
 #[test]fn hard_grade_resets(){let x=schedule(&CardSchedule{repetitions:5,ease:2.4,interval_days:20,due_at_ms:0},1,10).unwrap();assert_eq!(x.interval_days,1);assert_eq!(x.repetitions,0);}
-#[test]fn invalid_grade(){assert_eq!(schedule(&c(),6,10),Err(ScheduleError::InvalidGrade));}}
+#[test]fn invalid_grade(){assert_eq!(schedule(&c(),6,10),Err(ScheduleError::InvalidGrade));}
+#[test]fn invalid_timestamp(){assert_eq!(schedule(&c(),4,-1),Err(ScheduleError::InvalidTimestamp));}
+#[test]fn overflow_timestamp(){assert_eq!(schedule(&c(),4,i64::MAX),Err(ScheduleError::InvalidTimestamp));}
+#[test]fn longer_interval_advances(){let card=CardSchedule{repetitions:2,ease:2.5,interval_days:6,due_at_ms:0};let x=schedule(&card,5,0).unwrap();assert_eq!(x.interval_days,16);assert_eq!(x.repetitions,3);}
+}
