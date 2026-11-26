@@ -171,6 +171,22 @@ pub fn physics_disk_collision_json(
 }
 
 #[wasm_bindgen]
+pub fn force_balance_target_json(
+    force_a_x: f64,
+    force_a_y: f64,
+    force_b_x: f64,
+    force_b_y: f64,
+) -> Result<String, JsValue> {
+    let target = crate::force_balance::balance_target(
+        [force_a_x, force_a_y], [force_b_x, force_b_y]
+    ).map_err(|error| input_error(&format!("Force balance target failed: {error:?}")))?;
+    serde_json::to_string(&serde_json::json!({
+        "x": target[0],
+        "y": target[1]
+    })).map_err(|error| input_error(&error.to_string()))
+}
+
+#[wasm_bindgen]
 pub fn force_balance_score_json(
     candidate_x: f64,
     candidate_y: f64,
