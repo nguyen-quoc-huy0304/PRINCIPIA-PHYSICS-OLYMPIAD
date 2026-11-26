@@ -76,7 +76,7 @@ pub fn buy_skill(skill_id: &str, coins: u64, skills: &[String]) -> Result<Value,
     if coins < cost { return Err(GameverseError::InsufficientCoins); }
     let mut next_skills = skills.to_vec();
     next_skills.push(skill_id.to_owned());
-    Ok(json!({"coins":coins-cost,"skills":next_skills,"skillId":skill_id,"cost":cost}))
+    Ok(json!({"coins":coins-cost,"skills":next_skills,"skillId":skill_id,"cost":cost,"xp":15}))
 }
 
 pub fn pet_progress(pet_xp: u32, pet_level: u32) -> Result<Value, GameverseError> {
