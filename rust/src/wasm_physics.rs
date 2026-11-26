@@ -890,3 +890,35 @@ pub fn learning_analytics_summary_json(input_json: &str) -> Result<String, JsVal
         .map_err(|error| input_error(&format!("Learning analytics rejected: {error:?}")))?;
     serde_json::to_string(&summary).map_err(|error| input_error(&error.to_string()))
 }
+
+/// Generate weekly learning missions with Rust-owned targets and rewards.
+#[wasm_bindgen]
+pub fn season_missions_json(input_json: &str) -> Result<String, JsValue> {
+    if input_json.len() > 4096 { return Err(input_error("Season mission input exceeds 4 KiB")); }
+    let input: serde_json::Value = serde_json::from_str(input_json)
+        .map_err(|_| input_error("Season mission input must be valid JSON"))?;
+    let text = |key: &str| input.get(key).and_then(serde_json::Value::as_str)
+        .ok_or_else(|| input_error(&format!("Missing or invalid {key}")));
+    let number = |key: &str| input.get(key).and_then(serde_json::Value::as_u64)
+        .ok_or_else(|| input_error(&format!("Missing or invalid {key}")));
+    let result = crate::season_missions::missions(text("week")?, number("sessions")?, number("questions")?, number("notes")?)
+        .map_err(|error| input_error(&format!("Season mission generation failed: {error:?}")))?;
+    serde_json::to_string(&result).map_err(|error| input_error(&error.to_string()))
+}
+
+/// Validate a weekly learning mission claim and return its Rust-owned reward.
+#[wasm_bindgen]
+pub fn season_mission_claim_json(input_json: &str) -> Result<String, JsValue> {
+    if input_json.len() > 2048 { return Err(input_error("Season claim input exceeds 2 KiB")); }
+    let input: serde_json::Value = serde_json::from_str(input_json)
+        .map_err(|_| input_error("Season claim input must be valid JSON"))?;
+    let id = input.get("id").and_then(serde_json::Value::as_str)
+        .ok_or_else(|| input_error("Missing or invalid mission id"))?;
+    let value = input.get("value").and_then(serde_json::Value::as_u64)
+        .ok_or_else(|| input_error("Missing or invalid mission progress"))?;
+    let claimed = input.get("alreadyClaimed").and_then(serde_json::Value::as_bool)
+        .ok_or_else(|| input_error("Missing or invalid claim state"))?;
+    let result = crate::season_missions::claim(id, value, claimed)
+        .map_err(|error| input_error(&format!("Season mission claim rejected: {error:?}")))?;
+    serde_json::to_string(&result).map_err(|error| input_error(&error.to_string()))
+}
