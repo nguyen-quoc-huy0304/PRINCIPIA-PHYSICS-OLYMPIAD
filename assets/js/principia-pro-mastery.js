@@ -47,14 +47,45 @@
     const focus = (Array.isArray(linked.focusSessions) ? linked.focusSessions : []).filter(x => x.date === todayKey()).reduce((sum, x) => sum + Math.max(0, Number(x.seconds) || 0) / 60, 0);
     return Math.round(own + focus);
   }
-  function streak() {
+  let streakCache = { key: '', current: 0, longest: 0, activeToday: false };
+  let streakRequest = null;
+  function refreshStreak() {
+    const api = window.PrincipiaProgressionCore;
+    if (!api || typeof api.streak !== 'function' || typeof api.dateKey !== 'function') {
+      console.error('[PRINCIPIA] Rust activity calendar is unavailable.');
+      return Promise.resolve(null);
+    }
     const linked = linkedLearningState();
-    const days = new Set(state.sessions.map(x => x.date).concat(Array.isArray(linked.studyDays) ? linked.studyDays : []));
-    let cursor = new Date();
-    if (!days.has(todayKey())) cursor.setDate(cursor.getDate() - 1);
-    let count = 0;
-    while (days.has(todayKey(cursor))) { count += 1; cursor.setDate(cursor.getDate() - 1); }
-    return count;
+    const days = [...new Set(
+      state.sessions.map(session => session?.date)
+        .concat(Array.isArray(linked.studyDays) ? linked.studyDays : [])
+        .filter(day => typeof day === 'string')
+    )].slice(-10000);
+    const today = api.dateKey(new Date());
+    const key = today + ':' + days.join('|');
+    if (streakCache.key === key) return Promise.resolve(streakCache);
+    if (streakRequest?.key === key) return streakRequest.promise;
+    const promise = api.streak(days, new Date()).then(result => {
+      if (!result || !Number.isInteger(result.current) || result.current < 0
+        || !Number.isInteger(result.longest) || result.longest < result.current
+        || typeof result.activeToday !== 'boolean') {
+        throw new TypeError('Rust returned an invalid Pro Mastery streak summary.');
+      }
+      streakCache = { key, ...result };
+      if (activeTab === 'overview' && modal().style.display === 'block') render();
+      return streakCache;
+    }).catch(error => {
+      console.error('[PRINCIPIA] Rust Pro Mastery streak calculation failed:', error);
+      return null;
+    }).finally(() => {
+      if (streakRequest?.key === key) streakRequest = null;
+    });
+    streakRequest = { key, promise };
+    return promise;
+  }
+  function streak() {
+    void refreshStreak();
+    return streakCache.current;
   }
   function dueCards() {
     return state.cards.filter(x => !x.dueAt || x.dueAt <= Date.now());
