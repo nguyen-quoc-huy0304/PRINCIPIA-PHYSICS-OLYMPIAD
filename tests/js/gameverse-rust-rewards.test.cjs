@@ -27,6 +27,8 @@ test('Rust Gameverse rewards validate input and clamp ranked rating',()=>{
 test('Gameverse crafting validates and commits inventory through Rust',()=>{
  assert.match(game,/engine\.craftGameverseItem\(id,state\.materials,state\.crafted\)/);
  assert.match(game,/async function craft\(id\)/);
+ assert.match(game,/principiaCraftingItems\.has\(id\)/);
+ assert.match(game,/finally\{principiaCraftingItems\.delete\(id\);\}/);
  assert.doesNotMatch(game,/Object\.entries\(r\.cost\)\.every/);
  assert.match(bridge,/craftGameverseItem:\(recipeId,materials,crafted\)=>compute\('gameverseCraft'/);
  assert.match(wasm,/gameverse_craft_json/);
