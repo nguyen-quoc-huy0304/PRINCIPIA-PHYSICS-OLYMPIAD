@@ -20,6 +20,11 @@ export function game_trajectory_json(speed_mps: number, angle_degrees: number, g
 
 export function generate_game_challenge_json(seed: bigint): string;
 
+/**
+ * Search lesson, quiz and discovery catalogs using the Rust content index.
+ */
+export function global_search_index_json(input_json: string, query: string, default_kind: string): string;
+
 export function learning_orchestrate_json(input_json: string): string;
 
 /**
@@ -88,6 +93,7 @@ export interface InitOutput {
     readonly force_balance_target_json: (a: number, b: number, c: number, d: number, e: number) => void;
     readonly game_trajectory_json: (a: number, b: number, c: number, d: number, e: number) => void;
     readonly generate_game_challenge_json: (a: number, b: bigint) => void;
+    readonly global_search_index_json: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
     readonly learning_orchestrate_json: (a: number, b: number, c: number) => void;
     readonly learning_plan_json: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number, k: number, l: number) => void;
     readonly learning_recommend_json: (a: number, b: number, c: number) => void;

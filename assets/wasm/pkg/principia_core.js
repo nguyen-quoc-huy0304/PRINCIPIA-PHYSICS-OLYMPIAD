@@ -266,6 +266,52 @@ export function generate_game_challenge_json(seed) {
 }
 
 /**
+ * Search lesson, quiz and discovery catalogs using the Rust content index.
+ * @param {string} input_json
+ * @param {string} query
+ * @param {string} default_kind
+ * @returns {string}
+ */
+export function global_search_index_json(input_json, query, default_kind) {
+    let deferred5_0;
+    let deferred5_1;
+    try {
+        const retptr = wasm.__wbindgen_add_to_stack_pointer(-16) >>> 0;
+        let ptr0, len0, ptr1, len1, ptr2, len2;
+        try {
+            ptr0 = passStringToWasm0(input_json, wasm.__wbindgen_export, wasm.__wbindgen_export2);
+            len0 = WASM_VECTOR_LEN;
+            ptr1 = passStringToWasm0(query, wasm.__wbindgen_export, wasm.__wbindgen_export2);
+            len1 = WASM_VECTOR_LEN;
+            ptr2 = passStringToWasm0(default_kind, wasm.__wbindgen_export, wasm.__wbindgen_export2);
+            len2 = WASM_VECTOR_LEN;
+        } catch (e) {
+            if (ptr2) { wasm.__wbindgen_export3(ptr2, len2 * 1, 1); }
+            if (ptr1) { wasm.__wbindgen_export3(ptr1, len1 * 1, 1); }
+            if (ptr0) { wasm.__wbindgen_export3(ptr0, len0 * 1, 1); }
+            throw e;
+        }
+        wasm.global_search_index_json(retptr, ptr0, len0, ptr1, len1, ptr2, len2);
+        var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+        var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+        var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+        var r3 = getDataViewMemory0().getInt32(retptr + 4 * 3, true);
+        var ptr4 = r0;
+        var len4 = r1;
+        if (r3) {
+            ptr4 = 0; len4 = 0;
+            throw takeFromExternrefTable0(r2);
+        }
+        deferred5_0 = ptr4;
+        deferred5_1 = len4;
+        return getStringFromWasm0(ptr4, len4);
+    } finally {
+        wasm.__wbindgen_add_to_stack_pointer(16);
+        wasm.__wbindgen_export3(deferred5_0, deferred5_1, 1);
+    }
+}
+
+/**
  * @param {string} input_json
  * @returns {string}
  */
