@@ -15,6 +15,7 @@ pub mod collision;
 pub mod pendulum;
 pub mod rigid_body;
 pub mod robotics;
+pub mod robot_assembly;
 pub mod data_analysis;
 pub mod game;
 pub mod game_challenge;
