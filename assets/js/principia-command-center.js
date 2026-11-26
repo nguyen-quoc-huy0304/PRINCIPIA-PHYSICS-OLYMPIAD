@@ -8,7 +8,7 @@
  let lastFocus=null;
 
  const isWelcome=()=>document.body.classList.contains('principia-welcome-active');
- const safeCall=(fn)=>{try{fn()}catch(error){console.error('[PRINCIPIA] Command failed',error)}};
+ const safeCall=(fn)=>{try{fn()}catch(error){window.PrincipiaErrorLog?.report(error,'command-center');console.error('[PRINCIPIA] Command failed',error)}};
  const iconFor=(id)=>({home:'⌂',library:'▤',quiz:'✎',fun:'◇',lab:'⚗',progress:'↗',more:'⋯',profile:'◉',settings:'⚙'}[id]||'•');
 
  function navigationItems(){
@@ -28,6 +28,7 @@
  function actionItems(){
   return [
    {id:'search',label:'Tìm kiếm toàn PRINCIPIA',icon:'⌕',group:'Thao tác nhanh',detail:'Tìm bài học, công thức và nội dung',run:()=>window.openPrincipiaGlobalSearch?.('')},
+   {id:'error-log',label:'Nhật ký lỗi',icon:'⚠',group:'Thao tác nhanh',detail:'Xem lỗi JavaScript và lỗi module gần đây',run:()=>window.PrincipiaErrorLog?.open()},
    {id:'ai',label:'Mở AI',icon:'✦',group:'Thao tác nhanh',detail:'Mở bảng AI đang được ghim',run:()=>document.getElementById('principiaDockAI')?.click()},
    {id:'internet',label:'Tìm kiếm Internet',icon:'◎',group:'Thao tác nhanh',detail:'Mở trình duyệt Internet trong PRINCIPIA',run:()=>document.getElementById('principiaDockBrowser')?.click()},
    {id:'m3e',label:'M3E Canvas',icon:'▦',group:'Thao tác nhanh',detail:'Mở không gian thiết kế giao diện',run:()=>window.PrincipiaM3ECanvas?.open()},
@@ -148,7 +149,11 @@
   top.title='Cuộn về đầu trang';
   top.style.cssText='display:block;width:100%';
   top.addEventListener('click',scrollToTop);
-  section.append(heading,palette,top);
+  const errorLog=document.createElement('button');
+  errorLog.type='button';errorLog.textContent='⚠ Nhật ký lỗi';errorLog.title='Xem lỗi được ghi trên thiết bị này';
+  errorLog.style.cssText='display:block;width:100%;margin-top:6px';
+  errorLog.addEventListener('click',()=>window.PrincipiaErrorLog?.open());
+  section.append(heading,palette,top,errorLog);
   const status=panel.querySelector('[data-status]');
   if(status)panel.insertBefore(section,status);else panel.appendChild(section);
  }
