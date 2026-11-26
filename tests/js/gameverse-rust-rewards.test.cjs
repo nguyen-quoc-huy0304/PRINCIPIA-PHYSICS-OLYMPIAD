@@ -34,3 +34,13 @@ test('Gameverse crafting validates and commits inventory through Rust',()=>{
  assert.match(wasm,/gameverse_craft_json/);
  assert.match(rust,/pub fn craft\(/);
 });
+
+test('Gameverse pet progression and reward updates are Rust-owned and serialized',()=>{
+ assert.match(game,/engine\.gameversePetProgress\(state\.pet\.xp\+xpReward,state\.pet\.level\)/);
+ assert.match(game,/let gameverseAwardQueue=Promise\.resolve\(\)/);
+ assert.match(game,/state\.pet=\{\.\.\.state\.pet,xp:pet\.xp,level:pet\.level,form:pet\.form\}/);
+ assert.doesNotMatch(game,/while\(state\.pet\.xp>=state\.pet\.level\*100\)/);
+ assert.match(bridge,/gameversePetProgress:\(petXp,petLevel\)=>compute\('gameversePetProgress'/);
+ assert.match(wasm,/gameverse_pet_progress_json/);
+ assert.match(rust,/pub fn pet_progress\(pet_xp: u32, pet_level: u32\)/);
+});
