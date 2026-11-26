@@ -31,7 +31,7 @@ test('error log captures window errors with sanitized message and location', () 
   assert.equal(entries[0].source, 'window:error');
   assert.equal(entries[0].filename, '/assets/app.js');
   assert.equal(entries[0].line, 12);
-  assert.match(entries[0].message, /\\[REDACTED\\]/);
+  assert.match(entries[0].message, /\[REDACTED\]/);
   assert.doesNotMatch(entries[0].message, /SECRET123|abcdef/);
 });
 
