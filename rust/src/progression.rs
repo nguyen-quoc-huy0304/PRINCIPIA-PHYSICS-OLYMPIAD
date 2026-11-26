@@ -38,6 +38,21 @@ pub fn level_progress(xp: u64) -> LevelProgress {
         next_threshold: next, progress_percent: percent, xp_to_next: next.map(|limit| limit.saturating_sub(xp)).unwrap_or(0) }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct CourseCompletion {
+    pub completed: u64,
+    pub total: u64,
+    pub percent: f64,
+}
+
+pub fn course_completion(completed: u64, total: u64) -> Result<CourseCompletion, &'static str> {
+    if total > 1_000_000 || completed > total {
+        return Err("course progress counts are outside supported bounds");
+    }
+    let percent = if total == 0 { 0.0 } else { completed as f64 / total as f64 * 100.0 };
+    Ok(CourseCompletion { completed, total, percent })
+}
+
 pub fn rank_progress(xp: u64) -> RankProgress {
     let index = RANKS.iter().rposition(|rank| xp >= rank.2).unwrap_or(0);
     let (id, name, current) = RANKS[index];
@@ -72,6 +87,13 @@ mod tests {
         assert_eq!(level_progress(100).level, 2);
         assert_eq!(level_progress(4000).level, 11);
         assert_eq!(level_progress(u64::MAX).progress_percent, 100.0);
+    }
+    #[test] fn course_completion_handles_empty_and_full_courses() {
+        assert_eq!(course_completion(0, 0).unwrap().percent, 0.0);
+        assert_eq!(course_completion(3, 4).unwrap().percent, 75.0);
+        assert_eq!(course_completion(4, 4).unwrap().percent, 100.0);
+        assert!(course_completion(5, 4).is_err());
+        assert!(course_completion(0, 1_000_001).is_err());
     }
     #[test] fn rank_division_and_next_rank_are_consistent() {
         let rank = rank_progress(400);
