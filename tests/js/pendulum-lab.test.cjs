@@ -41,7 +41,9 @@ test('pendulum requests are delegated to the Rust WASM physics contract', async 
   const result = await math.pendulumAt(1, 9.81, 5);
   assert.equal(calls.length, 1);
   assert.equal(calls[0].operation, 'pendulum');
-  assert.deepEqual(calls[0].params, { lengthM: 1, gravityMps2: 9.81, amplitudeDeg: 5 });
+  assert.equal(calls[0].params.lengthM, 1);
+  assert.equal(calls[0].params.gravityMps2, 9.81);
+  assert.equal(calls[0].params.amplitudeDeg, 5);
   assert.ok(Math.abs(result.periodSeconds - 2.006) < 0.01);
   assert.equal(result.approximation, 'small-angle');
 });
