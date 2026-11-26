@@ -708,6 +708,7 @@
    const previousScore=attempt.score||0;
    const currentCorrect=grade.correctCount>previousScore;
    const result=window.PrincipiaMysteryCore.answer(attempt,choice);
+   attempt.answers[attempt.answers.length-1].correct=currentCorrect;
    attempt.score=grade.correctCount;
    attempt.submitting=false;
    if(result.complete){renderMystery();return}
