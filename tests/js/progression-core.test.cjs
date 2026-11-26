@@ -28,7 +28,7 @@ test('streak calculations delegate to Rust',async()=>{
 });
 test('invalid date arrays fail before crossing the WASM boundary',async()=>{
  await withRust({activityCalendar:async()=>{throw new Error('must not run');},progression:async()=>({level:{},rank:{},achievements:[]})},async()=>{
-  await assert.rejects(P.recordActivity([],date(2026,11,22)).then(()=>P.recordActivity(new Array(10001).fill('2026-11-22'),date(2026,11,22))),/Danh sách/);
+  await assert.rejects(P.recordActivity(new Array(10001).fill('2026-11-22'),date(2026,11,22)),/Danh sách/);
  });
 });
 test('XP levels are returned by the Rust progression engine',async()=>{
