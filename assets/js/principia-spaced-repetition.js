@@ -5,20 +5,8 @@
   const MAX_CARDS = 2000;
   const DAY = 86400000;
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
-  function schedule(card, grade, now = Date.now()) {
-    if (!card || typeof card !== 'object') throw new TypeError('Card must be an object');
-    if (!Number.isInteger(grade) || grade < 0 || grade > 5) throw new RangeError('Grade must be an integer from 0 to 5');
-    const repetitions = Math.max(0, Number(card.repetitions) || 0);
-    const ease = clamp(Number(card.ease) || 2.5, 1.3, 3.0);
-    const previous = Math.max(0, Number(card.intervalDays) || 0);
-    let nextEase = clamp(ease + (0.1 - (5 - grade) * (0.08 + (5 - grade) * 0.02)), 1.3, 3.0);
-    let nextReps = repetitions;
-    let intervalDays;
-    if (grade < 3) { nextReps = 0; intervalDays = 1; }
-    else if (repetitions === 0) { nextReps = 1; intervalDays = 1; }
-    else if (repetitions === 1) { nextReps = 2; intervalDays = 6; }
-    else { nextReps = repetitions + 1; intervalDays = Math.max(1, Math.round(previous * nextEase)); }
-    return { ...card, repetitions: nextReps, ease: nextEase, intervalDays, dueAt: now + intervalDays * DAY, lastReviewedAt: now, lastGrade: grade };
+  async function schedule(card, grade, now = Date.now()) {
+    return scheduleNative(card, grade, now);
   }
   async function scheduleNative(card, grade, now = Date.now()) {
     if (!validCard(card)) throw new TypeError('Card requires string id, front, and back');
