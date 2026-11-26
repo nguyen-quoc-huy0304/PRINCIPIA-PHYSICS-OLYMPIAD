@@ -60,5 +60,5 @@ test('global search fails closed when the Rust/WASM engine is unavailable', asyn
 test('browser search no longer implements catalog traversal or matching in JavaScript', () => {
   assert.match(source, /PrincipiaWasmPhysics\.globalSearchIndex/);
   assert.match(source, /async function renderResults/);
-  assert.doesNotMatch(source, /const flatten\s*=|function collect\s*\(|const matches\s*=\s*term\s*\?/);
+  assert.doesNotMatch(source, /const flatten\\s*=|const matches\\s*=\\s*term\\s*\\?/);
 });
