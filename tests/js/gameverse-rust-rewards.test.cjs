@@ -23,3 +23,12 @@ test('Rust Gameverse rewards validate input and clamp ranked rating',()=>{
  assert.match(rust,/saturating_add\(rank_delta as u64\)\.min\(1_000_000\)/);
  assert.match(rust,/saturating_sub\(rank_delta\.unsigned_abs\(\)\)/);
 });
+
+test('Gameverse crafting validates and commits inventory through Rust',()=>{
+ assert.match(game,/engine\.craftGameverseItem\(id,state\.materials,state\.crafted\)/);
+ assert.match(game,/async function craft\(id\)/);
+ assert.doesNotMatch(game,/Object\.entries\(r\.cost\)\.every/);
+ assert.match(bridge,/craftGameverseItem:\(recipeId,materials,crafted\)=>compute\('gameverseCraft'/);
+ assert.match(wasm,/gameverse_craft_json/);
+ assert.match(rust,/pub fn craft\(/);
+});
