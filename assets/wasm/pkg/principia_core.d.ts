@@ -20,7 +20,7 @@ export function content_tree_query_json(catalog_json: string, operation: string,
 /**
  * Calculate course completion metrics with Rust-owned rounding and bounds.
  */
-export function course_completion_json(completed: bigint, total: bigint): string;
+export function course_completion_json(completed: number, total: number): string;
 
 export function force_balance_score_json(candidate_x: number, candidate_y: number, target_x: number, target_y: number): string;
 
@@ -130,7 +130,7 @@ export interface InitOutput {
     readonly clamp_game_target: (a: number, b: number, c: number, d: number) => void;
     readonly content_catalog_index_json: (a: number, b: number, c: number, d: number, e: number) => void;
     readonly content_tree_query_json: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
-    readonly course_completion_json: (a: number, b: bigint, c: bigint) => void;
+    readonly course_completion_json: (a: number, b: number, c: number) => void;
     readonly force_balance_score_json: (a: number, b: number, c: number, d: number, e: number) => void;
     readonly force_balance_target_json: (a: number, b: number, c: number, d: number, e: number) => void;
     readonly game_trajectory_json: (a: number, b: number, c: number, d: number, e: number) => void;

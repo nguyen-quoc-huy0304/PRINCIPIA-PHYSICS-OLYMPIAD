@@ -174,8 +174,8 @@ export function content_tree_query_json(catalog_json, operation, target_id) {
 
 /**
  * Calculate course completion metrics with Rust-owned rounding and bounds.
- * @param {bigint} completed
- * @param {bigint} total
+ * @param {number} completed
+ * @param {number} total
  * @returns {string}
  */
 export function course_completion_json(completed, total) {
