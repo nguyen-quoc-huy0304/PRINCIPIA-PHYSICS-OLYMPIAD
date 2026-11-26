@@ -82,16 +82,14 @@ pub fn resolve_disks(mut a: Disk, mut b: Disk, restitution: f64) -> Result<DiskC
     }
     if !(0.0..=1.0).contains(&restitution) { return Err(CollisionError::InvalidRestitution); }
 
-    let mut dx = b.x - a.x;
-    let mut dy = b.y - a.y;
-    let mut distance = dx.hypot(dy);
+    let dx = b.x - a.x;
+    let dy = b.y - a.y;
+    let distance = dx.hypot(dy);
     let minimum_distance = a.radius + b.radius;
     if distance >= minimum_distance {
         return Ok(DiskCollision { collided: false, impulse: 0.0, a, b });
     }
-    if distance < 1e-12 { dx = 1.0; dy = 0.0; distance = 1.0; }
-    let nx = dx / distance;
-    let ny = dy / distance;
+    let (nx, ny) = if distance < 1e-12 { (1.0, 0.0) } else { (dx / distance, dy / distance) };
     let inverse_a = 1.0 / a.mass;
     let inverse_b = 1.0 / b.mass;
     let inverse_sum = inverse_a + inverse_b;
@@ -156,6 +154,15 @@ mod tests {
         let result = resolve_disks(a, b, 0.5).unwrap();
         assert_eq!(result.impulse, 0.0);
         assert!(result.b.x - result.a.x >= 1.79);
+    }
+
+    #[test]
+    fn coincident_disk_centers_are_separated_using_a_stable_normal() {
+        let a = Disk { x: 0.0, y: 0.0, vx: 0.0, vy: 0.0, mass: 1.0, radius: 1.0 };
+        let b = Disk { x: 0.0, y: 0.0, vx: 0.0, vy: 0.0, mass: 1.0, radius: 1.0 };
+        let result = resolve_disks(a, b, 0.5).unwrap();
+        assert!(result.b.x - result.a.x >= 1.79);
+        assert!(result.a.y.is_finite() && result.b.y.is_finite());
     }
 
     #[test]
