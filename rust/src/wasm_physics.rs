@@ -495,6 +495,40 @@ pub fn learning_science_select_json(input_json: &str) -> Result<String, JsValue>
     serde_json::to_string(&selected).map_err(|error| input_error(&error.to_string()))
 }
 
+/// Return the canonical ranked arena tier for a rating-point total.
+#[wasm_bindgen]
+pub fn rank_arena_tier_json(rp: u64) -> Result<String, JsValue> {
+    if rp > 1_000_000 { return Err(input_error("Rank points exceed the supported limit")); }
+    serde_json::to_string(&crate::rank_arena::tier(rp))
+        .map_err(|error| input_error(&error.to_string()))
+}
+
+/// Resolve a ranked arena match using Rust-owned scoring rules.
+#[wasm_bindgen]
+pub fn rank_arena_resolve_json(input_json: &str) -> Result<String, JsValue> {
+    if input_json.len() > 4096 { return Err(input_error("Ranked match payload exceeds 4 KiB")); }
+    let input: serde_json::Value = serde_json::from_str(input_json)
+        .map_err(|_| input_error("Ranked match payload must be valid JSON"))?;
+    let number = |key: &str| input.get(key).and_then(serde_json::Value::as_u64)
+        .ok_or_else(|| input_error(&format!("Missing or invalid {key}")));
+    let mode = input.get("mode").and_then(serde_json::Value::as_str)
+        .ok_or_else(|| input_error("Missing or invalid mode"))?;
+    let result = crate::rank_arena::resolve_match(
+        number("rp")?, number("mmr")? as u32, number("correct")? as u8,
+        number("rivalCorrect")? as u8, number("bestCombo")? as u8, mode,
+    ).map_err(|error| input_error(&format!("Ranked match rejected: {error:?}")))?;
+    serde_json::to_string(&result).map_err(|error| input_error(&error.to_string()))
+}
+
+/// Validate ranked arena mission claims and return the reward decided by Rust.
+#[wasm_bindgen]
+pub fn rank_arena_claim_json(id: &str, progress: u32, already_claimed: bool) -> Result<String, JsValue> {
+    if id.len() > 32 { return Err(input_error("Mission identifier is too long")); }
+    let result = crate::rank_arena::mission_reward(id, progress, already_claimed)
+        .map_err(|error| input_error(&format!("Mission claim rejected: {error:?}")))?;
+    serde_json::to_string(&result).map_err(|error| input_error(&error.to_string()))
+}
+
 /// Search lesson, quiz and discovery catalogs using the Rust content index.
 #[wasm_bindgen]
 pub fn global_search_index_json(
