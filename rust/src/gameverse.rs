@@ -160,6 +160,9 @@ mod tests {
         assert_eq!(result["form"], 1);
         assert!(pet_progress(1_000_001, 1).is_err());
         assert!(pet_progress(0, 0).is_err());
+        let capped = pet_progress(1_000_000, 1000).unwrap();
+        assert_eq!(capped["level"], 1000);
+        assert_eq!(capped["form"], 4);
     }
 
     #[test]
