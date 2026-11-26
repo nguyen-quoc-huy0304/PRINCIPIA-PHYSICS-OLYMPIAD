@@ -69,6 +69,21 @@ export function gameverse_pet_progress_json(pet_xp: number, pet_level: number): 
 export function gameverse_quiz_reward_json(input_json: string): string;
 
 /**
+ * Select a daily Gameverse event and its reward in Rust.
+ */
+export function gameverse_random_event_json(roll: number, already_triggered: boolean): string;
+
+/**
+ * Validate a Gameverse treasure answer and return its Rust-owned reward.
+ */
+export function gameverse_treasure_answer_json(input_json: string): string;
+
+/**
+ * Select a Gameverse treasure riddle using a validated random sample.
+ */
+export function gameverse_treasure_question_json(roll: number): string;
+
+/**
  * Validate and apply Gameverse zone unlock transactions in Rust.
  */
 export function gameverse_unlock_zone_json(input_json: string): string;
@@ -177,6 +192,9 @@ export interface InitOutput {
     readonly gameverse_daily_quest_json: (a: number, b: number, c: number) => void;
     readonly gameverse_pet_progress_json: (a: number, b: number, c: number) => void;
     readonly gameverse_quiz_reward_json: (a: number, b: number, c: number) => void;
+    readonly gameverse_random_event_json: (a: number, b: number, c: number) => void;
+    readonly gameverse_treasure_answer_json: (a: number, b: number, c: number) => void;
+    readonly gameverse_treasure_question_json: (a: number, b: number) => void;
     readonly gameverse_unlock_zone_json: (a: number, b: number, c: number) => void;
     readonly generate_game_challenge_json: (a: number, b: bigint) => void;
     readonly global_search_index_json: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
