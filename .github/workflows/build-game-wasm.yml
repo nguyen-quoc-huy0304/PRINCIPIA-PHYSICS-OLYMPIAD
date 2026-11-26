@@ -41,4 +41,6 @@ jobs:
           add_options: "-f"
           disable_globbing: true
           before_push_hook: |
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git pull --rebase origin main
