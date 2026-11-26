@@ -23,7 +23,7 @@
     }
     if (a.mass <= 0 || b.mass <= 0 || a.radius <= 0 || b.radius <= 0) throw new RangeError('Masses and radii must be positive.');
     if (restitution < 0 || restitution > 1) throw new RangeError('Restitution must be between 0 and 1.');
-    if (rustPhysics) {
+    if (rustPhysics && typeof rustPhysics.physics_disk_collision_json === 'function') {
       const native = JSON.parse(rustPhysics.physics_disk_collision_json(JSON.stringify(a), JSON.stringify(b), restitution));
       Object.assign(a, native.a);
       Object.assign(b, native.b);
