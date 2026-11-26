@@ -194,7 +194,7 @@
  }
  function skipReview(){reviewIndex++;reviewSide=false;reviewCard()}
  function savedExamDraft(){try{const raw=localStorage.getItem('principia_olympic_exam_draft_v1');if(!raw)return null;const d=JSON.parse(raw);return d&&Array.isArray(d.questions)&&d.questions.length&&d.answers&&Number.isFinite(d.end)&&d.end>Date.now()&&!d.submitted?d:null}catch(_){return null}}
- function saveExamDraft(){try{if(exam&&!exam.submitted)localStorage.setItem('principia_olympic_exam_draft_v1',JSON.stringify(exam))}catch(e){console.warn('[PRINCIPIA] Không thể lưu bản nháp bài thi',e)}}
+ function saveExamDraft(){try{if(exam&&!exam.submitted)localStorage.setItem('principia_olympic_exam_draft_v1',JSON.stringify({...exam,submitting:false}))}catch(e){console.warn('[PRINCIPIA] Không thể lưu bản nháp bài thi',e)}}
  function clearExamDraft(){try{localStorage.removeItem('principia_olympic_exam_draft_v1')}catch(_){}}
  function resumeExamDraft(){const draft=savedExamDraft();if(!draft){clearExamDraft();examSetup();return}exam=Object.assign({marked:[],answers:{},submitted:false,startedAt:Date.now(),warned5:false,warned1:false},draft);examCurrentIndex=Math.max(0,Math.min(exam.questions.length-1,Number(exam.currentIndex)||0));examView='all';renderExam();startTimer()}
  function discardExamDraft(){if(!confirm('Xóa bản nháp bài thi đang lưu?'))return;clearExamDraft();examSetup()}
