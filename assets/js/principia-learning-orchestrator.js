@@ -180,32 +180,27 @@
   }
 
   async function getNextWithRust(context = {}) {
-    const legacy = getNext(context);
-    try {
-      const plan = await window.PrincipiaWasmPhysics.recommend({
-        goal: context.goal || 'auto',
-        percent: Number.isFinite(Number(context.percent)) ? Number(context.percent) : null,
-        errorCount: Number(context.errorCount) || 0,
-        phase: clean(context.phase, 100),
-        energy: [1, 2, 3].includes(Number(context.energy)) ? Number(context.energy) : 2,
-        confidence: Number.isFinite(Number(context.confidence)) ? Math.max(1, Math.min(5, Number(context.confidence))) : 3,
-        topic: legacy.topic
-      });
-      return {
-        ...legacy,
-        goal: plan.goal,
-        title: plan.title,
-        description: plan.description,
-        steps: plan.steps,
-        estimatedMinutes: plan.focusMinutes,
-        nextAction: plan.nextAction,
-        difficulty: plan.difficulty,
-        engine: 'rust-wasm'
-      };
-    } catch (error) {
-      console.error('[PRINCIPIA] Rust learning engine unavailable:', error);
-      return { ...legacy, engine: 'rust-wasm-unavailable', error: true };
+    const merged = Object.assign({}, state.profile, context);
+    const topic = topicFrom(merged);
+    const payload = {
+      context: {
+        goal: GOALS[merged.goal] ? merged.goal : 'auto',
+        percent: Number.isFinite(Number(merged.percent)) ? Number(merged.percent) : null,
+        errorCount: Number(merged.errorCount) || 0,
+        phase: clean(merged.phase, 100),
+        energy: [1, 2, 3].includes(Number(merged.energy)) ? Number(merged.energy) : 2,
+        confidence: Number.isFinite(Number(merged.confidence)) ? Math.max(1, Math.min(5, Number(merged.confidence))) : 3,
+        topic
+      },
+      catalog: catalog().slice(0, 500),
+      recentIds: state.recent.map(item => String(item.id)).slice(-MAX_RECENT),
+      sessions: state.sessions
+    };
+    const plan = await window.PrincipiaWasmPhysics.orchestrateLearning(payload);
+    if (!plan || typeof plan.goal !== 'string' || !Array.isArray(plan.steps)) {
+      throw new Error('Rust learning engine returned an invalid plan');
     }
+    return { ...plan, topic, energy: payload.context.energy, confidence: payload.context.confidence, engine: 'rust-wasm' };
   }
 
   let beginInProgress = false;
