@@ -7,6 +7,7 @@ pub mod access;
 pub mod content;
 pub mod session;
 pub mod assessment;
+pub mod quiz;
 pub mod features;
 pub mod physics;
 pub mod rigid_body;
