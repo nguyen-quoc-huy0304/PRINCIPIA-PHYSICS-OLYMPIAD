@@ -67,8 +67,9 @@ pub fn select(input: &Value) -> Result<Value, String> {
         }));
     }
     if selected.len() < 2 {
-        for (_, method) in &ranked {
+        for (rank_score, method) in &ranked {
             if selected.len() >= 2 { break; }
+            if *rank_score <= -100 { continue; }
             let id = method.get("id").and_then(Value::as_str).unwrap_or("");
             if !selected.iter().any(|item: &Value| item.get("id").and_then(Value::as_str) == Some(id)) {
                 selected.push(json!({
