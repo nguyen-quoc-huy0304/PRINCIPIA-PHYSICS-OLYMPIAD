@@ -44,7 +44,7 @@ pub fn select_quiz_questions(questions: &[Value], mode: &str, seed: u64) -> Resu
         let answers = question.get("a").and_then(Value::as_array);
         let correct = question.get("c").and_then(Value::as_u64);
         let Some(options) = answers else { return Err(GameverseError::InvalidQuestionCatalog); };
-        if prompt.is_none() || !(2..=8).contains(&options.len()) || correct.map_or(true, |index| index as usize >= options.len())
+        if prompt.is_none() || !(2..=8).contains(&options.len()) || correct.map_or(true, |index| index >= options.len() as u64)
             || options.iter().any(|option| option.as_str().map_or(true, |text| text.len() > 1024))
         {
             return Err(GameverseError::InvalidQuestionCatalog);
