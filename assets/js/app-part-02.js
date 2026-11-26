@@ -1,7 +1,7 @@
 
 const $=s=>document.querySelector(s);
 const clone=x=>JSON.parse(JSON.stringify(x));
-const uid=()=>Math.random().toString(36).slice(2,10)+Date.now().toString(36);
+const uid=()=>{if(!globalThis.crypto?.getRandomValues)throw new Error('Secure random generator is unavailable');const bytes=new Uint8Array(16);globalThis.crypto.getRandomValues(bytes);return Array.from(bytes,value=>value.toString(16).padStart(2,'0')).join('')};
 const seed=[
 {id:'phy',name:'Vật lý',icon:'⚛️',type:'tab',children:[
 {id:'mech',name:'Cơ học',icon:'⚙️',type:'tab',children:[
@@ -214,7 +214,7 @@ function toggleStudyClock(){
 }
 function resetStudyClock(){if(principiaClock.interval)clearInterval(principiaClock.interval);principiaClock.running=false;principiaClock.left=principiaClock.mode==='countdown'?principiaClock.seconds:0;const d=document.getElementById('studyClockDisplay');if(d)d.textContent=fmtClock(principiaClock.mode==='countdown'?principiaClock.left:0);const b=document.getElementById('studyClockStart');if(b)b.textContent='▶ Bắt đầu';const h=document.getElementById('studyClockHint');if(h)h.textContent=principiaClock.mode==='countdown'?'Sẵn sàng tập trung':'Bấm giờ học tập'}
 function principiaRandomPoseMarkup(size=76){
- const n=Math.floor(Math.random()*34),cell=Math.max(48,Math.min(520,Number(size)||76));
+ if(!globalThis.crypto?.getRandomValues)throw new Error('Secure random generator is unavailable');const random=new Uint32Array(1);globalThis.crypto.getRandomValues(random);const n=random[0]%34,cell=Math.max(48,Math.min(520,Number(size)||76));
  const col=n%5,row=Math.floor(n/5),xp=col*25,yp=row*(100/6);
  return `<span class="principia-bundled-pose" role="img" aria-label="Nhân vật PRINCIPIA · tư thế ${n+1}" style="display:block;width:${cell}px;height:${cell}px;background-image:url('/assets/images/principia-poses-34.png');background-size:500% 700%;background-position:${xp}% ${yp}%;background-repeat:no-repeat"></span>`;
 }
