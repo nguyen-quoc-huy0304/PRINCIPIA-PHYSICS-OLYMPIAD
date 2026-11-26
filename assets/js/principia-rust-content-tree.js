@@ -2,7 +2,7 @@
 (function (root) {
   'use strict';
 
-  const OPERATIONS = new Set(['find', 'parent', 'siblings', 'chain', 'lessons', 'count', 'remove', 'reorder', 'move']);
+  const OPERATIONS = new Set(['find', 'parent', 'siblings', 'chain', 'lessons', 'count', 'remove', 'reorder', 'move', 'drop']);
   const MAX_ID_LENGTH = 128;
 
   async function execute(catalog, operation, targetId = '') {
@@ -29,6 +29,7 @@
     count: catalog => execute(catalog, 'count'),
     remove: (catalog, id) => execute(catalog, 'remove', id),
     reorder: (catalog, id, delta) => execute(catalog, 'reorder', { id, delta }),
-    move: (catalog, id, targetId = '') => execute(catalog, 'move', { id, targetId })
+    move: (catalog, id, targetId = '') => execute(catalog, 'move', { id, targetId }),
+    drop: (catalog, id, targetId) => execute(catalog, 'drop', { id, targetId })
   });
 })(typeof window !== 'undefined' ? window : globalThis);
