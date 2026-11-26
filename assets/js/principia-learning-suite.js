@@ -271,16 +271,22 @@
   const qs=currentExam.questions,unanswered=qs.length-Object.keys(currentExam.answers).length;
   if(!auto&&unanswered>0&&!confirm('Bạn còn '+unanswered+' câu chưa trả lời. Vẫn nộp bài?'))return;
   currentExam.submitting=true;
-  let score=0,gradingEngine='javascript-fallback';
+  let score=0,gradingEngine='rust-wasm';
   try{
    const grade=await window.PrincipiaRustQuiz.gradeExam(qs,currentExam.answers,{id:currentExam.topic,title:currentExam.topic});
    if(exam!==currentExam)return;
+   if(!Number.isInteger(grade?.correctCount)||grade.correctCount<0||grade.correctCount>qs.length)throw new TypeError('Rust returned an invalid Olympic exam grade');
    score=grade.correctCount;
    gradingEngine=grade.engine;
   }catch(error){
    if(exam!==currentExam)return;
-   score=qs.reduce((sum,question,index)=>sum+(currentExam.answers[index]===question.correct?1:0),0);
-   console.warn('[PRINCIPIA] Rust quiz grading unavailable; using validated local fallback:',error);
+   currentExam.submitting=false;
+   saveExamDraft();
+   console.error('[PRINCIPIA] Rust Olympic exam grading failed; submission is not recorded:',error);
+   const message='Không thể chấm bài bằng Rust/WASM. Bản nháp đã được giữ lại; hãy thử nộp lại khi lõi sẵn sàng.';
+   showExamNotice(message);
+   if(!document.getElementById('plsExamClock'))alert(message);
+   return;
   }
   if(exam!==currentExam)return;
   currentExam.submitted=true;stopTimer();markStudyDay();
