@@ -313,4 +313,9 @@
 
   if (typeof module !== 'undefined' && module.exports) module.exports = { createEngine, INITIAL_CASH, KEY };
   root.PrincipiaRetailSimulator = Object.freeze({ createEngine, INITIAL_CASH });
+  if (root.document) {
+    const start = () => { let attempts = 0; const retry = () => { if (!mount() && ++attempts < 40) root.setTimeout(retry, 250); }; retry(); };
+    if (root.document.readyState === 'loading') root.document.addEventListener('DOMContentLoaded', start, { once: true });
+    else start();
+  }
 })(typeof window !== 'undefined' ? window : globalThis);
