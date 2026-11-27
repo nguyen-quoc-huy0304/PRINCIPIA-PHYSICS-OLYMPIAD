@@ -63,7 +63,7 @@ const ITEMS=Object.freeze([
 {id:'ip',group:'Tài sản đặc thù',name:'Intellectual property / royalties',detail:'Bản quyền, patent, royalty streams, hợp đồng cấp phép, định giá và rủi ro thực thi quyền.',risk:'Cao',liquidity:'Thấp',source:'Hợp đồng / dữ liệu royalty',live:false},
 {id:'litigation',group:'Tài sản đặc thù',name:'Litigation finance',detail:'Tài trợ vụ kiện theo hợp đồng; thời gian, chi phí, kết quả pháp lý và rủi ro mất vốn.',risk:'Rất cao',liquidity:'Rất thấp',source:'Hồ sơ pháp lý / hợp đồng',live:false}
 ]);
-function escapeHTML(v){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+ITEMS.forEach(Object.freeze);\nfunction escapeHTML(v){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function install(){
 const panel=root.document.getElementById('principia-economy-root'),tabs=panel&&panel.querySelector('.pe-tabs'),content=panel&&panel.querySelector('#pe-content');
 if(!panel||!tabs||!content||panel.dataset.expandedInvestInstalled==='1')return false;
