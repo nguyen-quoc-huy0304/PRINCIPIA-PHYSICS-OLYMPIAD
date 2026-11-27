@@ -7,7 +7,7 @@
  const SEARCH_DEBOUNCE_MS=140;
  const searchCache=new Map();
  const normalizeQuery=query=>String(query??'').trim().slice(0,MAX_QUERY_LENGTH);
- function cloneResults(results){const copy=results.map(item=>({...item,questions:Array.isArray(item.questions)?item.questions.slice():[]}));if(Array.isArray(results.failedKinds))copy.failedKinds=results.failedKinds.slice();return copy;}
+ function cloneResults(results){const copy=results.map(item=>({...item,questions:Array.isArray(item.questions)?item.questions.map(question=>question&&typeof question==='object'?{...question}:question):[]}));if(Array.isArray(results.failedKinds))copy.failedKinds=results.failedKinds.slice();return copy;}
  async function collect(query){
   const term=normalizeQuery(query);
   if(searchCache.has(term)){const cached=searchCache.get(term);searchCache.delete(term);searchCache.set(term,cached);return cloneResults(cached);}
@@ -33,8 +33,10 @@
   const seen=new Set();
   const results=indexed.flatMap(result=>result.items).filter(item=>item.id&&!seen.has(item.kind+':'+item.id)&&seen.add(item.kind+':'+item.id));
   if(failedKinds.length)results.failedKinds=failedKinds;
-  searchCache.set(term,cloneResults(results));
-  if(searchCache.size>SEARCH_CACHE_LIMIT)searchCache.delete(searchCache.keys().next().value);
+  if(!failedKinds.length){
+   searchCache.set(term,cloneResults(results));
+   if(searchCache.size>SEARCH_CACHE_LIMIT)searchCache.delete(searchCache.keys().next().value);
+  }
   return results;
  }
  window.PrincipiaGlobalSearchCore=Object.freeze({escapeHTML:escHTML,search:collect,maxQueryLength:MAX_QUERY_LENGTH,cacheLimit:SEARCH_CACHE_LIMIT});
