@@ -11,7 +11,9 @@ function createEngine({wallet,storage,now}={}){
  let state;try{state=JSON.parse(store&&store.getItem(KEY)||'null')||initial();}catch(_){state=initial();}
  for(const k of ['shorts','futures','options','fx','stakes','pools','ledger'])if(!Array.isArray(state[k]))state[k]=[];
  if(!Number.isSafeInteger(state.sequence)||state.sequence<0)state.sequence=0;
- if(!Number.isSafeInteger(state.cash)||state.cash<0)state.cash=100000000;\n const account=wallet||{debit(v){const amount=number(v,'Khoản chi',0,1e12);if(state.cash+1e-8<amount)throw new Error('Không đủ vốn ảo.');state.cash=round(state.cash-amount);},credit(v){const amount=number(v,'Khoản thu',0,1e12);state.cash=round(state.cash+amount);if(!Number.isSafeInteger(Math.round(state.cash)))throw new RangeError('Số dư vượt giới hạn.');}};\n const snap=()=>JSON.parse(JSON.stringify(state));
+ if(!Number.isSafeInteger(state.cash)||state.cash<0)state.cash=100000000;
+ const account=wallet||{debit(v){const amount=number(v,'Khoản chi',0,1e12);if(state.cash+1e-8<amount)throw new Error('Không đủ vốn ảo.');state.cash=round(state.cash-amount);},credit(v){const amount=number(v,'Khoản thu',0,1e12);state.cash=round(state.cash+amount);if(!Number.isSafeInteger(Math.round(state.cash)))throw new RangeError('Số dư vượt giới hạn.');}};
+ const snap=()=>JSON.parse(JSON.stringify(state));
  function commit(fn){const before=state;state=snap();try{const result=fn();if(store)store.setItem(KEY,JSON.stringify(state));return result===undefined?snap():result;}catch(e){state=before;throw e;}}
  function id(prefix){state.sequence++;return prefix+'-'+state.sequence;}
  function log(type,amount,description){state.ledger.push({id:id('tx'),type,amount:round(amount),description,at:clock(),simulationOnly:true});if(state.ledger.length>LIMIT)state.ledger.shift();}
@@ -35,9 +37,7 @@ function createEngine({wallet,storage,now}={}){
 function mount(){
  const panel=root.document&&root.document.getElementById('principia-economy-root'),tabs=panel&&panel.querySelector('.pe-tabs'),content=panel&&panel.querySelector('#pe-content');
  if(!panel||!tabs||!content||panel.dataset.advancedMarketsReady)return false;
- if(!root.PrincipiaPaperTrading||typeof root.PrincipiaPaperTrading.createEngine!=='function')return false;
- const paper=root.PrincipiaPaperTrading.createEngine(),wallet={debit:v=>paper.buy({symbol:'SIM-CASH',name:'Vốn ký quỹ',quantity:v,price:1,feeRate:0}),credit:v=>paper.sell({symbol:'SIM-CASH',quantity:v,price:1,feeRate:0})};
- const engine=createEngine({wallet}),button=root.document.createElement('button');button.type='button';button.textContent='Phái sinh & DeFi';tabs.appendChild(button);panel.dataset.advancedMarketsReady='1';
+ const engine=createEngine(),button=root.document.createElement('button');button.type='button';button.textContent='Phái sinh & DeFi';tabs.appendChild(button);panel.dataset.advancedMarketsReady='1';
  button.addEventListener('click',()=>{tabs.querySelectorAll('button').forEach(x=>x.classList.remove('active'));button.classList.add('active');render(content,engine);});return true;
 }
 function render(el,e){
