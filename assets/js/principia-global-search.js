@@ -3,9 +3,14 @@
  'use strict';
  const escHTML=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const MAX_QUERY_LENGTH=160;
+ const SEARCH_CACHE_LIMIT=24;
+ const SEARCH_DEBOUNCE_MS=140;
+ const searchCache=new Map();
  const normalizeQuery=query=>String(query??'').trim().slice(0,MAX_QUERY_LENGTH);
+ function cloneResults(results){const copy=results.map(item=>({...item,questions:Array.isArray(item.questions)?item.questions.slice():[]}));if(Array.isArray(results.failedKinds))copy.failedKinds=results.failedKinds.slice();return copy;}
  async function collect(query){
   const term=normalizeQuery(query);
+  if(searchCache.has(term)){const cached=searchCache.get(term);searchCache.delete(term);searchCache.set(term,cached);return cloneResults(cached);}
   if(typeof window.PrincipiaWasmPhysics?.globalSearchIndex!=='function')throw new Error('Rust global search is unavailable');
   const catalogs=[];
   try{catalogs.push([typeof data!=='undefined'&&Array.isArray(data)?data:[],'lesson'])}catch(_){catalogs.push([[],'lesson'])}
@@ -28,10 +33,12 @@
   const seen=new Set();
   const results=indexed.flatMap(result=>result.items).filter(item=>item.id&&!seen.has(item.kind+':'+item.id)&&seen.add(item.kind+':'+item.id));
   if(failedKinds.length)results.failedKinds=failedKinds;
+  searchCache.set(term,cloneResults(results));
+  if(searchCache.size>SEARCH_CACHE_LIMIT)searchCache.delete(searchCache.keys().next().value);
   return results;
  }
- window.PrincipiaGlobalSearchCore=Object.freeze({escapeHTML:escHTML,search:collect,maxQueryLength:MAX_QUERY_LENGTH});
- let searchRequest=0,searchError='',searchPartial=false;
+ window.PrincipiaGlobalSearchCore=Object.freeze({escapeHTML:escHTML,search:collect,maxQueryLength:MAX_QUERY_LENGTH,cacheLimit:SEARCH_CACHE_LIMIT});
+ let searchRequest=0,searchError='',searchPartial=false,searchTimer=null;
  let overlay=null,items=[],active=0,selectedKind='all',lastQuery='';
  const readRecent=()=>{try{const v=JSON.parse(localStorage.getItem('principia_global_search_recent_v1')||'[]');return Array.isArray(v)?v.filter(x=>typeof x==='string').map(x=>x.slice(0,MAX_QUERY_LENGTH)).filter(x=>x.trim().length>=2).slice(0,6):[]}catch(_){return[]}};
  const saveRecent=q=>{const v=String(q||'').trim();if(v.length<2)return;try{localStorage.setItem('principia_global_search_recent_v1',JSON.stringify([v,...readRecent().filter(x=>x.toLocaleLowerCase('vi')!==v.toLocaleLowerCase('vi'))].slice(0,6)))}catch(_){}};
@@ -44,7 +51,7 @@
   document.body.appendChild(overlay);
   overlay.querySelector('#principiaGlobalSearchClose').addEventListener('click',close);
   overlay.querySelectorAll('#principiaGlobalSearchFilters button').forEach(b=>{b.style.cssText='border:1px solid var(--line,#555);border-radius:20px;padding:7px 12px;background:transparent;color:inherit;white-space:nowrap';b.addEventListener('click',()=>{selectedKind=b.dataset.kind;renderResults(overlay.querySelector('input').value);paintFilters()})});
-  overlay.querySelector('#principiaGlobalSearchInput').addEventListener('input',e=>renderResults(e.target.value));
+  overlay.querySelector('#principiaGlobalSearchInput').addEventListener('input',e=>scheduleResults(e.target.value));
   overlay.querySelector('#principiaGlobalSearchInput').addEventListener('keydown',e=>{
    if(e.key==='ArrowDown'&&items.length){e.preventDefault();active=Math.min(active+1,items.length-1);paint()}
    if(e.key==='ArrowUp'&&items.length){e.preventDefault();active=Math.max(0,active-1);paint()}
@@ -52,7 +59,8 @@
   });
   return overlay;
  }
- function close(){if(overlay)overlay.style.display='none'}
+ function close(){if(searchTimer!==null){clearTimeout(searchTimer);searchTimer=null}searchRequest+=1;if(overlay)overlay.style.display='none'}
+ function scheduleResults(query){if(searchTimer!==null)clearTimeout(searchTimer);searchTimer=setTimeout(()=>{searchTimer=null;renderResults(query)},SEARCH_DEBOUNCE_MS)}
  function paintFilters(){overlay?.querySelectorAll('#principiaGlobalSearchFilters button').forEach(b=>{const on=b.dataset.kind===selectedKind;b.style.background=on?'var(--card2,#29263d)':'transparent';b.style.borderColor=on?'var(--accent,#9b87ff)':'var(--line,#555)'})}
  function open(initialQuery=''){const el=ensure();el.style.display='flex';selectedKind='all';const input=el.querySelector('input');input.value=normalizeQuery(initialQuery);renderResults(input.value);paintFilters();setTimeout(()=>input.focus(),20)}
  async function renderResults(q){
