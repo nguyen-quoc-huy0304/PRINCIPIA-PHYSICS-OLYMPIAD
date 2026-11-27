@@ -61,7 +61,7 @@ function createEngine({storage,now}={}){
    for(let d=0;d<count;d++){
     state.day++;
     for(const deposit of state.deposits){
-     deposit.interest=round(deposit.interest+deposit.principal*deposit.annualRate/365);
+     deposit.interest=round((deposit.principal+deposit.interest)*deposit.annualRate/365);
      deposit.remainingDays--;
      if(deposit.remainingDays<=0){
       const payout=round(deposit.principal+deposit.interest);
