@@ -71,3 +71,15 @@ test('rejects unsupported asset types, excessive fees and non-finite values', ()
   assert.throws(() => engine.buy({...buyInput,feeRate:0.5}),/Phí hoặc thuế/);
   assert.throws(() => engine.buy({...buyInput,quantity:NaN}),/số dương hợp lệ/);
 });
+
+test('drops malformed or unsupported records restored from local storage', () => {
+  const raw = {
+    version:1,
+    positions:[{id:'bad',assetType:'script',symbol:'X',quantity:1,averageCost:10}],
+    trades:[{side:'buy',assetType:'stocks',symbol:'FPT',quantity:1,price:10,gross:10,at:42}]
+  };
+  const store = {getItem:() => JSON.stringify(raw),setItem:() => {}};
+  const engine = createEngine(store);
+  assert.equal(engine.getSummary().positions.length,0);
+  assert.equal(engine.getSummary().trades.length,0);
+});
