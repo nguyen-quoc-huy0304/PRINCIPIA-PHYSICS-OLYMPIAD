@@ -5,7 +5,7 @@ Standalone Go service. It does not modify the physics, learning, progression, or
 ## Providers
 
 - Stocks: SSI FastConnect intraday OHLC (requires licensed SSI FastConnect credentials).
-- FX: ExchangeRate-API Open Access latest reference rates. This is a periodically refreshed reference feed, not tick-by-tick interbank pricing.
+- FX: Frankfurter reference rates aggregated from central banks. Rates update during the day but are not tick-by-tick interbank quotes.
 - Real estate: BDS Chat listings API (requires API key). Listing timestamps are source timestamps; listing prices are asking prices, not verified transaction prices or a real-time appraisal.
 
 ## Configuration
