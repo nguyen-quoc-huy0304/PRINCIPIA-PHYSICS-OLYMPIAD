@@ -60,3 +60,26 @@ test('progression fails closed when the WASM engine is unavailable',async()=>{
   await assert.rejects(P.streak([],date(2026,11,22)),/unavailable/);
  } finally { if(previous===undefined)delete global.PrincipiaWasmPhysics;else global.PrincipiaWasmPhysics=previous; }
 });
+
+test('activity calendar rejects malformed and impossible dates',async()=>{
+ await withRust({activityCalendar:async()=>{throw new Error('must not run');},progression:async()=>({level:{},rank:{},achievements:[]})},async()=>{
+  await assert.rejects(P.recordActivity(['2026-02-30'],date(2026,2,22)),/Ngày hoạt động/);
+  await assert.rejects(P.recordActivity(['26-11-2026'],date(2026,2,22)),/Ngày hoạt động/);
+ });
+});
+test('activity dates are deduplicated and sorted before Rust',async()=>{
+ await withRust({activityCalendar:async(days)=>({days,current:0,longest:0,activeToday:false}),progression:async()=>({level:{},rank:{},achievements:[]})},async()=>{
+  const result=await P.recordActivity(['2026-11-22','2026-11-20','2026-11-22'],date(2026,11,21));
+  assert.deepEqual(result,['2026-11-20','2026-11-21','2026-11-22']);
+ });
+});
+test('progression rejects unsafe XP and invalid metrics before WASM',async()=>{
+ await withRust({activityCalendar:async()=>({days:[],current:0,longest:0,activeToday:false}),progression:async()=>{throw new Error('must not run');}},async()=>{
+  await assert.rejects(P.summarizeWithRust(-1),/XP/);
+  await assert.rejects(P.summarizeWithRust(Number.MAX_SAFE_INTEGER+1),/XP/);
+  await assert.rejects(P.summarizeWithRust(1,{bestPercent:101}),/Metrics/);
+  await assert.rejects(P.summarizeWithRust(1,{sessions:-1}),/Metrics/);
+  await assert.rejects(P.summarizeWithRust(1,{unknownMetric:3}),/không được hỗ trợ/);
+  await assert.rejects(P.summarizeWithRust(1,[]),/Metrics/);
+ });
+});
