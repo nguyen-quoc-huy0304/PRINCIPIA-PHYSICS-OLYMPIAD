@@ -130,6 +130,7 @@
       const key = assetType + ':' + symbol;
       return transact(() => {
         let position = state.positions.find(item => item.id === key);
+        if (position && position.currency !== currency) throw new TypeError('Không thể trộn nhiều đơn vị tiền trong cùng một vị thế.');
         if (side === 'buy') {
           if (!position && state.positions.length >= MAX_POSITIONS) throw new RangeError('Danh mục đã đạt giới hạn tài sản.');
           const totalCost = gross + fee;
