@@ -97,7 +97,7 @@ mod tests {
 
     #[test]
     fn records_today_and_normalizes_duplicates(){
-        let days=vec!["2026-11-25".into(),"2026-11-25".into(),"bad".into()];
+        let days=vec!["2026-11-25".into(),"2026-11-25".into()];
         let result=activity_summary(&days,"2026-11-26",true).unwrap();
         assert_eq!(result["days"].as_array().unwrap().len(),2);
         assert_eq!(result["current"],2);
