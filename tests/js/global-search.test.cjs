@@ -62,3 +62,27 @@ test('browser search no longer implements catalog traversal or matching in JavaS
   assert.match(source, /async function renderResults/);
   assert.doesNotMatch(source, /const flatten\\s*=|const matches\\s*=\\s*term\\s*\\?/);
 });
+
+test('global search trims and bounds queries before calling Rust', async () => {
+  const { api, calls } = createSearchContext();
+  await api.search('  ' + 'x'.repeat(200) + '  ');
+  assert.equal(api.maxQueryLength, 160);
+  assert.ok(calls.every(call => call.query === 'x'.repeat(160)));
+});
+
+test('global search keeps healthy catalogs when one catalog fails', async () => {
+  const { api, context } = createSearchContext();
+  context.PrincipiaWasmPhysics.globalSearchIndex = async (catalog, query, kind) => {
+    if (kind === 'quiz') throw new Error('catalog unavailable');
+    return { items: catalog.map(item => ({ ...item, kind, path: item.name, questions: [] })) };
+  };
+  const items = await api.search('energy');
+  assert.equal(items.map(item => item.kind).join(','), 'lesson,fun');
+  assert.equal(items.failedKinds.join(','), 'quiz');
+});
+
+test('global search rejects when every populated catalog fails', async () => {
+  const { api, context } = createSearchContext();
+  context.PrincipiaWasmPhysics.globalSearchIndex = async () => { throw new Error('catalog unavailable'); };
+  await assert.rejects(api.search('energy'), /all catalogs failed/);
+});
