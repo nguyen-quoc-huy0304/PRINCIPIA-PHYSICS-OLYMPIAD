@@ -86,3 +86,21 @@ test('global search rejects when every populated catalog fails', async () => {
   context.PrincipiaWasmPhysics.globalSearchIndex = async () => { throw new Error('catalog unavailable'); };
   await assert.rejects(api.search('energy'), /all catalogs failed/);
 });
+test('global search caches repeated normalized queries without rerunning Rust', async () => {
+  const { api, calls } = createSearchContext();
+  const first = await api.search('  energy  ');
+  const callCount = calls.length;
+  first[0].name = 'mutated by caller';
+  const second = await api.search('energy');
+  assert.equal(calls.length, callCount);
+  assert.notEqual(second[0].name, 'mutated by caller');
+  assert.equal(api.cacheLimit, 24);
+});
+
+test('global search cache is bounded and evicts least-recently-used queries', async () => {
+  const { api, calls } = createSearchContext();
+  for (let i = 0; i < 25; i += 1) await api.search('query-' + i);
+  assert.equal(calls.length, 75);
+  await api.search('query-0');
+  assert.equal(calls.length, 78);
+});
