@@ -16,27 +16,75 @@ function createEngine({storage,now}={}){
  function setPolicy({policyRate,governmentSpending,taxRate}){const rate=num(policyRate,'Lãi suất điều hành',0,.5),spending=num(governmentSpending,'Chi tiêu công',0,1e12),tax=num(taxRate,'Thuế suất doanh nghiệp',0,.5);return commit(()=>{state.policyRate=rate;state.governmentSpending=spending;state.corporateTaxRate=tax;return snap();});}
  function hire({firmId,workers}){const id=str(firmId,'Doanh nghiệp',100),count=num(workers,'Số lao động',1,1e6);if(!Number.isInteger(count))throw new TypeError('Số lao động phải là số nguyên.');return commit(()=>{const f=state.firms.find(x=>x.id===id&&x.alive);if(!f)throw new Error('Không tìm thấy doanh nghiệp.');f.employees=Math.min(1e6,f.employees+count);return snap();});}
  function setPrice({firmId,unitPrice}){const id=str(firmId,'Doanh nghiệp',100),price=num(unitPrice,'Giá bán',.01,1e9);return commit(()=>{const f=state.firms.find(x=>x.id===id);if(!f)throw new Error('Không tìm thấy doanh nghiệp.');f.unitPrice=price;return snap();});}
- function advance(months=1){const count=num(months,'Số tháng',1,120);if(!Number.isInteger(count))throw new TypeError('Số tháng phải là số nguyên.');return commit(()=>{for(let m=0;m<count;m++){
-  state.month++;
-  const population=state.households.length;
-  let wageBill=0,totalOutput=0,totalSupplyValue=0,totalSales=0,totalDemand=0,totalTax=0,totalIncome=0;
-  for(const h of state.households){if(h.employed&&h.monthlyIncome===0)h.employed=false;if(!h.employed){const job=state.firms.find(f=>f.alive&&f.employees>workers/population);if(job){h.employed=true;h.monthlyIncome=job.monthlyWage;}}}
-  for(const f of state.firms){if(!f.alive)continue;const labor=Math.min(f.employees,f.capacity*f.productivity),wages=round(labor*f.monthlyWage);wageBill+=wages;const affordableOutput=Math.max(0,(f.capital-wages)/Math.max(.01,f.unitCost));const produced=Math.min(f.capacity*f.productivity,affordableOutput);f.produced=round(produced);f.inventory=round(f.inventory+produced);totalOutput+=produced;totalSupplyValue+=produced*f.unitPrice;}
-  for(const h of state.households){const gross=round(h.monthlyIncome),incomeTax=round(gross*.03),disposable=round(gross-incomeTax),spend=round(disposable*h.consumptionRate);h.savings=round(Math.max(0,h.savings+disposable-spend));h.consumption=spend;h.utility=round(Math.log1p(spend));totalIncome+=gross;totalTax+=incomeTax;totalDemand+=spend;}
-  let remaining=totalDemand;
-  for(const f of state.firms){if(!f.alive)continue;const potential=Math.min(f.inventory,remaining/Math.max(.01,f.unitPrice));const sold=round(Math.max(0,potential));const revenue=round(sold*f.unitPrice),cost=round(sold*f.unitCost),wages=round(Math.min(f.employees,f.capacity*f.productivity)*f.monthlyWage),profit=round(revenue-cost-wages);f.inventory=round(Math.max(0,f.inventory-sold));f.sold=sold;f.revenue=revenue;f.profit=profit;f.capital=round(f.capital+profit);totalSales+=revenue;remaining=Math.max(0,remaining-revenue);if(profit>0){const tax=round(profit*(state.corporateTaxRate??.2));f.capital=round(f.capital-tax);totalTax+=tax;}if(f.capital<0)f.alive=false;}
-  const demandSupply=totalSupplyValue>0?totalDemand/Math.max(1,totalSupplyValue):1;
-  const inflation=totalSales>0?Math.max(-.05,Math.min(.1,(demandSupply-1)*.015)):0;
-  state.cpi=round(state.cpi*(1+inflation));
-  const unemployed=Math.max(0,population-state.households.filter(h=>h.employed).length);
-  state.unemployment=population?round(unemployed/population):0;
-  const incomeTax=round(totalIncome*.03);totalTax+=incomeTax;
-  const governmentSpending=state.governmentSpending||0;
-  state.treasury=round(state.treasury+totalTax-governmentSpending);
-  state.moneySupply=round(Math.max(0,state.moneySupply+governmentSpending-totalTax));
-  state.history.push({month:state.month,cpi:state.cpi,inflation,unemployment:state.unemployment,output:round(totalOutput),demand:round(totalDemand),sales:round(totalSales),wages:round(wageBill),tax:round(totalTax),treasury:state.treasury,policyRate:state.policyRate});
-  if(state.history.length>MAX)state.history.shift();
- }}return snap();});}
+ function advance(months=1){
+  const count=num(months,'Số tháng',1,120);
+  if(!Number.isInteger(count))throw new TypeError('Số tháng phải là số nguyên.');
+  return commit(()=>{
+   for(let m=0;m<count;m++){
+    state.month++;
+    let wageBill=0,totalOutput=0,totalSupplyValue=0,totalSales=0,totalDemand=0,totalTax=0,totalIncome=0;
+    for(const firm of state.firms){
+     if(!firm.alive)continue;
+     const labor=Math.min(firm.employees,firm.capacity*firm.productivity);
+     const wages=round(labor*firm.monthlyWage);
+     wageBill+=wages;
+     const availableCapital=Math.max(0,firm.capital-wages);
+     const affordableOutput=availableCapital/Math.max(.01,firm.unitCost);
+     const produced=Math.min(firm.capacity*firm.productivity,affordableOutput);
+     firm.produced=round(produced);
+     firm.inventory=round(firm.inventory+produced);
+     totalOutput+=produced;
+     totalSupplyValue+=produced*firm.unitPrice;
+    }
+    for(const household of state.households){
+     const gross=round(household.monthlyIncome);
+     const incomeTax=round(gross*.03);
+     const disposable=round(gross-incomeTax);
+     const spending=round(disposable*household.consumptionRate);
+     household.savings=round(Math.max(0,household.savings+disposable-spending));
+     household.consumption=spending;
+     household.utility=round(Math.log1p(spending));
+     totalIncome+=gross;
+     totalTax+=incomeTax;
+     totalDemand+=spending;
+    }
+    let unfilledDemand=totalDemand;
+    for(const firm of state.firms){
+     if(!firm.alive)continue;
+     const sold=round(Math.min(firm.inventory,unfilledDemand/Math.max(.01,firm.unitPrice)));
+     const revenue=round(sold*firm.unitPrice);
+     const cost=round(sold*firm.unitCost);
+     const labor=Math.min(firm.employees,firm.capacity*firm.productivity);
+     const wages=round(labor*firm.monthlyWage);
+     const profit=round(revenue-cost-wages);
+     firm.inventory=round(Math.max(0,firm.inventory-sold));
+     firm.sold=sold;
+     firm.revenue=revenue;
+     firm.profit=profit;
+     firm.capital=round(firm.capital+profit);
+     totalSales+=revenue;
+     unfilledDemand=Math.max(0,unfilledDemand-revenue);
+     if(profit>0){
+      const tax=round(profit*(state.corporateTaxRate??.2));
+      firm.capital=round(firm.capital-tax);
+      totalTax+=tax;
+     }
+     if(firm.capital<0)firm.alive=false;
+    }
+    const demandSupply=totalSupplyValue>0?totalDemand/totalSupplyValue:1;
+    const inflation=totalSupplyValue>0?Math.max(-.05,Math.min(.1,(demandSupply-1)*.015)):0;
+    state.cpi=round(state.cpi*(1+inflation));
+    const employed=state.households.filter(h=>h.employed).length;
+    state.unemployment=state.households.length?round((state.households.length-employed)/state.households.length):0;
+    const governmentSpending=state.governmentSpending||0;
+    state.treasury=round(state.treasury+totalTax-governmentSpending);
+    state.moneySupply=round(Math.max(0,state.moneySupply+governmentSpending-totalTax));
+    state.history.push({month:state.month,cpi:state.cpi,inflation,unemployment:state.unemployment,output:round(totalOutput),demand:round(totalDemand),sales:round(totalSales),wages:round(wageBill),income:round(totalIncome),tax:round(totalTax),treasury:state.treasury,policyRate:state.policyRate});
+    if(state.history.length>MAX)state.history.shift();
+   }
+   return snap();
+  });
+ }
  function summary(){const employed=state.households.filter(h=>h.employed).length;return{...snap(),population:state.households.length,employed,unemployed:state.households.length-employed,totalSavings:round(state.households.reduce((a,h)=>a+h.savings,0)),businesses:state.firms.filter(f=>f.alive).length,aggregateCapital:round(state.firms.reduce((a,f)=>a+f.capital,0)),latest:state.history.at(-1)||null,simulationOnly:true};}
  return Object.freeze({getState:snap,getSummary:summary,createHousehold,createFirm,setPolicy,hire,setPrice,advance});
 }
