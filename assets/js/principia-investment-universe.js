@@ -2,7 +2,7 @@
   'use strict';
 
   const ITEMS = Object.freeze([
-    {id:'stocks',group:'Thị trường vốn',name:'Cổ phiếu niêm yết',detail:'Cổ phiếu HOSE, HNX, UPCoM; cổ tức, quyền mua, chia tách và phí giao dịch.',risk:'Cao',liquidity:'Theo phiên',source:'SSI FastConnect',live:true},
+    {id:'stocks',group:'Thị trường vốn',name:'Cổ phiếu niêm yết',detail:'Cổ phiếu HOSE, HNX, UPCoM; cổ tức, quyền mua, chia tách và phí giao dịch.',risk:'Cao',liquidity:'Theo phiên',source:'SSI FastConnect · cần thông tin xác thực nhà cung cấp',live:false},
     {id:'etf',group:'Thị trường vốn',name:'ETF / Quỹ hoán đổi danh mục',detail:'ETF mô phỏng VN30, VN100, ngành và chỉ số quốc tế; NAV, tracking error, phí quản lý.',risk:'Trung bình–cao',liquidity:'Theo phiên',source:'Sở giao dịch / công ty quản lý quỹ',live:false},
     {id:'open-funds',group:'Thị trường vốn',name:'Quỹ mở cổ phiếu và trái phiếu',detail:'Mua chứng chỉ quỹ theo NAV, ngày giao dịch, phí mua/bán và thời gian thanh toán.',risk:'Thấp–cao',liquidity:'Theo kỳ giao dịch',source:'Công ty quản lý quỹ',live:false},
     {id:'bonds-gov',group:'Trái phiếu & thu nhập cố định',name:'Trái phiếu Chính phủ',detail:'Mệnh giá, coupon, lợi suất đến ngày đáo hạn, lịch trả lãi và rủi ro lãi suất.',risk:'Thấp–trung bình',liquidity:'Tùy mã',source:'HNX / Kho bạc Nhà nước',live:false},
@@ -15,7 +15,7 @@
     {id:'crypto',group:'Tài sản số',name:'Tiền mã hóa giao ngay',detail:'BTC, ETH và tài sản số khác; phí sàn, spread, biến động và rủi ro lưu ký.',risk:'Rất cao',liquidity:'24/7',source:'CoinGecko / sàn giao dịch',live:false},
     {id:'crypto-staking',group:'Tài sản số',name:'Staking / lợi suất tài sản số',detail:'Phần thưởng staking, thời gian khóa, slashing, rủi ro smart contract và nền tảng.',risk:'Rất cao',liquidity:'Có thể bị khóa',source:'Mạng blockchain / nền tảng',live:false},
     {id:'fx',group:'Tài sản số',name:'Ngoại tệ',detail:'USD, EUR, JPY, GBP, CNY; tỷ giá tham chiếu, tỷ giá ngân hàng và spread.',risk:'Trung bình–cao',liquidity:'Theo thị trường',source:'Frankfurter / ngân hàng',live:true},
-    {id:'property',group:'Bất động sản & tài sản thực',name:'Nhà ở, căn hộ, đất nền',detail:'Giá chào bán và giá giao dịch, pháp lý, quy hoạch, thuế, phí sang tên và thanh khoản.',risk:'Trung bình–cao',liquidity:'Thấp',source:'Cổng tin đăng / dữ liệu giao dịch',live:true},
+    {id:'property',group:'Bất động sản & tài sản thực',name:'Nhà ở, căn hộ, đất nền',detail:'Giá chào bán và giá giao dịch, pháp lý, quy hoạch, thuế, phí sang tên và thanh khoản.',risk:'Trung bình–cao',liquidity:'Thấp',source:'Cổng tin đăng / dữ liệu giao dịch · chưa có feed đã xác minh',live:false},
     {id:'commercial-property',group:'Bất động sản & tài sản thực',name:'Bất động sản cho thuê / thương mại',detail:'Nhà phố, mặt bằng, văn phòng, kho xưởng; tỷ suất cho thuê ròng và tỷ lệ trống.',risk:'Trung bình–cao',liquidity:'Thấp',source:'Dữ liệu tin đăng và cho thuê',live:false},
     {id:'reit',group:'Bất động sản & tài sản thực',name:'Quỹ / cổ phiếu bất động sản',detail:'REIT quốc tế, doanh nghiệp bất động sản và quỹ đầu tư bất động sản.',risk:'Trung bình–cao',liquidity:'Theo phiên',source:'Sở giao dịch',live:false},
     {id:'business',group:'Kinh doanh & vốn tư nhân',name:'Góp vốn doanh nghiệp tư nhân',detail:'Mua phần vốn, chia lợi nhuận, định giá doanh nghiệp, pha loãng và quyền biểu quyết.',risk:'Rất cao',liquidity:'Rất thấp',source:'Báo cáo doanh nghiệp / hợp đồng',live:false},
