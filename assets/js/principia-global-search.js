@@ -62,10 +62,11 @@
   return overlay;
  }
  function close(){if(searchTimer!==null){clearTimeout(searchTimer);searchTimer=null}searchRequest+=1;if(overlay)overlay.style.display='none'}
- function scheduleResults(query){if(searchTimer!==null)clearTimeout(searchTimer);searchTimer=setTimeout(()=>{searchTimer=null;renderResults(query)},SEARCH_DEBOUNCE_MS)}
+ function scheduleResults(query){if(searchTimer!==null)clearTimeout(searchTimer);searchRequest+=1;searchTimer=setTimeout(()=>{searchTimer=null;renderResults(query)},SEARCH_DEBOUNCE_MS)}
  function paintFilters(){overlay?.querySelectorAll('#principiaGlobalSearchFilters button').forEach(b=>{const on=b.dataset.kind===selectedKind;b.style.background=on?'var(--card2,#29263d)':'transparent';b.style.borderColor=on?'var(--accent,#9b87ff)':'var(--line,#555)'})}
  function open(initialQuery=''){const el=ensure();el.style.display='flex';selectedKind='all';const input=el.querySelector('input');input.value=normalizeQuery(initialQuery);renderResults(input.value);paintFilters();setTimeout(()=>input.focus(),20)}
  async function renderResults(q){
+  if(searchTimer!==null){clearTimeout(searchTimer);searchTimer=null;}
   const request=++searchRequest;
   const term=normalizeQuery(q);
   lastQuery=term;
