@@ -35,7 +35,7 @@ test('sale calculates fee, tax, cost basis and realized P/L', () => {
   engine.sell({...buyInput,quantity:4,price:120000,taxRate:0.001});
   const state = engine.getState();
   assert.equal(state.positions[0].quantity,6);
-  assert.equal(state.trades[0].realizedPnl,78200);
+  assert.equal(state.trades.at(-1).realizedPnl,78200);
 });
 
 test('rejects overselling and invalid prices without changing state', () => {
