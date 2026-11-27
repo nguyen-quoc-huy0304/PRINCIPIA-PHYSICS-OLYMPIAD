@@ -34,7 +34,7 @@ function render(el,e,economy){
  const s=e.getState(),base=economy.getState(),m=e.getMetrics();
  const fmt=x=>new Intl.NumberFormat("vi-VN",{maximumFractionDigits:0}).format(x)+" ₫";
  const opts=a=>a.map(x=>"<option value='"+esc(x.id)+"'>"+esc(x.name)+"</option>").join("");
- const propertyOptions=s.properties.filter(x=>!x.sold).map(x=>"<option value='"+esc(x.id)+"'>"+esc(x.name)+" · "+fmt(x.price)+"</option>").join("");
+ const propertyOptions=s.properties.map(x=>"<option value='"+esc(x.id)+"'>"+esc(x.name)+" · "+fmt(x.price)+"</option>").join("");
  const rentOptions=s.properties.filter(x=>x.tenantHouseholdId).map(x=>"<option value='"+esc(x.id)+"'>"+esc(x.name)+"</option>").join("");
  const policyOptions=s.policies.filter(x=>x.active).map(x=>"<option value='"+esc(x.id)+"'>"+esc(x.id)+" · "+fmt(x.remainingCoverage)+"</option>").join("");
  const pensionOptions=s.pensions.filter(x=>x.active).map(x=>"<option value='"+esc(x.id)+"'>"+esc(x.id)+" · "+fmt(x.balance)+"</option>").join("");
