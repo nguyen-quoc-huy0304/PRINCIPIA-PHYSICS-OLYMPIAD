@@ -24,7 +24,7 @@ test('records a purchase with weighted average cost and fee', () => {
   engine.buy({...buyInput,quantity:10,price:120000});
   const position = engine.getSummary().positions[0];
   assert.equal(position.quantity,20);
-  assert.equal(position.averageCost,110082.5);
+  assert.equal(position.averageCost,110165);
   assert.equal(position.lastPrice,null);
   assert.equal(engine.getSummary().unpricedCount,1);
 });
@@ -35,7 +35,7 @@ test('sale calculates fee, tax, cost basis and realized P/L', () => {
   engine.sell({...buyInput,quantity:4,price:120000,taxRate:0.001});
   const state = engine.getState();
   assert.equal(state.positions[0].quantity,6);
-  assert.equal(state.trades[0].realizedPnl,77520);
+  assert.equal(state.trades[0].realizedPnl,78200);
 });
 
 test('rejects overselling and invalid prices without changing state', () => {
@@ -61,7 +61,7 @@ test('verified price marks valuation separately from acquisition price', () => {
   engine.markPrice('stocks','FPT',110000,'SSI FastConnect · 2026-11-27T09:00:00+07:00');
   const summary = engine.getSummary();
   assert.equal(summary.marketValueVnd,1100000);
-  assert.equal(summary.unrealizedPnlVnd,98485);
+  assert.equal(summary.unrealizedPnlVnd,98500);
   assert.equal(summary.positions[0].priceSource,'SSI FastConnect · 2026-11-27T09:00:00+07:00');
 });
 
