@@ -3,10 +3,12 @@
 
   const API_BASE = String(root.PRINCIPIA_MARKET_API_BASE || '/market-api').replace(/\/$/, '');
   const STOCK_SYMBOLS = ['FPT', 'VCB', 'VNM', 'HPG', 'MWG'];
-  const REFRESH_MS = 30000;
-  const FX_REFRESH_MS = 900000;
+  const REFRESH_MS = 60000;
+  const FX_REFRESH_MS = 3600000;
+  const PROPERTY_REFRESH_MS = 300000;
   let stockTimer = null;
   let fxTimer = null;
+  let propertyTimer = null;
   let active = false;
   let stockPayload = null;
   let fxPayload = null;
@@ -33,7 +35,7 @@
       headers: { Accept: 'application/json' },
       credentials: 'omit',
       cache: 'no-store',
-      signal: AbortSignal.timeout(10000)
+      signal: typeof AbortSignal.timeout === 'function' ? AbortSignal.timeout(10000) : undefined
     });
     if (!response.ok) {
       const payload = await response.json().catch(() => ({}));
@@ -83,7 +85,7 @@
       '<h3>Chứng khoán Việt Nam · dữ liệu trong phiên</h3><small class="pe-live-source">' +
       escapeHTML(stockPayload ? stockPayload.provider + ' · lấy lúc ' + formatTime(stockPayload.fetchedAt) : 'SSI FastConnect · chưa kết nối') +
       '</small>' + stockHTML + '<h3>Tỷ giá ngoại tệ</h3><small class="pe-live-source">' +
-      escapeHTML(fxPayload ? fxPayload.provider + ' · nguồn cập nhật ' + formatTime(fxPayload.providerUpdatedAt) : 'ExchangeRate-API · chưa kết nối') +
+      escapeHTML(fxPayload ? fxPayload.provider + ' · nguồn cập nhật ' + formatTime(fxPayload.providerUpdatedAt) : 'Frankfurter · chưa kết nối') +
       '</small><div class="pe-live-grid">' + fxHTML + '</div><h3>Bất động sản · tin đăng mới</h3><small class="pe-live-source">' +
       escapeHTML(propertyPayload ? 'BDS Chat · lấy lúc ' + formatTime(propertyPayload.fetchedAt) : 'BDS Chat · chưa kết nối') +
       '</small>' + listingHTML + '<button type="button" class="pe-action" data-live-refresh>↻ Cập nhật ngay</button>';
@@ -122,8 +124,10 @@
     active = false;
     if (stockTimer) root.clearInterval(stockTimer);
     if (fxTimer) root.clearInterval(fxTimer);
+    if (propertyTimer) root.clearInterval(propertyTimer);
     stockTimer = null;
     fxTimer = null;
+    propertyTimer = null;
   }
 
   function start(panel) {
@@ -131,10 +135,8 @@
     active = true;
     refreshAll(panel);
     stockTimer = root.setInterval(() => refreshStocks(panel), REFRESH_MS);
-    fxTimer = root.setInterval(() => {
-      refreshFX(panel);
-      refreshProperties(panel);
-    }, FX_REFRESH_MS);
+    fxTimer = root.setInterval(() => refreshFX(panel), FX_REFRESH_MS);
+    propertyTimer = root.setInterval(() => refreshProperties(panel), PROPERTY_REFRESH_MS);
   }
 
   function install() {
@@ -161,11 +163,6 @@
       active = true;
       start(panel);
     });
-    const content = panel.querySelector('#pe-content');
-    if (content) {
-      const originalRender = root.PrincipiaEconomy && root.PrincipiaEconomy.mountUI;
-      void originalRender;
-    }
     return true;
   }
 
