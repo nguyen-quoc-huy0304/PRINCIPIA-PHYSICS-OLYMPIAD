@@ -54,8 +54,8 @@ pub fn activity_summary(days:&[String], today:&str, record_today:bool)->Result<V
     if days.len()>10_000 {return Err(CalendarError::InvalidPayload);}
     let mut valid=BTreeSet::new();
     for day in days {
-        if day.len()!=10 {continue;}
-        if let Ok(value)=parse_day(day){valid.insert(value);}
+        let value=parse_day(day).map_err(|_|CalendarError::InvalidPayload)?;
+        valid.insert(value);
     }
     if record_today {valid.insert(today_ordinal);}
     let active_today=valid.contains(&today_ordinal);
@@ -109,5 +109,16 @@ mod tests {
         let result=activity_summary(&["2026-11-01".into()],"2026-11-26",false).unwrap();
         assert_eq!(result["current"],0);
         assert_eq!(result["longest"],1);
+    }
+
+    #[test]
+    fn rejects_invalid_activity_days_instead_of_silently_skipping(){
+        for invalid in ["", "not-a-date", "2026-02-30", "2026-11-1"] {
+            assert_eq!(
+                activity_summary(&[invalid.into()], "2026-11-26", false),
+                Err(CalendarError::InvalidPayload),
+                "invalid date must fail: {invalid}"
+            );
+        }
     }
 }
