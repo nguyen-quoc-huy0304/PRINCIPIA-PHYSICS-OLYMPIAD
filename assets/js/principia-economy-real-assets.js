@@ -11,7 +11,7 @@ function createEngine({economy,storage=root.localStorage}={}){
  const load=()=>{try{const raw=JSON.parse(storage?.getItem(KEY)||'null');return raw?.version===1?{...initial(),...raw}:initial();}catch(_){return initial();}};
  let state=load();
  const snapshot=()=>clone(state);
- function save(next){if(storage)storage.setItem(KEY,JSON.stringify(next));state=next;return s;}
+ function save(next){if(storage)storage.setItem(KEY,JSON.stringify(next));state=next;return snapshot();}
  function commit(fn){const next=clone(state);const result=fn(next);save(next);return result===undefined?snapshot():clone(result);}
  function find(list,id,label){const item=state[list].find(x=>x.id===id);if(!item)throw new Error('Không tìm thấy '+label);return item;}
  function transferAndCommit(args,fn){economy.transfer(args);try{return commit(fn);}catch(error){try{economy.transfer({fromType:args.toType,fromId:args.toId,toType:args.fromType,toId:args.fromId,amount:args.amount,description:'Hoàn tác giao dịch lỗi'});}catch(rollbackError){throw new AggregateError([error,rollbackError],'Không thể hoàn tác giao dịch liên kết');}throw error;}}
