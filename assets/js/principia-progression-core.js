@@ -16,11 +16,32 @@
   }
   return root.PrincipiaWasmPhysics;
  }
- async function activity(days,when,recordToday){
-  const engine=wasm();
+ function normalizeDays(days){
   if(!Array.isArray(days)||days.length>10000)throw new TypeError('Danh sách ngày hoạt động không hợp lệ.');
-  const normalized=days.filter(day=>typeof day==='string');
-  return engine.activityCalendar(normalized,dateKey(when),recordToday);
+  const normalized=new Set();
+  for(const day of days){
+   if(typeof day!=='string'||!/^\\d{4}-\\d{2}-\\d{2}$/.test(day))throw new TypeError('Ngày hoạt động không hợp lệ.');
+   const parsed=new Date(day+'T00:00:00Z');
+   if(!Number.isFinite(parsed.getTime())||parsed.toISOString().slice(0,10)!==day)throw new TypeError('Ngày hoạt động không hợp lệ.');
+   normalized.add(day);
+  }
+  return [...normalized].sort();
+ }
+ function normalizeMetrics(metrics){
+  if(!metrics||typeof metrics!=='object'||Array.isArray(metrics))throw new TypeError('Metrics không hợp lệ.');
+  const keys=['sessions','questions','bestPercent','lessons','streak','experiments','levelsCreated'];
+  const normalized={};
+  for(const key of keys){
+   if(metrics[key]===undefined)continue;
+   const value=metrics[key],max=key==='bestPercent'?100:1000000000;
+   if(!Number.isSafeInteger(value)||value<0||value>max)throw new RangeError('Metrics không hợp lệ: '+key);
+   normalized[key]=value;
+  }
+  for(const key of Object.keys(metrics))if(!keys.includes(key))throw new TypeError('Metrics không được hỗ trợ: '+key);
+  return normalized;
+ }
+ async function activity(days,when,recordToday){
+  return wasm().activityCalendar(normalizeDays(days),dateKey(when),recordToday);
  }
  async function recordActivity(days,when=new Date()){
   const result=await activity(days,when,true);
@@ -35,7 +56,8 @@
   return {current:result.current,longest:result.longest,activeToday:result.activeToday};
  }
  async function summarizeWithRust(xp,metrics={}){
-  const result=await wasm().progression({xp,...metrics});
+  if(!Number.isSafeInteger(xp)||xp<0)throw new RangeError('XP không hợp lệ.');
+  const result=await wasm().progression({xp,...normalizeMetrics(metrics)});
   if(!result||!result.level||!Array.isArray(result.achievements))throw new TypeError('Rust returned an invalid progression summary.');
   return result;
  }
