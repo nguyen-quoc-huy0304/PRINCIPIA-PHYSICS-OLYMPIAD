@@ -70,7 +70,7 @@ function run({strategy,prices,referencePrices=[],capital=100000000,allocation=.2
   peak=Math.max(peak,equity);maxDrawdown=Math.max(maxDrawdown,drawdown);
   history.push({index:i,price,cash:round(cash),units:round(units),equity,drawdown:round(drawdown)});
  }
- const final=history[history.length-1],finalEquity=final.equity,totalReturn=round((finalEquity-start)/start),unrealized=round(units*(series[series.length-1]-entry)-borrowed);
+ const final=history[history.length-1],finalEquity=final.equity,totalReturn=round((finalEquity-start)/start),unrealized=round(units*(series[series.length-1]-entry));
  return Object.freeze({strategy:name,family,startingCapital:start,finalEquity,netProfit:round(finalEquity-start),returnPct:round(totalReturn*100),realizedPnl:realized,unrealizedPnl:unrealized,income,feesAndTradingCount:trades,maxDrawdownPct:round(maxDrawdown*100),cash:cash,openUnits:units,borrowed,history,assumptions:{feeRate:fee,annualYield,periodDays:days,leverage:lev,targetProfit:target,stopLoss:stop,exitMultiplier:multiple},warning:'Backtest giả lập theo quy tắc khái quát, chỉ dùng chuỗi giá đầu vào; không dự báo lợi nhuận, không mô phỏng đầy đủ điều khoản từng sản phẩm.'});
 }
 function mount(){
