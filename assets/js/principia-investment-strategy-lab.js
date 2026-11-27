@@ -21,9 +21,9 @@ function run({strategy,prices,referencePrices=[],capital=100000000,allocation=.2
  const refs=Array.isArray(referencePrices)?referencePrices.map((x,i)=>num(x,'Giá đối chiếu '+i,.000001,1e12)):String(referencePrices||'').split(/[;,\s]+/).filter(Boolean).map((x,i)=>num(x,'Giá đối chiếu '+i,.000001,1e12));
  if(family==='arbitrage'&&(refs.length!==series.length||refs.length<MIN_POINTS))throw new Error('Arbitrage cần chuỗi giá đối chiếu cùng độ dài.');
  const start=num(capital,'Vốn ban đầu',1,1e12),weight=num(allocation,'Tỷ lệ phân bổ',.001,1),fee=num(feeRate,'Phí giao dịch',0,.1),yieldRate=num(annualYield,'Lợi suất năm',0,5),days=num(periodDays,'Số ngày mỗi điểm',.01,3650),lev=num(leverage,'Đòn bẩy mô phỏng',1,100),target=num(targetProfit,'Mục tiêu lợi nhuận',.001,10),stop=num(stopLoss,'Ngưỡng cắt lỗ',.001,.99),multiple=num(exitMultiplier,'Hệ số thoái vốn',0,100);
- let cash=start,units=0,entry=0,invested=0,realized=0,income=0,trades=0,peak=start,maxDrawdown=0,locked=false;
+ let cash=start,units=0,entry=0,invested=0,realized=0,income=0,trades=0,peak=start,maxDrawdown=0,locked=false,borrowed=0,leveragedMargin=0;
  const history=[];
- const transactBuy=(amount,price)=>{const spend=Math.min(cash,amount),qty=spend/(price*(1+fee));if(qty<=0)return;const gross=qty*price;cash=round(cash-gross-gross*fee);units+=qty;invested+=gross;entry=units?((entry*(units-qty)+gross)/units):price;trades++;};
+ const transactBuy=(amount,price)=>{const spend=Math.min(cash,amount),qty=spend/(price*(1+fee));if(qty<=0)return;const gross=qty*price;cash=round(cash-gross-gross*fee);units+=qty;invested+=gross;entry=units?((entry*(units-qty)+gross+gross*fee)/units):price;trades++;};
  const transactSell=(qty,price)=>{const sold=Math.min(units,qty);if(sold<=0)return;const gross=sold*price,net=gross-gross*fee,cost=sold*entry,pnl=net-cost;cash=round(cash+net);units-=sold;realized=round(realized+pnl);trades++;if(units<1e-10){units=0;entry=0;}};
  for(let i=0;i<series.length;i++){
   const price=series[i],window=series.slice(Math.max(0,i-4),i+1),avg=window.reduce((a,b)=>a+b,0)/window.length;
@@ -52,12 +52,12 @@ function run({strategy,prices,referencePrices=[],capital=100000000,allocation=.2
    if(i===0)transactBuy(start*weight*lev,price);
    else if(units>0&&(price<=entry*(1-stop/lev)||price>=entry*(1+target/lev)))transactSell(units,price);
   }
-  const equity=round(cash+units*price),drawdown=peak>0?(peak-equity)/peak:0;
+  const equity=round(cash+units*price-borrowed),drawdown=peak>0?(peak-equity)/peak:0;
   peak=Math.max(peak,equity);maxDrawdown=Math.max(maxDrawdown,drawdown);
   history.push({index:i,price,cash:round(cash),units:round(units),equity,drawdown:round(drawdown)});
  }
- const final=history[history.length-1],finalEquity=final.equity,totalReturn=round((finalEquity-start)/start),unrealized=round(units*(series[series.length-1]-entry));
- return Object.freeze({strategy:name,family,startingCapital:start,finalEquity,netProfit:round(finalEquity-start),returnPct:round(totalReturn*100),realizedPnl:realized,unrealizedPnl:unrealized,income,feesAndTradingCount:trades,maxDrawdownPct:round(maxDrawdown*100),cash:cash,openUnits:units,history,assumptions:{feeRate:fee,annualYield,periodDays:days,leverage:lev,targetProfit:target,stopLoss:stop,exitMultiplier:multiple},warning:'Backtest giả lập theo quy tắc khái quát, chỉ dùng chuỗi giá đầu vào; không dự báo lợi nhuận, không mô phỏng đầy đủ điều khoản từng sản phẩm.'});
+ const final=history[history.length-1],finalEquity=final.equity,totalReturn=round((finalEquity-start)/start),unrealized=round(units*(series[series.length-1]-entry)-borrowed);
+ return Object.freeze({strategy:name,family,startingCapital:start,finalEquity,netProfit:round(finalEquity-start),returnPct:round(totalReturn*100),realizedPnl:realized,unrealizedPnl:unrealized,income,feesAndTradingCount:trades,maxDrawdownPct:round(maxDrawdown*100),cash:cash,openUnits:units,borrowed,history,assumptions:{feeRate:fee,annualYield,periodDays:days,leverage:lev,targetProfit:target,stopLoss:stop,exitMultiplier:multiple},warning:'Backtest giả lập theo quy tắc khái quát, chỉ dùng chuỗi giá đầu vào; không dự báo lợi nhuận, không mô phỏng đầy đủ điều khoản từng sản phẩm.'});
 }
 function mount(){
  const panel=root.document&&root.document.getElementById('principia-economy-root'),tabs=panel&&panel.querySelector('.pe-tabs'),content=panel&&panel.querySelector('#pe-content');
