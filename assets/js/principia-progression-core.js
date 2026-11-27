@@ -20,7 +20,7 @@
   if(!Array.isArray(days)||days.length>10000)throw new TypeError('Danh sách ngày hoạt động không hợp lệ.');
   const normalized=new Set();
   for(const day of days){
-   if(typeof day!=='string'||!/^\\d{4}-\\d{2}-\\d{2}$/.test(day))throw new TypeError('Ngày hoạt động không hợp lệ.');
+   if(typeof day!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(day))throw new TypeError('Ngày hoạt động không hợp lệ.');
    const parsed=new Date(day+'T00:00:00Z');
    if(!Number.isFinite(parsed.getTime())||parsed.toISOString().slice(0,10)!==day)throw new TypeError('Ngày hoạt động không hợp lệ.');
    normalized.add(day);
