@@ -43,9 +43,10 @@
   function sanitize(raw) {
     const base = initialState();
     if (!raw || raw.version !== 1) return base;
+    const allowedTypes = new Set(ASSET_TYPES.map(item => item.id));
     const positions = Array.isArray(raw.positions) ? raw.positions.slice(0, MAX_POSITIONS) : [];
     const safePositions = positions.filter(item =>
-      item && typeof item.id === 'string' && typeof item.assetType === 'string' &&
+      item && typeof item.id === 'string' && allowedTypes.has(item.assetType) &&
       typeof item.symbol === 'string' && Number.isFinite(item.quantity) && item.quantity > 0 &&
       Number.isFinite(item.averageCost) && item.averageCost >= 0
     ).map(item => ({
@@ -56,7 +57,25 @@
       priceSource:String(item.priceSource || 'Chưa định giá').slice(0,80),
       currency:String(item.currency || 'VND').slice(0,8)
     }));
-    const trades = Array.isArray(raw.trades) ? raw.trades.slice(-MAX_TRADES) : [];
+    const rawTrades = Array.isArray(raw.trades) ? raw.trades.slice(-MAX_TRADES) : [];
+    const trades = rawTrades.filter(item =>
+      item && ['buy','sell'].includes(item.side) && allowedTypes.has(item.assetType) &&
+      typeof item.symbol === 'string' && typeof item.at === 'string' &&
+      Number.isFinite(item.quantity) && item.quantity > 0 &&
+      Number.isFinite(item.price) && item.price > 0 &&
+      Number.isFinite(item.gross) && item.gross >= 0
+    ).map(item => ({
+      id:String(item.id || '').slice(0,80),side:item.side,assetType:item.assetType,
+      symbol:item.symbol.slice(0,80),name:String(item.name || item.symbol).slice(0,100),
+      quantity:item.quantity,price:item.price,gross:item.gross,
+      fee:Number.isFinite(item.fee) ? Math.max(0,item.fee) : 0,
+      tax:Number.isFinite(item.tax) ? Math.max(0,item.tax) : 0,
+      costBasis:Number.isFinite(item.costBasis) ? item.costBasis : null,
+      realizedPnl:Number.isFinite(item.realizedPnl) ? item.realizedPnl : null,
+      currency:String(item.currency || 'VND').slice(0,8),
+      priceSource:String(item.priceSource || 'Nguồn không rõ').slice(0,80),
+      at:item.at.slice(0,40)
+    }));
     return {version:1,positions:safePositions,trades,updatedAt:typeof raw.updatedAt === 'string' ? raw.updatedAt : null};
   }
 
