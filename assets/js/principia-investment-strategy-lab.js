@@ -49,8 +49,22 @@ function run({strategy,prices,referencePrices=[],capital=100000000,allocation=.2
    if(price<avg*.97&&units===0)transactBuy(start*weight,price);
    else if(price>avg*1.03&&units>0)transactSell(units,price);
   }else if(family==='leveraged'){
-   if(i===0)transactBuy(start*weight*lev,price);
-   else if(units>0&&(price<=entry*(1-stop/lev)||price>=entry*(1+target/lev)))transactSell(units,price);
+   if(i===0&&units===0){
+    leveragedMargin=Math.min(cash,start*weight);
+    const notional=leveragedMargin*lev;
+    borrowed=notional-leveragedMargin;
+    cash=round(cash-leveragedMargin);
+    units=notional/price;
+    entry=price;
+    invested+=leveragedMargin;
+    trades++;
+   }else if(units>0&&(price<=entry*(1-stop/lev)||price>=entry*(1+target/lev))){
+    const net=units*price*(1-fee);
+    const pnl=round(net-borrowed-leveragedMargin);
+    cash=round(cash+net-borrowed);
+    realized=round(realized+pnl);
+    units=0;borrowed=0;leveragedMargin=0;entry=0;trades++;
+   }
   }
   const equity=round(cash+units*price-borrowed),drawdown=peak>0?(peak-equity)/peak:0;
   peak=Math.max(peak,equity);maxDrawdown=Math.max(maxDrawdown,drawdown);
