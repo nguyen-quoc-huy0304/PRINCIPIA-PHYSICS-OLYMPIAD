@@ -21,6 +21,14 @@ test('activity recording delegates calendar normalization to Rust',async()=>{
   assert.deepEqual(await P.recordActivity(['2026-11-21','2026-11-21'],date(2026,11,22)),['2026-11-21','2026-11-22']);
  });
 });
+test('activity adapter rejects malformed Rust calendar output',async()=>{
+ await withRust({activityCalendar:async()=>({days:['2026-11-22','bad']}),progression:async()=>({level:{},rank:{},achievements:[]})},async()=>{
+  await assert.rejects(P.recordActivity([],date(2026,11,22)),/Ngày hoạt động/);
+ });
+ await withRust({activityCalendar:async()=>null,progression:async()=>({level:{},rank:{},achievements:[]})},async()=>{
+  await assert.rejects(P.recordActivity([],date(2026,11,22)),/invalid activity calendar/);
+ });
+});
 test('streak calculations delegate to Rust',async()=>{
  await withRust({activityCalendar:async()=>({days:[],current:3,longest:5,activeToday:true}),progression:async()=>({level:{},rank:{},achievements:[]})},async()=>{
   assert.deepEqual(await P.streak(['2026-11-20','2026-11-21','2026-11-22'],date(2026,11,22)),{current:3,longest:5,activeToday:true});
