@@ -10,7 +10,8 @@ function classify(name){
  if(/flip|wholesale|dropship|retail|import|export|domain|sneaker|collectible|vehicle|machinery|website|social channel|in.game item/.test(n))return'flip';
  if(/angel|venture capital|private equity|seed round|private sale|crowdfunding|lbo|roll.up|startup|launchpad|ido|ieo|ico/.test(n))return'venture';
  if(/rental|reit|bond|treasury bill|savings|cds|p2p|invoice factoring|franchis|joint venture|leaseback|vending|royalt|intellectual property|agriculture|forestry|mining|carbon credit|insurance|staking|restaking|validator|masternode|yield farming|liquidity|lending|borrowing|mining|depin/.test(n))return'income';
- if(/short selling/.test(n))return'short';\n if(/margin|futures|options|warrant|cfd|forex/.test(n))return'leveraged';
+ if(/short selling/.test(n))return'short';
+ if(/margin|futures|options|warrant|cfd|forex/.test(n))return'leveraged';
  if(/pairs|statistical|mean reversion/.test(n))return'mean-reversion';
  if(/scalping|day trading|swing|position|growth/.test(n))return'momentum';
  return'dca';
@@ -80,7 +81,8 @@ function run({strategy,prices,referencePrices=[],capital=100000000,allocation=.2
     units=0;borrowed=0;leveragedMargin=0;entry=0;trades++;
    }
   }
-  const shortUnrealized=shortUnits?shortUnits*(shortEntry-price):0;\n  const equity=round(cash+units*price-borrowed+shortCollateral+shortUnrealized),drawdown=peak>0?(peak-equity)/peak:0;
+  const shortUnrealized=shortUnits?shortUnits*(shortEntry-price):0;
+  const equity=round(cash+units*price-borrowed+shortCollateral+shortUnrealized),drawdown=peak>0?(peak-equity)/peak:0;
   peak=Math.max(peak,equity);maxDrawdown=Math.max(maxDrawdown,drawdown);
   history.push({index:i,price,cash:round(cash),units:round(units),equity,drawdown:round(drawdown)});
  }
