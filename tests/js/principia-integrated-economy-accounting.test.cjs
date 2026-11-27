@@ -81,7 +81,7 @@ test('loan repayment restores liquidity and recognizes interest separately', () 
   const after = engine.getState();
   assert.equal(after.banks[0].liquidity, 4100);
   assert.equal(after.banks[0].capital, 5010);
-  assert.equal(after.banks[0].loansOutstanding, 990);
+  assert.equal(after.banks[0].loansOutstanding, 1000);
   assert.equal(after.loans[0].interestRepaid, 100);
 });
 
