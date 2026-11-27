@@ -5,7 +5,7 @@ const number=(v,k,min=0,max=1e12)=>{const x=Number(v);if(!Number.isFinite(x)||x<
 const text=(v,k,max=80)=>{if(typeof v!=='string'||!v.trim()||v.trim().length>max)throw new TypeError(k+' không hợp lệ.');return v.trim();};
 const round=x=>Math.round((x+Number.EPSILON)*100)/100;
 function createEngine({wallet,storage,now}={}){
- if(wallet&&(typeof account.debit!=='function'||typeof account.credit!=='function'))throw new TypeError('Ví vốn ảo không hợp lệ.');
+ if(wallet&&(typeof wallet.debit!=='function'||typeof wallet.credit!=='function'))throw new TypeError('Ví vốn ảo không hợp lệ.');
  const store=storage||root.localStorage,clock=now||(()=>new Date().toISOString());
  const initial=()=>({cash:100000000,shorts:[],futures:[],options:[],fx:[],stakes:[],pools:[],ledger:[],sequence:0});
  let state;try{state=JSON.parse(store&&store.getItem(KEY)||'null')||initial();}catch(_){state=initial();}
