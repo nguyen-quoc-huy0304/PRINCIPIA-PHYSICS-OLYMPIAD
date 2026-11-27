@@ -33,7 +33,7 @@
     return {
       version: 1, month: 1, year: 2026,
       cash: 20000000, bank: 0, foreign: {}, loans: [],
-      stocks: {}, properties: [], shop: null,
+      stocks: {}, stockPrices: Object.fromEntries(Object.entries(STOCKS).map(([code, stock]) => [code, stock.price])), properties: [], shop: null,
       income: 12000000, livingCost: 8000000,
       taxPaid: 0, ledger: []
     };
@@ -47,6 +47,10 @@
     }
     safe.foreign = safe.foreign && typeof safe.foreign === 'object' ? safe.foreign : {};
     safe.stocks = safe.stocks && typeof safe.stocks === 'object' ? safe.stocks : {};
+    safe.stockPrices = safe.stockPrices && typeof safe.stockPrices === 'object' ? safe.stockPrices : clone(base.stockPrices);
+    for (const [code, stock] of Object.entries(STOCKS)) {
+      if (!Number.isSafeInteger(safe.stockPrices[code]) || safe.stockPrices[code] < 1) safe.stockPrices[code] = stock.price;
+    }
     safe.loans = Array.isArray(safe.loans) ? safe.loans : [];
     safe.properties = Array.isArray(safe.properties) ? safe.properties : [];
     safe.ledger = Array.isArray(safe.ledger) ? safe.ledger.slice(-MAX_LEDGER) : [];
@@ -128,14 +132,14 @@
       quantity = number(quantity, 'Số cổ phiếu');
       const stock = STOCKS[symbol];
       if (!stock || quantity < 1 || quantity > 100000) throw new TypeError('Mã hoặc số lượng cổ phiếu không hợp lệ.');
-      const cost = stock.price * quantity;
+      const cost = state.stockPrices[symbol] * quantity;
       requireCash(cost); state.cash -= cost; state.stocks[symbol] = (state.stocks[symbol] || 0) + quantity;
       record('stock-buy', cost, 'Mua ' + quantity + ' cổ phiếu ' + symbol); return commit();
     }
     function sellStock(symbol, quantity) {
       quantity = number(quantity, 'Số cổ phiếu');
       if (!STOCKS[symbol] || quantity < 1 || (state.stocks[symbol] || 0) < quantity) throw new RangeError('Không đủ cổ phiếu để bán.');
-      const proceeds = STOCKS[symbol].price * quantity;
+      const proceeds = state.stockPrices[symbol] * quantity;
       state.stocks[symbol] -= quantity; state.cash += proceeds;
       record('stock-sell', proceeds, 'Bán ' + quantity + ' cổ phiếu ' + symbol); return commit();
     }
@@ -150,7 +154,7 @@
       if (state.shop) throw new Error('Bạn đã sở hữu cửa hàng.');
       const setupCost = 12000000;
       requireCash(setupCost); state.cash -= setupCost;
-      state.shop = { name: 'Tạp hóa PRINCIPIA', inventory: {}, revenue: 0, costs: 0, profit: 0 };
+      state.shop = { name: 'Tạp hóa PRINCIPIA', inventory: {}, revenue: 0, costs: 0, profit: 0, monthlyProfit: 0 };
       record('shop-open', setupCost, 'Mở cửa hàng tạp hóa'); return commit();
     }
     function restock(goodsId, quantity) {
@@ -170,6 +174,7 @@
       const vat = Math.round(revenue * 0.08);
       state.shop.inventory[goodsId] -= quantity;
       state.shop.revenue += revenue; state.shop.profit += revenue - cost - vat;
+      state.shop.monthlyProfit = (state.shop.monthlyProfit || 0) + revenue - cost - vat;
       state.cash += revenue - vat; state.taxPaid += vat;
       record('shop-sale', revenue, 'Bán ' + quantity + ' ' + good.name + ', VAT mô phỏng 8%: ' + vat);
       return commit();
@@ -183,22 +188,26 @@
       const loanInterest = state.loans.reduce((sum, loan) => sum + Math.round(loan.remaining * loan.annualRate / 12), 0);
       const rentIncome = state.properties.reduce((sum, property) => sum + property.rent, 0);
       const propertyCosts = state.properties.reduce((sum, property) => sum + property.maintenance, 0);
-      const shopProfit = state.shop ? Math.max(0, state.shop.profit) : 0;
-      const businessTax = Math.round(shopProfit * 0.2);
-      const net = salaryNet + depositInterest + rentIncome + shopProfit - businessTax - loanInterest - propertyCosts - state.livingCost;
+      const monthlyShopProfit = state.shop ? Math.max(0, state.shop.monthlyProfit || 0) : 0;
+      const businessTax = Math.round(monthlyShopProfit * 0.2);
+      const net = salaryNet + depositInterest + rentIncome - businessTax - loanInterest - propertyCosts - state.livingCost;
       state.cash += net;
       state.taxPaid += salaryTax + businessTax;
       state.bank += depositInterest;
-      state.shop && (state.shop.profit = Math.max(0, state.shop.profit - businessTax));
+      if (state.shop) {
+        state.shop.profit = Math.max(0, state.shop.profit - businessTax);
+        state.shop.monthlyProfit = 0;
+      }
       record('monthly-close', net, 'Lương sau thuế ' + salaryNet + ', lãi gửi ' + depositInterest + ', tiền thuê ' + rentIncome + ', lãi vay ' + loanInterest + ', thuế ' + (salaryTax + businessTax));
       for (const [symbol, stock] of Object.entries(STOCKS)) {
         const change = 1 + (Math.random() * 2 - 1) * stock.volatility;
-        STOCKS[symbol].price = Math.max(1000, Math.round(stock.price * change));
+        state.stockPrices[symbol] = Math.max(1000, Math.round(state.stockPrices[symbol] * change));
       }
       return commit();
     }
     function getMarket() {
-      return { currencies: clone(CURRENCIES), stocks: clone(STOCKS), properties: clone(PROPERTIES), goods: clone(GOODS) };
+      const stocks = Object.fromEntries(Object.entries(STOCKS).map(([code, stock]) => [code, { ...stock, price: state.stockPrices[code] }]));
+      return { currencies: clone(CURRENCIES), stocks, properties: clone(PROPERTIES), goods: clone(GOODS) };
     }
     return Object.freeze({ getState, getMarket, deposit, withdraw, takeLoan, repayLoan, exchange, buyStock, sellStock, buyProperty, openShop, restock, sellGoods, advanceMonth, progressiveIncomeTax });
   }
