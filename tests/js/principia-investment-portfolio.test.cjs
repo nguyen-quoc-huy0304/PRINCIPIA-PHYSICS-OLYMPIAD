@@ -83,3 +83,10 @@ test('drops malformed or unsupported records restored from local storage', () =>
   assert.equal(engine.getSummary().positions.length,0);
   assert.equal(engine.getSummary().trades.length,0);
 });
+
+test('prevents mixing currencies inside one position', () => {
+  const engine = createEngine(memoryStore());
+  engine.buy(buyInput);
+  assert.throws(() => engine.buy({...buyInput,currency:'USD'}),/Không thể trộn/);
+  assert.equal(engine.getSummary().positions[0].quantity,10);
+});
