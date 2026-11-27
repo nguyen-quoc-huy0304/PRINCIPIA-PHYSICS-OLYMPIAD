@@ -12,7 +12,9 @@
   const connection = nav.connection || nav.mozConnection || nav.webkitConnection || null;
   const lowMemory = memory > 0 && memory <= 2;
   const constrained = lowMemory || (cores > 0 && cores <= 2) || !!(connection && connection.saveData);
+  const MAX_IDLE_TASKS = 256;
   const idleQueue = [];
+  const queuedTasks = new WeakSet();
   const lazyScripts = new Map();
   let idleScheduled = false;
   let observer = null;
@@ -26,6 +28,7 @@
       const fallbackFirstTask = !deadline && ran === 0;
       if (!hasBudget && !timedOutFirstTask && !fallbackFirstTask) break;
       const task = idleQueue.shift();
+      queuedTasks.delete(task);
       try { task(); } catch (error) { setTimeout(() => { throw error; }, 0); }
       ran += 1;
     }
@@ -43,9 +46,11 @@
   }
 
   function schedule(task) {
-    if (typeof task !== 'function') return;
+    if (typeof task !== 'function' || queuedTasks.has(task) || idleQueue.length >= MAX_IDLE_TASKS) return false;
     idleQueue.push(task);
+    queuedTasks.add(task);
     scheduleIdleDrain();
+    return true;
   }
 
   function prepareMedia(root) {
@@ -146,6 +151,7 @@
     schedule,
     loadScript,
     loadScripts,
+    maxIdleTasks: MAX_IDLE_TASKS,
     getProfile() {
       const memoryInfo = performance && performance.memory ? {
         usedJSHeapSize: performance.memory.usedJSHeapSize,
