@@ -63,7 +63,8 @@
   try{
    const source=await collect(term);
    if(request!==searchRequest)return;
-   searchPartial=Array.isArray(source.failedKinds)&&source.failedKinds.length>0;\n   items=source.filter(item=>selectedKind==='all'||item.kind===selectedKind).slice(0,40);
+   searchPartial=Array.isArray(source.failedKinds)&&source.failedKinds.length>0;
+   items=source.filter(item=>selectedKind==='all'||item.kind===selectedKind).slice(0,40);
    active=0;
   }catch(error){
    if(request!==searchRequest)return;
