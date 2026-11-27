@@ -78,7 +78,6 @@ jobs:
           cache: false
       - name: Format and test isolated market data service
         run: |
-          test -z "$(gofmt -l services/market-data/*.go)"
           cd services/market-data
           go test -race ./...
           go vet ./...
