@@ -23,7 +23,7 @@
    }
   }));
   const attempted=indexed.filter(result=>!result.skipped);
-  if(attempted.length&&!attempted.some(result=>!result.failed))throw new Error('Rust global search failed for all catalogs');
+  if(attempted.length&&!attempted.some(result=>!result.failed))throw new Error('Rust global search: all catalogs failed');
   const failedKinds=attempted.filter(result=>result.failed).map(result=>result.kind);
   const seen=new Set();
   const results=indexed.flatMap(result=>result.items).filter(item=>item.id&&!seen.has(item.kind+':'+item.id)&&seen.add(item.kind+':'+item.id));
