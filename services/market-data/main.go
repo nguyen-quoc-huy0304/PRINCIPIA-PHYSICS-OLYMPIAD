@@ -19,7 +19,7 @@ import (
 const (
 	maxResponseBytes = 2 << 20
 	ssiBaseURL        = "https://fc-data.ssi.com.vn/api/v2/Market"
-	fxBaseURL         = "https://open.er-api.com/v6/latest"
+	fxBaseURL         = "https://api.frankfurter.dev/v2/rates"
 	bdsBaseURL        = "https://api.bds.chat"
 )
 
@@ -151,28 +151,43 @@ func (s *server) fx(w http.ResponseWriter, r *http.Request) {
 	base := strings.ToUpper(strings.TrimSpace(r.URL.Query().Get("base")))
 	if base == "" { base = "USD" }
 	if !validCurrency(base) { writeError(w, http.StatusBadRequest, "unsupported base currency"); return }
-	endpoint := fxBaseURL + "/" + url.PathEscape(base)
-	body, status, err := ssiGet(r.Context(), s.client, endpoint, "")
-	if err != nil || status < 200 || status >= 300 {
+	query := url.Values{
+		"base": {base},
+		"quotes": {"VND,EUR,JPY,CNY,GBP"},
+	}
+	req, reqErr := http.NewRequestWithContext(r.Context(), http.MethodGet, fxBaseURL+"?"+query.Encode(), nil)
+	if reqErr != nil { writeError(w, http.StatusBadRequest, "invalid currency request"); return }
+	body, err := s.do(req)
+	if err != nil {
 		writeError(w, http.StatusBadGateway, "foreign exchange provider unavailable")
 		return
 	}
-	var payload struct {
-		Result string `json:"result"`
-		Base string `json:"base_code"`
-		Date string `json:"time_last_update_utc"`
-		Rates map[string]float64 `json:"rates"`
+	var rows []struct {
+		Date string `json:"date"`
+		Base string `json:"base"`
+		Quote string `json:"quote"`
+		Rate float64 `json:"rate"`
 	}
-	if err := json.Unmarshal(body, &payload); err != nil || payload.Result != "success" || len(payload.Rates) == 0 {
+	if err := json.Unmarshal(body, &rows); err != nil || len(rows) == 0 {
 		writeError(w, http.StatusBadGateway, "foreign exchange provider returned invalid data")
 		return
 	}
+	rates := make(map[string]float64, len(rows))
+	for _, row := range rows {
+		if row.Base != base || !validCurrency(row.Quote) || row.Rate <= 0 { continue }
+		rates[row.Quote] = row.Rate
+	}
+	if len(rates) == 0 {
+		writeError(w, http.StatusBadGateway, "no requested currency rates are available")
+		return
+	}
 	writeJSON(w, http.StatusOK, map[string]any{
-		"provider": "ExchangeRate-API Open Access", "kind": "latest-reference",
-		"base": payload.Base, "providerUpdatedAt": payload.Date,
-		"fetchedAt": time.Now().UTC().Format(time.RFC3339), "rates": payload.Rates,
+		"provider": "Frankfurter · central-bank reference rates", "kind": "reference",
+		"base": base, "providerUpdatedAt": rows[0].Date,
+		"fetchedAt": time.Now().UTC().Format(time.RFC3339), "rates": rates,
 	})
 }
+
 
 func (s *server) realEstate(w http.ResponseWriter, r *http.Request) {
 	if s.bdsKey == "" {
