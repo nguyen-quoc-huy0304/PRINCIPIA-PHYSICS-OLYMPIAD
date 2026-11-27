@@ -47,6 +47,8 @@
       Number.isSafeInteger(item.revenue) && item.revenue >= 0 &&
       Number.isSafeInteger(item.costOfGoods) && item.costOfGoods >= 0 &&
       item.materials && typeof item.materials === 'object' &&
+      item.materialValues && typeof item.materialValues === 'object' &&
+      Number.isSafeInteger(item.productionCost) && item.productionCost >= 0 &&
       item.products && typeof item.products === 'object' &&
       Array.isArray(item.employees);
     return {
@@ -103,7 +105,7 @@
       const company = {
         id: 'biz-' + at.getTime().toString(36) + '-' + (state.businesses.length + 1),
         name: name.trim(), cash: capital, taxPayable: 0, revenue: 0, costOfGoods: 0,
-        materials: {}, products: {}, employees: [], payrollAccrued: 0,
+        materials: {}, materialValues: {}, products: {}, employees: [], payrollAccrued: 0, productionCost: 0,
         vatRate: 0.08, profitTaxRate: 0.2, createdAt: at.toISOString()
       };
       state.businesses.push(company);
@@ -122,6 +124,7 @@
       const at = date(now());
       company.cash -= total;
       company.materials[sku] = (company.materials[sku] || 0) + quantity;
+      company.materialValues[sku] = (company.materialValues[sku] || 0) + total;
       log(company, 'material-purchase', total, 'Nhập ' + MATERIALS[sku].name + ' x' + quantity, at);
       persist();
       return snapshot();
@@ -153,12 +156,25 @@
         }
       }
       const labor = recipe.laborCost * quantity;
+      let materialCost = 0;
+      for (const [sku, perUnit] of Object.entries(recipe.materials)) {
+        const consumed = perUnit * quantity;
+        const stock = company.materials[sku] || 0;
+        const value = company.materialValues[sku] || 0;
+        materialCost += stock > 0 ? Math.round(value * consumed / stock) : 0;
+      }
       if (company.cash < labor) throw new RangeError('Không đủ tiền thanh toán chi phí nhân công sản xuất.');
       const at = date(now());
       for (const [sku, perUnit] of Object.entries(recipe.materials)) {
-        company.materials[sku] = Math.round(((company.materials[sku] || 0) - perUnit * quantity) * 100) / 100;
+        const consumed = perUnit * quantity;
+        const stock = company.materials[sku] || 0;
+        const value = company.materialValues[sku] || 0;
+        const consumedValue = stock > 0 ? Math.round(value * consumed / stock) : 0;
+        company.materials[sku] = Math.round((stock - consumed) * 100) / 100;
+        company.materialValues[sku] = Math.max(0, value - consumedValue);
       }
       company.cash -= labor;
+      company.productionCost += materialCost + labor;
       company.products[recipe.output] = (company.products[recipe.output] || 0) + quantity;
       log(company, 'production', labor, 'Sản xuất ' + recipe.name + ' x' + quantity, at);
       persist();
@@ -210,7 +226,7 @@
     }
     function closeTaxPeriod(id) {
       const company = business(id);
-      const profit = company.revenue - company.costOfGoods - company.payrollAccrued;
+      const profit = company.revenue - company.costOfGoods - company.productionCost - company.payrollAccrued;
       const taxableProfit = Math.max(0, profit);
       const incomeTax = Math.round(taxableProfit * company.profitTaxRate);
       const totalTax = company.taxPayable + incomeTax;
@@ -220,6 +236,7 @@
       company.taxPayable = 0;
       company.revenue = 0;
       company.costOfGoods = 0;
+      company.productionCost = 0;
       company.payrollAccrued = 0;
       log(company, 'tax-payment', totalTax, 'Nộp VAT và thuế lợi nhuận: ' + incomeTax, at);
       persist();
