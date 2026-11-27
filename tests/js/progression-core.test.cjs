@@ -76,8 +76,17 @@ test('activity calendar rejects malformed and impossible dates',async()=>{
  });
 });
 test('activity dates are deduplicated and sorted before Rust',async()=>{
- await withRust({activityCalendar:async(days)=>({days,current:0,longest:0,activeToday:false}),progression:async()=>({level:{},rank:{},achievements:[]})},async()=>{
+ let wasmInput;
+ await withRust({
+  activityCalendar:async(days,today,recordToday)=>{
+   wasmInput={days,today,recordToday};
+   const recorded=recordToday?[...days,today]:days;
+   return {days:[...new Set(recorded)].sort(),current:0,longest:0,activeToday:recordToday};
+  },
+  progression:async()=>({level:{},rank:{},achievements:[]})
+ },async()=>{
   const result=await P.recordActivity(['2026-11-22','2026-11-20','2026-11-22'],date(2026,11,21));
+  assert.deepEqual(wasmInput,{days:['2026-11-20','2026-11-22'],today:'2026-11-21',recordToday:true});
   assert.deepEqual(result,['2026-11-20','2026-11-21','2026-11-22']);
  });
 });

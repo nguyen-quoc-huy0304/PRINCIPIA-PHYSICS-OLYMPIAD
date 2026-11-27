@@ -37,8 +37,10 @@ test('purchases materials and produces finished goods using recipe quantities', 
   const company = f.engine.getState().businesses[0];
   assert.equal(company.products.bread, 10);
   assert.equal(company.materials.flour, 0);
+  assert.equal(company.materials.sugar, 1);
+  assert.equal(company.materialValues.sugar, 25000);
   assert.equal(company.cash, 19715000);
-  assert.equal(company.productionCost, 285000);
+  assert.equal(company.productionCost, 260000);
 });
 
 test('blocks production when a recipe lacks inputs without mutating inventory', () => {
