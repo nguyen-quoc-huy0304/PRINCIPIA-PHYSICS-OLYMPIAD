@@ -227,7 +227,7 @@
     function summary() {
       const inventoryValue = state.batches.reduce((sum, batch) => sum + batch.quantity * batch.unitCost, 0);
       const inventoryUnits = state.batches.reduce((sum, batch) => sum + batch.quantity, 0);
-      return { ...snapshot(), inventoryValue, inventoryUnits, virtualOnly: true };
+      return { ...snapshot(), storeCash: state.store ? state.store.cash : 0, inventoryValue, inventoryUnits, virtualOnly: true };
     }
     function reset() { return commit(() => { state = fresh(); return snapshot(); }); }
     return Object.freeze({ getState: snapshot, getSummary: summary, createStore, addProduct, purchaseStock, sell, addExpense, advance, closeTaxPeriod, reset });
