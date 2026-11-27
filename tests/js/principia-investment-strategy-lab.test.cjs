@@ -6,3 +6,5 @@ test('rejects malformed or excessive input price series',()=>{assert.throws(()=>
 test('momentum and venture backtests produce deterministic results',()=>{const input={prices:[100,101,105,110,90,95,120],capital:100000,allocation:.3};assert.deepEqual(run({strategy:'Swing Trading',...input}),run({strategy:'Swing Trading',...input}));assert.equal(run({strategy:'Venture Capital',...input,exitMultiplier:3}).family,'venture');});
 
 test('leveraged backtest borrows against margin and repays debt at exit',()=>{const r=run({strategy:'Margin Trading',prices:[100,100,110],capital:100000,allocation:.25,leverage:5,feeRate:0,targetProfit:.08,stopLoss:.05});assert.equal(r.openUnits,0);assert.equal(r.borrowed,0);assert.ok(r.finalEquity>100000);});
+
+test('short-selling backtest profits on falling prices and retains collateral accounting',()=>{const r=run({strategy:'Short Selling',prices:[100,100,80],capital:100000,allocation:.25,leverage:2,feeRate:0,targetProfit:.08,stopLoss:.05});assert.equal(r.shortUnits,0);assert.ok(r.finalEquity>100000);assert.ok(r.realizedPnl>0);});
