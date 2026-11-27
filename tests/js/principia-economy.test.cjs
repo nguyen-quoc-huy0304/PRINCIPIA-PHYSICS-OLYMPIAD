@@ -88,3 +88,28 @@ test('monthly close advances calendar and records taxes and interest', () => {
   assert.ok(state.taxPaid > 0);
   assert.equal(state.ledger.at(-1).type, 'monthly-close');
 });
+
+test('monthly close taxes retail profit once and resets the monthly tax base', () => {
+  const engine = createEngine(memoryStore());
+  engine.openShop();
+  const good = GOODS[0];
+  engine.restock(good.id, 10);
+  engine.sellGoods(good.id, 2);
+  const beforeClose = engine.getState().shop.monthlyProfit;
+  assert.ok(beforeClose > 0);
+  engine.advanceMonth();
+  assert.equal(engine.getState().shop.monthlyProfit, 0);
+  assert.ok(engine.getState().taxPaid > 0);
+});
+
+test('simulated stock prices persist across engine reloads', () => {
+  const storage = memoryStore();
+  const first = createEngine(storage);
+  first.advanceMonth();
+  const prices = first.getMarket().stocks;
+  const second = createEngine(storage);
+  assert.deepEqual(
+    Object.keys(second.getMarket().stocks).map(code => second.getMarket().stocks[code].price),
+    Object.keys(prices).map(code => prices[code].price)
+  );
+});
