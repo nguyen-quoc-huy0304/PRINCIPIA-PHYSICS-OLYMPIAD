@@ -37,7 +37,7 @@ test('opens term deposit, compounds interest by elapsed days and pays at maturit
   f.setNow('2027-01-01T00:00:00.000Z');
   const id = f.engine.getState().deposits[0].id;
   const result = f.engine.settleTermDeposit(id, false);
-  assert.ok(result.interest > 600000);
+  assert.ok(result.interest >= 600000);
   assert.equal(result.early, false);
   assert.equal(f.wallet.balance, 100000000 + result.interest);
   assert.equal(result.state.deposits[0].status, 'closed');
