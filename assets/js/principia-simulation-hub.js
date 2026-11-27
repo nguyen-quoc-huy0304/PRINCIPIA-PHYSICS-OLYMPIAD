@@ -54,7 +54,68 @@ function createEngine({storage,now}={}){
  function claim({policyId,lossAmount}){const id=s(policyId,'Mã hợp đồng',100),loss=n(lossAmount,'Thiệt hại',.01,1e12);return commit(()=>{const policy=state.insurance.find(x=>x.id===id&&x.active);if(!policy)throw new Error('Hợp đồng bảo hiểm không hoạt động.');const payout=Math.min(policy.coverage,loss);credit(payout);policy.active=false;log('CLAIM','Bồi thường '+policy.name,payout);return snap();});}
  function contributePension({amount,annualReturn=0}){const value=n(amount,'Khoản đóng',1,1e12),rate=n(annualReturn,'Tỷ suất mô phỏng',0,.5);return commit(()=>{debit(value);state.pension=round(state.pension+value);state.pensionRate=rate;log('PENSION','Đóng quỹ hưu trí',value);return snap();});}
  function assessTax({base,rate,label}){const taxable=n(base,'Cơ sở tính thuế',0,1e12),taxRate=n(rate,'Thuế suất',0,.5),name=s(label||'Thuế mô phỏng','Tên thuế',80),tax=round(taxable*taxRate);return commit(()=>{debit(tax);state.taxPaid=round(state.taxPaid+tax);log('TAX',name,tax);return{tax,state:snap()};});}
- function advance(days=1){const count=n(days,'Số ngày',1,3650);if(!Number.isInteger(count))throw new TypeError('Số ngày phải là số nguyên.');return commit(()=>{for(let d=0;d<count;d++){state.day++;for(const x of state.deposits){const interest=round(x.principal*x.annualRate/365);x.interest=round(x.interest+interest);x.remainingDays--;if(x.remainingDays<=0){credit(x.principal+x.interest);log('MATURITY','Đáo hạn '+x.name,x.principal+x.interest);x.remainingDays=0;x.matured=true;}}state.deposits=state.deposits.filter(x=>!x.matured);for(const b of state.bonds){const coupon=round(b.principal*b.couponRate/365);b.accrued=round(b.accrued+coupon);b.remainingDays--;if(b.remainingDays<=0){const payout=round(b.principal+b.accrued);credit(payout);log('BOND_MATURITY','Đáo hạn '+b.name,payout);b.matured=true;} }state.bonds=state.bonds.filter(x=>!x.matured);for(const l of state.loans){l.accrued=round(l.accrued+l.balance*l.annualRate/365);l.remainingDays=Math.max(0,l.remainingDays-1);}for(const p of state.properties){if(state.day%30===0){const rent=round(p.monthlyRent*p.occupancy),net=rent-p.monthlyCost;credit(Math.max(0,net));log('RENT','Thuê '+p.name,Math.max(0,net));p.months++;}}for(const b of state.businesses){if(state.day%30===0){const profit=b.monthlyRevenue-b.monthlyCost,tax=round(Math.max(0,profit)*b.taxRate),net=profit-tax;b.cash=round(b.cash+net);b.profit=round(b.profit+net);log('BUSINESS_MONTH','Kỳ kinh doanh '+b.name,net);b.months++;}}for(const f of state.farms){f.remainingDays--;if(f.remainingDays<=0){const revenue=round(f.hectares*f.yieldPerHectare*(1-f.spoilage)*f.pricePerUnit);credit(revenue);log('HARVEST','Thu hoạch '+f.name,revenue);f.harvested=true;}}state.farms=state.farms.filter(x=>!x.harvested);for(const i of state.insurance){i.remainingDays--;if(i.remainingDays<=0)i.active=false;}if(state.pension>0)state.pension=round(state.pension*(1+(state.pensionRate||0)/365));}}return snap();});}
+ function advance(days=1){
+  const count=n(days,'Số ngày',1,3650);
+  if(!Number.isInteger(count))throw new TypeError('Số ngày phải là số nguyên.');
+  return commit(()=>{
+   for(let d=0;d<count;d++){
+    state.day++;
+    for(const deposit of state.deposits){
+     deposit.interest=round(deposit.interest+deposit.principal*deposit.annualRate/365);
+     deposit.remainingDays--;
+     if(deposit.remainingDays<=0){
+      const payout=round(deposit.principal+deposit.interest);
+      credit(payout);log('MATURITY','Đáo hạn '+deposit.name,payout);deposit.matured=true;
+     }
+    }
+    state.deposits=state.deposits.filter(item=>!item.matured);
+    for(const bond of state.bonds){
+     bond.accrued=round(bond.accrued+bond.principal*bond.couponRate/365);
+     bond.remainingDays--;
+     if(bond.remainingDays<=0){
+      const payout=round(bond.principal+bond.accrued);
+      credit(payout);log('BOND_MATURITY','Đáo hạn '+bond.name,payout);bond.matured=true;
+     }
+    }
+    state.bonds=state.bonds.filter(item=>!item.matured);
+    for(const loan of state.loans){
+     loan.accrued=round(loan.accrued+loan.balance*loan.annualRate/365);
+     loan.remainingDays=Math.max(0,loan.remainingDays-1);
+    }
+    if(state.day%30===0){
+     for(const property of state.properties){
+      const rent=round(property.monthlyRent*property.occupancy);
+      const net=rent-property.monthlyCost;
+      if(net>=0)credit(net);else debit(Math.min(state.cash,-net));
+      log('RENT','Thuê '+property.name,net);property.months++;
+     }
+     for(const business of state.businesses){
+      const gross=business.monthlyRevenue-business.monthlyCost;
+      const tax=round(Math.max(0,gross)*business.taxRate);
+      const net=gross-tax;
+      business.cash=round(business.cash+net);
+      business.profit=round(business.profit+net);
+      log('BUSINESS_MONTH','Kỳ kinh doanh '+business.name,net);
+      business.months++;
+     }
+    }
+    for(const farm of state.farms){
+     farm.remainingDays--;
+     if(farm.remainingDays<=0){
+      const revenue=round(farm.hectares*farm.yieldPerHectare*(1-farm.spoilage)*farm.pricePerUnit);
+      credit(revenue);log('HARVEST','Thu hoạch '+farm.name,revenue);farm.harvested=true;
+     }
+    }
+    state.farms=state.farms.filter(item=>!item.harvested);
+    for(const policy of state.insurance){
+     policy.remainingDays--;
+     if(policy.remainingDays<=0)policy.active=false;
+    }
+    if(state.pension>0)state.pension=round(state.pension*(1+(state.pensionRate||0)/365));
+   }
+   return snap();
+  });
+ }
  function summary(){const holdings=state.positions.reduce((a,p)=>a+(p.markPrice==null?p.quantity*p.averageCost:p.quantity*p.markPrice),0),propertyValue=state.properties.reduce((a,p)=>a+p.price,0),businessValue=state.businesses.reduce((a,b)=>a+b.cash,0),debt=state.loans.reduce((a,l)=>a+l.balance+l.accrued,0),deposits=state.deposits.reduce((a,d)=>a+d.principal+d.interest,0),bonds=state.bonds.reduce((a,b)=>a+b.principal+b.accrued,0);return{...snap(),assets:round(state.cash+holdings+propertyValue+businessValue+deposits+bonds+state.pension),debt:round(debt),netWorth:round(state.cash+holdings+propertyValue+businessValue+deposits+bonds+state.pension-debt),holdings:round(holdings),virtualOnly:true};}
  function reset(){return commit(()=>{state=initial();return snap();});}
  return Object.freeze({getState:snap,getSummary:summary,buy,sell,mark,openDeposit,buyBond,borrow,repay,acquireProperty,createBusiness,startFarm,insure,claim,contributePension,assessTax,advance,reset,assets:ASSETS});
