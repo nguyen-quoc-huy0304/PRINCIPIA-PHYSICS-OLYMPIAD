@@ -112,6 +112,9 @@
       if (!ASSET_TYPES.some(item => item.id === assetType)) throw new TypeError('Loại tài sản không nằm trong danh mục hỗ trợ.');
       const symbol = cleanText(input.symbol, 'Mã tài sản', 80).toUpperCase();
       const name = cleanText(input.name || input.symbol, 'Tên tài sản', 100);
+      const currency = cleanText(input.currency || 'VND', 'Đơn vị tiền', 8).toUpperCase();
+      if (!['VND','USD','EUR','JPY','USDT'].includes(currency)) throw new TypeError('Đơn vị tiền chưa được hỗ trợ.');
+      const priceSource = cleanText(input.priceSource || 'Giá nhập thủ công · mô phỏng', 'Nguồn giá', 80);
       const quantity = finitePositive(input.quantity, 'Số lượng');
       const price = finitePositive(input.price, 'Giá mỗi đơn vị');
       const feeRate = input.feeRate == null ? DEFAULT_FEE_RATE : Number(input.feeRate);
@@ -132,7 +135,7 @@
           const totalCost = gross + fee;
           if (!Number.isFinite(totalCost)) throw new RangeError('Tổng chi phí không hợp lệ.');
           if (!position) {
-            position = {id:key,assetType,symbol,name,quantity:0,averageCost:0,invested:0,lastPrice:null,priceSource:'Chưa định giá',currency:input.currency || 'VND'};
+            position = {id:key,assetType,symbol,name,quantity:0,averageCost:0,invested:0,lastPrice:null,priceSource:'Chưa định giá',currency};
             state.positions.push(position);
           }
           const newQuantity = position.quantity + quantity;
@@ -147,7 +150,7 @@
           position.quantity = Math.max(0, position.quantity - quantity);
           position.invested = position.quantity * position.averageCost;
           if (position.quantity <= 1e-10) state.positions = state.positions.filter(item => item.id !== key);
-          state.trades.push({id:createId(),side,assetType,symbol,name,quantity,price,gross,fee,tax,costBasis,realizedPnl:proceeds-costBasis,currency:input.currency || 'VND',priceSource:cleanText(input.priceSource || 'Giá nhập thủ công · mô phỏng', 'Nguồn giá', 80),at:new Date().toISOString()});
+          state.trades.push({id:createId(),side,assetType,symbol,name,quantity,price,gross,fee,tax,costBasis,realizedPnl:proceeds-costBasis,currency:input.currency || 'VND',priceSource,at:new Date().toISOString()});
           trimTrades();
           return snapshot();
         }
