@@ -43,15 +43,15 @@ function createEngine({storage,now}={}){
   return commit(()=>{
    for(let m=0;m<count;m++){
     state.month++;
-    let wageBill=0,totalOutput=0,totalSupplyValue=0,totalSales=0,totalDemand=0,totalTax=0,totalIncome=0;
+    let wageBill=0,totalOutput=0,totalSupplyValue=0,totalSales=0,totalDemand=0,totalTax=0,totalIncome=0;\n    const policyFactor=Math.max(.5,Math.min(1.2,1-(state.policyRate-.04)*1.5));\n    const capacityFactor=Math.max(.75,Math.min(1.1,1-(state.policyRate-.04)*.5));
     for(const firm of state.firms){
      if(!firm.alive)continue;
-     const labor=Math.min(firm.employees,firm.capacity*firm.productivity);
+     const labor=Math.min(firm.employees,firm.capacity*firm.productivity*capacityFactor);
      const wages=round(labor*firm.monthlyWage);
      wageBill+=wages;
      const availableCapital=Math.max(0,firm.capital-wages);
      const affordableOutput=availableCapital/Math.max(.01,firm.unitCost);
-     const produced=Math.min(firm.capacity*firm.productivity,affordableOutput);
+     const produced=Math.min(firm.capacity*firm.productivity*capacityFactor,affordableOutput);
      firm.produced=round(produced);
      firm.inventory=round(firm.inventory+produced);
      totalOutput+=produced;
@@ -61,7 +61,7 @@ function createEngine({storage,now}={}){
      const gross=round(household.monthlyIncome);
      const incomeTax=round(gross*.03);
      const disposable=round(gross-incomeTax);
-     const spending=round(disposable*household.consumptionRate);
+     const spending=round(disposable*Math.min(1,household.consumptionRate*policyFactor));
      household.savings=round(Math.max(0,household.savings+disposable-spending));
      household.consumption=spending;
      household.utility=round(Math.log1p(spending));
