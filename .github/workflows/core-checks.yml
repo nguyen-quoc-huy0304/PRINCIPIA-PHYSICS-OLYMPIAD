@@ -67,3 +67,18 @@ jobs:
           g++ -std=c++17 -O2 -Wall -Wextra -Werror src/physics/engine.cpp /tmp/principia-c-test.o /tmp/principia-trajectory-c.o -o /tmp/principia-c-abi-test
           /tmp/principia-physics-test
           /tmp/principia-c-abi-test
+
+  market-data:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.25.x'
+          cache: false
+      - name: Format and test isolated market data service
+        run: |
+          test -z "$(gofmt -l services/market-data/*.go)"
+          cd services/market-data
+          go test -race ./...
+          go vet ./...
