@@ -119,3 +119,15 @@ test('reports constrained device profiles without exposing unsupported memory da
   assert.equal(profile.deviceMemoryGB, 2);
   assert.equal(profile.memoryInfo, null);
 });
+
+test('bounds idle work and deduplicates queued callbacks', () => {
+  const { api } = createHarness();
+  const callback = () => {};
+  assert.equal(api.schedule(callback), true);
+  assert.equal(api.schedule(callback), false);
+  for (let i = 1; i < api.maxIdleTasks; i += 1) {
+    assert.equal(api.schedule(() => {}), true);
+  }
+  assert.equal(api.schedule(() => {}), false);
+  assert.equal(api.getProfile().pendingIdleTasks, api.maxIdleTasks);
+});
