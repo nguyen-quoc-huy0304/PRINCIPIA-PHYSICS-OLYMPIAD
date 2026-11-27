@@ -45,12 +45,16 @@
  }
  async function recordActivity(days,when=new Date()){
   const result=await activity(days,when,true);
-  if(!Array.isArray(result.days))throw new TypeError('Rust returned an invalid activity calendar.');
-  return result.days;
+  if(!result||!Array.isArray(result.days))throw new TypeError('Rust returned an invalid activity calendar.');
+  const normalized=normalizeDays(result.days);
+  if(normalized.length!==result.days.length||normalized.some((day,index)=>day!==result.days[index])){
+   throw new TypeError('Rust returned a non-normalized activity calendar.');
+  }
+  return normalized;
  }
  async function streak(days,today=new Date()){
   const result=await activity(days,today,false);
-  if(!Number.isInteger(result.current)||!Number.isInteger(result.longest)||typeof result.activeToday!=='boolean'){
+  if(!result||!Number.isSafeInteger(result.current)||result.current<0||!Number.isSafeInteger(result.longest)||result.longest<0||typeof result.activeToday!=='boolean'){
    throw new TypeError('Rust returned an invalid streak summary.');
   }
   return {current:result.current,longest:result.longest,activeToday:result.activeToday};
@@ -58,7 +62,7 @@
  async function summarizeWithRust(xp,metrics={}){
   if(!Number.isSafeInteger(xp)||xp<0)throw new RangeError('XP không hợp lệ.');
   const result=await wasm().progression({xp,...normalizeMetrics(metrics)});
-  if(!result||!result.level||!Array.isArray(result.achievements))throw new TypeError('Rust returned an invalid progression summary.');
+  if(!result||typeof result!=='object'||!result.level||typeof result.level!=='object'||!Array.isArray(result.achievements))throw new TypeError('Rust returned an invalid progression summary.');
   return result;
  }
  async function level(xp){return (await summarizeWithRust(xp)).level;}
