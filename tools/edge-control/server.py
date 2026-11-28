@@ -223,22 +223,21 @@ def main() -> int:
         for page in context.pages:
             attach_logs(page)
         context.on("page", attach_logs)
-        server = ThreadingHTTPServer((HOST, PORT), Handler)
-        server.daemon_threads = True
-        thread = threading.Thread(target=server.serve_forever, daemon=True)
-        thread.start()
+        server = HTTPServer((HOST, PORT), Handler)
+        server.timeout = 0.2
         print(f"PRINCIPIA Browser Control: http://{HOST}:{PORT}")
         print(f"Edge profile: {PROFILE}")
         print("Nhấn Ctrl+C để dừng.")
         dashboard = context.new_page()
         dashboard.set_content("<script>setTimeout(() => location.replace('http://127.0.0.1:4317'), 300)</script>")
         try:
-            while thread.is_alive():
-                thread.join(0.5)
+            # Keep Playwright and request handlers on the same thread.
+            # The synchronous Playwright API is not thread-safe.
+            while True:
+                server.handle_request()
         except KeyboardInterrupt:
             print("\nĐang đóng Edge Control...")
         finally:
-            server.shutdown()
             server.server_close()
             context.close()
     return 0
