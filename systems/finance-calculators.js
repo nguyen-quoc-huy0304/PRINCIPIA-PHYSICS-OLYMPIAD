@@ -217,7 +217,7 @@ function scenarioAnalysis({ revenue, variableCostRate, fixedCosts, taxRate = 0, 
 }
 
 const METHODS = Object.freeze({
-  npv, irr, dcf, capm, wacc, bondPrice, portfolioStats, historicalVaR,
+  npv, irr, dcf, capm, wacc, bondPrice, ddm, cagr, roi, portfolioStats, historicalVaR,
   breakEven, unitEconomics, runway, dilution, scenarioAnalysis
 });
 
