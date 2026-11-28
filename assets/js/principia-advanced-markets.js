@@ -55,8 +55,8 @@ function createEngine({wallet,storage,now}={}){
 function mount(){
  const panel=root.document&&root.document.getElementById('principia-economy-root'),tabs=panel&&panel.querySelector('.pe-tabs'),content=panel&&panel.querySelector('#pe-content');
  if(!panel||!tabs||!content||panel.dataset.advancedMarketsReady)return false;
- const engine=createEngine({wallet:root.PrincipiaEconomyActiveWallet||undefined}),button=root.document.createElement('button');button.type='button';button.textContent='Phái sinh & DeFi';tabs.appendChild(button);panel.dataset.advancedMarketsReady='1';
- button.addEventListener('click',()=>{tabs.querySelectorAll('button').forEach(x=>x.classList.remove('active'));button.classList.add('active');render(content,engine);});return true;
+ let engine=null;const button=root.document.createElement('button');button.type='button';button.textContent='Phái sinh & DeFi';tabs.appendChild(button);panel.dataset.advancedMarketsReady='1';
+ button.addEventListener('click',()=>{tabs.querySelectorAll('button').forEach(x=>x.classList.remove('active'));button.classList.add('active');try{engine=createEngine({wallet:root.PrincipiaEconomyActiveWallet||undefined});render(content,engine);}catch(error){content.textContent='Không thể mở mô-đun: '+error.message;}});return true;
 }
 function render(el,e){
  const state=e.getState(),fmt=x=>new Intl.NumberFormat('vi-VN',{maximumFractionDigits:4}).format(x),row=(name,arr,fn)=>'<h3>'+name+'</h3>'+(arr.length?arr.map(fn).join(''):'<p>Chưa có vị thế.</p>');
