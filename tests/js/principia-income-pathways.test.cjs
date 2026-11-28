@@ -4,7 +4,7 @@ const assert = require("node:assert/strict");
 const { PATHWAYS, CATEGORIES, filterPathways } = require("../../assets/js/principia-income-pathways.js");
 
 test("income pathway catalogue has unique IDs and complete records", () => {
-  assert.ok(PATHWAYS.length >= 100);
+  assert.equal(PATHWAYS.length, 162);
   assert.equal(new Set(PATHWAYS.map(item => item.id)).size, PATHWAYS.length);
   for (const item of PATHWAYS) {
     assert.ok(CATEGORIES[item.category], item.id + " category");
