@@ -1,0 +1,24 @@
+name: PRINCIPIA JavaScript CI
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check economy module syntax
+        run: |
+          node --check assets/js/principia-integrated-economy.js
+          node --check assets/js/principia-economy-integrity.js
+          node --check assets/js/principia-economy-control-center.js
+          node --check assets/js/principia-advanced-markets.js
+      - name: Run JavaScript test suite
+        run: npm test
