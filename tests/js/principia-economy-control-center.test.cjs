@@ -29,3 +29,20 @@ test('includes bank products and requires every initialized wallet module to sha
  assert.equal(result.activity.bankLoans,1);
  assert.equal(result.activity.bankLedger,1);
 });
+test('reports enterprise sub-ledger and includes its wallet identity in reconciliation',()=>{
+ const identity='household:h-1';
+ const data=new Map([
+  [KEYS.integrated,JSON.stringify({households:[{id:'h-1',cash:4000}],firms:[],banks:[],ledger:[],government:{cash:0}})],
+  [KEYS.advanced,JSON.stringify({walletIdentity:identity,cash:0,ledger:[]})],
+  [KEYS.hub,JSON.stringify({walletIdentity:identity,cash:0,ledger:[]})],
+  [KEYS.portfolio,JSON.stringify({walletIdentity:identity,positions:[],trades:[]})],
+  [KEYS.bankProducts,JSON.stringify({walletIdentity:identity,deposits:[],loans:[],ledger:[]})],
+  [KEYS.enterpriseOperations,JSON.stringify({walletIdentity:identity,businesses:[{}],ledger:[{}]})]
+ ]);
+ const result=summarize({getItem:key=>data.get(key)||null});
+ assert.equal(result.modules.enterpriseOperations,true);
+ assert.equal(result.walletLinkage.shared,true);
+ assert.equal(result.walletLinkage.modules,5);
+ assert.equal(result.activity.enterpriseBusinesses,1);
+ assert.equal(result.activity.enterpriseLedger,1);
+});
