@@ -37,7 +37,7 @@
     return result;
   }
   function copy(value) { return JSON.parse(JSON.stringify(value)); }
-  function freshState() { return { version: 1, businesses: [], ledger: [] }; }
+  function freshState() { return { version: 1, walletIdentity: null, businesses: [], ledger: [] }; }
 
   function sanitizeState(raw) {
     if (!raw || raw.version !== 1) return freshState();
@@ -53,6 +53,7 @@
       Array.isArray(item.employees);
     return {
       version: 1,
+      walletIdentity: typeof raw.walletIdentity === 'string' ? raw.walletIdentity : null,
       businesses: Array.isArray(raw.businesses) ? raw.businesses.filter(validBusiness).slice(-MAX_BUSINESSES) : [],
       ledger: Array.isArray(raw.ledger) ? raw.ledger.filter(row =>
         row && typeof row.id === 'string' && typeof row.businessId === 'string' &&
@@ -75,10 +76,46 @@
     try { state = sanitizeState(JSON.parse(storage && storage.getItem(STORAGE_KEY) || 'null')); }
     catch (_) { state = freshState(); }
 
+    const walletIdentity = wallet.type + ':' + wallet.id;
+    if (state.walletIdentity && state.walletIdentity !== walletIdentity) {
+      throw new Error('Sổ doanh nghiệp đã liên kết với ví mô phỏng khác.');
+    }
+    if (!state.walletIdentity && (state.businesses.length || state.ledger.length)) {
+      throw new Error('Sổ doanh nghiệp có dữ liệu cũ chưa gắn ví; cần xử lý trước khi liên kết.');
+    }
+    state.walletIdentity = walletIdentity;
+
     function persist() {
       if (!storage) return;
       try { storage.setItem(STORAGE_KEY, JSON.stringify(state)); }
       catch (_) { throw new Error('Không thể lưu sổ doanh nghiệp.'); }
+    }
+
+    persist();
+
+    function transactWallet(amount, description, mutate) {
+      const previous = state;
+      const previousStored = storage && storage.getItem(STORAGE_KEY);
+      state = copy(state);
+      try {
+        const result = mutate();
+        persist();
+        if (typeof wallet.transact === 'function') {
+          wallet.transact([{ kind: 'debit', amount, description }]);
+        } else {
+          wallet.debit(amount, description);
+        }
+        return result;
+      } catch (error) {
+        state = previous;
+        if (storage) {
+          try {
+            if (previousStored == null) storage.removeItem(STORAGE_KEY);
+            else storage.setItem(STORAGE_KEY, previousStored);
+          } catch (rollbackError) { error.rollbackError = rollbackError; }
+        }
+        throw error;
+      }
     }
     function snapshot() { return copy(state); }
     function business(id) {
@@ -101,17 +138,17 @@
       integer(capital, 'Vốn thành lập', 1000000);
       if (state.businesses.length >= MAX_BUSINESSES) throw new RangeError('Đã đạt giới hạn doanh nghiệp.');
       const at = date(now());
-      wallet.debit(capital);
-      const company = {
-        id: 'biz-' + at.getTime().toString(36) + '-' + (state.businesses.length + 1),
-        name: name.trim(), cash: capital, taxPayable: 0, revenue: 0, costOfGoods: 0,
-        materials: {}, materialValues: {}, products: {}, employees: [], payrollAccrued: 0, productionCost: 0,
-        vatRate: 0.08, profitTaxRate: 0.2, createdAt: at.toISOString()
-      };
-      state.businesses.push(company);
-      log(company, 'capital', capital, 'Góp vốn thành lập', at);
-      persist();
-      return snapshot();
+      return transactWallet(capital, 'Góp vốn thành lập doanh nghiệp mô phỏng', () => {
+        const company = {
+          id: 'biz-' + at.getTime().toString(36) + '-' + (state.businesses.length + 1),
+          name: name.trim(), cash: capital, taxPayable: 0, revenue: 0, costOfGoods: 0,
+          materials: {}, materialValues: {}, products: {}, employees: [], payrollAccrued: 0, productionCost: 0,
+          vatRate: 0.08, profitTaxRate: 0.2, createdAt: at.toISOString()
+        };
+        state.businesses.push(company);
+        log(company, 'capital', capital, 'Góp vốn thành lập', at);
+        return snapshot();
+      });
     }
     function purchaseMaterial(id, sku, quantity, unitCost) {
       const company = business(id);
