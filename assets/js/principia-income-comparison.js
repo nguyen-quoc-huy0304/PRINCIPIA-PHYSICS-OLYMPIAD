@@ -82,7 +82,7 @@
     return Object.freeze({
       totalRevenue, totalVariableCost, totalFixedCost, totalTax, totalCosts,
       netAfterCapital: cumulative,
-      roiPct: stream.capital > 0 ? cumulative / stream.capital * 100 : null,
+      roiPct: stream.capital > 0 ? roundMoney(cumulative / stream.capital * 100) : null,
       paybackMonth
     });
   }
