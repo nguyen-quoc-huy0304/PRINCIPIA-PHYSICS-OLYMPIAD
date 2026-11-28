@@ -302,7 +302,7 @@
       render(content, state);
     });
     panel.addEventListener('click', event => {
-      if (event.target.closest('button') && !event.target.closest('[data-income-pathways-tab]')) {
+      if (event.target.closest('.pe-tabs > button') && !event.target.closest('[data-income-pathways-tab]')) {
         button.classList.remove('active');
       }
     }, true);
