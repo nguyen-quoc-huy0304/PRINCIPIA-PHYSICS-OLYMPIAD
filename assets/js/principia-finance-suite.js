@@ -6,7 +6,7 @@ const METHODS=[
 {id:'dcf',label:'Định giá DCF',fields:[['cashFlows','FCF từng năm, phân cách dấu phẩy','10000,12000,14000,16000,18000'],['discountRate','WACC (vd 0.12)','0.12'],['terminalGrowth','Tăng trưởng dài hạn (vd 0.03)','0.03']]},
 {id:'capm',label:'CAPM',fields:[['riskFreeRate','Lãi suất phi rủi ro (vd 0.04)','0.04'],['beta','Beta','1.1'],['marketReturn','Lợi suất thị trường (vd 0.10)','0.10']]},
 {id:'wacc',label:'WACC',fields:[['equity','Vốn chủ','700000'],['debt','Nợ vay','300000'],['costOfEquity','Chi phí vốn chủ (vd 0.14)','0.14'],['costOfDebt','Chi phí nợ (vd 0.08)','0.08'],['taxRate','Thuế suất (vd 0.20)','0.20']]},
-{id:'bondPrice',label:'Định giá trái phiếu',fields:[['faceValue','Mệnh giá','1000000'],['couponRate','Coupon (vd 0.08)','0.08'],['yieldRate','Lợi suất yêu cầu (vd 0.09)','0.09'],['periods','Số kỳ trả lãi','5'],['paymentsPerYear','Số lần trả lãi/năm','1']]},
+{id:'bondPrice',label:'Định giá trái phiếu',fields:[['faceValue','Mệnh giá','1000000'],['couponRate','Coupon (vd 0.08)','0.08'],['yieldRate','Lợi suất yêu cầu (vd 0.09)','0.09'],['periods','Số kỳ trả lãi','5'],['paymentsPerYear','Số lần trả lãi/năm','1']]},\n{id:'ddm',label:'Định giá cổ phiếu DDM',fields:[['nextDividend','Cổ tức kỳ tới','3000'],['requiredReturn','Tỷ suất yêu cầu (vd 0.12)','0.12'],['growthRate','Tăng trưởng cổ tức (vd 0.04)','0.04']]},\n{id:'cagr',label:'Tăng trưởng kép CAGR',fields:[['beginningValue','Giá trị đầu kỳ','100000000'],['endingValue','Giá trị cuối kỳ','160000000'],['years','Số năm','5']]},\n{id:'roi',label:'Tỷ suất hoàn vốn ROI',fields:[['initialInvestment','Vốn đầu tư','100000000'],['endingValue','Giá trị cuối kỳ','130000000'],['additionalCosts','Chi phí bổ sung','5000000']]},
 {id:'breakEven',label:'Điểm hòa vốn',fields:[['fixedCosts','Chi phí cố định','50000000'],['price','Giá bán/sản phẩm','200000'],['variableCost','Chi phí biến đổi/sản phẩm','120000']]},
 {id:'unitEconomics',label:'Unit economics',fields:[['price','Doanh thu/khách','500000'],['variableCost','Chi phí biến đổi/khách','150000'],['cac','Chi phí có khách mới (CAC)','100000'],['monthlyFixedCosts','Chi phí cố định tháng','20000000'],['monthlyCustomers','Số khách/tháng','100']]},
 {id:'runway',label:'Runway',fields:[['cash','Tiền mặt hiện có','300000000'],['monthlyBurn','Dòng tiền tiêu hao/tháng','25000000']]},
@@ -34,7 +34,7 @@ function mount(){
  launcher.id='principia-finance-launcher';launcher.type='button';launcher.textContent='Tài chính & Kinh doanh';
  const panel=root.document.createElement('section');
  panel.id='principia-finance-panel';panel.setAttribute('aria-label','Trung tâm tài chính và kinh doanh');
- panel.innerHTML='<div class="pf-head"><div><div class="pf-muted">PRINCIPIA FINANCE SUITE</div><h2>Trung tâm Đầu tư & Kinh doanh</h2></div><button type="button" class="pf-close" aria-label="Đóng">Đóng ✕</button></div><div class="pf-tabs" role="tablist"><button class="pf-tab" data-tab="calc" aria-selected="true">Máy tính tài chính</button><button class="pf-tab" data-tab="plan" aria-selected="false">Kế hoạch kinh doanh</button><button class="pf-tab" data-tab="scenario" aria-selected="false">Kịch bản & rủi ro</button></div><div id="pf-content"></div><p class="pf-muted">Kết quả là mô phỏng theo dữ liệu bạn nhập, không phải báo giá trực tiếp hay khuyến nghị đầu tư.</p>';
+ panel.innerHTML='<div class="pf-head"><div><div class="pf-muted">PRINCIPIA FINANCE SUITE</div><h2>Trung tâm Đầu tư & Kinh doanh</h2></div><button type="button" class="pf-close" aria-label="Đóng">Đóng ✕</button></div><div class="pf-tabs" role="tablist"><button class="pf-tab" data-tab="calc" aria-selected="true">Máy tính tài chính</button><button class="pf-tab" data-tab="plan" aria-selected="false">Kế hoạch kinh doanh</button><button class="pf-tab" data-tab="scenario" aria-selected="false">Kịch bản & rủi ro</button><button class="pf-tab" data-tab="canvas" aria-selected="false">Mô hình kinh doanh</button></div><div id="pf-content"></div><p class="pf-muted">Kết quả là mô phỏng theo dữ liệu bạn nhập, không phải báo giá trực tiếp hay khuyến nghị đầu tư.</p>';
  root.document.body.append(launcher,panel);
  const content=panel.querySelector('#pf-content');
  let tab='calc';
@@ -42,7 +42,7 @@ function mount(){
   panel.querySelectorAll('[data-tab]').forEach(button=>button.setAttribute('aria-selected',String(button.dataset.tab===tab)));
   if(tab==='calc')renderCalculators();
   if(tab==='plan')renderPlanner();
-  if(tab==='scenario')renderScenarios();
+  if(tab==='scenario')renderScenarios();\n  if(tab==='canvas')renderCanvas();
  }
  function renderCalculators(){
   content.innerHTML='<div class="pf-grid">'+METHODS.map(method=>'<article class="pf-card"><h3>'+safeText(method.label)+'</h3><form data-method="'+method.id+'">'+method.fields.map(([key,label,value])=>'<div class="pf-field"><label>'+safeText(label)+'</label><input name="'+key+'" value="'+value.replace(/"/g,'&quot;')+'" required></div>').join('')+'<button class="pf-submit" type="submit">Tính toán</button><div class="pf-result" aria-live="polite">Nhập dữ liệu và tính toán.</div></form></article>').join('')+'</div>';
@@ -60,6 +60,16 @@ function mount(){
    event.preventDefault();const form=event.currentTarget;const data=Object.fromEntries(Array.from(new FormData(form).entries()));
    try{const plan=root.PrincipiaBusinessPlanner.buildPlan(data);const summary={breakEvenRevenue:plan.breakEvenRevenue,firstMonthProfit:plan.firstMonthProfit,finalCash:plan.finalCash,paybackMonth:plan.paybackMonth};form.querySelector('#pf-plan-result').innerHTML=renderResult(summary)+'<table class="pf-table"><thead><tr><th>Tháng</th><th>Doanh thu</th><th>Lợi nhuận</th><th>Tiền cuối kỳ</th></tr></thead><tbody>'+plan.projection.map(row=>'<tr><td>'+row.month+'</td><td>'+fmt(row.revenue)+'</td><td>'+fmt(row.operatingProfit)+'</td><td>'+fmt(row.endingCash)+'</td></tr>').join('')+'</tbody></table>';}
    catch(error){form.querySelector('#pf-plan-result').textContent=error.message;}
+  });
+ }
+ function renderCanvas(){
+  content.innerHTML='<article class="pf-card"><h3>Business Model Canvas — Khung mô hình kinh doanh</h3><p class="pf-muted">Mô tả khách hàng, vấn đề, giá trị, kênh, doanh thu, chi phí và rủi ro. Đây là khung phân tích, không tự khẳng định mô hình khả thi.</p><form id="pf-canvas-form"><div class="pf-grid">'+[
+  ['customer','Phân khúc khách hàng','Học sinh, sinh viên'],['problem','Vấn đề của khách hàng','Khó tự học có hệ thống'],['valueProposition','Giá trị cung cấp','Lộ trình học cá nhân hóa'],['channel','Kênh tiếp cận','Website, cộng đồng'],['revenueStream','Nguồn doanh thu','Thuê bao tháng'],['keyCosts','Chi phí chính','Phát triển, máy chủ, marketing'],['keyRisks','Rủi ro chính','Chi phí thu hút khách hàng, giữ chân']
+  ].map(([key,label,value])=>'<div class="pf-field"><label>'+label+'</label><textarea name="'+key+'" rows="2" required>'+value+'</textarea></div>').join('')+'</div><button class="pf-submit" type="submit">Kiểm tra khung mô hình</button><div class="pf-result" id="pf-canvas-result">Chưa có phân tích.</div></form></article>';
+  content.querySelector('#pf-canvas-form').addEventListener('submit',event=>{
+   event.preventDefault();const form=event.currentTarget;const data=Object.fromEntries(Array.from(new FormData(form).entries()));
+   try{const model=root.PrincipiaBusinessPlanner.validateBusinessModel(data);form.querySelector('#pf-canvas-result').innerHTML='<table class="pf-table"><tbody>'+Object.entries(model).map(([key,value])=>'<tr><td>'+safeText(key)+'</td><td>'+safeText(value)+'</td></tr>').join('')+'</tbody></table>';}
+   catch(error){form.querySelector('#pf-canvas-result').textContent=error.message;}
   });
  }
  function renderScenarios(){
