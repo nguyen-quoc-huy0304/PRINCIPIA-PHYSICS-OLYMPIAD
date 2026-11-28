@@ -3,12 +3,14 @@
   'use strict';
   if (window.PrincipiaErrorLog) return;
   const STORE = 'principia_error_log_v1', MAX_ENTRIES = 100, DEDUPE_MS = 10000;
-  const SECRET_QUERY = /([?&](?:access[_-]?token|refresh[_-]?token|api[_-]?key|apikey|secret|password|authorization|auth|key)=)[^&#\s]*/gi;
+  const SECRET_QUERY = /([?&](?:access[_-]?token|refresh[_-]?token|session[_-]?token|api[_-]?key|apikey|client[_-]?secret|private[_-]?key|secret|password|authorization|auth|cookie|key=)[^&#\s]*/gi;
   const BEARER = /\bBearer\s+[A-Za-z0-9._~+\/-]+=*/gi;
-  const SECRET_ASSIGNMENT = /\b(?:api[_-]?key|access[_-]?token|refresh[_-]?token|password|secret|authorization)\s*[:=]\s*["']?[^\s,;"']+/gi;
+  const SECRET_ASSIGNMENT = /\b(?:api[_-]?key|access[_-]?token|refresh[_-]?token|session[_-]?token|client[_-]?secret|private[_-]?key|password|secret|authorization|cookie)\s*[:=]\s*["']?[^\s,;"']+/gi;
+  const SECRET_JSON_STRING = /((?:["'])(?:access[_-]?token|refresh[_-]?token|session[_-]?token|api[_-]?key|apikey|client[_-]?secret|private[_-]?key|secret|password|authorization|auth|cookie)(?:["'])\s*:\s*)(["'])(?:\\.|(?!\2)[^\\])*\2/gi;
+  const SECRET_JSON_SCALAR = /((?:["'])(?:access[_-]?token|refresh[_-]?token|session[_-]?token|api[_-]?key|apikey|client[_-]?secret|private[_-]?key|secret|password|authorization|auth|cookie)(?:["'])\s*:\s*)(?:null|true|false|-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)/gi;
   const bounded = (value, limit) => String(value == null ? '' : value).slice(0, limit);
   function redact(value, limit = 3000) {
-    return bounded(value, limit).replace(SECRET_QUERY, '$1[REDACTED]').replace(BEARER, 'Bearer [REDACTED]').replace(SECRET_ASSIGNMENT, match => match.replace(/([:=]\s*["']?)[^\s,;"']+$/, '$1[REDACTED]'));
+    return bounded(value, limit).replace(SECRET_QUERY, '$1[REDACTED]').replace(BEARER, 'Bearer [REDACTED]').replace(SECRET_JSON_STRING, (_match, prefix, quote) => prefix + quote + '[REDACTED]' + quote).replace(SECRET_JSON_SCALAR, '$1[REDACTED]').replace(SECRET_ASSIGNMENT, match => match.replace(/([:=]\s*["']?)[^\s,;"']+$/, '$1[REDACTED]'));
   }
   function errorMessage(error) {
     if (error && typeof error === 'object') {
