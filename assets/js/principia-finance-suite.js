@@ -85,6 +85,15 @@ function mount(){
    try{const rows=root.PrincipiaFinanceCore.calculate('scenarioAnalysis',{...data,scenarios:[{name:'Xấu',revenueMultiplier:.7,fixedCostMultiplier:1.1},{name:'Cơ sở',revenueMultiplier:1,fixedCostMultiplier:1},{name:'Tốt',revenueMultiplier:1.25,fixedCostMultiplier:.95}]});form.querySelector('#pf-scenario-result').innerHTML=renderResult(rows);}
    catch(error){form.querySelector('#pf-scenario-result').textContent=error.message;}
   });
+  const riskCard=root.document.createElement('article');
+  riskCard.className='pf-card';
+  riskCard.innerHTML='<h3>Value at Risk (VaR) — Rủi ro lịch sử</h3><p class="pf-muted">Nhập chuỗi lợi suất theo kỳ, ví dụ 0.02,-0.01,0.015. Ước lượng chỉ dựa trên dữ liệu bạn cung cấp.</p><form id="pf-var-form"><div class="pf-grid"><div class="pf-field"><label>Chuỗi lợi suất</label><textarea name="returns" rows="3" required>0.02,-0.01,0.015,-0.03,0.01,0.005</textarea></div><div class="pf-field"><label>Mức tin cậy (0.95 = 95%)</label><input name="confidence" value="0.95" required></div><div class="pf-field"><label>Giá trị danh mục</label><input name="portfolioValue" value="100000000" required></div></div><button class="pf-submit" type="submit">Ước lượng VaR</button><div class="pf-result" aria-live="polite">Chưa có kết quả.</div></form>';
+  content.append(riskCard);
+  riskCard.querySelector('#pf-var-form').addEventListener('submit',event=>{
+   event.preventDefault();const form=event.currentTarget,result=form.querySelector('.pf-result');
+   try{const returns=form.elements.namedItem('returns').value.split(/[;,\\s]+/).filter(Boolean).map(Number);const value=root.PrincipiaFinanceCore.calculate('historicalVaR',{returns,confidence:Number(form.elements.namedItem('confidence').value),portfolioValue:Number(form.elements.namedItem('portfolioValue').value)});result.innerHTML='<strong>'+safeText(fmt(value))+'</strong><span class="pf-muted">Ước lượng mức lỗ ngưỡng trong một kỳ theo chuỗi lợi suất đã nhập.</span>';}
+   catch(error){result.textContent=error.message;}
+  });
  }
  launcher.addEventListener('click',()=>{panel.classList.add('open');show();});
  panel.querySelector('.pf-close').addEventListener('click',()=>panel.classList.remove('open'));
