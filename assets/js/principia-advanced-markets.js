@@ -12,7 +12,7 @@ function createEngine({wallet,storage,now}={}){
  for(const k of ['shorts','futures','options','fx','stakes','pools','ledger'])if(!Array.isArray(state[k]))state[k]=[];
  if(!Number.isSafeInteger(state.sequence)||state.sequence<0)state.sequence=0;
  if(!Number.isSafeInteger(state.cash)||state.cash<0)state.cash=100000000;
- if(wallet){const identity=wallet.type+':'+wallet.id,open=['shorts','futures','options','fx','stakes','pools'].some(k=>state[k].length>0);if(state.walletIdentity&&state.walletIdentity!==identity)throw new Error('Mô-đun đã liên kết với ví mô phỏng khác.');if(!state.walletIdentity&&open)throw new Error('Không thể liên kết ví khi còn vị thế từ sổ vốn cũ; hãy tất toán trước.');state.walletIdentity=identity;if(store)store.setItem(KEY,JSON.stringify(state));}
+ if(wallet){const identity=wallet.type+':'+wallet.id,open=['shorts','futures','options','fx','stakes','pools'].some(k=>state[k].length>0);if(state.walletIdentity&&state.walletIdentity!==identity)throw new Error('Mô-đun đã liên kết với ví mô phỏng khác.');if(!state.walletIdentity&&(open||state.cash!==100000000))throw new Error('Không thể liên kết ví khi sổ phái sinh còn vị thế hoặc số dư cũ; hãy xử lý trước để tránh tạo tiền ảo.');state.walletIdentity=identity;if(store)store.setItem(KEY,JSON.stringify(state));}
  if(wallet&&typeof wallet.transact!=='function')throw new TypeError('Ví liên thông cần hỗ trợ giao dịch nguyên tử.');
  let activeOperations=null;
  const account=wallet?{
