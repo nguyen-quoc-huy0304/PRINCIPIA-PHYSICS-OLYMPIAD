@@ -14,14 +14,14 @@ function summarize(storage){
  const positions=Array.isArray(portfolio?.positions)?portfolio.positions:[];
  const integrity=integrated&&root.PrincipiaEconomyIntegrity?root.PrincipiaEconomyIntegrity.audit(integrated):null;
  const count=(obj,field)=>Array.isArray(obj?.[field])?obj[field].length:0;
- const linkedModules=[advanced,hub,portfolio].filter(Boolean),walletIds=linkedModules.map(x=>x.walletIdentity||null),sharedWallet=walletIds.length>0&&walletIds.every(Boolean)&&walletIds.every(x=>x===walletIds[0]);
+ const linkedModules=[advanced,hub,portfolio].filter(Boolean),walletIds=linkedModules.map(x=>x.walletIdentity||null),sharedWallet=linkedModules.length===3&&walletIds.every(Boolean)&&walletIds.every(x=>x===walletIds[0]);
  const walletBalance=identity=>{if(!integrated||!identity)return null;const [type,id]=identity.split(':');if(type==='government')return Number(integrated.government?.cash)||0;const list={household:households,firm:firms,bank:banks}[type];const entity=list?.find(x=>x.id===id);return entity?Number(type==='bank'?entity.liquidity:entity.cash)||0:null;};
  const sharedBalance=sharedWallet?walletBalance(walletIds[0]):null;
  return Object.freeze({
   simulationOnly:true,
   modules:{integrated:Boolean(integrated),advanced:Boolean(advanced),hub:Boolean(hub),portfolio:Boolean(portfolio)},
   participants:{households:households.length,firms:firms.length,banks:banks.length},
-  walletLinkage:{shared:sharedWallet,identity:sharedWallet?walletIds[0]:null,balance:sharedBalance,modules:linkedModules.length},
+  walletLinkage:{shared:sharedWallet,identity:sharedWallet?walletIds[0]:null,balance:sharedBalance,modules:walletIds.filter(Boolean).length},
   balances:{households:households.reduce((n,x)=>n+(Number(x.cash)||0),0),firms:firms.reduce((n,x)=>n+(Number(x.cash)||0),0),bankLiquidity:banks.reduce((n,x)=>n+(Number(x.liquidity)||0),0),advanced:advanced?.walletIdentity?walletBalance(advanced.walletIdentity):Math.max(0,Number(advanced?.cash)||0),simulationHub:hub?.walletIdentity?walletBalance(hub.walletIdentity):Math.max(0,Number(hub?.cash)||0)},
   activity:{integratedLedger:count(integrated,'ledger'),advancedLedger:count(advanced,'ledger'),simulationLedger:count(hub,'ledger'),portfolioPositions:positions.length,portfolioTrades:count(portfolio,'trades')},
   integrity,warnings:[...(!integrated?['Chưa khởi tạo nền kinh tế liên thông']:[]),...(integrity&&!integrity.healthy?integrity.issues.map(x=>'Kiểm tra '+x.name+': '+x.detail):[]),...(linkedModules.length&&!sharedWallet?['Các phân hệ chưa cùng liên kết một ví. Vào Kinh tế liên thông, chọn cùng một ví mô phỏng rồi mở lại từng phân hệ.']:[]),...(sharedWallet&&sharedBalance===null?['Không tìm thấy chủ ví liên thông trong dữ liệu kinh tế.']:[])]
