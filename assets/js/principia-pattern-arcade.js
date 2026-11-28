@@ -56,7 +56,7 @@ function startRound(nextMode=mode){
  mode=nextMode;attempts=0;round=createRound(secureSeed(),mode);
 }
 function render(){
- if(!round)return '<section class="panel pg-pattern-card"><p>Không thể khởi tạo trò chơi.</p></section>';
+ if(!round)return (root.PrincipiaPatternProgression?.render?.()||'')+'<section class="panel pg-pattern-card"><p>Không thể khởi tạo trò chơi.</p></section>';
  const config=MODES[mode];
  const samples=round.sequence.map((value,index)=>'<span class="pg-pattern-sample"><small>'+(index+1)+'</small><b>'+escapeHTML(value)+'</b></span>').join('');
  const predictions=config.values.map(value=>'<option value="'+escapeHTML(value)+'">'+escapeHTML(value)+'</option>').join('');
@@ -83,14 +83,14 @@ function submitPrediction(container,step){
  const result=evaluateGuess(round,select.value,step);
  if(result.solved){
   const points=100+Math.min(stats.streak,20)*5;
-  stats={score:stats.score+points,streak:stats.streak+1,solved:stats.solved+1};
+  stats={score:stats.score+points,streak:stats.streak+1,solved:stats.solved+1};\n  root.document?.dispatchEvent(new CustomEvent('principia:pattern-solved'));
   const oldMode=mode;
   saveStats();
   try{startRound(oldMode);message='Chính xác! Bạn nhận +'+points+' điểm. Quy luật cũ đã bị phát hiện và quy luật mới vừa xuất hiện.';}
   catch(error){message='Đã phá quy luật và ghi điểm, nhưng chưa thể tạo vòng mới: '+String(error.message||error);}
   return;
  }
- attempts+=1;stats.streak=0;saveStats();
+ attempts+=1;stats.streak=0;saveStats();\n root.document?.dispatchEvent(new CustomEvent('principia:pattern-failed'));
  if(result.predictionCorrect)message='Dự đoán đúng, nhưng quy luật bạn chọn chưa đúng. Hãy xem lại hiệu số giữa các kết quả.';
  else if(result.ruleCorrect)message='Bạn đã chọn đúng quy luật nhưng dự đoán kết quả tiếp theo chưa chính xác.';
  else message='Chưa đúng. Hãy so sánh khoảng cách giữa các kết quả và kiểm tra quy luật quay vòng.';

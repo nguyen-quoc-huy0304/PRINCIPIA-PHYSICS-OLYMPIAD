@@ -1,0 +1,10 @@
+'use strict';
+const test=require('node:test');
+const assert=require('node:assert/strict');
+const P=require('../../assets/js/principia-pattern-progression.js');
+test('first solved rule grants base XP and first quest once',()=>{const r=P.applySolve({},'2026-11-28');assert.equal(r.state.xp,60);assert.equal(r.state.totalSolved,1);assert.deepEqual(r.rewards,[{id:'first',xp:40}]);assert.deepEqual(r.unlocked.map(x=>x.id),['pattern-1']);});
+test('third solve completes daily and streak quests with milestone unlock',()=>{let s={};for(let i=0;i<3;i++)s=P.applySolve(s,'2026-11-28').state;assert.equal(s.dailySolved,3);assert.ok(s.claimed.includes('triple'));assert.ok(s.claimed.includes('streak'));assert.equal(s.xp,280);});
+test('daily reset preserves lifetime stats but clears daily claims',()=>{const s=P.applySolve({},'2026-11-27').state;const n=P.applySolve(s,'2026-11-28').state;assert.equal(n.dailySolved,1);assert.deepEqual(n.claimed,['first']);assert.equal(n.totalSolved,2);});
+test('failed round resets current streak without reducing XP',()=>{const s=P.applySolve({},'2026-11-28').state;const n=P.breakStreak(s);assert.equal(n.streak,0);assert.equal(n.xp,s.xp);assert.equal(n.totalSolved,s.totalSolved);assert.equal(n.bestStreak,1);});
+test('persisted state is normalized and identifiers are allow-listed',()=>{const s=P.validateState({xp:-1,totalSolved:Infinity,dailySolved:3,claimed:['first','inject'],unlocked:['pattern-1','admin']});assert.equal(s.xp,0);assert.equal(s.totalSolved,0);assert.deepEqual(s.claimed,['first']);assert.deepEqual(s.unlocked,['pattern-1']);});
+test('invalid date values are rejected',()=>{assert.throws(()=>P.todayKey('2026-11-28'),TypeError);assert.throws(()=>P.resetDay({},'2026-02-30'),TypeError);});
