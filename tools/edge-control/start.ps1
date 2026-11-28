@@ -1,10 +1,13 @@
 $ErrorActionPreference = "Stop"
+$programFilesX86 = [Environment]::GetEnvironmentVariable("ProgramFiles(x86)")
+$programFiles = [Environment]::GetEnvironmentVariable("ProgramFiles")
+$localAppData = [Environment]::GetEnvironmentVariable("LOCALAPPDATA")
 $edgeCandidates = @(
-  "$env:ProgramFiles(x86)\Microsoft\Edge\Application\msedge.exe",
-  "$env:ProgramFiles\Microsoft\Edge\Application\msedge.exe",
-  "$env:LOCALAPPDATA\Microsoft\Edge\Application\msedge.exe"
-)
-$edge = $edgeCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+  (Join-Path $programFilesX86 "Microsoft\Edge\Application\msedge.exe"),
+  (Join-Path $programFiles "Microsoft\Edge\Application\msedge.exe"),
+  (Join-Path $localAppData "Microsoft\Edge\Application\msedge.exe")
+) | Where-Object { $_ -and (Test-Path $_) }
+$edge = $edgeCandidates | Select-Object -First 1
 if (-not $edge) {
   Write-Host "Khong tim thay Microsoft Edge. Hay cai Edge truoc." -ForegroundColor Red
   exit 1
