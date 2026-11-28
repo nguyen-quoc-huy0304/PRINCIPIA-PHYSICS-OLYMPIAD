@@ -91,7 +91,7 @@ function mount(){
   content.append(riskCard);
   riskCard.querySelector('#pf-var-form').addEventListener('submit',event=>{
    event.preventDefault();const form=event.currentTarget,result=form.querySelector('.pf-result');
-   try{const returns=form.elements.namedItem('returns').value.split(/[;,\\s]+/).filter(Boolean).map(Number);const value=root.PrincipiaFinanceCore.calculate('historicalVaR',{returns,confidence:Number(form.elements.namedItem('confidence').value),portfolioValue:Number(form.elements.namedItem('portfolioValue').value)});result.innerHTML='<strong>'+safeText(fmt(value))+'</strong><span class="pf-muted">Ước lượng mức lỗ ngưỡng trong một kỳ theo chuỗi lợi suất đã nhập.</span>';}
+   try{const returns=form.elements.namedItem('returns').value.split(/[;,\s]+/).filter(Boolean).map(Number);const value=root.PrincipiaFinanceCore.calculate('historicalVaR',{returns,confidence:Number(form.elements.namedItem('confidence').value),portfolioValue:Number(form.elements.namedItem('portfolioValue').value)});result.innerHTML='<strong>'+safeText(fmt(value))+'</strong><span class="pf-muted">Ước lượng mức lỗ ngưỡng trong một kỳ theo chuỗi lợi suất đã nhập.</span>';}
    catch(error){result.textContent=error.message;}
   });
  }
