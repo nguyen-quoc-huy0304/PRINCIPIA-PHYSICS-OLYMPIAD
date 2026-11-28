@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark">
+<title>PRINCIPIA Edge Control</title>
+<style>
+:root{font-family:Inter,Segoe UI,Arial,sans-serif;color:#e8edf6;background:#0b1020}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 15% 0%,#18264a 0,transparent 35%),#0b1020}
+header{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid #26324a;background:#0d1426dd;position:sticky;top:0;z-index:2}.brand{font-weight:800;letter-spacing:.08em}.brand span{color:#70a5ff}.status{font-size:12px;color:#9eabc1}
+main{max-width:1440px;margin:auto;padding:22px;display:grid;grid-template-columns:290px minmax(0,1fr);gap:18px}.panel{background:#111a2d;border:1px solid #273550;border-radius:14px;padding:16px;min-width:0}
+h2{font-size:14px;margin:0 0 14px;color:#c9d6ec}label{display:block;font-size:12px;color:#9eabc1;margin:12px 0 6px}input,button{font:inherit}input{width:100%;background:#0a1222;border:1px solid #33435f;border-radius:8px;color:#edf3ff;padding:10px;outline:none}input:focus{border-color:#6fa5ff}
+button{border:0;border-radius:8px;padding:10px 12px;background:#2865c7;color:white;cursor:pointer;font-weight:650}button.secondary{background:#263650;color:#dce7f8}button.danger{background:#713b48}button:disabled{opacity:.5;cursor:not-allowed}
+.stack{display:grid;gap:8px}.tabs{display:grid;gap:6px;max-height:50vh;overflow:auto}.tab{width:100%;text-align:left;background:#17243a;border:1px solid transparent;overflow:hidden}.tab.active{border-color:#6fa5ff;background:#1b3152}.tab small{display:block;color:#a8b7cd;font-weight:400;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;margin-top:4px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap}.toolbar input{flex:1;min-width:200px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.output{white-space:pre-wrap;overflow:auto;max-height:370px;background:#08101e;border:1px solid #273550;border-radius:8px;padding:12px;font:12px/1.55 Consolas,monospace;color:#c6d4e9}.muted{color:#899bb5;font-size:12px}.preview{width:100%;max-height:65vh;object-fit:contain;background:#080d18;border-radius:8px;border:1px solid #273550}.notice{font-size:12px;color:#a9bad3;line-height:1.5}
+#toast{position:fixed;bottom:18px;right:18px;background:#1c2c45;border:1px solid #3a5277;padding:12px 16px;border-radius:9px;display:none;max-width:min(420px,90vw);z-index:4}
+@media(max-width:850px){main{grid-template-columns:1fr;padding:12px}.grid2{grid-template-columns:1fr}header{padding:14px}}
+</style></head>
+<body>
+<header><div class="brand">PRINCIPIA <span>EDGE CONTROL</span></div><div id="status" class="status">Đang kết nối…</div></header>
+<main>
+<aside class="panel"><h2>ĐIỀU HƯỚNG</h2>
+<div class="toolbar"><input id="url" value="https://principia-physics-olympiad-pro.pages.dev/" aria-label="URL"><button id="open">Mở</button></div>
+<div class="toolbar" style="margin-top:9px"><button class="secondary" id="refreshTabs">Tải tab</button><button class="secondary" id="reload">Tải lại trang</button></div>
+<label>Các tab Edge</label><div id="tabs" class="tabs"><div class="muted">Đang tải…</div></div>
+<p class="notice">Công cụ dùng hồ sơ Edge riêng, không đọc hồ sơ Edge cá nhân đang mở. Bạn có thể đăng nhập website trong cửa sổ Edge này; phiên đăng nhập được lưu trong hồ sơ riêng.</p></aside>
+<section class="stack">
+<div class="panel"><h2>KIỂM TRA TRANG</h2><div class="toolbar"><button id="inspect">Đọc nội dung trang</button><button class="secondary" id="screenshot">Chụp màn hình</button><button class="secondary" id="readLogs">Đọc Console</button><button class="danger" id="closeTab">Đóng tab</button></div><div id="pageInfo" class="muted" style="margin-top:10px">Chưa chọn tab.</div></div>
+<div class="grid2"><div class="panel"><h2>THAO TÁC TRÊN TRANG</h2><label>CSS selector</label><input id="selector" placeholder="Ví dụ: button[type=submit]"><label>Giá trị nhập (nếu dùng Fill)</label><input id="value" placeholder="Nội dung cần nhập"><div class="toolbar" style="margin-top:10px"><button id="click">Click phần tử</button><button class="secondary" id="fill">Điền dữ liệu</button></div><p class="notice">Chỉ thao tác trên tab được chọn. Công cụ không tự gửi biểu mẫu hoặc xác nhận thanh toán.</p></div>
+<div class="panel"><h2>KẾT QUẢ / LOG</h2><div id="output" class="output">Chưa có dữ liệu.</div></div></div>
+<div class="panel" id="imagePanel" hidden><h2>ẢNH CHỤP MÀN HÌNH</h2><img id="preview" class="preview" alt="Ảnh chụp tab Edge"></div>
+</section></main><div id="toast" role="status"></div>
+<script type="module">
+let token="",selectedTab=null;
+const $=id=>document.getElementById(id);
+const headers=()=>({"Content-Type":"application/json","x-principia-token":token});
+const show=value=>$("output").textContent=typeof value==="string"?value:JSON.stringify(value,null,2);
+function toast(message){$("toast").textContent=message;$("toast").style.display="block";setTimeout(()=>$("toast").style.display="none",3500)}
+async function api(path,options={}){const response=await fetch("/api"+path,{...options,headers:{...headers(),...(options.headers||{})}});const data=await response.json().catch(()=>({error:"Phản hồi không hợp lệ"}));if(!response.ok)throw new Error(data.error||"Yêu cầu thất bại");return data}
+async function loadTabs(){
+ const {tabs}=await api("/tabs");$("tabs").replaceChildren();
+ tabs.forEach(tab=>{const button=document.createElement("button");button.className="tab"+(selectedTab===tab.id?" active":"");const title=document.createElement("span");title.textContent=tab.title||"(không có tiêu đề)";const url=document.createElement("small");url.textContent=tab.url;button.append(title,url);button.addEventListener("click",()=>{selectedTab=tab.id;$("pageInfo").textContent=tab.title+" — "+tab.url;loadTabs()});$("tabs").append(button)});
+ if(selectedTab===null&&tabs.length){selectedTab=tabs[0].id;loadTabs()}
+ if(!tabs.length){selectedTab=null;$("tabs").textContent="Chưa có tab nào."}
+}
+async function withTab(action){if(selectedTab===null)throw new Error("Hãy chọn một tab trước.");return action()}
+$("open").onclick=async()=>{try{await api("/tabs/open",{method:"POST",body:JSON.stringify({url:$("url").value.trim()})});await loadTabs();toast("Đã mở trang.")}catch(e){toast(e.message)}};
+$("refreshTabs").onclick=()=>loadTabs().catch(e=>toast(e.message));
+$("reload").onclick=()=>withTab(()=>api("/actions/reload",{method:"POST",body:JSON.stringify({tabId:selectedTab})})).then(loadTabs).then(()=>toast("Đã tải lại trang.")).catch(e=>toast(e.message));
+$("inspect").onclick=()=>withTab(()=>api("/tabs/inspect",{method:"POST",body:JSON.stringify({tabId:selectedTab})})).then(show).catch(e=>toast(e.message));
+$("readLogs").onclick=()=>withTab(()=>api("/logs?tabId="+encodeURIComponent(selectedTab))).then(show).catch(e=>toast(e.message));
+$("screenshot").onclick=()=>withTab(()=>api("/screenshot",{method:"POST",body:JSON.stringify({tabId:selectedTab})})).then(data=>{$("preview").src=data.image;$("imagePanel").hidden=false}).catch(e=>toast(e.message));
+$("click").onclick=()=>withTab(()=>api("/actions/click",{method:"POST",body:JSON.stringify({tabId:selectedTab,selector:$("selector").value})})).then(show).then(loadTabs).catch(e=>toast(e.message));
+$("fill").onclick=()=>withTab(()=>api("/actions/fill",{method:"POST",body:JSON.stringify({tabId:selectedTab,selector:$("selector").value,value:$("value").value})})).then(show).catch(e=>toast(e.message));
+$("closeTab").onclick=()=>withTab(()=>api("/tabs/close",{method:"POST",body:JSON.stringify({tabId:selectedTab})})).then(()=>{selectedTab=null;return loadTabs()}).then(()=>toast("Đã đóng tab.")).catch(e=>toast(e.message));
+async function init(){token=(await fetch("/api/session").then(r=>r.json())).token;const status=await api("/status");$("status").textContent="● Edge đang kết nối · "+status.tabs+" tab";await loadTabs()}
+init().catch(error=>{$("status").textContent="Không thể kết nối";toast(error.message)});
+</script></body></html>
