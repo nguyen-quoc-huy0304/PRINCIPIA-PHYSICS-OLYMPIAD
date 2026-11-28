@@ -132,3 +132,14 @@ test('bank products roll back local records when wallet settlement fails', () =>
   assert.equal(f.engine.getState().deposits.length, 0);
   f.wallet.debit = originalDebit;
 });
+
+test('bank wallet is not charged when bank ledger persistence fails', () => {
+  const f = fixture();
+  const before = f.wallet.balance;
+  const originalSet = f.storage.setItem;
+  f.storage.setItem = () => { throw new Error('storage unavailable'); };
+  assert.throws(() => f.engine.openTermDeposit(1000000, 0.05, 90), /Không thể lưu sản phẩm ngân hàng/);
+  assert.equal(f.wallet.balance, before);
+  assert.equal(f.engine.getState().deposits.length, 0);
+  f.storage.setItem = originalSet;
+});
