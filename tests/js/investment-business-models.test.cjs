@@ -23,7 +23,7 @@ test("all six knowledge categories are represented", () => {
 });
 test("search and category filtering work", () => {
   assert.equal(library.listModels("investment_strategy").length, 30);
-  assert.ok(library.searchModels("cash flow").length > 0);
+  assert.ok(library.searchModels("growth").length > 0);
   assert.deepEqual(library.searchModels("  "), []);
 });
 test("invalid query types throw", () => {
