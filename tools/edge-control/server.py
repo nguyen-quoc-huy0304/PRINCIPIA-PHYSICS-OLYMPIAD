@@ -4,7 +4,6 @@ import json
 import os
 import secrets
 import sys
-import threading
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
@@ -232,7 +231,7 @@ def main() -> int:
         print(f"Edge profile: {PROFILE}")
         print("Nhấn Ctrl+C để dừng.")
         dashboard = context.new_page()
-        dashboard.goto(f"http://{HOST}:{PORT}", wait_until="domcontentloaded")
+        dashboard.set_content("<script>setTimeout(() => location.replace('http://127.0.0.1:4317'), 300)</script>")
         try:
             while thread.is_alive():
                 thread.join(0.5)
