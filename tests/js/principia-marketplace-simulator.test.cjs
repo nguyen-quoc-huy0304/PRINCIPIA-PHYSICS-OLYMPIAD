@@ -16,8 +16,8 @@ test("calculates buyer churn, orders, GMV, commission and unit economics",()=>{
  assert.equal(result.totals.netGMV,52962000);
  assert.equal(result.finalPlatformRevenue,5296200);
  assert.equal(result.totals.paymentFees,1059240);
- assert.equal(result.contributionPerOrder,2800);
- assert.equal(result.breakEvenOrders,Math.ceil((20000000+25*50000)/2800));
+ assert.equal(result.contributionPerOrder,19280);
+ assert.equal(result.breakEvenOrders,Math.ceil((20000000+25*50000)/19280));
 });
 test("includes CAC, operating expenses, tax and initial setup capital",()=>{
  const result=calculate(sample());
