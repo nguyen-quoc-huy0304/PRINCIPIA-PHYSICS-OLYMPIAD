@@ -4,26 +4,27 @@ const KEYS=Object.freeze({
  integrated:'principia:integrated-economy:v1',
  advanced:'principia:advanced-markets:v1',
  hub:'principia:simulation-hub:v1',
- portfolio:'principia:investment-portfolio:v1'
+ portfolio:'principia:investment-portfolio:v1',
+ bankProducts:'principia:bank-products:v1'
 });
 const money=value=>new Intl.NumberFormat('vi-VN',{maximumFractionDigits:0}).format(Number.isFinite(value)?value:0)+' ₫';
 function read(storage,key){try{const raw=storage.getItem(key);return raw?JSON.parse(raw):null;}catch(_){return null;}}
 function summarize(storage){
- const integrated=read(storage,KEYS.integrated),advanced=read(storage,KEYS.advanced),hub=read(storage,KEYS.hub),portfolio=read(storage,KEYS.portfolio);
+ const integrated=read(storage,KEYS.integrated),advanced=read(storage,KEYS.advanced),hub=read(storage,KEYS.hub),portfolio=read(storage,KEYS.portfolio),bankProducts=read(storage,KEYS.bankProducts);
  const households=Array.isArray(integrated?.households)?integrated.households:[],firms=Array.isArray(integrated?.firms)?integrated.firms:[],banks=Array.isArray(integrated?.banks)?integrated.banks:[];
  const positions=Array.isArray(portfolio?.positions)?portfolio.positions:[];
  const integrity=integrated&&root.PrincipiaEconomyIntegrity?root.PrincipiaEconomyIntegrity.audit(integrated):null;
  const count=(obj,field)=>Array.isArray(obj?.[field])?obj[field].length:0;
- const linkedModules=[advanced,hub,portfolio].filter(Boolean),walletIds=linkedModules.map(x=>x.walletIdentity||null),sharedWallet=linkedModules.length===3&&walletIds.every(Boolean)&&walletIds.every(x=>x===walletIds[0]);
+ const linkedModules=[advanced,hub,portfolio,bankProducts].filter(Boolean),walletIds=linkedModules.map(x=>x.walletIdentity||null),coreLinked=[advanced,hub,portfolio].every(x=>Boolean(x?.walletIdentity)),sharedWallet=coreLinked&&walletIds.every(Boolean)&&walletIds.every(x=>x===walletIds[0]);
  const walletBalance=identity=>{if(!integrated||!identity)return null;const [type,id]=identity.split(':');if(type==='government')return Number(integrated.government?.cash)||0;const list={household:households,firm:firms,bank:banks}[type];const entity=list?.find(x=>x.id===id);return entity?Number(type==='bank'?entity.liquidity:entity.cash)||0:null;};
  const sharedBalance=sharedWallet?walletBalance(walletIds[0]):null;
  return Object.freeze({
   simulationOnly:true,
-  modules:{integrated:Boolean(integrated),advanced:Boolean(advanced),hub:Boolean(hub),portfolio:Boolean(portfolio)},
+  modules:{integrated:Boolean(integrated),advanced:Boolean(advanced),hub:Boolean(hub),portfolio:Boolean(portfolio),bankProducts:Boolean(bankProducts)},
   participants:{households:households.length,firms:firms.length,banks:banks.length},
   walletLinkage:{shared:sharedWallet,identity:sharedWallet?walletIds[0]:null,balance:sharedBalance,modules:walletIds.filter(Boolean).length},
   balances:{households:households.reduce((n,x)=>n+(Number(x.cash)||0),0),firms:firms.reduce((n,x)=>n+(Number(x.cash)||0),0),bankLiquidity:banks.reduce((n,x)=>n+(Number(x.liquidity)||0),0),advanced:advanced?.walletIdentity?walletBalance(advanced.walletIdentity):Math.max(0,Number(advanced?.cash)||0),simulationHub:hub?.walletIdentity?walletBalance(hub.walletIdentity):Math.max(0,Number(hub?.cash)||0)},
-  activity:{integratedLedger:count(integrated,'ledger'),advancedLedger:count(advanced,'ledger'),simulationLedger:count(hub,'ledger'),portfolioPositions:positions.length,portfolioTrades:count(portfolio,'trades')},
+  activity:{integratedLedger:count(integrated,'ledger'),advancedLedger:count(advanced,'ledger'),simulationLedger:count(hub,'ledger'),portfolioPositions:positions.length,portfolioTrades:count(portfolio,'trades'),bankDeposits:count(bankProducts,'deposits'),bankLoans:count(bankProducts,'loans'),bankLedger:count(bankProducts,'ledger')},
   integrity,warnings:[...(!integrated?['Chưa khởi tạo nền kinh tế liên thông']:[]),...(integrity&&!integrity.healthy?integrity.issues.map(x=>'Kiểm tra '+x.name+': '+x.detail):[]),...(linkedModules.length&&!sharedWallet?['Các phân hệ chưa cùng liên kết một ví. Vào Kinh tế liên thông, chọn cùng một ví mô phỏng rồi mở lại từng phân hệ.']:[]),...(sharedWallet&&sharedBalance===null?['Không tìm thấy chủ ví liên thông trong dữ liệu kinh tế.']:[])]
  });
 }
@@ -36,7 +37,7 @@ function mount(){
  const button=root.document.createElement('button');button.type='button';button.textContent='Trung tâm kinh tế';tabs.appendChild(button);
  const storage=root.localStorage;
  function render(){
-  const s=summarize(storage),labels={integrated:'Kinh tế liên thông',advanced:'Phái sinh & DeFi',hub:'Mô phỏng toàn diện',portfolio:'Danh mục đầu tư'};
+  const s=summarize(storage),labels={integrated:'Kinh tế liên thông',advanced:'Phái sinh & DeFi',hub:'Mô phỏng toàn diện',portfolio:'Danh mục đầu tư',bankProducts:'Sản phẩm ngân hàng'};
   content.innerHTML='<section class="pec-center"><header><b>PRINCIPIA · ECONOMY CONTROL CENTER</b><p>Toàn bộ số liệu là tiền ảo và dữ liệu mô phỏng lưu trên thiết bị. Không kết nối giao dịch hoặc thị trường thật.</p></header><div class="pec-grid">'+Object.entries(s.modules).map(([key,ready])=>'<article><span>'+labels[key]+'</span><b class="'+(ready?'is-ready':'is-empty')+'">'+(ready?'Đã có dữ liệu':'Chưa khởi tạo')+'</b></article>').join('')+'</div><h3>Kiểm toán tự động</h3><div class="pec-grid"><article>Trạng thái<b>'+(s.integrity?(s.integrity.healthy?'Đạt':'Có lỗi'):'Chưa khả dụng')+'</b></article><article>Phép kiểm tra đạt<b>'+(s.integrity?s.integrity.checks.filter(x=>x.ok).length:0)+' / '+(s.integrity?s.integrity.checks.length:0)+'</b></article><article>Lỗi cần xử lý<b>'+(s.integrity?s.integrity.issues.length:'—')+'</b></article></div><h3>Quy mô mô phỏng</h3><div class="pec-grid"><article>Hộ gia đình<b>'+s.participants.households+'</b></article><article>Doanh nghiệp<b>'+s.participants.firms+'</b></article><article>Ngân hàng<b>'+s.participants.banks+'</b></article><article>Vị thế đầu tư<b>'+s.activity.portfolioPositions+'</b></article></div><h3>Trạng thái ví liên thông</h3><div class="pec-grid"><article>Liên kết<b>'+(s.walletLinkage.shared?'Đã dùng chung':'Chưa đồng bộ')+'</b></article><article>Phân hệ đã kết nối<b>'+s.walletLinkage.modules+'</b></article><article>Số dư ví chung<b>'+(s.walletLinkage.balance===null?'—':money(s.walletLinkage.balance))+'</b></article></div><h3>Số dư hệ thống</h3><div class="pec-grid"><article>Tiền hộ gia đình<b>'+money(s.balances.households)+'</b></article><article>Tiền doanh nghiệp<b>'+money(s.balances.firms)+'</b></article><article>Thanh khoản ngân hàng<b>'+money(s.balances.bankLiquidity)+'</b></article><article>Ví phái sinh / DeFi<b>'+money(s.balances.advanced)+'</b></article><article>Ví mô phỏng toàn diện<b>'+money(s.balances.simulationHub)+'</b></article></div><p class="pec-warning">'+s.warnings.map(escape).join('<br>')+'</p><h3>Hoạt động đã ghi nhận</h3><div class="pec-grid"><article>Sổ cái liên thông<b>'+s.activity.integratedLedger+'</b></article><article>Sổ phái sinh<b>'+s.activity.advancedLedger+'</b></article><article>Sổ mô phỏng<b>'+s.activity.simulationLedger+'</b></article><article>Lệnh danh mục<b>'+s.activity.portfolioTrades+'</b></article></div><button type="button" data-refresh>Đọc lại dữ liệu</button></section>';
   content.querySelector('[data-refresh]')?.addEventListener('click',render);
  }
