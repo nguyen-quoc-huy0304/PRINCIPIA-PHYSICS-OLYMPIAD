@@ -46,6 +46,8 @@ test("validates stream count, unique names, periods and numeric boundaries", () 
   assert.throws(() => validate({ months: 12, streams: [stream(), stream()] }), TypeError);
   assert.throws(() => validate({ months: 12, streams: [stream({ revenue: Infinity })] }), RangeError);
   assert.throws(() => validate({ months: 12, streams: [stream({ taxRatePct: 101 })] }), RangeError);
+  assert.throws(() => simulateStream(stream(), 0, "base"), RangeError);
+  assert.throws(() => simulateStream(stream(), 1, "unknown"), TypeError);
 });
 
 test("zero capital and zero revenue are safe and do not create invalid ratios", () => {
@@ -55,5 +57,5 @@ test("zero capital and zero revenue are safe and do not create invalid ratios", 
   assert.equal(result.netAfterCapital, 0);
   assert.equal(result.roiPct, null);
   assert.equal(result.paybackMonth, 0);
-  assert.equal(simulateStream(stream(), 0, "base").totalRevenue, 0);
+  assert.equal(simulateStream(stream(), 1, "base").totalRevenue, 500000);
 });

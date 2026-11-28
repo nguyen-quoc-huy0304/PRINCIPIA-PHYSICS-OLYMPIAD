@@ -49,6 +49,9 @@
   }
 
   function simulateStream(stream, months, scenario) {
+    if (!Number.isInteger(months) || months < 1 || months > MAX_MONTHS) throw new RangeError('Thời hạn mô phỏng không hợp lệ.');
+    if (!['base', 'downside', 'upside'].includes(scenario)) throw new TypeError('Kịch bản mô phỏng không hợp lệ.');
+    const roundMoney = value => Math.round((value + Number.EPSILON) * 100) / 100;
     const revenueShock = scenario === 'downside' ? 1 - stream.downsideShockPct / 100
       : scenario === 'upside' ? 1 + stream.upsideBoostPct / 100 : 1;
     const growth = 1 + stream.revenueGrowthPct / 100;
@@ -61,21 +64,21 @@
     let totalTax = 0;
     for (let month = 1; month <= months; month += 1) {
       const growthFactor = Math.pow(growth, month - 1);
-      const revenue = stream.revenue * revenueShock * growthFactor;
-      const variableCost = stream.revenue > 0
+      const revenue = roundMoney(stream.revenue * revenueShock * growthFactor);
+      const variableCost = roundMoney(stream.revenue > 0
         ? stream.variableCost * (revenue / stream.revenue)
-        : stream.variableCost * revenueShock * growthFactor;
-      const fixedCost = stream.fixedCost * Math.pow(inflation, month - 1);
-      const operatingProfit = revenue - variableCost - fixedCost;
-      const tax = Math.max(0, operatingProfit) * stream.taxRatePct / 100;
-      cumulative += operatingProfit - tax;
-      totalRevenue += revenue;
-      totalVariableCost += variableCost;
-      totalFixedCost += fixedCost;
-      totalTax += tax;
+        : stream.variableCost * revenueShock * growthFactor);
+      const fixedCost = roundMoney(stream.fixedCost * Math.pow(inflation, month - 1));
+      const operatingProfit = roundMoney(revenue - variableCost - fixedCost);
+      const tax = roundMoney(Math.max(0, operatingProfit) * stream.taxRatePct / 100);
+      cumulative = roundMoney(cumulative + operatingProfit - tax);
+      totalRevenue = roundMoney(totalRevenue + revenue);
+      totalVariableCost = roundMoney(totalVariableCost + variableCost);
+      totalFixedCost = roundMoney(totalFixedCost + fixedCost);
+      totalTax = roundMoney(totalTax + tax);
       if (paybackMonth === null && cumulative >= 0) paybackMonth = month;
     }
-    const totalCosts = totalVariableCost + totalFixedCost + totalTax;
+    const totalCosts = roundMoney(totalVariableCost + totalFixedCost + totalTax);
     return Object.freeze({
       totalRevenue, totalVariableCost, totalFixedCost, totalTax, totalCosts,
       netAfterCapital: cumulative,
