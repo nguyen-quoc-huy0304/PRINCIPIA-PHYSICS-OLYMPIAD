@@ -1,6 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { createBankEngine } = require('../../assets/js/principia-bank-products.js');
+const { createEngine: createEconomy } = require('../../assets/js/principia-integrated-economy.js');
 
 function fixture(start = '2026-01-01T00:00:00.000Z') {
   const data = new Map();
@@ -103,4 +104,31 @@ test('blocks linking legacy bank ledgers to a new wallet', () => {
   const storage = { getItem: key => data.get(key) ?? null, setItem: (key, value) => data.set(key, value) };
   const wallet = { type: 'household', id: 'new-wallet', debit() {}, credit() {} };
   assert.throws(() => createBankEngine({ storage, wallet }), /dữ liệu cũ/);
+});
+
+test('bank products debit and credit the integrated simulation wallet', () => {
+  const data = new Map();
+  const storage = { getItem: key => data.get(key) ?? null, setItem: (key, value) => data.set(key, value) };
+  const economy = createEconomy({ storage });
+  economy.createHousehold({ name: 'Bank product owner', cash: 2000000 });
+  const household = economy.getState().households[0];
+  const wallet = economy.createWalletAdapter({ type: 'household', id: household.id });
+  const bank = createBankEngine({ storage: { getItem: key => data.get('bank:'+key) ?? null, setItem: (key, value) => data.set('bank:'+key, value), removeItem: key => data.delete('bank:'+key) }, wallet });
+  bank.openTermDeposit(500000, 0.05, 90);
+  assert.equal(wallet.getBalance(), 1500000);
+  const loan = bank.createLoan(250000, 0.12, 12).loans[0];
+  assert.equal(wallet.getBalance(), 1750000);
+  bank.repayLoan(loan.id, loan.monthlyPayment);
+  assert.ok(wallet.getBalance() < 1750000);
+});
+
+test('bank products roll back local records when wallet settlement fails', () => {
+  const f = fixture();
+  const before = f.wallet.balance;
+  const originalDebit = f.wallet.debit;
+  f.wallet.debit = () => { throw new Error('simulated wallet failure'); };
+  assert.throws(() => f.engine.openTermDeposit(1000000, 0.05, 90), /simulated wallet failure/);
+  assert.equal(f.wallet.balance, before);
+  assert.equal(f.engine.getState().deposits.length, 0);
+  f.wallet.debit = originalDebit;
 });
