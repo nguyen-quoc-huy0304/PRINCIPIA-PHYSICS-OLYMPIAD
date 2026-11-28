@@ -92,6 +92,14 @@
       catch (_) { throw new Error('Không thể lưu danh mục đầu tư trên thiết bị.'); }
     }
 
+    if (wallet) {
+      const identity = wallet.type + ':' + wallet.id;
+      if (state.walletIdentity && state.walletIdentity !== identity) throw new Error('Danh mục đã liên kết với ví mô phỏng khác.');
+      if (!state.walletIdentity && state.positions.length) throw new Error('Danh mục có vị thế từ ví cũ; không thể tự động chuyển sang ví chung.');
+      state.walletIdentity = identity;
+      persist();
+    }
+
     function snapshot() { return clone(state); }
     let walletDelta = 0;
 
