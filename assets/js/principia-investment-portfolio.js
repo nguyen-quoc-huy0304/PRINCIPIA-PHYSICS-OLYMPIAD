@@ -79,7 +79,8 @@
     return {version:1,positions:safePositions,trades,updatedAt:typeof raw.updatedAt === 'string' ? raw.updatedAt : null};
   }
 
-  function createEngine(storage) {
+  function createEngine(storage, wallet) {
+    if (wallet && (typeof wallet.transact !== 'function' || typeof wallet.getBalance !== 'function')) throw new TypeError('Ví liên thông không hợp lệ.');
     const store = storage || root.localStorage;
     let state;
     try { state = sanitize(JSON.parse(store && store.getItem(STORAGE_KEY) || 'null')); }
@@ -92,17 +93,30 @@
     }
 
     function snapshot() { return clone(state); }
+    let walletDelta = 0;
 
     function transact(mutator) {
       const previous = state;
+      const previousStored = store && store.getItem(STORAGE_KEY);
+      const previousDelta = walletDelta;
       state = clone(state);
+      walletDelta = 0;
       try {
         const result = mutator();
         state.updatedAt = new Date().toISOString();
         persist();
+        if (wallet && Math.abs(walletDelta) >= 0.01) {
+          wallet.transact([{kind:walletDelta < 0 ? 'debit' : 'credit',amount:Math.abs(Math.round(walletDelta * 100) / 100),description:'Giao dịch danh mục đầu tư mô phỏng'}]);
+        }
+        walletDelta = 0;
         return result === undefined ? snapshot() : result;
       } catch (error) {
         state = previous;
+        walletDelta = previousDelta;
+        if (store) {
+          try { if (previousStored == null) store.removeItem(STORAGE_KEY); else store.setItem(STORAGE_KEY, previousStored); }
+          catch (rollbackError) { error.rollbackError = rollbackError; }
+        }
         throw error;
       }
     }
@@ -135,6 +149,7 @@
           if (!position && state.positions.length >= MAX_POSITIONS) throw new RangeError('Danh mục đã đạt giới hạn tài sản.');
           const totalCost = gross + fee;
           if (!Number.isFinite(totalCost)) throw new RangeError('Tổng chi phí không hợp lệ.');
+          if (wallet) walletDelta = Math.round((walletDelta - totalCost) * 100) / 100;
           if (!position) {
             position = {id:key,assetType,symbol,name,quantity:0,averageCost:0,invested:0,lastPrice:null,priceSource:'Chưa định giá',currency};
             state.positions.push(position);
@@ -147,6 +162,7 @@
         } else {
           if (!position || position.quantity + 1e-10 < quantity) throw new RangeError('Số lượng bán vượt tài sản đang nắm giữ.');
           const proceeds = gross - fee - tax;
+          if (wallet) walletDelta = Math.round((walletDelta + proceeds) * 100) / 100;
           const costBasis = position.averageCost * quantity;
           position.quantity = Math.max(0, position.quantity - quantity);
           position.invested = position.quantity * position.averageCost;
@@ -192,6 +208,7 @@
       const valued = positions.filter(item => item.marketValue != null && item.currency === 'VND');
       return {
         positions, trades:state.trades.slice().reverse(),
+        cash:wallet ? wallet.getBalance() : null,
         investedVnd:positions.filter(item => item.currency === 'VND').reduce((sum,item) => sum + item.costValue,0),
         marketValueVnd:valued.reduce((sum,item) => sum + item.marketValue,0),
         unrealizedPnlVnd:valued.reduce((sum,item) => sum + item.unrealizedPnl,0),
@@ -219,7 +236,7 @@
     const content = panel && panel.querySelector('#pe-content');
     if (!panel || !tabs || !content || panel.dataset.portfolioInstalled === 'true') return false;
     panel.dataset.portfolioInstalled = 'true';
-    const engine = createEngine();
+    let engine = null;
     const button = root.document.createElement('button');
     button.type = 'button';
     button.dataset.portfolioTab = 'true';
@@ -273,7 +290,8 @@
     button.addEventListener('click', () => {
       tabs.querySelectorAll('button').forEach(item => item.classList.remove('active'));
       button.classList.add('active');
-      render();
+      try { engine = createEngine(undefined, root.PrincipiaEconomyActiveWallet || undefined); render(); }
+      catch (error) { content.textContent = 'Không thể mở danh mục: ' + error.message; }
     });
     panel.addEventListener('click', event => {
       if (event.target.closest('[data-tab],[data-investment-universe-tab]')) button.classList.remove('active');
