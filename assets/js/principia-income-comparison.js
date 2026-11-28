@@ -150,7 +150,7 @@
 
   function readForm(form) {
     const streams = Array.from(form.querySelectorAll('[data-stream]')).map(card => {
-      const value = name => card.elements.namedItem(name).value;
+      const value = name => card.querySelector('[name="' + name + '"]').value;
       return {
         name: value('name'), capital: value('capital'), revenue: value('revenue'),
         variableCost: value('variableCost'), fixedCost: value('fixedCost'),
@@ -212,6 +212,7 @@
       const form = content.querySelector('[data-compare-form]');
       const streams = form.querySelector('.pe-compare-streams');
       const output = content.querySelector('.pe-compare-results');
+      let nextSourceNumber = 4;
       form.addEventListener('click', event => {
         const remove = event.target.closest('[data-remove]');
         if (remove) {
@@ -230,7 +231,8 @@
             output.textContent = 'Chỉ có thể so sánh tối đa 5 nguồn thu.';
             return;
           }
-          streams.insertAdjacentHTML('beforeend', streamMarkup(cards.length));
+          streams.insertAdjacentHTML('beforeend', streamMarkup(nextSourceNumber - 1));
+          nextSourceNumber += 1;
         }
       });
       form.addEventListener('submit', event => {

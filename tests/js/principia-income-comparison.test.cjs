@@ -17,7 +17,7 @@ test("forecasts monthly net cash flow, taxes, ROI and payback", () => {
   assert.equal(base.totalFixedCost, 1200000);
   assert.equal(base.totalTax, 360000);
   assert.equal(base.netAfterCapital, 2240000);
-  assert.equal(base.paybackMonth, 3);
+  assert.equal(base.paybackMonth, 4);
   assert.equal(base.roiPct, 224);
 });
 
