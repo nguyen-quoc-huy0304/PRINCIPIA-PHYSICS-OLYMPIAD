@@ -7,6 +7,7 @@ const planner = require("../../systems/business-planner.js");
 test("NPV and IRR calculate standard cash flows", () => {
   assert.equal(finance.npv(0.1, [100, 100]), 173.55371901);
   assert.equal(finance.calculate("npv", {rate:0.1,cashFlows:[100,100]}), 173.55371901);
+  assert.equal(finance.calculate("npv", {rate:0.1,initialInvestment:100,cashFlows:[100,100]}), 73.55371901);
   assert.ok(Math.abs(finance.irr([-100, 60, 60]) - 0.13066239) < 1e-7);
   assert.ok(Math.abs(finance.calculate("irr", {cashFlows:[-100,60,60]}) - 0.13066239) < 1e-7);
 });
