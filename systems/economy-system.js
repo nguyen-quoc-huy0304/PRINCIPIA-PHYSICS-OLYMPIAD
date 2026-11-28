@@ -91,8 +91,9 @@ function calculateCompoundInterest({ principal, annualRate, periods, compounding
   annualRate = finiteRange(annualRate, "annualRate", -0.99, 10);
   periods = finiteRange(periods, "periods", 0, 1e6);
   compoundingPerYear = finiteRange(compoundingPerYear, "compoundingPerYear", 1, 365);
-  const amount = principal * Math.pow(1 + annualRate / compoundingPerYear, periods * compoundingPerYear);
-  if (!Number.isFinite(amount)) throw new RangeError("Interest calculation overflow");
+  const rawAmount = principal * Math.pow(1 + annualRate / compoundingPerYear, periods * compoundingPerYear);
+  if (!Number.isFinite(rawAmount)) throw new RangeError("Interest calculation overflow");
+  const amount = Number(rawAmount.toFixed(2));
   return Object.freeze({ principal, amount, interest: amount - principal });
 }
 

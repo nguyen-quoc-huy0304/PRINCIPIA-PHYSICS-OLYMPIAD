@@ -11,7 +11,7 @@
   function numeric(value, label) {
     if (value === null || value === undefined || typeof value === 'boolean' || (typeof value === 'string' && !value.trim())) throw new TypeError(label + ' phải là số.');
     const parsed = Number(value);
-    if (!Number.isFinite(parsed)) throw new TypeError(label + ' phải là số hữu hạn.');
+    if (!Number.isFinite(parsed)) throw new RangeError(label + ' phải là số hữu hạn.');
     return parsed;
   }
   function validate(input) {

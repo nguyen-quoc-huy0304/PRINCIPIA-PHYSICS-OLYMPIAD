@@ -6,7 +6,7 @@ const { MODELS, getModel, simulateModel } = require("../../systems/economy-model
 test("catalog has exactly 70 unique simulation models grouped 27/18/12/13", () => {
   assert.equal(MODELS.length, 70);
   assert.equal(new Set(MODELS.map(m => m.id)).size, 70);
-  const counts = Object.values(MODELS.reduce((acc, m) => (acc[m.group] = (acc[m.group] || 0) + 1, acc)));
+  const counts = Object.values(MODELS.reduce((acc, m) => (acc[m.group] = (acc[m.group] || 0) + 1, acc), {}));
   assert.deepEqual(counts.sort((a,b)=>a-b), [12,13,18,27]);
   assert.ok(MODELS.every(m => m.simulationOnly && m.currency === "VIRTUAL" && !m.leverageAllowed));
 });
