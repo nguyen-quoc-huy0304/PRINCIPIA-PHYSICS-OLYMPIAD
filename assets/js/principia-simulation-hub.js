@@ -13,7 +13,8 @@ const ASSETS=[
 const n=(v,label,min=0,max=1e12)=>{const x=Number(v);if(!Number.isFinite(x)||x<min||x>max)throw new RangeError(label+' không hợp lệ.');return x;};
 const s=(v,label,max=100)=>{if(typeof v!=='string'||!v.trim()||v.trim().length>max)throw new TypeError(label+' không hợp lệ.');return v.trim();};
 const round=v=>Math.round((v+Number.EPSILON)*100)/100;
-function createEngine({storage,now}={}){
+function createEngine({storage,now,wallet}={}){
+ if(wallet&&(typeof wallet.transact!=='function'||typeof wallet.getBalance!=='function'))throw new TypeError('Ví liên thông không hợp lệ.');
  const store=storage||root.localStorage,clock=typeof now==='function'?now:()=>new Date().toISOString();
  const initial=()=>({cash:INITIAL_CASH,startingCash:INITIAL_CASH,day:0,positions:[],deposits:[],bonds:[],loans:[],properties:[],businesses:[],farms:[],insurance:[],pension:0,pensionRate:0,taxPaid:0,ledger:[],createdAt:clock(),updatedAt:clock()});
  function clean(raw){
@@ -27,10 +28,24 @@ function createEngine({storage,now}={}){
  }
  let state;
  try{state=clean(JSON.parse(store&&store.getItem(KEY)||'null'));}catch(_){state=initial();}
- const snap=()=>JSON.parse(JSON.stringify(state));
- function commit(fn){const prev=state;state=snap();try{const result=fn();state.updatedAt=clock();if(store)store.setItem(KEY,JSON.stringify(state));return result===undefined?snap():result;}catch(e){state=prev;throw e;}}
- function debit(amount){if(state.cash+1e-8<amount)throw new Error('Không đủ vốn ảo.');state.cash=round(state.cash-amount);}
- function credit(amount){state.cash=round(state.cash+amount);if(!Number.isSafeInteger(Math.round(state.cash)))throw new RangeError('Số dư vượt giới hạn an toàn.');}
+ let walletDelta=0;
+ const snap=()=>{const value=JSON.parse(JSON.stringify(state));if(wallet)value.cash=round(wallet.getBalance()+walletDelta);return value;};
+ function commit(fn){
+  const prev=state,stored=store&&store.getItem(KEY),beforeDelta=walletDelta;
+  state=JSON.parse(JSON.stringify(state));walletDelta=0;
+  try{
+   const result=fn();state.updatedAt=clock();
+   if(store)store.setItem(KEY,JSON.stringify(state));
+   if(wallet&&Math.abs(walletDelta)>=.01)wallet.transact([{kind:walletDelta<0?'debit':'credit',amount:Math.abs(round(walletDelta)),description:'Mô phỏng tài chính · Simulation Hub'}]);
+   return result===undefined?snap():result;
+  }catch(error){
+   state=prev;walletDelta=beforeDelta;
+   if(store){try{if(stored===null)store.removeItem(KEY);else store.setItem(KEY,stored);}catch(rollbackError){error.rollbackError=rollbackError;}}
+   throw error;
+  }
+ }
+ function debit(amount){const available=wallet?wallet.getBalance()+walletDelta:state.cash;if(available+1e-8<amount)throw new Error('Không đủ vốn ảo.');if(wallet)walletDelta=round(walletDelta-amount);else state.cash=round(state.cash-amount);}
+ function credit(amount){if(wallet)walletDelta=round(walletDelta+amount);else{state.cash=round(state.cash+amount);if(!Number.isSafeInteger(Math.round(state.cash)))throw new RangeError('Số dư vượt giới hạn an toàn.');}}
  function log(type,description,amount=0){state.ledger.push({id:'sim-'+state.day+'-'+state.ledger.length+'-'+Math.random().toString(36).slice(2,7),day:state.day,type,description,amount:round(amount),mode:'SIMULATION_ONLY',at:clock()});if(state.ledger.length>MAX_ITEMS)state.ledger.shift();}
  function buy(input){
   const symbol=s(input.symbol,'Mã tài sản',24).toUpperCase(),name=s(input.name||input.symbol,'Tên tài sản',100),asset=ASSETS.find(x=>x.id===input.asset);
@@ -124,8 +139,8 @@ function esc(v){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;',
 function mount(){
  const panel=root.document&&root.document.getElementById('principia-economy-root'),tabs=panel&&panel.querySelector('.pe-tabs'),content=panel&&panel.querySelector('#pe-content');
  if(!panel||!tabs||!content||panel.dataset.simulationHubReady)return false;
- panel.dataset.simulationHubReady='1';const button=root.document.createElement('button');button.type='button';button.textContent='Mô phỏng toàn diện';tabs.appendChild(button);const engine=createEngine();
- button.addEventListener('click',()=>{tabs.querySelectorAll('button').forEach(x=>x.classList.remove('active'));button.classList.add('active');render(content,engine);});return true;
+ panel.dataset.simulationHubReady='1';const button=root.document.createElement('button');button.type='button';button.textContent='Mô phỏng toàn diện';tabs.appendChild(button);
+ button.addEventListener('click',()=>{tabs.querySelectorAll('button').forEach(x=>x.classList.remove('active'));button.classList.add('active');try{const engine=createEngine({wallet:root.PrincipiaEconomyActiveWallet||undefined});render(content,engine);}catch(error){content.textContent='Không thể mở mô-đun: '+error.message;}});return true;
 }
 function render(el,engine){
  const x=engine.getSummary(),fmt=v=>new Intl.NumberFormat('vi-VN',{maximumFractionDigits:0}).format(v)+' ₫';
