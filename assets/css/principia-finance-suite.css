@@ -1,0 +1,11 @@
+#principia-finance-launcher{position:fixed;right:18px;bottom:86px;z-index:9998;border:1px solid #3d7773;border-radius:999px;background:#123b3a;color:#effffc;padding:11px 16px;font:600 13px system-ui;box-shadow:0 10px 30px #0004;cursor:pointer}
+#principia-finance-panel{position:fixed;inset:5vh 3vw;z-index:9999;display:none;overflow:auto;background:#0c1c22;color:#eaf5f3;border:1px solid #31565c;border-radius:18px;padding:18px;box-shadow:0 24px 90px #0009;font:14px system-ui}
+#principia-finance-panel.open{display:block}
+.pf-head{display:flex;justify-content:space-between;align-items:center;gap:12px;position:sticky;top:-18px;background:#0c1c22;padding:8px 0;z-index:2}
+.pf-head h2{font-size:20px;margin:4px 0}.pf-close,.pf-tab,.pf-submit{border:1px solid #42686b;background:#173239;color:#eaf5f3;border-radius:9px;padding:9px 12px;cursor:pointer}
+.pf-tabs{display:flex;gap:7px;flex-wrap:wrap;margin:14px 0}.pf-tab[aria-selected=true],.pf-submit{background:#176b61;border-color:#4d9c8c}
+.pf-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.pf-card{background:#11282e;border:1px solid #29474e;border-radius:12px;padding:14px;min-width:0}
+.pf-card h3{margin:0 0 10px;font-size:15px}.pf-field{display:grid;gap:5px;margin:9px 0}.pf-field label{font-size:12px;color:#a9c4c2}.pf-field input,.pf-field select,.pf-field textarea{box-sizing:border-box;width:100%;padding:10px;border-radius:8px;border:1px solid #36565d;background:#09191e;color:#fff;font:inherit}
+.pf-result{margin-top:12px;padding:12px;border-radius:10px;background:#102f2c;border:1px solid #2c6158;overflow-wrap:anywhere}.pf-result strong{font-size:20px;display:block;margin-top:5px}.pf-muted{color:#9eb6b6;font-size:12px;line-height:1.5}.pf-table{width:100%;border-collapse:collapse;font-size:12px}.pf-table td,.pf-table th{padding:8px;border-bottom:1px solid #29474e;text-align:right}.pf-table td:first-child,.pf-table th:first-child{text-align:left}
+@media(max-width:640px){#principia-finance-panel{inset:2vh 2vw;padding:12px}.pf-head{top:-12px}.pf-head h2{font-size:16px}#principia-finance-launcher{right:12px;bottom:76px}}
