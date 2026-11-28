@@ -16,6 +16,12 @@ test("CAPM, WACC and bond pricing return finite values", () => {
   assert.ok(finance.wacc({equity:70,debt:30,costOfEquity:.14,costOfDebt:.08,taxRate:.2}) > 0);
   assert.ok(finance.bondPrice({faceValue:1000,couponRate:.08,yieldRate:.09,periods:5}) > 0);
 });
+test("DDM, CAGR and ROI apply their valuation formulas", () => {
+  assert.equal(finance.ddm({nextDividend:5,requiredReturn:.1,growthRate:.04}),83.33333333);
+  assert.ok(Math.abs(finance.cagr({beginningValue:100,endingValue:121,years:2})-.1)<1e-8);
+  assert.equal(finance.roi({initialInvestment:100,endingValue:130,additionalCosts:5}),.25);
+  assert.throws(() => finance.ddm({nextDividend:5,requiredReturn:.04,growthRate:.04}), RangeError);
+});
 test("business metrics validate denominators and calculate break-even", () => {
   assert.deepEqual(finance.breakEven({fixedCosts:1000,price:20,variableCost:10}), {units:100,sales:2000,contribution:10});
   assert.throws(() => finance.breakEven({fixedCosts:1000,price:10,variableCost:10}), RangeError);
