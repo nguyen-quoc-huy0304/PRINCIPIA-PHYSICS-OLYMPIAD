@@ -190,11 +190,13 @@ async function shutdown() {
 
 try {
   await startEdge();
-  app.listen(PORT, HOST, () => {
+  app.listen(PORT, HOST, async () => {
     console.log("\nPRINCIPIA Edge Control: http://127.0.0.1:" + PORT);
     console.log("Session token: " + TOKEN);
     console.log("Edge profile: " + PROFILE_DIR);
     console.log("Nhấn Ctrl+C để dừng.\n");
+    const dashboard = await context.newPage();
+    await dashboard.goto("http://127.0.0.1:" + PORT, { waitUntil: "domcontentloaded" });
   });
 } catch (error) {
   console.error("Không thể khởi động Edge Control:", error.message);
