@@ -72,4 +72,6 @@ function validateBusinessModel(model) {
 
 function round(value) { return Math.round((value + Number.EPSILON) * 100) / 100; }
 
-module.exports = Object.freeze({ buildPlan, validateBusinessModel });
+const api = Object.freeze({ buildPlan, validateBusinessModel });
+if (typeof module !== "undefined" && module.exports) module.exports = api;
+if (typeof globalThis !== "undefined") globalThis.PrincipiaBusinessPlanner = api;
