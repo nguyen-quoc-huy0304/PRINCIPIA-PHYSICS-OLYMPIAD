@@ -92,3 +92,14 @@ test('stored error entries are sanitized before rendering or re-export', () => {
   assert.equal(entry.stack, 'Bearer [REDACTED]');
   assert.equal(entry.count, 1);
 });
+
+test('error log redacts quoted JSON credentials including values with spaces and escapes', () => {
+  const h = harness();
+  const raw = JSON.stringify({ api_key: 'secret-key-value', password: 'pass with spaces', authorization: 'Bearer abc.123', nested: { access_token: 'token-value' } });
+  const safe = h.api.redact(raw);
+  assert.doesNotMatch(safe, /secret-key-value|pass with spaces|abc\\.123|token-value/);
+  assert.match(safe, /"api_key":"\\[REDACTED\\]"/);
+  assert.match(safe, /"password":"\\[REDACTED\\]"/);
+  assert.match(safe, /"authorization":"\\[REDACTED\\]"/);
+  assert.match(safe, /"access_token":"\\[REDACTED\\]"/);
+});
