@@ -11,7 +11,8 @@ function read(storage,key){try{const raw=storage.getItem(key);return raw?JSON.pa
 function summarize(storage){
  const integrated=read(storage,KEYS.integrated),advanced=read(storage,KEYS.advanced),hub=read(storage,KEYS.hub),portfolio=read(storage,KEYS.portfolio);
  const households=Array.isArray(integrated?.households)?integrated.households:[],firms=Array.isArray(integrated?.firms)?integrated.firms:[],banks=Array.isArray(integrated?.banks)?integrated.banks:[];
- const positions=Array.isArray(portfolio?.positions)?portfolio.positions:[];\n const integrity=integrated&&root.PrincipiaEconomyIntegrity?root.PrincipiaEconomyIntegrity.audit(integrated):null;
+ const positions=Array.isArray(portfolio?.positions)?portfolio.positions:[];
+ const integrity=integrated&&root.PrincipiaEconomyIntegrity?root.PrincipiaEconomyIntegrity.audit(integrated):null;
  const count=(obj,field)=>Array.isArray(obj?.[field])?obj[field].length:0;
  return Object.freeze({
   simulationOnly:true,
