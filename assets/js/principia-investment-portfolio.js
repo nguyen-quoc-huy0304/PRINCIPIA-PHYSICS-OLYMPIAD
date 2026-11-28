@@ -264,7 +264,7 @@
       ).join('') || '<p class="pe-portfolio-empty">Chưa có giao dịch.</p>';
       content.innerHTML =
         '<section class="pe-portfolio-disclaimer">Sổ danh mục chỉ ghi nhận giao dịch mô phỏng. Giá nhập thủ công không phải giá thị trường đã xác minh. Chỉ đánh dấu giá tham chiếu khi có nguồn và thời điểm kiểm chứng; không tự tạo giá.</section>' +
-        '<section class="pe-portfolio-summary"><article><small>Vốn đã phân bổ (VND)</small><b>' + money(summary.investedVnd,'VND') + '</b></article><article><small>Giá trị đã định giá (VND)</small><b>' + money(summary.marketValueVnd,'VND') + '</b></article><article><small>Tài sản chưa có giá</small><b>' + summary.unpricedCount + '</b></article></section>' +
+        '<section class="pe-portfolio-summary">' + (summary.cash == null ? '' : '<article><small>Ví mô phỏng liên thông</small><b>' + money(summary.cash,'VND') + '</b></article>') + '<article><small>Vốn đã phân bổ (VND)</small><b>' + money(summary.investedVnd,'VND') + '</b></article><article><small>Giá trị đã định giá (VND)</small><b>' + money(summary.marketValueVnd,'VND') + '</b></article><article><small>Tài sản chưa có giá</small><b>' + summary.unpricedCount + '</b></article></section>' +
         '<h3>Tài sản đang nắm giữ</h3>' + positions +
         '<h3>Ghi nhận giao dịch mô phỏng</h3><form class="pe-portfolio-form">' +
         '<label>Loại tài sản<select name="assetType">' + ASSET_TYPES.map(item => '<option value="' + item.id + '">' + escapeHTML(item.name) + '</option>').join('') + '</select></label>' +
