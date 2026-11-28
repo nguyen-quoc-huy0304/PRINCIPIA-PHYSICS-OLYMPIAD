@@ -108,3 +108,17 @@ test('enterprise capital funding rolls back when shared-wallet debit fails', () 
   assert.equal(f.wallet.balance, before);
   assert.equal(f.engine.getState().businesses.length, 0);
 });
+test('enterprise funding draws from the integrated shared wallet', () => {
+  const { createEngine: createEconomy } = require('../../assets/js/principia-integrated-economy.js');
+  const values = new Map();
+  const storage = { getItem: key => values.get(key) ?? null, setItem: (key, value) => values.set(key, value) };
+  const economy = createEconomy({ storage });
+  economy.createHousehold({ name: 'Business owner', cash: 5000000 });
+  const owner = economy.getState().households[0];
+  const wallet = economy.createWalletAdapter({ type: 'household', id: owner.id });
+  const enterpriseStorage = { getItem: key => values.get('enterprise:'+key) ?? null, setItem: (key, value) => values.set('enterprise:'+key, value) };
+  const enterprise = createEnterpriseEngine({ wallet, storage: enterpriseStorage });
+  enterprise.createBusiness('Xưởng mô phỏng', 2000000);
+  assert.equal(wallet.getBalance(), 3000000);
+  assert.equal(enterprise.getState().businesses[0].cash, 2000000);
+});
