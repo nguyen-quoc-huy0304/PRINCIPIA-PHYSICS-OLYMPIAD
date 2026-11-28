@@ -14,7 +14,7 @@ test('creates deterministic, fully specified rounds for all three games',()=>{
   assert.ok(first.options.some(option=>option.step===first.hiddenStep));
   const expected=MODES[mode].values[(MODES[mode].values.indexOf(first.sequence[0])+6*first.hiddenStep)%MODES[mode].modulus];
   assert.equal(first.answer,expected);
- });
+ }
 });
 
 test('hidden rules change when a new secure seed is used',()=>{
