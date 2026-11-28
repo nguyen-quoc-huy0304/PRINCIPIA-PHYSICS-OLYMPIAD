@@ -205,4 +205,6 @@ function calculate(method, inputs) {
   return METHODS[method](inputs);
 }
 
-module.exports = Object.freeze({ calculate, METHODS, npv, irr, dcf, capm, wacc, bondPrice, portfolioStats, historicalVaR, breakEven, unitEconomics, runway, dilution, scenarioAnalysis });
+const api = Object.freeze({ calculate, METHODS, npv, irr, dcf, capm, wacc, bondPrice, portfolioStats, historicalVaR, breakEven, unitEconomics, runway, dilution, scenarioAnalysis });
+if (typeof module !== "undefined" && module.exports) module.exports = api;
+if (typeof globalThis !== "undefined") globalThis.PrincipiaFinanceCore = api;
