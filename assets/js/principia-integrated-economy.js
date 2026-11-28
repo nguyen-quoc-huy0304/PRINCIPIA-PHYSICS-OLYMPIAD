@@ -34,8 +34,34 @@ function createEngine({storage=root.localStorage,now=()=>new Date().toISOString(
  function auditAccounting(){const unbalanced=state.journal.filter(entry=>{const debit=entry.lines.reduce((sum,line)=>sum+line.debit,0),credit=entry.lines.reduce((sum,line)=>sum+line.credit,0);return entry.lines.length!==2||Math.abs(debit-credit)>1e-7||Math.abs(debit-entry.amount)>1e-7;});return{entries:state.journal.length,unbalanced:unbalanced.length,balanced:unbalanced.length===0,simulationOnly:true};}
  function metrics(){const h=state.households,f=state.firms,b=state.banks,employed=h.filter(x=>x.employed).length;return{day:state.day,journalEntries:state.journal.length,households:h.length,firms:f.length,banks:b.length,products:state.products.length,employmentRate:h.length?round(employed/h.length):0,unemploymentRate:h.length?round((h.length-employed)/h.length):0,gdp:round(f.reduce((a,x)=>a+x.monthlyRevenue,0)),householdCash:round(h.reduce((a,x)=>a+x.cash,0)),businessCash:round(f.reduce((a,x)=>a+x.cash,0)),bankCapital:round(b.reduce((a,x)=>a+x.capital,0)),bankLiquidity:round(b.reduce((a,x)=>a+(x.liquidity||0),0)),governmentCash:state.government.cash,governmentDebt:state.government.debt,overdueLoans:state.loans.filter(x=>x.status==='overdue').length,bankruptFirms:f.filter(x=>x.bankrupt).length,totalInventory:round(f.reduce((a,x)=>a+x.inventory.reduce((s,i)=>s+i.quantity*i.unitCost,0),0)),simulationOnly:true};}
  function transfer({fromType,fromId,toType,toId,amount,description='Chuyển tiền nội bộ'}){const a=num(amount,'Số tiền chuyển',.01,1e12),label=str(description,'Nội dung',120),wallet=(type,id)=>{if(type==='government')return{id:'government',get:()=>state.government.cash,set:v=>{state.government.cash=v;}};const list={household:'households',firm:'firms',bank:'banks'}[type];if(!list)throw new TypeError('Loại ví không hợp lệ');const entity=get(list,id,'chủ thể');if(entity.bankrupt)throw new Error('Chủ thể đã phá sản');const field=type==='bank'?'liquidity':'cash';return{id:entity.id,get:()=>entity[field],set:v=>{entity[field]=v;}};};if(fromType===toType&&fromId===toId)throw new Error('Không thể chuyển tiền cho chính mình');return commit(()=>{const from=wallet(fromType,fromId),to=wallet(toType,toId);if(from.get()<a)throw new Error('Số dư ví nguồn không đủ');from.set(round(from.get()-a));to.set(round(to.get()+a));log('WALLET_TRANSFER',a,label,from.id,to.id);return snapshot();});}
+ function walletRef(type,id){
+  if(type==='government')return{id:'government',get:()=>state.government.cash,set:v=>{state.government.cash=v;}};
+  const lists={household:'households',firm:'firms',bank:'banks'},list=lists[type];
+  if(!list)throw new TypeError('Loại ví không hợp lệ');
+  const entity=get(list,id,'chủ ví');
+  if(entity.bankrupt)throw new Error('Chủ thể đã phá sản');
+  const field=type==='bank'?'liquidity':'cash';
+  return{id:entity.id,get:()=>entity[field],set:v=>{entity[field]=v;}};
+ }
+ function createWalletAdapter({type,id}){
+  walletRef(type,id);
+  const balance=()=>{const wallet=walletRef(type,id);return round(wallet.get());};
+  const debit=(amount,description='Chi tiêu ví mô phỏng')=>{
+   const value=num(amount,'Số tiền ghi nợ',.01,1e12),label=str(description,'Nội dung',120);
+   return commit(()=>{const wallet=walletRef(type,id);if(wallet.get()<value)throw new Error('Số dư ví mô phỏng không đủ');wallet.set(round(wallet.get()-value));log('WALLET_DEBIT',value,label,wallet.id,null);return balance();});
+  };
+  const credit=(amount,description='Thu nhập ví mô phỏng')=>{
+   const value=num(amount,'Số tiền ghi có',.01,1e12),label=str(description,'Nội dung',120);
+   return commit(()=>{const wallet=walletRef(type,id);wallet.set(round(wallet.get()+value));log('WALLET_CREDIT',value,label,null,wallet.id);return balance();});
+  };
+  const transferTo=(target,amount,description='Chuyển tiền mô phỏng')=>{
+   if(!target||typeof target.type!=='string'||typeof target.id!=='string')throw new TypeError('Ví nhận không hợp lệ');
+   return transfer({fromType:type,fromId:id,toType:target.type,toId:target.id,amount,description});
+  };
+  return Object.freeze({type,id,getBalance:balance,debit,credit,transferTo,simulationOnly:true});
+ }
  function reset(){return commit(()=>{state=initial();return snapshot();});}
- return Object.freeze({getState:snapshot,getMetrics:metrics,getJournal,auditAccounting,createHousehold,createFirm,createBank,hire,createProduct,produce,sellToFirm,consumerSale,deposit,borrow,repay,transfer,setPolicyRate,assessTax,governmentSpend,issueGovernmentDebt,repayGovernmentDebt,advance,reset});
+ return Object.freeze({getState:snapshot,getMetrics:metrics,getJournal,auditAccounting,createHousehold,createFirm,createBank,hire,createProduct,produce,sellToFirm,consumerSale,deposit,borrow,repay,transfer,setPolicyRate,assessTax,governmentSpend,issueGovernmentDebt,repayGovernmentDebt,advance,createWalletAdapter,reset});
 }
 function esc(v){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function mount(){const panel=root.document?.getElementById('principia-economy-root'),tabs=panel?.querySelector('.pe-tabs'),content=panel?.querySelector('#pe-content');if(!panel||!tabs||!content||panel.dataset.integratedEconomyReady)return false;panel.dataset.integratedEconomyReady='1';const button=root.document.createElement('button');button.type='button';button.textContent='Kinh tế liên thông';tabs.appendChild(button);const engine=createEngine();root.PrincipiaIntegratedEconomyInstance=engine;button.addEventListener('click',()=>{tabs.querySelectorAll('button').forEach(x=>x.classList.remove('active'));button.classList.add('active');render(content,engine);});return true;}
