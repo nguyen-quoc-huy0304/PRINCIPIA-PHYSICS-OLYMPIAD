@@ -3,7 +3,7 @@
   'use strict';
   if (window.PrincipiaErrorLog) return;
   const STORE = 'principia_error_log_v1', MAX_ENTRIES = 100, DEDUPE_MS = 10000;
-  const SECRET_QUERY = /([?&](?:access[_-]?token|refresh[_-]?token|session[_-]?token|api[_-]?key|apikey|client[_-]?secret|private[_-]?key|secret|password|authorization|auth|cookie|key=)[^&#\s]*/gi;
+  const SECRET_QUERY = /([?&](?:access[_-]?token|refresh[_-]?token|session[_-]?token|api[_-]?key|apikey|client[_-]?secret|private[_-]?key|secret|password|authorization|auth|cookie|key)=)[^&#\s]*/gi;
   const BEARER = /\bBearer\s+[A-Za-z0-9._~+\/-]+=*/gi;
   const SECRET_ASSIGNMENT = /\b(?:api[_-]?key|access[_-]?token|refresh[_-]?token|session[_-]?token|client[_-]?secret|private[_-]?key|password|secret|authorization|cookie)\s*[:=]\s*["']?[^\s,;"']+/gi;
   const SECRET_JSON_STRING = /((?:["'])(?:access[_-]?token|refresh[_-]?token|session[_-]?token|api[_-]?key|apikey|client[_-]?secret|private[_-]?key|secret|password|authorization|auth|cookie)(?:["'])\s*:\s*)(["'])(?:\\.|(?!\2)[^\\])*\2/gi;
