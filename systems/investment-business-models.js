@@ -2507,7 +2507,7 @@ function getModel(id) {
 }
 function searchModels(query) {
   if (typeof query !== "string") throw new TypeError("query must be a string");
-  const terms = query.trim().toLocaleLowerCase().split(/\\s+/).filter(Boolean);
+  const terms = query.trim().toLocaleLowerCase().split(/\s+/).filter(Boolean);
   if (!terms.length) return [];
   return MODELS.filter(item => {
     const text = [item.id,item.name,item.description,item.category,...item.evaluationMetrics,...item.keyRisks].join(" ").toLocaleLowerCase();
