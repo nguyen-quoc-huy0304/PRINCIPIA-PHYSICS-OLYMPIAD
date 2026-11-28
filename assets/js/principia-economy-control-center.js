@@ -11,7 +11,7 @@ function read(storage,key){try{const raw=storage.getItem(key);return raw?JSON.pa
 function summarize(storage){
  const integrated=read(storage,KEYS.integrated),advanced=read(storage,KEYS.advanced),hub=read(storage,KEYS.hub),portfolio=read(storage,KEYS.portfolio);
  const households=Array.isArray(integrated?.households)?integrated.households:[],firms=Array.isArray(integrated?.firms)?integrated.firms:[],banks=Array.isArray(integrated?.banks)?integrated.banks:[];
- const positions=Array.isArray(portfolio?.positions)?portfolio.positions:[];
+ const positions=Array.isArray(portfolio?.positions)?portfolio.positions:[];\n const integrity=integrated&&root.PrincipiaEconomyIntegrity?root.PrincipiaEconomyIntegrity.audit(integrated):null;
  const count=(obj,field)=>Array.isArray(obj?.[field])?obj[field].length:0;
  return Object.freeze({
   simulationOnly:true,
@@ -19,7 +19,7 @@ function summarize(storage){
   participants:{households:households.length,firms:firms.length,banks:banks.length},
   balances:{households:households.reduce((n,x)=>n+(Number(x.cash)||0),0),firms:firms.reduce((n,x)=>n+(Number(x.cash)||0),0),bankLiquidity:banks.reduce((n,x)=>n+(Number(x.liquidity)||0),0),advanced:Math.max(0,Number(advanced?.cash)||0),simulationHub:Math.max(0,Number(hub?.cash)||0)},
   activity:{integratedLedger:count(integrated,'ledger'),advancedLedger:count(advanced,'ledger'),simulationLedger:count(hub,'ledger'),portfolioPositions:positions.length,portfolioTrades:count(portfolio,'trades')},
-  warnings:[...(!integrated?['Chưa khởi tạo nền kinh tế liên thông']:[]),...(advanced||hub||portfolio?['Một số phân hệ đầu tư vẫn lưu ví riêng, không cộng gộp thành một số dư khả dụng']:[])]
+  integrity,warnings:[...(!integrated?['Chưa khởi tạo nền kinh tế liên thông']:[]),...(integrity&&!integrity.healthy?integrity.issues.map(x=>'Kiểm tra '+x.name+': '+x.detail):[]),...(advanced||hub||portfolio?['Một số phân hệ đầu tư vẫn lưu ví riêng, không cộng gộp thành một số dư khả dụng']:[])]
  });
 }
 function escape(value){return String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
