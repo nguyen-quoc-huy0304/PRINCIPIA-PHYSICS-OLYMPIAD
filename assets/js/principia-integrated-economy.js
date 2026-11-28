@@ -58,7 +58,23 @@ function createEngine({storage=root.localStorage,now=()=>new Date().toISOString(
    if(!target||typeof target.type!=='string'||typeof target.id!=='string')throw new TypeError('Ví nhận không hợp lệ');
    return transfer({fromType:type,fromId:id,toType:target.type,toId:target.id,amount,description});
   };
-  return Object.freeze({type,id,getBalance:balance,debit,credit,transferTo,simulationOnly:true});
+  const transact=(operations)=>{
+   if(!Array.isArray(operations)||operations.length<1||operations.length>100)throw new TypeError('Danh sách giao dịch ví không hợp lệ');
+   const normalized=operations.map((item,index)=>{
+    if(!item||!['debit','credit'].includes(item.kind))throw new TypeError('Loại giao dịch ví không hợp lệ tại '+index);
+    return{kind:item.kind,amount:num(item.amount,'Số tiền giao dịch',.01,1e12),description:str(item.description||'Giao dịch mô phỏng','Nội dung',120)};
+   });
+   return commit(()=>{
+    const wallet=walletRef(type,id),delta=normalized.reduce((sum,item)=>sum+(item.kind==='credit'?item.amount:-item.amount),0);
+    const next=round(wallet.get()+delta);
+    if(next<-.000001)throw new Error('Số dư ví mô phỏng không đủ');
+    if(!Number.isSafeInteger(Math.round(next)))throw new RangeError('Số dư vượt giới hạn an toàn');
+    wallet.set(Math.max(0,next));
+    for(const item of normalized)log(item.kind==='debit'?'WALLET_DEBIT':'WALLET_CREDIT',item.amount,item.description,item.kind==='debit'?wallet.id:null,item.kind==='credit'?wallet.id:null);
+    return balance();
+   });
+  };
+  return Object.freeze({type,id,getBalance:balance,debit,credit,transferTo,transact,simulationOnly:true});
  }
  function reset(){return commit(()=>{state=initial();return snapshot();});}
  return Object.freeze({getState:snapshot,getMetrics:metrics,getJournal,auditAccounting,createHousehold,createFirm,createBank,hire,createProduct,produce,sellToFirm,consumerSale,deposit,borrow,repay,transfer,setPolicyRate,assessTax,governmentSpend,issueGovernmentDebt,repayGovernmentDebt,advance,createWalletAdapter,reset});
