@@ -9,6 +9,7 @@ function fixture(start = '2026-01-01T00:00:00.000Z') {
     setItem: (key, value) => data.set(key, value)
   };
   const wallet = {
+    type: 'household', id: 'household-test',
     balance: 100000000,
     debit(amount) {
       if (!Number.isSafeInteger(amount) || amount <= 0 || amount > this.balance) {
@@ -84,4 +85,22 @@ test('persists sanitized deposit and loan records across reloads', () => {
   assert.equal(reloaded.getState().deposits.length, 1);
   assert.equal(reloaded.getState().loans.length, 1);
   assert.equal(reloaded.getState().ledger.length, 2);
+});
+
+test('pins bank products to one simulation wallet and rejects switching owners', () => {
+  const f = fixture();
+  f.engine.openTermDeposit(1000000, 0.04, 90);
+  const otherWallet = { ...f.wallet, id: 'household-other' };
+  assert.throws(() => createBankEngine({ storage: f.storage, wallet: otherWallet }), /ví mô phỏng khác/);
+  const saved = JSON.parse(f.storage.getItem('principia:bank-products:v1'));
+  assert.equal(saved.walletIdentity, 'household:household-test');
+});
+
+test('blocks linking legacy bank ledgers to a new wallet', () => {
+  const data = new Map([['principia:bank-products:v1', JSON.stringify({
+    version: 1, deposits: [], loans: [], ledger: [{ id: 'legacy', type: 'legacy', amount: 1, at: '2026-01-01T00:00:00.000Z' }]
+  })]]);
+  const storage = { getItem: key => data.get(key) ?? null, setItem: (key, value) => data.set(key, value) };
+  const wallet = { type: 'household', id: 'new-wallet', debit() {}, credit() {} };
+  assert.throws(() => createBankEngine({ storage, wallet }), /dữ liệu cũ/);
 });
