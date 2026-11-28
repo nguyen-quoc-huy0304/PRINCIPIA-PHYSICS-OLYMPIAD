@@ -1,7 +1,7 @@
 (function(root){
 'use strict';
 const METHODS=[
-{id:'npv',label:'NPV',fields:[['rate','Lãi suất chiết khấu','0.12'],['cashFlows','Dòng tiền (cách nhau bằng dấu phẩy)','-100000,30000,35000,40000']]},
+{id:'npv',label:'NPV',fields:[['rate','Lãi suất chiết khấu','0.12'],['initialInvestment','Vốn đầu tư ban đầu','100000'],['cashFlows','Dòng tiền từ kỳ 1 (cách nhau bằng dấu phẩy)','30000,35000,40000']]},
 {id:'irr',label:'IRR',fields:[['cashFlows','Dòng tiền (cách nhau bằng dấu phẩy)','-100000,30000,35000,40000']]},
 {id:'dcf',label:'Định giá DCF',fields:[['cashFlows','FCF từng năm, phân cách dấu phẩy','10000,12000,14000,16000,18000'],['discountRate','WACC (vd 0.12)','0.12'],['terminalGrowth','Tăng trưởng dài hạn (vd 0.03)','0.03']]},
 {id:'capm',label:'CAPM',fields:[['riskFreeRate','Lãi suất phi rủi ro (vd 0.04)','0.04'],['beta','Beta','1.1'],['marketReturn','Lợi suất thị trường (vd 0.10)','0.10']]},
