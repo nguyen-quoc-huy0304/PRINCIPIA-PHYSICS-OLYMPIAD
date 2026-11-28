@@ -12,9 +12,27 @@ function createEngine({wallet,storage,now}={}){
  for(const k of ['shorts','futures','options','fx','stakes','pools','ledger'])if(!Array.isArray(state[k]))state[k]=[];
  if(!Number.isSafeInteger(state.sequence)||state.sequence<0)state.sequence=0;
  if(!Number.isSafeInteger(state.cash)||state.cash<0)state.cash=100000000;
- const account=wallet||{debit(v){const amount=number(v,'Khoản chi',0,1e12);if(state.cash+1e-8<amount)throw new Error('Không đủ vốn ảo.');state.cash=round(state.cash-amount);},credit(v){const amount=number(v,'Khoản thu',0,1e12);state.cash=round(state.cash+amount);if(!Number.isSafeInteger(Math.round(state.cash)))throw new RangeError('Số dư vượt giới hạn.');}};
- const snap=()=>JSON.parse(JSON.stringify(state));
- function commit(fn){const before=state;state=snap();try{const result=fn();if(store)store.setItem(KEY,JSON.stringify(state));return result===undefined?snap():result;}catch(e){state=before;throw e;}}
+ if(wallet&&typeof wallet.transact!=='function')throw new TypeError('Ví liên thông cần hỗ trợ giao dịch nguyên tử.');
+ let activeOperations=null;
+ const account=wallet?{
+  debit(v,description='Giao dịch phái sinh mô phỏng'){const amount=number(v,'Khoản chi',0,1e12);if(!activeOperations)throw new Error('Giao dịch ví phải nằm trong transaction.');if(amount)activeOperations.push({kind:'debit',amount,description});},
+  credit(v,description='Thanh toán phái sinh mô phỏng'){const amount=number(v,'Khoản thu',0,1e12);if(!activeOperations)throw new Error('Giao dịch ví phải nằm trong transaction.');if(amount)activeOperations.push({kind:'credit',amount,description});}
+ }:{debit(v){const amount=number(v,'Khoản chi',0,1e12);if(state.cash+1e-8<amount)throw new Error('Không đủ vốn ảo.');state.cash=round(state.cash-amount);},credit(v){const amount=number(v,'Khoản thu',0,1e12);state.cash=round(state.cash+amount);if(!Number.isSafeInteger(Math.round(state.cash)))throw new RangeError('Số dư vượt giới hạn.');}};
+ const snap=()=>{const value=JSON.parse(JSON.stringify(state));if(wallet)value.cash=wallet.getBalance();return value;};
+ function commit(fn){
+  const before=state,beforeStored=store&&store.getItem(KEY),operations=[];
+  state=JSON.parse(JSON.stringify(state));activeOperations=operations;
+  try{
+   const result=fn();
+   if(store)store.setItem(KEY,JSON.stringify(state));
+   if(wallet&&operations.length)wallet.transact(operations);
+   return result===undefined?snap():result;
+  }catch(error){
+   state=before;
+   if(store){try{if(beforeStored===null)store.removeItem(KEY);else store.setItem(KEY,beforeStored);}catch(rollbackError){error.rollbackError=rollbackError;}}
+   throw error;
+  }finally{activeOperations=null;}
+ }
  function id(prefix){state.sequence++;return prefix+'-'+state.sequence;}
  function log(type,amount,description){state.ledger.push({id:id('tx'),type,amount:round(amount),description,at:clock(),simulationOnly:true});if(state.ledger.length>LIMIT)state.ledger.shift();}
  function fee(gross,rate){return round(gross*number(rate,'Phí',0,.1));}
@@ -37,7 +55,7 @@ function createEngine({wallet,storage,now}={}){
 function mount(){
  const panel=root.document&&root.document.getElementById('principia-economy-root'),tabs=panel&&panel.querySelector('.pe-tabs'),content=panel&&panel.querySelector('#pe-content');
  if(!panel||!tabs||!content||panel.dataset.advancedMarketsReady)return false;
- const engine=createEngine(),button=root.document.createElement('button');button.type='button';button.textContent='Phái sinh & DeFi';tabs.appendChild(button);panel.dataset.advancedMarketsReady='1';
+ const engine=createEngine({wallet:root.PrincipiaEconomyActiveWallet||undefined}),button=root.document.createElement('button');button.type='button';button.textContent='Phái sinh & DeFi';tabs.appendChild(button);panel.dataset.advancedMarketsReady='1';
  button.addEventListener('click',()=>{tabs.querySelectorAll('button').forEach(x=>x.classList.remove('active'));button.classList.add('active');render(content,engine);});return true;
 }
 function render(el,e){
