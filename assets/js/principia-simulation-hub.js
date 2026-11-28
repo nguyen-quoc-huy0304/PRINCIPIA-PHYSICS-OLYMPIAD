@@ -16,7 +16,7 @@ const round=v=>Math.round((v+Number.EPSILON)*100)/100;
 function createEngine({storage,now,wallet}={}){
  if(wallet&&(typeof wallet.transact!=='function'||typeof wallet.getBalance!=='function'))throw new TypeError('Ví liên thông không hợp lệ.');
  const store=storage||root.localStorage,clock=typeof now==='function'?now:()=>new Date().toISOString();
- const initial=()=>({cash:INITIAL_CASH,startingCash:INITIAL_CASH,day:0,positions:[],deposits:[],bonds:[],loans:[],properties:[],businesses:[],farms:[],insurance:[],pension:0,pensionRate:0,taxPaid:0,ledger:[],createdAt:clock(),updatedAt:clock()});
+ const initial=()=>({cash:INITIAL_CASH,startingCash:INITIAL_CASH,walletIdentity:null,day:0,positions:[],deposits:[],bonds:[],loans:[],properties:[],businesses:[],farms:[],insurance:[],pension:0,pensionRate:0,taxPaid:0,ledger:[],createdAt:clock(),updatedAt:clock()});
  function clean(raw){
   if(!raw||typeof raw!=='object')return initial();
   const base=initial();
@@ -28,6 +28,7 @@ function createEngine({storage,now,wallet}={}){
  }
  let state;
  try{state=clean(JSON.parse(store&&store.getItem(KEY)||'null'));}catch(_){state=initial();}
+ if(wallet){const identity=wallet.type+':'+wallet.id,hasLegacyAssets=state.cash!==INITIAL_CASH||state.positions.length||state.deposits.length||state.bonds.length||state.loans.length||state.properties.length||state.businesses.length||state.farms.length||state.insurance.length||state.pension>0;if(state.walletIdentity&&state.walletIdentity!==identity)throw new Error('Mô-đun đã liên kết với ví mô phỏng khác.');if(!state.walletIdentity&&hasLegacyAssets)throw new Error('Không thể liên kết ví khi Simulation Hub còn tài sản hoặc số dư cũ; cần xử lý trước để tránh tạo tiền ảo.');state.walletIdentity=identity;if(store)store.setItem(KEY,JSON.stringify(state));}
  let walletDelta=0;
  const snap=()=>{const value=JSON.parse(JSON.stringify(state));if(wallet)value.cash=round(wallet.getBalance()+walletDelta);return value;};
  function commit(fn){
