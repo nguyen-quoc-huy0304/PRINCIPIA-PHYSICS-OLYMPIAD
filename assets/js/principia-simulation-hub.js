@@ -104,7 +104,7 @@ function createEngine({storage,now,wallet}={}){
      for(const property of state.properties){
       const rent=round(property.monthlyRent*property.occupancy);
       const net=rent-property.monthlyCost;
-      if(net>=0)credit(net);else debit(Math.min(state.cash,-net));
+      if(net>=0)credit(net);else debit(Math.min(wallet?wallet.getBalance()+walletDelta:state.cash,-net));
       log('RENT','Thuê '+property.name,net);property.months++;
      }
      for(const business of state.businesses){
