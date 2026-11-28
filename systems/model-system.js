@@ -12,6 +12,11 @@ const TASKS = Object.freeze({
   research: Object.freeze({ preferred: ["research", "reasoning"], budget: "high" }),
   coding: Object.freeze({ preferred: ["coding", "reasoning"], budget: "high" }),
   economy: Object.freeze({ preferred: ["reasoning", "general"], budget: "standard" }),
+  investment: Object.freeze({ preferred: ["finance", "reasoning"], budget: "high" }),
+  business: Object.freeze({ preferred: ["business", "reasoning"], budget: "high" }),
+  valuation: Object.freeze({ preferred: ["finance", "reasoning"], budget: "high" }),
+  financial_analysis: Object.freeze({ preferred: ["finance", "reasoning"], budget: "high" }),
+  entrepreneurship: Object.freeze({ preferred: ["business", "general"], budget: "standard" }),
   summarize: Object.freeze({ preferred: ["fast", "general"], budget: "low" })
 });
 
