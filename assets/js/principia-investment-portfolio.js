@@ -76,7 +76,7 @@
       priceSource:String(item.priceSource || 'Nguồn không rõ').slice(0,80),
       at:item.at.slice(0,40)
     }));
-    return {version:1,positions:safePositions,trades,updatedAt:typeof raw.updatedAt === 'string' ? raw.updatedAt : null};
+    return {version:1,positions:safePositions,trades,walletIdentity:typeof raw.walletIdentity === 'string' ? raw.walletIdentity : null,updatedAt:typeof raw.updatedAt === 'string' ? raw.updatedAt : null};
   }
 
   function createEngine(storage, wallet) {
