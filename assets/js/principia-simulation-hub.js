@@ -22,6 +22,7 @@ function createEngine({storage,now,wallet}={}){
   const base=initial();
   for(const k of ['positions','deposits','bonds','loans','properties','businesses','farms','insurance','ledger'])base[k]=Array.isArray(raw[k])?raw[k].slice(-MAX_ITEMS):[];
   for(const k of ['cash','startingCash','day','pension','pensionRate','taxPaid'])base[k]=Number.isFinite(raw[k])&&raw[k]>=0?raw[k]:base[k];
+  base.walletIdentity=typeof raw.walletIdentity==='string'?raw.walletIdentity:null;
   base.createdAt=typeof raw.createdAt==='string'?raw.createdAt:base.createdAt;
   base.updatedAt=typeof raw.updatedAt==='string'?raw.updatedAt:base.updatedAt;
   return base;
