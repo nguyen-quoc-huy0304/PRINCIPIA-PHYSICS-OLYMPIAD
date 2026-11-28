@@ -23,7 +23,7 @@ function safeString(value, field, max = 120) {
 }
 
 function normalizeModel(input) {
-  if (!input || typeof input !== "object") throw new TypeTypeError("Model descriptor must be an object");
+  if (!input || typeof input !== "object") throw new TypeError("Model descriptor must be an object");
   const id = safeString(input.id, "model.id");
   const role = safeString(input.role, "model.role");
   const provider = safeString(input.provider, "model.provider");
