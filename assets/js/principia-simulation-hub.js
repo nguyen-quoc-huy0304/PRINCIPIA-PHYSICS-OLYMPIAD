@@ -37,6 +37,7 @@ function createEngine({storage,now,wallet}={}){
    const result=fn();state.updatedAt=clock();
    if(store)store.setItem(KEY,JSON.stringify(state));
    if(wallet&&Math.abs(walletDelta)>=.01)wallet.transact([{kind:walletDelta<0?'debit':'credit',amount:Math.abs(round(walletDelta)),description:'Mô phỏng tài chính · Simulation Hub'}]);
+   walletDelta=0;
    return result===undefined?snap():result;
   }catch(error){
    state=prev;walletDelta=beforeDelta;
