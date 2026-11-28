@@ -224,6 +224,10 @@ const METHODS = Object.freeze({
 function calculate(method, inputs) {
   if (typeof method !== "string" || !Object.hasOwn(METHODS, method)) throw new TypeError("Mô hình tính toán không được hỗ trợ.");
   if (!inputs || typeof inputs !== "object" || Array.isArray(inputs)) throw new TypeError("Dữ liệu đầu vào phải là object.");
+  if (method === "npv") return npv(inputs.rate, inputs.cashFlows);
+  if (method === "irr") return irr(inputs.cashFlows, inputs.options);
+  if (method === "historicalVaR") return historicalVaR(inputs.returns, inputs.confidence, inputs.portfolioValue);
+  if (method === "portfolioStats") return portfolioStats(inputs.returns, inputs.weights);
   return METHODS[method](inputs);
 }
 
