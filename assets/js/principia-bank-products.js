@@ -85,6 +85,8 @@
       catch (_) { throw new Error('Không thể lưu sản phẩm ngân hàng.'); }
     }
 
+    persist();
+
     function record(type, amount, reference, at) {
       state.ledger.push({
         id: 'bank-' + at.getTime().toString(36) + '-' + state.ledger.length,
