@@ -23,12 +23,13 @@
   }
 
   function initialState() {
-    return { version: 1, deposits: [], loans: [], ledger: [] };
+    return { version: 1, walletIdentity: null, deposits: [], loans: [], ledger: [] };
   }
 
   function sanitizeState(raw) {
     const state = initialState();
     if (!raw || raw.version !== 1) return state;
+    state.walletIdentity = typeof raw.walletIdentity === 'string' ? raw.walletIdentity : null;
     state.deposits = Array.isArray(raw.deposits) ? raw.deposits.filter(item =>
       item && typeof item.id === 'string' && Number.isSafeInteger(item.principal) &&
       item.principal > 0 && Number.isFinite(item.annualRate) &&
@@ -68,6 +69,15 @@
     } catch (_) {
       state = initialState();
     }
+
+    const walletIdentity = wallet.type + ':' + wallet.id;
+    if (state.walletIdentity && state.walletIdentity !== walletIdentity) {
+      throw new Error('Sổ ngân hàng đã liên kết với ví mô phỏng khác.');
+    }
+    if (!state.walletIdentity && (state.deposits.length || state.loans.length || state.ledger.length)) {
+      throw new Error('Sổ ngân hàng có dữ liệu cũ chưa gắn ví; cần xử lý dữ liệu cũ trước khi liên kết.');
+    }
+    state.walletIdentity = walletIdentity;
 
     function persist() {
       if (!storage) return;
