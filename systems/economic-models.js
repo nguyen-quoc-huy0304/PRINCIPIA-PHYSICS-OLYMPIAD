@@ -488,7 +488,7 @@ function calc(id,i={}) {
  case "risk.weighted_scenario_value": y=(i.values||[]).reduce((s,v,k)=>s+v*(i.probabilities?.[k]||0),0); break;
  case "risk.sensitivity_value": y=x('baseValue')*(1+x('changePct')/100); break;
  case "risk.scenario_delta": y=x('scenario')-x('baseline'); break;
- case "risk.stress_index": y=x('inflationStress')+x('unemploymentStress')+x('rateStress')+x('growthStress); break;
+ case "risk.stress_index": y=x('inflationStress')+x('unemploymentStress')+x('rateStress')+x('growthStress'); break;
  default:throw new Error("Unknown economic model id: "+id);
  }
  if(!Number.isFinite(y))throw new RangeError("Model result must be finite");
