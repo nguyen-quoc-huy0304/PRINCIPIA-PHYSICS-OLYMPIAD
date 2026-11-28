@@ -2517,4 +2517,6 @@ function searchModels(query) {
 function getCategories() {
   return Object.freeze([...new Set(MODELS.map(item => item.category))]);
 }
-module.exports = Object.freeze({ MODELS, MODEL_COUNT: MODELS.length, listModels, getModel, searchModels, getCategories });
+const API = Object.freeze({ MODELS, MODEL_COUNT: MODELS.length, listModels, getModel, searchModels, getCategories });
+if (typeof module !== "undefined" && module.exports) module.exports = API;
+if (typeof globalThis !== "undefined") globalThis.PrincipiaInvestmentBusinessModels = API;
