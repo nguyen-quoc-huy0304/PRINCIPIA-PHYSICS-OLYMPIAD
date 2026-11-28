@@ -23,10 +23,11 @@ function parseSeries(values, name = "Chuỗi dữ liệu", minLength = 2) {
   return values.map((value, index) => finite(value, name + "[" + index + "]"));
 }
 
-function npv(rate, cashFlows) {
+function npv(rate, cashFlows, initialInvestment = 0) {
   const r = finite(rate, "Lãi suất chiết khấu", -0.999999, 100);
   const flows = parseSeries(cashFlows, "Dòng tiền", 1);
-  return round(flows.reduce((total, flow, index) => total + flow / ((1 + r) ** (index + 1)), 0));
+  const initial = finite(initialInvestment, "Vốn đầu tư ban đầu", 0, LIMIT);
+  return round(-initial + flows.reduce((total, flow, index) => total + flow / ((1 + r) ** (index + 1)), 0));
 }
 
 function irr(cashFlows, { tolerance = 1e-9, maxIterations = 500 } = {}) {
@@ -224,7 +225,7 @@ const METHODS = Object.freeze({
 function calculate(method, inputs) {
   if (typeof method !== "string" || !Object.hasOwn(METHODS, method)) throw new TypeError("Mô hình tính toán không được hỗ trợ.");
   if (!inputs || typeof inputs !== "object" || Array.isArray(inputs)) throw new TypeError("Dữ liệu đầu vào phải là object.");
-  if (method === "npv") return npv(inputs.rate, inputs.cashFlows);
+  if (method === "npv") return npv(inputs.rate, inputs.cashFlows, inputs.initialInvestment);
   if (method === "irr") return irr(inputs.cashFlows, inputs.options);
   if (method === "historicalVaR") return historicalVaR(inputs.returns, inputs.confidence, inputs.portfolioValue);
   if (method === "portfolioStats") return portfolioStats(inputs.returns, inputs.weights);
