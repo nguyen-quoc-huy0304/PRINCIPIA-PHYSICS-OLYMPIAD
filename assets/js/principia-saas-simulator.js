@@ -8,13 +8,19 @@
     taxRatePct: [0, 100]
   });
   const round = value => Math.round((value + Number.EPSILON) * 100) / 100;
+  function numeric(value, label) {
+    if (value === null || value === undefined || typeof value === 'boolean' || (typeof value === 'string' && !value.trim())) throw new TypeError(label + ' phải là số.');
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) throw new TypeError(label + ' phải là số hữu hạn.');
+    return parsed;
+  }
   function validate(input) {
     if (!input || typeof input !== 'object') throw new TypeError('Dữ liệu SaaS không hợp lệ.');
-    const months = Number(input.months);
+    const months = numeric(input.months, 'Thời hạn');
     if (!Number.isInteger(months) || months < 1 || months > 60) throw new RangeError('Thời hạn dự báo phải từ 1 đến 60 tháng.');
     const result = { months };
     for (const [key, range] of Object.entries(LIMITS)) {
-      const value = Number(input[key]);
+      const value = numeric(input[key], key);
       if (!Number.isFinite(value) || value < range[0] || value > range[1]) throw new RangeError(key + ' nằm ngoài phạm vi cho phép.');
       if (['initialCustomers', 'newCustomers'].includes(key) && !Number.isInteger(value)) throw new TypeError(key + ' phải là số nguyên.');
       result[key] = value;

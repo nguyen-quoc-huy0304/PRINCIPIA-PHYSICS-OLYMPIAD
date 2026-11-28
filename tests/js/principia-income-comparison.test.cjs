@@ -46,6 +46,8 @@ test("validates stream count, unique names, periods and numeric boundaries", () 
   assert.throws(() => validate({ months: 12, streams: [stream(), stream()] }), TypeError);
   assert.throws(() => validate({ months: 12, streams: [stream({ revenue: Infinity })] }), RangeError);
   assert.throws(() => validate({ months: 12, streams: [stream({ taxRatePct: 101 })] }), RangeError);
+  assert.throws(() => validate({ months: 12, streams: [stream({ capital: null })] }), TypeError);
+  assert.throws(() => validate({ months: 12, streams: [stream({ revenue: '' })] }), TypeError);
   assert.throws(() => simulateStream(stream(), 0, "base"), RangeError);
   assert.throws(() => simulateStream(stream(), 1, "unknown"), TypeError);
 });

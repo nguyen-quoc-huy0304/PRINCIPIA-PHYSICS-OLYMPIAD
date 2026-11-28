@@ -16,11 +16,18 @@
     maximumFractionDigits: 1
   }).format(value);
 
+  function numeric(value, label) {
+    if (value === null || value === undefined || typeof value === 'boolean' || (typeof value === 'string' && !value.trim())) throw new TypeError(label + ' phải là số.');
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) throw new TypeError(label + ' phải là số hữu hạn.');
+    return parsed;
+  }
+
   function validate(input) {
     if (!input || typeof input !== 'object' || !Array.isArray(input.streams)) {
       throw new TypeError('Dữ liệu so sánh không hợp lệ.');
     }
-    const months = Number(input.months);
+    const months = numeric(input.months, 'Thời hạn');
     if (!Number.isInteger(months) || months < 1 || months > MAX_MONTHS) {
       throw new RangeError('Thời hạn phải từ 1 đến 60 tháng.');
     }
@@ -37,8 +44,8 @@
       names.add(normalized);
       const result = { name };
       for (const [key, range] of Object.entries(LIMITS)) {
-        const value = Number(stream[key]);
-        if (!Number.isFinite(value) || value < range[0] || value > range[1]) {
+        const value = numeric(stream[key], name + ': ' + key);
+        if (value < range[0] || value > range[1]) {
           throw new RangeError(name + ': ' + key + ' ngoài phạm vi cho phép.');
         }
         result[key] = value;

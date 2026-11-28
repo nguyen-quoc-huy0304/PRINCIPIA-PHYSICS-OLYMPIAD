@@ -46,4 +46,6 @@ test("rejects invalid periods, fractional customer counts and out-of-range value
   assert.throws(()=>validate(sample({initialCustomers:1.5})),TypeError);
   assert.throws(()=>validate(sample({churnPct:101})),RangeError);
   assert.throws(()=>validate(null),TypeError);
+  assert.throws(()=>validate(sample({arpu:null})),TypeError);
+  assert.throws(()=>validate(sample({cac:''})),TypeError);
 });
