@@ -102,6 +102,28 @@ function bondPrice({ faceValue, couponRate, yieldRate, periods, paymentsPerYear 
   return round(price);
 }
 
+function ddm({ nextDividend, requiredReturn, growthRate = 0 }) {
+  const dividend = positive(nextDividend, "Cổ tức kỳ tới");
+  const required = finite(requiredReturn, "Tỷ suất yêu cầu", 0.000001, 10);
+  const growth = finite(growthRate, "Tăng trưởng cổ tức", -0.99, 0.99);
+  if (required <= growth) throw new RangeError("Tỷ suất yêu cầu phải lớn hơn tăng trưởng cổ tức.");
+  return round(dividend / (required - growth));
+}
+
+function cagr({ beginningValue, endingValue, years }) {
+  const beginning = positive(beginningValue, "Giá trị đầu kỳ");
+  const ending = positive(endingValue, "Giá trị cuối kỳ");
+  const duration = positive(years, "Số năm");
+  return round((ending / beginning) ** (1 / duration) - 1);
+}
+
+function roi({ initialInvestment, endingValue, additionalCosts = 0 }) {
+  const initial = positive(initialInvestment, "Vốn đầu tư");
+  const ending = finite(endingValue, "Giá trị cuối kỳ", 0, LIMIT);
+  const costs = finite(additionalCosts, "Chi phí bổ sung", 0, LIMIT);
+  return round((ending - initial - costs) / initial);
+}
+
 function portfolioStats(returns, weights) {
   const series = parseSeries(returns, "Lợi suất", 2);
   const allocation = parseSeries(weights, "Tỷ trọng", 1);
@@ -205,6 +227,6 @@ function calculate(method, inputs) {
   return METHODS[method](inputs);
 }
 
-const api = Object.freeze({ calculate, METHODS, npv, irr, dcf, capm, wacc, bondPrice, portfolioStats, historicalVaR, breakEven, unitEconomics, runway, dilution, scenarioAnalysis });
+const api = Object.freeze({ calculate, METHODS, npv, irr, dcf, capm, wacc, bondPrice, ddm, cagr, roi, portfolioStats, historicalVaR, breakEven, unitEconomics, runway, dilution, scenarioAnalysis });
 if (typeof module !== "undefined" && module.exports) module.exports = api;
 if (typeof globalThis !== "undefined") globalThis.PrincipiaFinanceCore = api;
