@@ -100,6 +100,7 @@ function runEconomicModel(id,input={}){
  const m=DEFINITIONS.find(x=>x.id===id);if(!m)throw new Error("Unknown economic model: "+id);
  for(const [k,val] of Object.entries(input)){if(typeof val==="number"&&!Number.isFinite(val))throw new RangeError("Invalid numeric input "+k);if(Array.isArray(val)&&(!val.length||val.some(x=>typeof x!=="number"||!Number.isFinite(x))))throw new TypeError("Invalid numeric array "+k);}
  const result=m.compute(input);if(typeof result==="number"&&!Number.isFinite(result))throw new RangeError("Model result non-finite");
- return Object.freeze({modelId:m.id,name:m.name,category:m.id.split(".")[0],result});
+ const stableResult=typeof result==="number"?Number(result.toPrecision(12)):result;
+ return Object.freeze({modelId:m.id,name:m.name,category:m.id.split(".")[0],result:stableResult});
 }
 module.exports={listEconomicModels,runEconomicModel};
