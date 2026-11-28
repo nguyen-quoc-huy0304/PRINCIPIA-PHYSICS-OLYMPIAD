@@ -5,7 +5,7 @@
  function mount(){
   const panel=root.document?.getElementById('principia-economy-root'),tabs=panel?.querySelector('.pe-tabs'),content=panel?.querySelector('#pe-content');
   if(!panel||!tabs||!content||panel.dataset.enterpriseOperationsUiReady)return false;
-  if(!root.PrincipiaEnterpriseOperations||!root.PrincipiaEconomyActiveWallet)return false;
+  if(!root.PrincipiaEnterpriseOperations)return false;
   panel.dataset.enterpriseOperationsUiReady='1';
   const button=root.document.createElement('button');button.type='button';button.textContent='Vận hành doanh nghiệp';tabs.appendChild(button);
   let engine=null,wallet=null;
