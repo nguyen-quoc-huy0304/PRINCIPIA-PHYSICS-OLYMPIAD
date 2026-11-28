@@ -7,7 +7,7 @@
   const tabs=panel?.querySelector('.pe-tabs');
   const content=panel?.querySelector('#pe-content');
   if(!panel||!tabs||!content||panel.dataset.bankProductsUiReady)return false;
-  if(!root.PrincipiaBankProducts||!root.PrincipiaEconomyActiveWallet)return false;
+  if(!root.PrincipiaBankProducts)return false;
   panel.dataset.bankProductsUiReady='1';
   const button=root.document.createElement('button');
   button.type='button';
