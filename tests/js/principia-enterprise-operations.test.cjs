@@ -6,6 +6,7 @@ function fixture() {
   const values = new Map();
   const storage = { getItem: key => values.get(key) ?? null, setItem: (key, value) => values.set(key, value) };
   const wallet = {
+    type: 'household', id: 'owner-test',
     balance: 100000000,
     debit(amount) {
       if (!Number.isSafeInteger(amount) || amount <= 0 || amount > this.balance) throw new RangeError('Ví không đủ tiền.');
@@ -88,4 +89,22 @@ test('persists business state and validates company names and capital', () => {
   f.engine.createBusiness('Doanh nghiệp', 3000000);
   const restored = createEnterpriseEngine({ wallet: f.wallet, storage: f.storage });
   assert.equal(restored.getState().businesses[0].name, 'Doanh nghiệp');
+});
+
+test('pins enterprise ledger to its funding wallet and blocks legacy relinking', () => {
+  const f = fixture();
+  f.engine.createBusiness('Tiệm bánh', 2000000);
+  const otherWallet = { ...f.wallet, id: 'owner-other' };
+  assert.throws(() => createEnterpriseEngine({ wallet: otherWallet, storage: f.storage }), /ví mô phỏng khác/);
+  const saved = JSON.parse(f.storage.getItem('principia:enterprise-operations:v1'));
+  assert.equal(saved.walletIdentity, 'household:owner-test');
+});
+
+test('enterprise capital funding rolls back when shared-wallet debit fails', () => {
+  const f = fixture();
+  const before = f.wallet.balance;
+  f.wallet.debit = () => { throw new Error('shared wallet unavailable'); };
+  assert.throws(() => f.engine.createBusiness('Tiệm bánh', 2000000), /shared wallet unavailable/);
+  assert.equal(f.wallet.balance, before);
+  assert.equal(f.engine.getState().businesses.length, 0);
 });
