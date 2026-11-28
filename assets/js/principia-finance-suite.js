@@ -6,7 +6,10 @@ const METHODS=[
 {id:'dcf',label:'Định giá DCF',fields:[['cashFlows','FCF từng năm, phân cách dấu phẩy','10000,12000,14000,16000,18000'],['discountRate','WACC (vd 0.12)','0.12'],['terminalGrowth','Tăng trưởng dài hạn (vd 0.03)','0.03']]},
 {id:'capm',label:'CAPM',fields:[['riskFreeRate','Lãi suất phi rủi ro (vd 0.04)','0.04'],['beta','Beta','1.1'],['marketReturn','Lợi suất thị trường (vd 0.10)','0.10']]},
 {id:'wacc',label:'WACC',fields:[['equity','Vốn chủ','700000'],['debt','Nợ vay','300000'],['costOfEquity','Chi phí vốn chủ (vd 0.14)','0.14'],['costOfDebt','Chi phí nợ (vd 0.08)','0.08'],['taxRate','Thuế suất (vd 0.20)','0.20']]},
-{id:'bondPrice',label:'Định giá trái phiếu',fields:[['faceValue','Mệnh giá','1000000'],['couponRate','Coupon (vd 0.08)','0.08'],['yieldRate','Lợi suất yêu cầu (vd 0.09)','0.09'],['periods','Số kỳ trả lãi','5'],['paymentsPerYear','Số lần trả lãi/năm','1']]},\n{id:'ddm',label:'Định giá cổ phiếu DDM',fields:[['nextDividend','Cổ tức kỳ tới','3000'],['requiredReturn','Tỷ suất yêu cầu (vd 0.12)','0.12'],['growthRate','Tăng trưởng cổ tức (vd 0.04)','0.04']]},\n{id:'cagr',label:'Tăng trưởng kép CAGR',fields:[['beginningValue','Giá trị đầu kỳ','100000000'],['endingValue','Giá trị cuối kỳ','160000000'],['years','Số năm','5']]},\n{id:'roi',label:'Tỷ suất hoàn vốn ROI',fields:[['initialInvestment','Vốn đầu tư','100000000'],['endingValue','Giá trị cuối kỳ','130000000'],['additionalCosts','Chi phí bổ sung','5000000']]},
+{id:'bondPrice',label:'Định giá trái phiếu',fields:[['faceValue','Mệnh giá','1000000'],['couponRate','Coupon (vd 0.08)','0.08'],['yieldRate','Lợi suất yêu cầu (vd 0.09)','0.09'],['periods','Số kỳ trả lãi','5'],['paymentsPerYear','Số lần trả lãi/năm','1']]},
+{id:'ddm',label:'Định giá cổ phiếu DDM',fields:[['nextDividend','Cổ tức kỳ tới','3000'],['requiredReturn','Tỷ suất yêu cầu (vd 0.12)','0.12'],['growthRate','Tăng trưởng cổ tức (vd 0.04)','0.04']]},
+{id:'cagr',label:'Tăng trưởng kép CAGR',fields:[['beginningValue','Giá trị đầu kỳ','100000000'],['endingValue','Giá trị cuối kỳ','160000000'],['years','Số năm','5']]},
+{id:'roi',label:'Tỷ suất hoàn vốn ROI',fields:[['initialInvestment','Vốn đầu tư','100000000'],['endingValue','Giá trị cuối kỳ','130000000'],['additionalCosts','Chi phí bổ sung','5000000']]},
 {id:'breakEven',label:'Điểm hòa vốn',fields:[['fixedCosts','Chi phí cố định','50000000'],['price','Giá bán/sản phẩm','200000'],['variableCost','Chi phí biến đổi/sản phẩm','120000']]},
 {id:'unitEconomics',label:'Unit economics',fields:[['price','Doanh thu/khách','500000'],['variableCost','Chi phí biến đổi/khách','150000'],['cac','Chi phí có khách mới (CAC)','100000'],['monthlyFixedCosts','Chi phí cố định tháng','20000000'],['monthlyCustomers','Số khách/tháng','100']]},
 {id:'runway',label:'Runway',fields:[['cash','Tiền mặt hiện có','300000000'],['monthlyBurn','Dòng tiền tiêu hao/tháng','25000000']]},
@@ -42,7 +45,8 @@ function mount(){
   panel.querySelectorAll('[data-tab]').forEach(button=>button.setAttribute('aria-selected',String(button.dataset.tab===tab)));
   if(tab==='calc')renderCalculators();
   if(tab==='plan')renderPlanner();
-  if(tab==='scenario')renderScenarios();\n  if(tab==='canvas')renderCanvas();
+  if(tab==='scenario')renderScenarios();
+  if(tab==='canvas')renderCanvas();
  }
  function renderCalculators(){
   content.innerHTML='<div class="pf-grid">'+METHODS.map(method=>'<article class="pf-card"><h3>'+safeText(method.label)+'</h3><form data-method="'+method.id+'">'+method.fields.map(([key,label,value])=>'<div class="pf-field"><label>'+safeText(label)+'</label><input name="'+key+'" value="'+value.replace(/"/g,'&quot;')+'" required></div>').join('')+'<button class="pf-submit" type="submit">Tính toán</button><div class="pf-result" aria-live="polite">Nhập dữ liệu và tính toán.</div></form></article>').join('')+'</div>';
